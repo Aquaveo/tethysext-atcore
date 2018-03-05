@@ -12,6 +12,8 @@ unit_test:
     - python setup.py develop
     - coverage run --source=tethysext/atcore/ setup.py test
     - coverage report
+  tags:
+    - docker
 
 lint:
   image: python:2.7
@@ -20,6 +22,8 @@ lint:
     - pip install flake8
     - python setup.py develop
     - flake8 .
+  tags:
+    - docker
 
 integration_test:
   stage: test
@@ -45,6 +49,8 @@ integration_test:
     - docker logs tethys_atcore
     # Test
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/ext/tethysext-atcore; tethys test -c -f tethysext.atcore.tests.integrated_tests"
+  tags:
+    - docker
 
 build:
   stage: build
