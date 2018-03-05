@@ -44,7 +44,7 @@ integration_test:
     - sleep 30s
     - docker logs tethys_atcore
     # Test
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/ext/tethysext-atcore; tethys test --source=./tethysext/atcore -c -f tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/ext/tethysext-atcore; tethys test -c -f tethysext.atcore.tests.integrated_tests"
 
 build:
   stage: build
