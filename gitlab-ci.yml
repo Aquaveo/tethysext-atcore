@@ -1,20 +1,50 @@
 image: docker:git
 
 stages:
-  - unit_test
-  - integration_test
+  - test
   - build
 
 unit_test:
-  image: python:2
-  stage: unit_test
+  image: python:2.7
+  stage: test
   script:
-    - echo "Unit Tests"
+    - pip install coverage
+    - python setup.py develop
+    - coverage run --source=tethysext/atcore/ setup.py test
+    - coverage report
+
+lint:
+  image: python:2.7
+  stage: test
+  script:
+    - pip install flake8
+    - python setup.py develop
+    - flake8 .
 
 integration_test:
-  stage: integration_test
+  stage: test
+  variables:
+    TETHYS_DEFAULT_PASS: 'pass'
+    TETHYS_SUPER_PASS: 'pass'
   script:
-    - echo "Integration Tests"
+    # Setup
+    - docker rm -f tethys_atcore tethys_postgis || true
+    - docker pull ciwater/postgis
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY/tethys/aqua-tethys/tethyscore:v2.0.4-extensions-r2
+    # Build
+    - docker build -t tethys_atcore .
+    # Run dependencies
+    - docker run -d --name tethys_postgis -p 5432:5432 -e TETHYS_DEFAULT_PASS=$TETHYS_DEFAULT_PASS -e TETHYS_SUPER_PASS=$TETHYS_SUPER_PASS ciwater/postgis
+    - echo "wait for db to start up..."
+    - sleep 30s
+    # Run
+    - docker run -d --name tethys_atcore -p 80:80 -e TETHYS_PUBLIC_HOST='127.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore
+    - echo "wait for container to start up..."
+    - sleep 30s
+    - docker logs tethys_atcore
+    # Test
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/ext/tethysext-atcore; tethys test --source=./tethysext/atcore -c -f tethysext.atcore.tests.integrated_tests"
 
 build:
   stage: build

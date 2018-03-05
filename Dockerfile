@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v2.0.4-extensions-r1
+FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v2.0.4-extensions-r2
 
 
 #####################
