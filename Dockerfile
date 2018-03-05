@@ -35,6 +35,9 @@ ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
    ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
    ; python setup.py install"
 
+# Overwrite default Tethys Stylesheet
+ADD tethysext/atcore/public/css/tethys_main.css ${TETHYS_HOME}/src/static/tethys_portal/css/tethys_main.css
+
 #########
 # CHOWN #
 #########
