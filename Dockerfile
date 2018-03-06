@@ -30,6 +30,7 @@ RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
   ; pip install django sqlalchemy==1.0.19"
 
 ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
+ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
  RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
    ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
