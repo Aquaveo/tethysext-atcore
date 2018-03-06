@@ -23,27 +23,13 @@ lint:
 
 unit_tests:
   stage: test
+  image: $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
   script:
     # Setup
-    - docker rm -f tethys_atcore tethys_postgis || true
-    - docker pull ciwater/postgis
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
-    # Build
-    - docker build -t tethys_atcore .
-    # Run dependencies
-    - docker run -d --name tethys_postgis -p $TETHYS_DB_PORT:5432 -e TETHYS_DEFAULT_PASS=$TETHYS_DEFAULT_PASS -e TETHYS_SUPER_PASS=$TETHYS_SUPER_PASS ciwater/postgis
-    - echo "wait for db to start up..."
-    - sleep 30s
-    # Run
-    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='$TETHYS_PUBLIC_HOST' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='$TETHYS_DB_HOST' -e TETHYS_DB_PORT=$TETHYS_DB_PORT' tethys_atcore
-    - echo "wait for container to start up..."
-    - sleep 30s
-    - docker logs tethys_atcore
+    - . ${CONDA_HOME}/bin/activate tethys; pip install coverage
+    - . ${CONDA_HOME}/bin/activate tethys; python setup.py develop
     # Test
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/ext/tethysext-atcore; coverage run --source=tethysext/atcore/ setup.py test; coverage report
-    # Clean up
-    - docker rm -f tethys_atcore tethys_postgis || true
+    - . ${CONDA_HOME}/bin/activate tethys; coverage run --source=./tethysext/atcore/ setup.py test; coverage report
   tags:
     - docker
 
