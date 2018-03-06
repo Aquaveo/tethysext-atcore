@@ -27,8 +27,7 @@ unit_tests:
     - . ${CONDA_HOME}/bin/activate tethys; pip install coverage
     - . ${CONDA_HOME}/bin/activate tethys; python setup.py develop
     # Test
-    - . ${CONDA_HOME}/bin/activate tethys; coverage run --source=./tethysext/atcore/ setup.py test;
-    - . ${CONDA_HOME}/bin/activate tethys; coverage report
+    - . ${CONDA_HOME}/bin/activate tethys; coverage run --omit=./tethysext/atcore/tests/* --source=./tethysext/atcore/ setup.py test; coverage report
   tags:
     - docker
 
