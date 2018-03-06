@@ -5,7 +5,7 @@ stages:
   - build
 
 variables:
-  TETHYS_CORE_TAG: 'tethyscore:v2.0.4-extensions-r3'
+  TETHYS_CORE_TAG: 'v2.0.4-extensions-r3'
   TETHYS_DEFAULT_PASS: 'pass'
   TETHYS_SUPER_PASS: 'pass'
   TETHYS_DB_PORT: 5432
