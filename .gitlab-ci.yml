@@ -6,11 +6,6 @@ stages:
 
 variables:
   TETHYS_CORE_TAG: 'v2.0.4-extensions-r3'
-  TETHYS_DEFAULT_PASS: 'pass'
-  TETHYS_SUPER_PASS: 'pass'
-  TETHYS_DB_PORT: 5432
-  TETHYS_DB_HOST: 127.17.0.1
-  TETHYS_PUBLIC_HOST: 127.17.0.1
 
 lint:
   image: python:2.7
@@ -42,12 +37,12 @@ integration_tests:
     # Build
     - docker build -t tethys_atcore .
     # Run dependencies
-    - docker run -d --name tethys_postgis -p $TETHYS_DB_PORT:5432 -e TETHYS_DEFAULT_PASS=$TETHYS_DEFAULT_PASS -e TETHYS_SUPER_PASS=$TETHYS_SUPER_PASS ciwater/postgis
+    - docker run -d --name tethys_postgis -p 5432:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 30s
     # Run
-    - echo "docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='${TETHYS_PUBLIC_HOST}' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='${TETHYS_DB_HOST}' -e TETHYS_DB_PORT='${TETHYS_DB_PORT}' tethys_atcore"
-    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='${TETHYS_PUBLIC_HOST}' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='${TETHYS_DB_HOST}' -e TETHYS_DB_PORT='${TETHYS_DB_PORT}' tethys_atcore
+    - echo "docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore"
+    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore
     - echo "wait for container to start up..."
     - sleep 30s
     - docker logs tethys_atcore
