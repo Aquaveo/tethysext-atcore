@@ -27,7 +27,7 @@ unit_tests:
     - . ${CONDA_HOME}/bin/activate tethys; pip install coverage
     - . ${CONDA_HOME}/bin/activate tethys; python setup.py develop
     # Test
-    - . ${CONDA_HOME}/bin/activate tethys; coverage run --omit=./tethysext/atcore/tests/* --source=./tethysext/atcore/ setup.py test; coverage report
+    - . ${CONDA_HOME}/bin/activate tethys; coverage run setup.py test; coverage report
   tags:
     - docker
 
@@ -46,7 +46,8 @@ integration_tests:
     - echo "wait for db to start up..."
     - sleep 30s
     # Run
-    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='$TETHYS_PUBLIC_HOST' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='$TETHYS_DB_HOST' -e TETHYS_DB_PORT='$TETHYS_DB_PORT' tethys_atcore
+    - echo "docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='${TETHYS_PUBLIC_HOST}' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='${TETHYS_DB_HOST}' -e TETHYS_DB_PORT='${TETHYS_DB_PORT}' tethys_atcore"
+    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='${TETHYS_PUBLIC_HOST}' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='${TETHYS_DB_HOST}' -e TETHYS_DB_PORT='${TETHYS_DB_PORT}' tethys_atcore
     - echo "wait for container to start up..."
     - sleep 30s
     - docker logs tethys_atcore
