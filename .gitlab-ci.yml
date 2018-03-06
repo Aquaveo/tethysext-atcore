@@ -43,10 +43,10 @@ integration_tests:
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore
     - echo "wait for container to start up..."
-    - sleep 120s
+    - sleep 45s
     - docker logs tethys_atcore
     # Test
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; echo '***${TETHYSEXT_DIR}***'; cd ${TETHYSEXT_DIR}/tethysext-atcore; pwd; tethys test -c -f tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; tethys test -c -f tethysext.atcore.tests.integrated_tests"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
