@@ -1,1 +1,1 @@
-from test import OneTestCaseClass  # noqa: F401
+from general_tests import OneTestCaseClass  # noqa: F401

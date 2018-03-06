@@ -22,7 +22,7 @@ unit_tests:
     - . ${CONDA_HOME}/bin/activate tethys; pip install coverage
     - . ${CONDA_HOME}/bin/activate tethys; python setup.py develop
     # Test
-    - . ${CONDA_HOME}/bin/activate tethys; coverage run setup.py test; coverage report
+    - . ${CONDA_HOME}/bin/activate tethys; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report
   tags:
     - docker
 
@@ -46,7 +46,7 @@ integration_tests:
     - sleep 45s
     - docker logs tethys_atcore
     # Test
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; pwd; tethys test -c -f tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test tethysext.atcore.tests.integrated_tests; coverage report"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
