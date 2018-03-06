@@ -46,7 +46,7 @@ integration_tests:
     - echo "wait for db to start up..."
     - sleep 30s
     # Run
-    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='$TETHYS_PUBLIC_HOST' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='$TETHYS_DB_HOST' -e TETHYS_DB_PORT=$TETHYS_DB_PORT' tethys_atcore
+    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='$TETHYS_PUBLIC_HOST' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD=$TETHYS_SUPER_PASS -e TETHYS_DB_HOST='$TETHYS_DB_HOST' -e TETHYS_DB_PORT='$TETHYS_DB_PORT' tethys_atcore
     - echo "wait for container to start up..."
     - sleep 30s
     - docker logs tethys_atcore
