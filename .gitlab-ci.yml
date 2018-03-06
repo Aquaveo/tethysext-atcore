@@ -51,7 +51,7 @@ integration_tests:
     - sleep 30s
     - docker logs tethys_atcore
     # Test
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/ext/tethysext-atcore; tethys test -c -f tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd $TETHYSEXT_DIR/tethysext-atcore; tethys test -c -f tethysext.atcore.tests.integrated_tests"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
