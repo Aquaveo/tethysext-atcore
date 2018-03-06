@@ -28,6 +28,8 @@ unit_tests:
     - . ${CONDA_HOME}/bin/activate tethys; python setup.py develop
     # Test
     - . ${CONDA_HOME}/bin/activate tethys; coverage run --source=./tethysext/atcore/ setup.py test; coverage report
+  tags:
+    - docker
 
 integration_tests:
   stage: test
