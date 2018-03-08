@@ -33,7 +33,6 @@ class Resource(AppUsersBase):
     organizations = relationship('Organization',
                                  secondary=organization_resource_association,
                                  back_populates='resources')
-    user_settings = relationship('UserSetting', cascade="save-update, merge, delete")
 
     # Polymorphism
     __mapper_args__ = {

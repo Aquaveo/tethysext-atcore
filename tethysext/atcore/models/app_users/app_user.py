@@ -41,25 +41,3 @@ class AppUser(AppUsersBase):
         except ObjectDoesNotExist:
             return None
         return django_user
-
-
-class UserSetting(AppUsersBase):
-    """
-    SQLAlchemy interface for epanet_user_settings table.
-    """
-    __tablename__ = "user_settings"
-
-    # Primary and Foreign Keys
-    id = Column(Integer, autoincrement=True, primary_key=True)  #: PK
-    user_id = Column(GUID, ForeignKey('app_users.id'))  #: FK
-    # TODO: Generalize this to resources after we have figured that out.
-    user_project_id = Column(GUID, ForeignKey('user_projects.id'))  #: FK
-
-    # Properties
-    scenario_id = Column(Integer)
-    page = Column(String)
-    key = Column(String)
-    value = Column(String)
-
-    # Relationship
-    user = relationship('AppUser', back_populates='settings')
