@@ -1,1 +1,1 @@
-from general_tests import OneTestCaseClass  # noqa: F401
+from models.app_user_tests import AppUserTests  # noqa: F401

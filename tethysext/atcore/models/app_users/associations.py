@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Table, ForeignKey
-from tethysext.atcore.models.guid import GUID
-from .base import AppUsersBase
+from tethysext.atcore.models.types.guid import GUID
 
+from .base import AppUsersBase
 
 user_organization_association = Table(
     'user_organization_association',

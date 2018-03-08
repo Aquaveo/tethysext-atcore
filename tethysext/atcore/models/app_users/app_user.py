@@ -1,13 +1,13 @@
 import uuid
 
-from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
+from sqlalchemy import Column, Boolean, String
 from sqlalchemy.orm import relationship
-from tethysext.atcore.models.guid import GUID
-from .associations import user_organization_association
+from tethysext.atcore.models.types.guid import GUID
 
+from .associations import user_organization_association
 from .base import AppUsersBase
 
-__all__ = ['AppUser', 'UserSetting']
+__all__ = ['AppUser']
 
 
 class AppUser(AppUsersBase):
@@ -25,8 +25,6 @@ class AppUser(AppUsersBase):
     organizations = relationship('Organization',
                                  secondary=user_organization_association,
                                  back_populates='users')
-
-    settings = relationship('UserSetting', back_populates='user', cascade="delete")
 
     def get_django_user(self):
         """
