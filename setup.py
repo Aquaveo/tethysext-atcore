@@ -9,7 +9,10 @@ ext_class = 'atcore.ext:Atcore'
 ext_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tethysext', ext_package)
 
 # -- Python Dependencies -- #
-dependencies = []
+dependencies = [
+    'sqlalchemy',
+    'django',
+]
 
 # -- Get Resource File -- #
 resource_files = find_resource_files('tethysext/' + ext_package + '/templates')
