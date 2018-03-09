@@ -28,20 +28,21 @@ unit_tests:
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
-    - sleep 45s
+    - sleep 30s
     - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U tethys_super -p 5435 -h 172.17.0.1 -E SQL_ASCII --no-password --owner tethys_super appusertests"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
     - echo "wait for container to start up..."
-    - sleep 45s
+    - sleep 60s
     - docker logs tethys_atcore
     # Test
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report"
-    # Clean up
-    - docker rm -f tethys_atcore tethys_postgis || true
-    # Stash coverage
+    # Extract coverage artifact
     - mkdir coverage
     - docker exec tethys_atcore /bin/bas -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
+    - cat .coverage
+    # Clean up
+    - docker rm -f tethys_atcore tethys_postgis || true
   artifacts:
     paths:
       - .coverage
@@ -62,20 +63,21 @@ integration_tests:
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
-    - sleep 45s
+    - sleep 30s
     - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U tethys_super -p 5435 -h 172.17.0.1 -E SQL_ASCII --no-password --owner tethys_super appusertests"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
     - echo "wait for container to start up..."
-    - sleep 45s
+    - sleep 60s
     - docker logs tethys_atcore
     # Test
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test tethysext.atcore.tests.integrated_tests; coverage report"
-    # Clean up
-    - docker rm -f tethys_atcore tethys_postgis || true
-    # Stash coverage
+    # Extract coverage artifact
     - mkdir coverage
     - docker exec tethys_atcore /bin/bas -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
+    - cat .coverage
+    # Clean up
+    - docker rm -f tethys_atcore tethys_postgis || true
   artifacts:
     paths:
       - .coverage
@@ -92,6 +94,8 @@ coverage:
     - ls -hal
     - cat unit_tests
     - cat integration_tests
+    - ls -hal unit_tests
+    - ls -hal integration_tests
     - coverage combine unit_tests integration_tests
     - coverage report
 
