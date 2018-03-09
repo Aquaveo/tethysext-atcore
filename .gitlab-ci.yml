@@ -40,8 +40,8 @@ unit_tests:
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
     # Stash coverage
-    - mkdir ./coverage
-    - cp .coverage ./coverage/.unittests
+    - mkdir coverage
+    - cp .coverage coverage/.unittests
   artifacts:
     paths:
       - coverage
@@ -74,8 +74,8 @@ integration_tests:
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
     # Stash coverage
-    - mkdir ./coverage
-    - cp .coverage ./coverage/.integratedtests
+    - mkdir coverage
+    - cp .coverage coverage/.integratedtests
   artifacts:
     paths:
       - coverage
@@ -86,7 +86,7 @@ integration_tests:
 coverage:
   stage: coverage
   script:
-    - coverage combine ./coverage/.unittests ./coverage/.integratedtests
+    - coverage combine coverage/.unittests coverage/.integratedtests
     - coverage report
 
 build:
