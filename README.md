@@ -26,7 +26,7 @@ $ python setup.py install
 This extension has two types of tests: unit tests and integrated tests. To run unit tests:
 
 ```bash
-$ coverage run --source=./tethysext/atcore setup.py test
+$ coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests 
 $ coverage report
 ```
 
@@ -34,7 +34,8 @@ To run integrated tests, install extension in existing installation of Tethys an
 
 ```bash
 $ t
-$ tethys test -c -f tethysext.atcore.tests.integrated_tests
+$ coverage run --rcfile=coverage.ini <TETHYS_HOME>/src/manage.py test tethysext.atcore.tests.integrated_tests
+$ coverage report
 ```
 
 # Linting
