@@ -39,7 +39,7 @@ unit_tests:
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report"
     # Extract coverage artifact
     - mkdir coverage
-    - docker exec tethys_atcore /bin/bas -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
+    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
     - cat .coverage
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
@@ -74,7 +74,7 @@ integration_tests:
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test tethysext.atcore.tests.integrated_tests; coverage report"
     # Extract coverage artifact
     - mkdir coverage
-    - docker exec tethys_atcore /bin/bas -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
+    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
     - cat .coverage
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
