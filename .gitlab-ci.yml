@@ -29,7 +29,7 @@ unit_tests:
     - docker run -d --name tethys_postgis -p 5432:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 45s
-    - docker exec tethys_postgis /bin/bash -c "createdb -p 5432 -h 127.0.0.1 -E UTF8 --owner tethys_super appusertests"
+    - docker exec tethys_postgis /bin/bash -c "createdb -p 5432 -h 127.0.0.1 -E UTF8 --no-password --owner tethys_super appusertests"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore
     - echo "wait for container to start up..."
@@ -62,7 +62,7 @@ integration_tests:
     - docker run -d --name tethys_postgis -p 5432:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 45s
-    - docker exec tethys_postgis /bin/bash -c "createdb -p 5432 -h 127.0.0.1 -E UTF8 --owner tethys_super appusertests"
+    - docker exec tethys_postgis /bin/bash -c "createdb -p 5432 -h 127.0.0.1 -E UTF8 --no-password --owner tethys_super appusertests"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore
     - echo "wait for container to start up..."
