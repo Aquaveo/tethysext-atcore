@@ -2,6 +2,7 @@ image: docker:git
 
 stages:
   - test
+  - coverage
   - build
 
 variables:
@@ -31,6 +32,12 @@ unit_tests:
     # Test
     - . ${CONDA_HOME}/bin/activate tethys; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report
     - docker rm -f tethys_postgis || true
+    - mkdir ./coverage
+    - cp .coverage ./coverage/.unittests
+  artifacts:
+    paths:
+      - coverage
+    expire_in: 1 day
   tags:
     - docker
 
@@ -58,8 +65,20 @@ integration_tests:
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test tethysext.atcore.tests.integrated_tests; coverage report"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
+    - mkdir ./coverage
+    - cp .coverage ./coverage/.inttests
+  artifacts:
+    paths:
+      - coverage
+    expire_in: 1 day
   tags:
     - docker
+
+coverage:
+  stage: coverage
+  script:
+    - coverage combine ./coverage/.unittests ./coverage/.inttests
+    - coverage report
 
 build:
   stage: build
