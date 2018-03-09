@@ -24,7 +24,7 @@ class AppUser(AppUsersBase):
     # Relationships
     organizations = relationship('Organization',
                                  secondary=user_organization_association,
-                                 back_populates='users')
+                                 back_populates='members')
 
     def get_django_user(self):
         """

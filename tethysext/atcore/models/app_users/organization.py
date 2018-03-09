@@ -28,9 +28,9 @@ class Organization(AppUsersBase):
     resources = relationship('Resource',
                              secondary=organization_resource_association,
                              back_populates='organizations')
-    users = relationship('AppUser',
-                         secondary=user_organization_association,
-                         back_populates='organizations')
+    members = relationship('AppUser',
+                           secondary=user_organization_association,
+                           back_populates='organizations')
 
     # Polymorphism
     __mapper_args__ = {

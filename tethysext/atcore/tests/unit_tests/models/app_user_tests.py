@@ -35,20 +35,20 @@ class AppUserTests(unittest.TestCase):
         self.role = "tester"
         self.is_active = True
 
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
-
-    def test_create_user(self):
-        user = AppUser(
+        self.user = AppUser(
             username=self.username,
             role=self.role,
             is_active=self.is_active,
         )
 
-        self.session.add(user)
+        self.session.add(self.user)
         self.session.commit()
 
+    def tearDown(self):
+        self.session.close()
+        self.transaction.rollback()
+
+    def test_create_user(self):
         all_user_count = self.session.query(AppUser).count()
         all_users = self.session.query(AppUser).all()
 
