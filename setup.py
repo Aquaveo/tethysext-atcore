@@ -1,6 +1,13 @@
 import os
 from setuptools import setup, find_packages
-from tethys_apps.app_installation import find_resource_files
+
+
+def find_resource_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
 
 # -- Extension Definition -- #
 ext_package = 'atcore'
@@ -11,7 +18,6 @@ ext_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'teth
 # -- Python Dependencies -- #
 dependencies = [
     'sqlalchemy',
-    'django',
 ]
 
 # -- Get Resource File -- #

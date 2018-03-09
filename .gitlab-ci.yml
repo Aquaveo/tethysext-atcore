@@ -39,13 +39,13 @@ unit_tests:
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report"
     # Extract coverage artifact
     - mkdir coverage
-    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
+    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" coverage/.unittests
     - cat .coverage
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   artifacts:
     paths:
-      - .coverage
+      - coverage
     expire_in: 1 hour
   tags:
     - docker
@@ -74,13 +74,12 @@ integration_tests:
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test tethysext.atcore.tests.integrated_tests; coverage report"
     # Extract coverage artifact
     - mkdir coverage
-    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
-    - cat .coverage
+    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > coverage/.integrationtests
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   artifacts:
     paths:
-      - .coverage
+      - coverage
     expire_in: 1 hour
   tags:
     - docker
@@ -91,12 +90,10 @@ coverage:
     - unit_tests
     - integration_tests
   script:
-    - ls -hal
-    - cat unit_tests
-    - cat integration_tests
-    - ls -hal unit_tests
-    - ls -hal integration_tests
-    - coverage combine unit_tests integration_tests
+    - ls -hal coverage
+    - cat coverage/.unittests
+    - cat coverage/.integrationtests
+    - coverage combine coverage/.unittests coverage/.integrationtests
     - coverage report
 
 build:
