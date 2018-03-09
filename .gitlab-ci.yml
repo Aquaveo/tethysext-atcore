@@ -7,8 +7,6 @@ stages:
 
 variables:
   TETHYS_CORE_TAG: 'v2.0.4-extensions-r3'
-  PGPASSWORD: 'pass'
-  PGUSER: 'tethys_super'
 
 lint:
   image: python:2.7
@@ -31,7 +29,7 @@ unit_tests:
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 45s
-    - docker exec tethys_postgis /bin/bash -c "createdb -p 5435 -h 172.17.0.1 -E UTF8 --no-password --owner tethys_super appusertests"
+    - docker exec tethys_postgis /bin/bash -c "psql -U postgres -p 5435 -h 172.17.0.1 --no-password -c 'CREATE DATABASE appusertests WITH OWNER tethys_super'"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
     - echo "wait for container to start up..."
@@ -65,7 +63,7 @@ integration_tests:
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 45s
-    - docker exec tethys_postgis /bin/bash -c "createdb -p 5435 -h 172.17.0.1 -E UTF8 --no-password --owner tethys_super appusertests"
+    - docker exec tethys_postgis /bin/bash -c "psql -U postgres -p 5435 -h 172.17.0.1 --no-password -c 'CREATE DATABASE appusertests WITH OWNER tethys_super'"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
     - echo "wait for container to start up..."
