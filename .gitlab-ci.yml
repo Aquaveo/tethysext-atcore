@@ -17,21 +17,28 @@ lint:
 
 unit_tests:
   stage: test
-  image: $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
   script:
     # Setup
-    - docker rm -f tethys_postgis || true
+    - docker rm -f tethys_atcore tethys_postgis || true
     - docker pull ciwater/postgis
-    - . ${CONDA_HOME}/bin/activate tethys; pip install coverage
-    - . ${CONDA_HOME}/bin/activate tethys; python setup.py develop
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
+    # Build
+    - docker build -t tethys_atcore .
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 30s
-    - docker exec tethys_postgis /bin/bash -c "psql -p 5435 -h 127.0.0.1 -E UTF8 -O tethys_super appusertests"
+    - docker exec tethys_postgis /bin/bash -c "psql -p 5435 -h 127.0.0.1 -E UTF8 --owner tethys_super appusertests"
+    # Run
+    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
+    - echo "wait for container to start up..."
+    - sleep 45s
+    - docker logs tethys_atcore
     # Test
-    - . ${CONDA_HOME}/bin/activate tethys; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report
-    - docker rm -f tethys_postgis || true
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report"
+    # Clean up
+    - docker rm -f tethys_atcore tethys_postgis || true
     - mkdir ./coverage
     - cp .coverage ./coverage/.unittests
   artifacts:
@@ -55,7 +62,7 @@ integration_tests:
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for db to start up..."
     - sleep 30s
-    - docker exec tethys_postgis /bin/bash -c "psql -p 5435 -h 127.0.0.1 -E UTF8 -O tethys_super appusertests"
+    - docker exec tethys_postgis /bin/bash -c "psql -p 5435 -h 127.0.0.1 -E UTF8 --owner tethys_super appusertests"
     # Run
     - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
     - echo "wait for container to start up..."
@@ -66,7 +73,7 @@ integration_tests:
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
     - mkdir ./coverage
-    - cp .coverage ./coverage/.inttests
+    - cp .coverage ./coverage/.integratedtests
   artifacts:
     paths:
       - coverage
@@ -77,7 +84,7 @@ integration_tests:
 coverage:
   stage: coverage
   script:
-    - coverage combine ./coverage/.unittests ./coverage/.inttests
+    - coverage combine ./coverage/.unittests ./coverage/.integratedtests
     - coverage report
 
 build:
