@@ -41,11 +41,11 @@ unit_tests:
     - docker rm -f tethys_atcore tethys_postgis || true
     # Stash coverage
     - mkdir coverage
-    - cp .coverage coverage/.unittests
+    - docker exec tethys_atcore /bin/bas -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
   artifacts:
     paths:
-      - coverage
-    expire_in: 1 day
+      - .coverage
+    expire_in: 1 hour
   tags:
     - docker
 
@@ -75,18 +75,24 @@ integration_tests:
     - docker rm -f tethys_atcore tethys_postgis || true
     # Stash coverage
     - mkdir coverage
-    - cp .coverage coverage/.integratedtests
+    - docker exec tethys_atcore /bin/bas -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .coverage
   artifacts:
     paths:
-      - coverage
-    expire_in: 1 day
+      - .coverage
+    expire_in: 1 hour
   tags:
     - docker
 
 coverage:
   stage: coverage
+  dependencies:
+    - unit_tests
+    - integration_tests
   script:
-    - coverage combine coverage/.unittests coverage/.integratedtests
+    - ls -hal
+    - cat unit_tests
+    - cat integration_tests
+    - coverage combine unit_tests integration_tests
     - coverage report
 
 build:
