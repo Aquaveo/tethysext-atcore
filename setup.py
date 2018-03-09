@@ -9,6 +9,7 @@ def find_resource_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
+
 # -- Extension Definition -- #
 ext_package = 'atcore'
 release_package = 'tethysext-' + ext_package
