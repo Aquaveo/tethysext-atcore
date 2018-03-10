@@ -40,7 +40,6 @@ unit_tests:
     # Extract coverage artifact
     - mkdir coverage
     - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" coverage/.unittests
-    - cat .coverage
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   artifacts:
