@@ -38,7 +38,7 @@ unit_tests:
     # Test
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests; coverage report"
     # Extract coverage artifact
-    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" .unittests
+    - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .unittests
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   artifacts:
