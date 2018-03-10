@@ -82,14 +82,13 @@ integration_tests:
     - docker
 
 coverage:
+  image: python:2.7
   stage: coverage
   dependencies:
     - unit_tests
     - integration_tests
   script:
-    - ls -hal
-    - cat .unittests
-    - cat .integrationtests
+    - pip install coverage
     - coverage combine .unittests .integrationtests
     - coverage report
 
