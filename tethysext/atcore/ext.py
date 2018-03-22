@@ -1,4 +1,4 @@
-from tethys_sdk.base import TethysExtensionBase
+from tethys_sdk.base import TethysExtensionBase, url_map_maker
 
 
 class Atcore(TethysExtensionBase):

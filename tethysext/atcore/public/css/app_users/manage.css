@@ -1,0 +1,124 @@
+td, th {
+    vertical-align: middle!important;
+}
+
+.btn {
+    margin: 3px;
+}
+
+.btn:hover {
+    color: white;
+}
+
+.btn-users {
+ margin-left: 0;
+}
+
+.btn-users:hover {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
+.btn-import:hover {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
+.btn-new:hover {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
+.btn-edit:hover {
+    background-color: #f0ad4e;
+    border-color: #eea236;
+}
+
+.btn-delete:hover {
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
+.btn-remove:hover {
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
+.manage-grid-actions .btn {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.manage-item-title {
+    margin-bottom: 0;
+    font-size: 24px;
+}
+
+.manage-container {
+    max-width: 1000px;
+}
+
+.manage-action-btn {
+    margin-bottom: 15px;
+}
+
+.manage-tag {
+    display: inline-block;
+    padding: 6px 10px;
+    margin-bottom: 3px;
+    margin-top: 3px;
+    border-radius: 5px;
+    border: 1px #ccc solid;
+    color: #333;
+    background-color: #ffffff;
+}
+
+.manage-tag:hover {
+    background: lightgray;
+}
+
+.toggle-switch-container .form-group {
+    margin: 0;
+}
+
+#status-toggle-wrapper .bootstrap-switch {
+    display: block;
+    width: 100px;
+}
+
+.input-group {
+    width: 100%;
+}
+
+.modal-backdrop {
+    display: None;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #66afe9!important;
+    outline: 0!important;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)!important;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)!important;
+}
+
+.progress {
+    border-radius: 0;
+    margin-bottom: 2px;
+}
+
+.progress-bar {
+    background-color: #00787B;
+}
+
+.progress-bar-danger {
+    background-color: #D9534F;
+}
+
+.progress-bar-success {
+    background-color: #5cb85c;
+}
+
+.storage-table {
+    margin-top: 10px;
+    margin-bottom: 0;
+}

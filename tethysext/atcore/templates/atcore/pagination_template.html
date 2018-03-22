@@ -1,0 +1,73 @@
+{% comment %}
+<!--
+Requires a variable (whatever it may be called) that is an dictionary of the following form:
+{
+'num_results': num_projects,
+'result_name': 'projects',
+'page': page,
+'min_showing': min_index + 1,
+'max_showing': max_index,
+'next_page': page + 1,
+'previous_page': page - 1,
+'enable_next_button': enable_next_button,
+'enable_previous_button': enable_previous_button,
+'hide_buttons': page == 1 and max_index == num_projects,
+'show': results_per_page,
+'results_per_page_options': [5, 10, 20, 40, 80, 120],
+'hide_results_per_page_options': num_projects <= results_per_page_options[0]
+}
+-->
+{% endcomment %}
+
+{% with x=pagination_info %}
+<div class="pagination-buttons flex flex-row flex-nowrap flex-centeredContent">
+    {% if not x.hide_buttons %}
+    <div>
+        <a role="button" href="?page={{ x.previous_page }}&show={{ x.show }}{% if x.sort_by %}&sort_by={{ x.sort_by }}{% endif %}" class="btn btn-info{% if not x.enable_previous_button %} disabled {% endif %}">
+            <span class="glyphicon glyphicon-chevron-left"></span> Previous
+        </a>
+    </div>
+    {% endif %}
+    <div class="flex-grow2 text-centered">
+        <div class="flex flex-col flex-nowrap">
+            {% if where == 'header' and not x.hide_results_per_page_options %}
+            <div>
+                <select id="results-per-page">
+                    {% for opt in x.results_per_page_options %}
+                    <option value="{{ opt }}"{% if x.show == opt %} selected {% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                    <option value="100000000"{% if x.show == 100000000 or x.show not in x.results_per_page_options %} selected {% endif %}>All</option>
+                </select> results per page
+                <br><br>
+            </div>
+            {% endif %}
+            <div>{{ x.min_showing }} - {{ x.max_showing }} of {{ x.num_results }} {{ x.result_name }}</div>
+        </div>
+    </div>
+    {% if not x.hide_buttons %}
+    <div>
+        <a role="button" href="?page={{ x.next_page }}&show={{ x.show }}{% if x.sort_by %}&sort_by={{ x.sort_by }}{% endif %}" class="btn btn-info{% if not x.enable_next_button %} disabled {% endif %}">
+            Next <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endwith %}
+<script>
+    $('#results-per-page').on('change', function () {
+        var val = this.value;
+        var search = window.location.search;
+        var newSearch;
+        if (search != '') {
+            if (search.indexOf('show=') > -1) {
+                newSearch = search.replace(search.split('show=')[1].split('&')[0], val);
+            } else {
+                newSearch = search += '&show=' + val;
+            }
+        } else {
+            newSearch = search += '?show=' + val;
+        }
+
+        window.location.search = newSearch;
+    });
+</script>
