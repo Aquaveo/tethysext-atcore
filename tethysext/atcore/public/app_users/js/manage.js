@@ -20,7 +20,7 @@ $(document).ready(function(){
       var action = 'delete';
 
       // Show loading dots
-      $('#delete-modal .modal-footer').html('<img src="/static/epanet/images/loading-dots-small.gif">');
+      $('#delete-modal .modal-footer').html('<img src="/static/atcore/images/loading-dots-small.gif">');
 
       // Call delete
       $.ajax({
@@ -59,7 +59,7 @@ $(document).ready(function(){
       var action = 'remove';
 
       // Show loading dots
-      $('#remove-modal .modal-footer').html('<img src="/static/epanet/images/loading-dots-small.gif">');
+      $('#remove-modal .modal-footer').html('<img src="/static/atcore/images/loading-dots-small.gif">');
 
       // Call remove
       $.ajax({

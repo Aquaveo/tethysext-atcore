@@ -1,7 +1,7 @@
 import uuid
 
-from sqlalchemy import Column, Boolean, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Boolean, String, ForeignKey
+from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types.guid import GUID
 
 from .associations import organization_resource_association, user_organization_association
@@ -20,6 +20,7 @@ class Organization(AppUsersBase):
     GENERIC_ORG_TYPE = 'generic_organization_type'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    parent_id = Column(GUID, ForeignKey('organizations.id'))
     name = Column(String)
     type = Column(String, default=GENERIC_ORG_TYPE)
     active = Column(Boolean, default=True)
@@ -31,6 +32,8 @@ class Organization(AppUsersBase):
     members = relationship('AppUser',
                            secondary=user_organization_association,
                            back_populates='organizations')
+    clients = relationship('Organization',
+                           backref=backref('consultant', remote_side=[id]))
 
     # Polymorphism
     __mapper_args__ = {

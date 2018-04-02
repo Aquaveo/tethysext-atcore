@@ -3,7 +3,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.models.app_users import AppUsersBase, AppUser, Organization
-
+from tethysext.atcore.services.app_users.user_roles import AppUserRoles
 from tethysext.atcore.tests import APP_USER_TEST_DB
 
 
@@ -35,17 +35,17 @@ class AppUserOrganizationTests(unittest.TestCase):
         # Test users
         self.user1 = AppUser(
             username="user1",
-            role="viewer",
+            role=AppUserRoles.ORG_USER,
         )
 
         self.user2 = AppUser(
             username="user2",
-            role="viewer",
+            role=AppUserRoles.ORG_USER,
         )
 
         self.user3 = AppUser(
             username="user3",
-            role="viewer",
+            role=AppUserRoles.ORG_USER,
         )
 
         # Test Organizations

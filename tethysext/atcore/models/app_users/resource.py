@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy import Column, Boolean, DateTime, String
 from sqlalchemy.orm import relationship
 from tethysext.atcore.models.types.guid import GUID
+from tethysext.atcore.mixins import StatusMixin
 
 from .app_user import AppUsersBase
 from .associations import organization_resource_association
@@ -11,7 +12,7 @@ from .associations import organization_resource_association
 __all__ = ['Resource']
 
 
-class Resource(AppUsersBase):
+class Resource(StatusMixin, AppUsersBase):
     """
     Definition for the resources table.
     """

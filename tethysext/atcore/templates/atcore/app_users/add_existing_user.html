@@ -1,4 +1,4 @@
-{% extends "epanet/base.html" %}
+{% extends "atcore/app_users/base.html" %}
 {% load staticfiles tethys_gizmos %}
 
 {% block app_navigation_items %}
@@ -25,7 +25,7 @@
           {% gizmo select_input organization_select %}
         </div>
 
-        <a class="btn btn-default" href="{% url 'epanet:manage_users' %}">Cancel</a>
+        <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
         <input type="submit" class="btn btn-success" name="add-existing-user-submit" value="Add Users">
       </form>
     </div>
@@ -34,10 +34,10 @@
 
 {% block styles %}
   {{ block.super }}
-  <link href="{% static 'epanet/css/manage.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/manage.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
-  <script src="{% static 'epanet/js/hide_organization_if_admin.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/app_users/js/hide_organization_if_admin.js' %}" type="text/javascript"></script>
 {% endblock %}

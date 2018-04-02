@@ -4,7 +4,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.models.app_users import AppUsersBase, AppUser
-
+from tethysext.atcore.services.app_users.user_roles import AppUserRoles
 from tethysext.atcore.tests import APP_USER_TEST_DB
 
 
@@ -34,7 +34,7 @@ class AppUserTests(unittest.TestCase):
         self.session = Session(connection)
 
         self.username = "test_user"
-        self.role = "tester"
+        self.role = AppUserRoles.ORG_USER
         self.is_active = True
 
         self.user = AppUser(

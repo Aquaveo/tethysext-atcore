@@ -1,13 +1,11 @@
 import inspect
 from tethys_sdk.base import TethysController
-from tethysext.atcore.controllers.app_users import ManageUsers
-from tethysext.atcore.controllers.app_users import ModifyUser
-from tethysext.atcore.controllers.app_users import AddExistingUser
+from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser
 
 
 def urls(url_map_maker, *args, **kwargs):
     """
-    Generate UrlMap objects for app_users extension. To link to pages provided by the app_users extension use the name of the url with your app namespace:  # noqa: F401
+    Generate UrlMap objects for app_users extension. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
     ::
 
@@ -30,7 +28,7 @@ def urls(url_map_maker, *args, **kwargs):
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
-    """
+    """  # noqa: F401, E501
     # Get kwargs
     base_url_path = kwargs.get('base_url_path', '')
 
@@ -59,22 +57,22 @@ def urls(url_map_maker, *args, **kwargs):
 
     url_maps = (
         url_map_maker(
-            name='manage_users',
+            name='app_users_manage_users',
             url='/'.join([base_url_path, 'users']) if base_url_path else 'users',
             controller=_ManageUsers.as_controller()
         ),
         url_map_maker(
-            name='add_user',
+            name='app_users_add_user',
             url='/'.join([base_url_path, 'users/add']) if base_url_path else 'users/add',
             controller=_ModifyUser.as_controller()
         ),
         url_map_maker(
-            name='edit_user',
+            name='app_users_edit_user',
             url='/'.join([base_url_path, 'users/{user_id}/edit']) if base_url_path else 'users/{user_id}/edit',
             controller=_ModifyUser.as_controller()
         ),
         url_map_maker(
-            name='add_existing_user',
+            name='app_users_add_existing_user',
             url='/'.join([base_url_path, 'users/add-existing']) if base_url_path else 'users/add-existing',
             controller=_AddExistingUser.as_controller()
         ),

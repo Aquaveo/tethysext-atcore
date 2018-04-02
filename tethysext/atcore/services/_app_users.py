@@ -1,3 +1,4 @@
+# flake8:noqa
 """
 ********************************************************************************
 * Name: user_group_helpers.py
@@ -12,48 +13,13 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils.functional import wraps
-from tethys_sdk.permissions import has_permission
-from epanet_adapter.project.user_project import Organization, EnterpriseOrganization, UserProject, AppUser
+# from epanet_adapter.project.user_project import Organization, EnterpriseOrganization, UserProject, AppUser
 # import tethysapp.epanet.model as app_model
 # from tethysapp.epanet.app import UR_ADMIN_DISPLAY, UR_VIEWER_DISPLAY, UR_APP_ADMIN_DISPLAY, STANDARD_VIEWER_ROLE, \
 #     STANDARD_ADMIN_ROLE, ADVANCED_VIEWER_ROLE, ADVANCED_ADMIN_ROLE, PROFESSIONAL_VIEWER_ROLE, PROFESSIONAL_ADMIN_ROLE,\
 #     ENTERPRISE_ADMIN_ROLE, ENTERPRISE_VIEWER_ROLE, APP_ADMIN_ROLE, PERMISSIONS_GROUP_DISPLAY_NAMES, ADDON_DISPLAY_NAMES, \
 #     ADDON_PERMISSIONS_DICT, STAFF_USERNAME
 from json import loads
-
-
-def get_user_enterprise_organizations(session, request_or_user):
-    """
-    Get the EnterpriseOrganization objects that the given user belongs to.
-
-    Args:
-        session: SQLAlchemy session
-        request_or_user: Django request object or Django User object
-
-    Returns: List of EnterpriseOrganization objects
-    """
-    from django.contrib.auth.models import User
-    from django.http.request import HttpRequest
-
-    is_request = False
-
-    if isinstance(request_or_user, HttpRequest):
-        is_request = True
-        user = request_or_user.user
-    elif isinstance(request_or_user, User):
-        user = request_or_user
-    else:
-        raise TypeError('request_or_user must be a Django request or User instance.')
-
-    if user.is_staff or (is_request and has_permission(request_or_user, 'view_all_consultants')):
-        return session.query(EnterpriseOrganization).all()
-
-    app_user = session.query(AppUser).filter(AppUser.username == user.username).one_or_none()
-
-    if app_user:
-        return session.query(EnterpriseOrganization).filter(EnterpriseOrganization.users.contains(app_user)).all()
-
-    return []
 
 
 def get_user_organizations(session, request_or_user, as_options=False, cascade=False):
@@ -68,46 +34,7 @@ def get_user_organizations(session, request_or_user, as_options=False, cascade=F
     Returns:
 
     """
-    from django.contrib.auth.models import User
-    from django.http.request import HttpRequest
-
-    is_request = False
-    return_value = set()
-    user_organizations = []
-
-    if isinstance(request_or_user, HttpRequest):
-        is_request = True
-        user = request_or_user.user
-    elif isinstance(request_or_user, User):
-        user = request_or_user
-    else:
-        raise TypeError('request_or_user must be a Django request or User instance.')
-
-    if user.is_staff or (is_request and has_permission(request_or_user, 'view_all_organizations')):
-        user_organizations = session.query(Organization).all()
-
-    else:
-        app_user = session.query(AppUser).filter(AppUser.username == user.username).one_or_none()
-
-        if app_user:
-            user_organizations = app_user.organizations
-
-    organizations = set(user_organizations)
-
-    if cascade:
-        for organization in user_organizations:
-            if organization.type == app_model.ENTERPRISE_ORG_TYPE:
-                organizations.update(organization.clients)
-
-    if as_options:
-        for organization in organizations:
-            return_value.add((organization.name, str(organization.id)))
-
-        return_value = sorted(return_value, key=lambda c: c[0])
-    else:
-        return_value = sorted(organizations, key=lambda c: c.name)
-
-    return return_value
+    # TODO: Replace instances with app_user.get_organizations()
 
 
 def get_display_name_for_django_user(django_user, default_to_username=True, append_username=False):
@@ -147,58 +74,7 @@ def get_user_projects(session, request):
 
     Returns:
     """
-    projects = set()
-    if has_permission(request, 'assign_any_project'):
-        projects = session.query(UserProject).all()
-
-    # Other users can only assign projects that belong to his organization or client organizations of his organization
-    else:
-        app_user = session.query(AppUser).filter(AppUser.username == request.user.username).one_or_none()
-
-        if app_user and app_user.organizations:
-            for user_organization in app_user.organizations:
-                for project in user_organization.user_projects:
-                    projects.add(project)
-
-                if user_organization.type == app_model.ENTERPRISE_ORG_TYPE:
-                    for client_organization in user_organization.clients:
-                        for client_project in client_organization.user_projects:
-                            projects.add(client_project)
-
-    projects = [proj for proj in projects if not proj.is_deleting()]
-    projects = sorted(projects, key=lambda p: p.name)
-
-    return projects
-
-
-def get_assignable_enterprise_organizations(session, request, as_options=False):
-    """
-    Get enterprise organizations that can be assigned as owner of client organizations.
-    Args:
-        session: SQLAlchemy session object
-        request: Django request object
-        as_options: Returns a list of tuple pairs for use as select input options.
-
-    Returns:
-
-    """
-    return_value = []
-
-    # Admins (and staff) can assign any consultant to a client
-    if request.user.is_staff or has_permission(request, 'assign_any_consultant'):
-        consultants = session.query(EnterpriseOrganization).all()
-    else:
-        consultants = get_user_enterprise_organizations(session, request)
-
-    if as_options:
-        for consultant in consultants:
-            return_value.append((consultant.name, str(consultant.id)))
-
-        return_value = sorted(return_value, key=lambda c: c[0])
-    else:
-        return_value = sorted(consultants, key=lambda c: c.name)
-
-    return return_value
+    # TODO: Replace instances with app_user.get_resources()
 
 
 def get_assignable_roles(request, as_options=False):
@@ -211,18 +87,19 @@ def get_assignable_roles(request, as_options=False):
     Returns: list of user roles the request user can assign
 
     """
-    roles = []
-
-    if True:
-        roles.append(app_model.UR_VIEWER if not as_options else (UR_VIEWER_DISPLAY, app_model.UR_VIEWER))
-
-    if True:
-        roles.append(app_model.UR_ADMIN if not as_options else (UR_ADMIN_DISPLAY, app_model.UR_ADMIN))
-
-    if request.user.is_staff or has_permission(request, 'create_app_admin_users'):
-        roles.append(app_model.UR_APP_ADMIN if not as_options else (UR_APP_ADMIN_DISPLAY, app_model.UR_APP_ADMIN))
-
-    return roles
+    # TODO: Replace instances with app_user.get_assignable_roles()
+    # roles = []
+    #
+    # if True:
+    #     roles.append(app_model.UR_VIEWER if not as_options else (UR_VIEWER_DISPLAY, app_model.UR_VIEWER))
+    #
+    # if True:
+    #     roles.append(app_model.UR_ADMIN if not as_options else (UR_ADMIN_DISPLAY, app_model.UR_ADMIN))
+    #
+    # if request.user.is_staff or has_permission(request, 'create_app_admin_users'):
+    #     roles.append(app_model.UR_APP_ADMIN if not as_options else (UR_APP_ADMIN_DISPLAY, app_model.UR_APP_ADMIN))
+    #
+    # return roles
 
 
 def get_role(session, request_or_user, display_name=False):
@@ -329,6 +206,8 @@ def get_user_peers(session, request, include_self=False, cascade=False):
 
     Returns: A list of AppUser objects.
     """
+    from tethys_sdk.permissions import has_permission
+
     if request.user.is_staff or has_permission(request, 'assign_any_user'):
         return session.query(AppUser).all()
 
@@ -388,6 +267,8 @@ def can_create_client_organizations_at_level(session, request, level):
 
     Returns: True when the user is able to create standard organizations.
     """
+    from tethys_sdk.permissions import has_permission
+
     # Staff can always do this
     if request.user.is_staff:
         return True
@@ -427,6 +308,8 @@ def can_create_client_organizations_at_level(session, request, level):
 
 
 def get_owner_options_and_mapping(session, request, license_options):
+    from tethys_sdk.permissions import has_permission
+
     license_to_owner_options_mapping = {}
     owner_options = set()
     enterprise_orgs = get_assignable_enterprise_organizations(session, request)
@@ -669,20 +552,6 @@ def modify_account_status_of_unique_users_of_organization(session, organization)
 
 
 def get_app_user_from_request(request, session=None):
-    from tethysapp.epanet.model import SessionMaker, AppUser
-    close_session = session is None
-
-    if not session:
-        session = SessionMaker()
-
-    if request.user.is_staff:
-        username = STAFF_USERNAME
-    else:
-        username = request.user.username
-
-    app_user = session.query(AppUser).filter(AppUser.username == username).one_or_none()
-
-    if close_session:
-        session.close()
-
-    return app_user
+    """
+    """
+    # TODO: replace instances with AppUser.get_app_user_from_request

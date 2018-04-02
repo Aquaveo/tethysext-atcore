@@ -1,13 +1,13 @@
-{% extends "atcore/base.html" %}
+{% extends "atcore/app_users/base.html" %}
 {% load staticfiles tethys_gizmos %}
 
 {% block app_content %}
   <div class="top-action-buttons pull-right">
     {% if show_new_button %}
-    <a class="btn btn-default manage-action-btn btn-new" href="add" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
+    <a class="btn btn-default manage-action-btn btn-new" href="{% url tethys_app.namespace|add:':app_users_add_user' %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
     {% endif %}
     {% if show_add_existing_button %}
-    <a class="btn btn-default manage-action-btn btn-import" href="add-existing" data-toggle="tooltip" data-placement="bottom" title="Existing"><span class="glyphicon glyphicon-import"></span></a>
+    <a class="btn btn-default manage-action-btn btn-import" href="{% url tethys_app.namespace|add:':app_users_add_existing_user' %}" data-toggle="tooltip" data-placement="bottom" title="Existing"><span class="glyphicon glyphicon-import"></span></a>
     {% endif %}
   </div>
   <h1>{{ page_title|default:'User Accounts' }}</h1>
@@ -36,7 +36,7 @@
       <td>
         <div class="pull-right">
           {% if user_card.editable %}
-            <a class="btn btn-default btn-edit" href="{{ user_card.id }}/edit" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+            <a class="btn btn-default btn-edit" href="{% url tethys_app.namespace|add:':app_users_edit_user' user_id=user_card.id %}" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
             <a class="btn btn-default btn-delete-manage btn-delete" href="javascript:void(0);" data-id="{{ user_card.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
           {% endif %}
           {% if show_remove_button %}
@@ -99,10 +99,10 @@
 
 {% block styles %}
   {{ block.super }}
-  <link href="{% static 'atcore/css/app_users/manage.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/manage.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
-  <script src="{% static 'atcore/js/app_users/manage.js' %}"></script>
+  <script src="{% static 'atcore/app_users/js/manage.js' %}"></script>
 {% endblock %}

@@ -4,7 +4,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.models.app_users import AppUsersBase, AppUser
-
+from tethysext.atcore.services.app_users.user_roles import AppUserRoles
 from tethysext.atcore.tests import APP_USER_TEST_DB
 
 
@@ -34,7 +34,7 @@ class AppUserTests(TethysTestCase):
         self.session = Session(connection)
 
         self.username = "test_user"
-        self.role = "tester"
+        self.role = AppUserRoles.ORG_USER
         self.is_active = True
 
     def tearDown(self):
@@ -56,13 +56,8 @@ class AppUserTests(TethysTestCase):
         self.session.add(created_app_user)
         self.session.commit()
 
-        all_user_count = self.session.query(AppUser).count()
-        all_users = self.session.query(AppUser).all()
-
-        self.assertEqual(all_user_count, 1)
-        for user in all_users:
-            returned_django_user = user.get_django_user()
-            self.assertEquals(created_django_user, returned_django_user)
+        returned_django_user = created_app_user.get_django_user()
+        self.assertEquals(created_django_user, returned_django_user)
 
     def test_get_django_user_non_existing(self):
         created_app_user = AppUser(
@@ -74,10 +69,5 @@ class AppUserTests(TethysTestCase):
         self.session.add(created_app_user)
         self.session.commit()
 
-        all_user_count = self.session.query(AppUser).count()
-        all_users = self.session.query(AppUser).all()
-
-        self.assertEqual(all_user_count, 1)
-        for user in all_users:
-            returned_django_user = user.get_django_user()
-            self.assertIsNone(returned_django_user)
+        returned_django_user = created_app_user.get_django_user()
+        self.assertIsNone(returned_django_user)
