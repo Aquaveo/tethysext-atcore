@@ -1,0 +1,72 @@
+.spinner {
+  width: 100px;
+}
+.spinner input {
+  text-align: center;
+}
+.input-group-btn-vertical {
+  position: relative;
+  white-space: nowrap;
+  width: 1%;
+  vertical-align: middle;
+  display: table-cell;
+}
+.input-group-btn-vertical > .btn {
+  display: block;
+  float: none;
+  width: 100%;
+  max-width: 100%;
+  padding: 0px 4px;
+  margin-left: -1px;
+  position: relative;
+  border-radius: 0;
+  height: 17px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.input-group-btn-vertical > .btn:focus {
+  outline: none;
+  color: #333333;
+  background: #ffffff;
+  border-color: #cccccc;
+}
+.input-group-btn-vertical > .btn:first-child {
+  border-top-right-radius: 4px;
+}
+.input-group-btn-vertical > .btn:last-child {
+  border-bottom-right-radius: 4px;
+}
+.input-group-btn-vertical .glyphicon {
+  font-size: 10px;
+  vertical-align: top;
+  top: 3px
+}
+.input-group-btn-vertical > .btn:first-child .glyphicon {
+  left: .5px;
+}
+.input-group-btn-vertical > .btn:last-child .glyphicon {
+
+}
+
+.spinner-prefix {
+    position: relative;
+    width: 120px;
+    margin-right: 7px;
+}
+
+.spinner-prefix span {
+    display: block;
+    padding: 7px 0;
+    text-align: right;
+}
+
+.spinner-suffix {
+    position: relative;
+    width: 30px;
+    margin-left: 7px;
+}
+
+.spinner-suffix span {
+    display: block;
+    padding: 7px 0;
+}

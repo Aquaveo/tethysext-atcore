@@ -1,0 +1,55 @@
+{% extends "epanet/base.html" %}
+{% load staticfiles tethys_gizmos %}
+
+{% block app_navigation_items %}
+  <li class="title">Help</li>
+  <p style="margin-bottom: 5px;"><b>Name:</b></p>
+  <p>Name of the organization (e.g.: Salt Lake City).</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>License:</b></p>
+  <p>The type of license to assign to the organization.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Owner:</b></p>
+  <p>The organization that will manage this organization.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Projects:</b></p>
+  <p>Projects that members of this organization will be able to access.</p>
+{% endblock %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-12">
+      <h1>{% if editing %}Edit{% else %}New{% endif %} Organization</h1>
+      <form id="new-user-group-form" method="post" action="">
+        {% csrf_token %}
+        {% gizmo text_input organization_name_input %}
+        {% gizmo select_input organization_type_select %}
+        <div id="owner-select-wrapper">
+          {% gizmo select_input owner_select %}
+        </div>
+        {% gizmo select_input project_select %}
+        <div id="status-toggle-wrapper">
+        {% gizmo organization_status_toggle %}
+        </div>
+        <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
+        <input type="submit" class="btn btn-success" name="modify-organization-submit"
+               value="{% if editing %}Save Changes{% else %}Create Organization{% endif %}">
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/app_users/css/manage.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% if license_to_owner_mapping %}
+    <script>
+        var LICENSE_TO_OWNER_MAPPING = "{{ license_to_owner_mapping }}";
+    </script>
+  {% endif %}
+  <script src="{% static 'atcore/app_users/js/modify_organizations.js' %}" type="text/javascript"></script>
+{% endblock %}

@@ -1,0 +1,12 @@
+.list-group-panel-body {
+    padding: 0;
+}
+
+.list-group-panel-body .list-group {
+    margin: -1px;
+}
+
+.list-group-panel-body .list-group .list-group-item:first-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
