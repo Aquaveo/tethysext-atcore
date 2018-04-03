@@ -57,8 +57,7 @@ class AppUserRoleTests(unittest.TestCase):
                          self.user_roles.get_assign_permission_for(AppUserRoles.ORG_ADMIN))
         self.assertEqual('assign_app_admin_role',
                          self.user_roles.get_assign_permission_for(AppUserRoles.APP_ADMIN))
-        self.assertEqual('assign_developer_role',
-                         self.user_roles.get_assign_permission_for(AppUserRoles.DEVELOPER))
+        self.assertEqual('assign_developer_role', self.user_roles.get_assign_permission_for(AppUserRoles.DEVELOPER))
         self.assertRaises(ValueError, self.user_roles.get_assign_permission_for, self.invalid_role)
 
     def test_compare_org_user(self):
@@ -102,6 +101,6 @@ class AppUserRoleTests(unittest.TestCase):
                          self.user_roles.compare(AppUserRoles.DEVELOPER, AppUserRoles.DEVELOPER))
 
     def test_compare_invalid(self):
-        self.assertRaises(ValueError, self.user_roles.compareAppUserRoles.ORG_USER, self.invalid_role)
+        self.assertRaises(ValueError, self.user_roles.compare, AppUserRoles.ORG_USER, self.invalid_role)
         self.assertRaises(ValueError, self.user_roles.compare, self.invalid_role, AppUserRoles.ORG_USER)
         self.assertRaises(ValueError, self.user_roles.compare, self.invalid_role, self.invalid_role)

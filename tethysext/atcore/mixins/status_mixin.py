@@ -21,6 +21,9 @@ class StatusMixin(object):
     # Default status dict
     status_template = dict()
 
+    def __init__(self, *args, **kwargs):
+        super(StatusMixin, self).__init__(*args, **kwargs)
+
     @classmethod
     def get_status_options_list(cls):
         return [cls.STATUS_AVAILABLE, cls.STATUS_PENDING, cls.STATUS_DELETING,

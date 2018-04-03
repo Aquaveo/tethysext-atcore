@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import Column, Boolean, String
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship, validates, reconstructor
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services._app_users import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.user_roles import AppUserRoles
@@ -44,6 +44,13 @@ class AppUser(AppUsersBase):
 
         # Call super class
         super(AppUser, self).__init__(*args, **kwargs)
+
+    @reconstructor
+    def init_on_load(self):
+        """
+        Contstructor for the instances loaded from database
+        """
+        self._django_user = None
 
     @validates('role')
     def validate_role(self, key, field):
@@ -111,10 +118,9 @@ class AppUser(AppUsersBase):
         Returns: Django User object
         """
         from django.contrib.auth.models import User
-        from django.core.exceptions import ObjectDoesNotExist
         try:
             django_user = User.objects.get(username=self.username)
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             return None
         return django_user
 
@@ -144,8 +150,12 @@ class AppUser(AppUsersBase):
         organizations = set(user_organizations)
 
         if cascade:
+            client_organizations = set()
+
             for organization in organizations:
-                organization.update(organization.clients)
+                client_organizations.update(organization.clients)
+
+            organizations.update(client_organizations)
 
         if as_options:
             for organization in organizations:
@@ -163,13 +173,16 @@ class AppUser(AppUsersBase):
         Args:
             session(sqlalchemy.session): SQLAlchemy session object
             request(djanog.request): Django request object
-            of_type(str): The type of resources to get.
+            of_type(Resource): A subclass of Resource.
             cascade(bool): Also retrieve resources of child organizations.
         Returns:
         """
         from tethys_sdk.permissions import has_permission
 
-        _Resource = self.get_resource_model()
+        if of_type:
+            _Resource = of_type
+        else:
+            _Resource = self.get_resource_model()
         resources = set()
 
         if self.is_staff() or has_permission(request, 'assign_any_project', user=self.django_user):
@@ -178,11 +191,11 @@ class AppUser(AppUsersBase):
         # Other users can only assign resources that belong to their organizations
         else:
             for organization in self.get_organizations(session, request, cascade=cascade):
-                for resource in organization.resources:
-                    if of_type and resource.type == of_type:
-                        resources.add(resource)
-                    else:
-                        resources.add(resource)
+                org_resources = session.query(_Resource).\
+                    filter(_Resource.organizations.contains(organization)).\
+                    all()
+                for org_rsrc in org_resources:
+                    resources.add(org_rsrc)
 
         return self.filter_resources(resources)
 

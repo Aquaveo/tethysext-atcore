@@ -63,5 +63,5 @@ class ResourceTests(unittest.TestCase):
             self.assertEqual(resource.date_created, self.creation_date)
             self.assertEqual(resource.status, self.status)
             self.assertFalse(resource.public)
-            self.assertEqual(resource.type, Resource.GENERIC_RESOURCE_TYPE)
+            self.assertEqual(resource.type, Resource.TYPE)
             self.assertIsInstance(resource.id, uuid.UUID)

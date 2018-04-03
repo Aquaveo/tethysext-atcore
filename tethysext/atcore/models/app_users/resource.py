@@ -19,7 +19,7 @@ class Resource(StatusMixin, AppUsersBase):
     __tablename__ = 'resources'
 
     # Resource Types
-    GENERIC_RESOURCE_TYPE = 'generic_resource_type'
+    TYPE = 'generic_resource_type'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String)
@@ -27,7 +27,7 @@ class Resource(StatusMixin, AppUsersBase):
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String)
     public = Column(Boolean, default=False)
-    type = Column(String, default=GENERIC_RESOURCE_TYPE)
+    type = Column(String)
 
     # Relationships
     organizations = relationship('Organization',
@@ -36,6 +36,6 @@ class Resource(StatusMixin, AppUsersBase):
 
     # Polymorphism
     __mapper_args__ = {
-        'polymorphic_identity': GENERIC_RESOURCE_TYPE,
+        'polymorphic_identity': TYPE,
         'polymorphic_on': type
     }
