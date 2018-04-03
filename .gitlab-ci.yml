@@ -69,7 +69,7 @@ integration_tests:
     - sleep 60s
     - docker logs tethys_atcore
     # Test
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test tethysext.atcore.tests.integrated_tests; coverage report"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test -v 2 tethysext.atcore.tests.integrated_tests; coverage report"
     # Extract coverage artifact
     - docker exec tethys_atcore /bin/bash -c "cat /var/www/tethys/exts/tethysext-atcore/.coverage" > .integrationtests
     # Clean up
