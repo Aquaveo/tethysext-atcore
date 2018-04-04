@@ -206,22 +206,7 @@ def get_user_peers(session, request, include_self=False, cascade=False):
 
     Returns: A list of AppUser objects.
     """
-    from tethys_sdk.permissions import has_permission
-
-    if request.user.is_staff or has_permission(request, 'assign_any_user'):
-        return session.query(AppUser).all()
-
-    manageable_users = set()
-    organizations = get_user_organizations(session, request, cascade=cascade)
-
-    for organization in organizations:
-        for user in organization.users:
-            # Don't add self to manage users
-            if user.username != request.user.username:
-                manageable_users.add(user)
-            elif include_self:
-                manageable_users.add(user)
-    return manageable_users
+    # TODO: Replace instances with app_user.get_peers()
 
 
 def is_app_user(session, request):

@@ -239,3 +239,33 @@ class AppUser(AppUsersBase):
             return [(self.ROLES.get_display_name_for(r), r) for r in assignable_roles]
 
         return assignable_roles
+
+    def get_peers(self, session, request, include_self=False, cascade=False):
+        """
+        Get AppUsers belonging to organizations to which this user belongs.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object
+            request(djanog.request): Django request object
+            include_self(bool): Include self in list of users
+            cascade(bool): Also retrieve resources of child organizations.
+
+        Returns: A list of AppUser objects.
+        """
+        from tethys_sdk.permissions import has_permission
+
+        if self.is_staff() or has_permission(request, 'assign_any_user', user=self.django_user):
+            return session.query(AppUser).\
+                filter(AppUser.username != AppUser.STAFF_USERNAME).\
+                all()
+
+        manageable_users = set()
+        organizations = self.get_organizations(session, request, cascade=cascade)
+        for organization in organizations:
+            for user in organization.members:
+                # Don't add self to manage users
+                if user.username == self.username and include_self:
+                    manageable_users.add(user)
+                else:
+                    manageable_users.add(user)
+
+        return manageable_users

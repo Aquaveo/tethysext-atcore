@@ -6,27 +6,15 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-# Python core
-import json
-from shutil import rmtree
-from collections import OrderedDict
 # Django
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.utils.decorators import method_decorator
+
 # Tethys core
 from tethys_sdk.base import TethysController
-from tethys_sdk.gizmos import ToggleSwitch
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
-# App User Services
-# TODO: Bring these helpers over into organization/services/methods
-from tethysapp.epanet.lib.storage_helpers import calculate_storage_stats_for_organization, DEFAULT_STORAGE
-from tethysapp.epanet.lib.helpers import get_organization_workspace_path
-from tethysext.atcore.services._app_users import remove_all_epanet_permissions_groups, get_user_peers, \
-                                                 get_all_permissions_groups_for_user
 
 
 class ManageOrganizations(TethysController):

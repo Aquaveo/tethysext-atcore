@@ -1,6 +1,7 @@
 import inspect
 from tethys_sdk.base import TethysController
-from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations
+from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
+    ManageOrganizationMembers
 
 
 def urls(url_map_maker, *args, **kwargs):
@@ -44,6 +45,7 @@ def urls(url_map_maker, *args, **kwargs):
     _ModifyUser = ModifyUser
     _AddExistingUser = AddExistingUser
     _ManageOrganizations = ManageOrganizations
+    _ManageOrganizationMembers = ManageOrganizationMembers
 
     # Validate controller classes
     for arg in args:
@@ -55,8 +57,10 @@ def urls(url_map_maker, *args, **kwargs):
             _ModifyUser = arg
         elif issubclass(arg, AddExistingUser):
             _AddExistingUser = arg
-        elif issubclass(arg, _ManageOrganizations):
+        elif issubclass(arg, ManageOrganizations):
             _ManageOrganizations = arg
+        elif issubclass(arg, ManageOrganizationMembers):
+            _ManageOrganizationMembers = arg
 
     url_maps = (
         url_map_maker(
@@ -83,6 +87,11 @@ def urls(url_map_maker, *args, **kwargs):
             name='app_users_manage_organizations',
             url='/'.join([base_url_path, 'organizations']) if base_url_path else 'organizations',
             controller=_ManageOrganizations.as_controller()
+        ),
+        url_map_maker(
+            name='app_users_manage_organization_members',
+            url='/'.join([base_url_path, 'organizations/{organization_id}/members']) if base_url_path else 'organizations/{organization_id}/members',  # noqa: E501
+            controller=_ManageOrganizationMembers.as_controller()
         )
     )
 

@@ -312,4 +312,4 @@ class ModifyUser(TethysController):
             'role_select': role_select,
             'organization_select': organization_select,
         }
-        return render(request, 'atcore/app_users/modify_user.html', context)
+        return render(request, self.template_name, context)
