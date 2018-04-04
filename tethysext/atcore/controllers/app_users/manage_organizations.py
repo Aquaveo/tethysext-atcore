@@ -9,6 +9,7 @@
 # Python core
 import json
 from shutil import rmtree
+from collections import OrderedDict
 # Django
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
@@ -92,9 +93,6 @@ class ManageOrganizations(TethysController):
 
         # Permissions
         can_modify_organizations = has_permission(request, 'modify_organizations')
-        can_modify_organization_members = has_permission(request, 'modify_organization_members')
-        can_assign_addon_permissions = has_permission(request, 'assign_addon_permissions')
-        can_modify_enterprise_organizations = has_permission(request, 'modify_enterprise_organizations')
 
         # Create cards for organizations
         organization_cards = {}
@@ -109,13 +107,12 @@ class ManageOrganizations(TethysController):
                     )
                 )
 
-            # Group clients by type
-            clients = {}
+            # Group clients by license
+            clients = []
             for client in organization.clients:
-                if client.DISPLAY_TYPE_PLURAL not in clients:
-                    clients[client.DISPLAY_TYPE_PLURAL] = []
-
-                clients[client.DISPLAY_TYPE_PLURAL].append(client.__dict__)
+                client_dict = client.__dict__
+                client_dict['license_display_name'] = _Organization.LICENSES.get_display_name_for(client.license)
+                clients.append(client_dict)
 
             # Group resources by type
             resources = {}
@@ -138,80 +135,19 @@ class ManageOrganizations(TethysController):
                 'consultant': organization.consultant,
                 'resources': resources,
                 'can_modify': can_modify,
-                'can_modify_members': can_modify_members
+                'can_modify_members': can_modify_members,
+                'license': _Organization.LICENSES.get_display_name_for(organization.license)
             }
-            from pprint import pprint
-            pprint(organization_card)
 
             # Hook to allow for adding custom fields
             organization_card = self.add_custom_fields(organization, organization_card)
 
             # Group organizations by display type
-            if organization.DISPLAY_TYPE_PLURAL not in organization_cards:
-                organization_cards[organization.DISPLAY_TYPE_PLURAL] = []
+            license_display = _Organization.LICENSES.get_display_name_for(organization.license)
+            if license_display not in organization_cards:
+                organization_cards[license_display] = []
 
-            organization_cards[organization.DISPLAY_TYPE_PLURAL].append(organization_card)
-
-            # if organization.type == ENTERPRISE_ORG_TYPE:
-            #     # initialize client arrays
-            #     organization_card['standard_clients'] = []
-            #     organization_card['professional_clients'] = []
-            #
-            #     # Add clients for enterprise orgs
-            #     for client in organization.clients:
-            #         if client.access_level == ACCESS_STANDARD:
-            #             organization_card['standard_clients'].append(client)
-            #         elif client.access_level == ACCESS_PROFESSIONAL:
-            #             organization_card['professional_clients'].append(client)
-            #
-            #     enterprise_org_cards.append(organization_card)
-            #
-            #     # Compute stats for client usage visualization
-            #     max_standard = float(organization.get_max_clients_at_level(ACCESS_STANDARD))
-            #     used_standard = len(organization_card['standard_clients'])
-            #     over_standard = used_standard > max_standard
-            #
-            #     if over_standard:
-            #         percent_standard = 100
-            #     else:
-            #         if max_standard > 0:
-            #             percent_standard = used_standard / max_standard * 100
-            #         else:
-            #             percent_standard = 0
-            #
-            #     organization_card['standard_client_stats'] = {
-            #         'max': int(max_standard),
-            #         'used': int(used_standard),
-            #         'percentage': '{0:.0f}'.format(percent_standard) if percent_standard <= 100 else 100,
-            #         'over': over_standard
-            #     }
-            #
-            #     max_professional = float(organization.get_max_clients_at_level(ACCESS_PROFESSIONAL))
-            #     used_professional = len(organization_card['professional_clients'])
-            #     over_professional = used_professional > max_professional
-            #
-            #     if over_professional:
-            #         percent_professional = 100
-            #     else:
-            #         if max_professional > 0:
-            #             percent_professional = used_professional / max_professional * 100
-            #         else:
-            #             percent_professional = 0
-            #
-            #     organization_card['professional_client_stats'] = {
-            #         'max': int(max_professional),
-            #         'used': int(used_professional),
-            #         'percentage': '{0:.0f}'.format(percent_professional) if percent_professional <= 100 else 100,
-            #         'over': over_professional
-            #     }
-            #
-            #     organization_card['modify_storage'] = has_permission(request, 'manage_enterprise_storage')
-            #
-            # elif organization.type == CLIENT_ORG_TYPE:
-            #     # Add owners for client orgs
-            #     organization_card['owners'] = organization.owners
-            #     organization_card['modify_storage'] = has_permission(request, 'manage_client_storage')
-            #     client_org_cards.append(organization_card)
+            organization_cards[license_display].append(organization_card)
 
         session.close()
 
@@ -220,15 +156,7 @@ class ManageOrganizations(TethysController):
             'organization_cards': organization_cards,
             'show_new_button': can_modify_organizations,
             'load_delete_modal': can_modify_organizations,
-            'show_manage_users_link': has_permission(request, 'view_users'),
-            'show_manage_organizations_link': has_permission(request, 'view_organizations'),
             'link_to_members': can_modify_organizations,
-            # 'expand_enterprise': len(enterprise_org_cards) <= 1,
-            # 'expand_all': len(enterprise_org_cards) + len(client_org_cards) <= 2,
-            'show_modify_members_button': can_modify_organization_members,
-            'show_edit_enterprise_button': can_modify_organizations,
-            'show_edit_and_delete_client_buttons': can_modify_organizations,
-            'show_modify_addons_switches': can_assign_addon_permissions
         }
 
         return render(request, self.template_name, context)

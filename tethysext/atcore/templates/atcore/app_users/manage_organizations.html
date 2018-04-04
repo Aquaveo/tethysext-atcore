@@ -22,9 +22,9 @@
     </div>
     <h1>{% block organizations_title %}{{ page_title }}{% endblock %}</h1>
 
-    {% for display_type, organization_cards in organization_cards.items %}
-      <h5>{{ display_type }}</h5>
-      <div class="panel-group" id="{{ display_type|slugify }}-cards" role="tablist" aria-multiselectable="true">
+    {% for organization_license, organization_cards in organization_cards.items %}
+      <h5>{{ organization_license }}</h5>
+      <div class="panel-group" id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
       {% for organization_card in organization_cards %}
         <div class="panel panel-default">
 
@@ -75,9 +75,9 @@
             <span class="manage-item-title">
               <a role="button"
                  data-toggle="collapse"
-                 data-parent="#{{ display_type|slugify }}-cards"
+                 data-parent="#{{ organization_license|slugify }}-cards"
                  href="#collapse-{{ organization_card.id }}"
-                 aria-expanded="{% if expand_all or expand_enterprise and forloop.first %}true{% else %}false{% endif %}"
+                 aria-expanded="{% if expand_all or expand_first and forloop.first %}true{% else %}false{% endif %}"
                  aria-controls="collapse-{{ organization_card.id }}">
                 {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
               </a>
@@ -91,6 +91,22 @@
                aria-labelledby="heading-{{ organization_card.id }}">
             <div class="panel-body list-group-panel-body">
               <ul class="list-group">
+
+                {# LICENSE #}
+                {% if organization_card.license %}
+                <li class="list-group-item">
+                  <p class="manage-section-title">LICENSE</p>
+                  <span class="manage-tag project-tag">{{ organization_card.license }}</span>
+                </li>
+                {% endif %}
+
+                {# CONSULTANT #}
+                {% if organization_card.consultant %}
+                <li class="list-group-item">
+                  <p class="manage-section-title">CONSULTANT</p>
+                  <span class="manage-tag project-tag">{{ organization_card.consultant.name }}</span>
+                </li>
+                {% endif %}
 
                 {# MEMBERS SECTION #}
                 <li class="list-group-item">
@@ -120,20 +136,12 @@
                 </li>
                 {% endfor %}
 
-                {# CONSULTANT ORGANIZATION #}
-                {% if organization_card.consultant %}
-                <li class="list-group-item">
-                  <p class="manage-section-title">CONSULTANT</p>
-                  <span class="manage-tag project-tag">{{ organization_card.consultant.name }}</span>
-                </li>
-                {% endif %}
-
-                {# CLIENTS ORGANIZATIONS #}
-                {% for client_display_type, clients in organization_card.clients.items %}
+                {# CLIENTS #}
+                {% if organization_card.clients %}
                 <li class="list-group-item">
                   <div class="row">
                     <div class="col-md-8">
-                      <p class="manage-section-title">CLIENT {{ client_display_type|upper }}</p>
+                      <p class="manage-section-title">CLIENTS</p>
                     </div>
                     <div class="col-md-4">
                       {% if organization_card.can_modify %}
@@ -166,12 +174,34 @@
                       {% endif %}
                     </div>
                   </div>
-                  {% for client in clients %}
-                  <a href="{% url 'epanet:edit_organization' client.id %}"><span class="manage-tag project-tag">{{ client.name }}</span></a>
-                  {% endfor %}
+                  <div class="row">
+                    <div class="col-md-12">
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>License</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for client in organization_card.clients %}
+                          <tr>
+                            <td><a href="{% url 'epanet:edit_organization' client.id %}">{{ client.name }}</a></td>
+                            <td>{{ client.license_display_name }}</td>
+                            <td>{{ client.created|date:'M d, Y' }}</td>
+                            <td>{{ client.license_expires|date:'M d, Y' }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </li>
-                {% endfor %}
+                {% endif %}
 
+                {% block custom_organization_fields %}{% endblock %}
               </ul>
             </div>
           </div>

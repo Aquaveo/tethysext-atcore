@@ -1,6 +1,6 @@
 $(document).ready(function(){
   var delete_type = $('#modal-delete-button').attr('data-delete-type');
-  var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+  var csrf_token = get_csrf_token();
 
   // Delete modal
   $('.btn-delete-manage').each(function(index, element){

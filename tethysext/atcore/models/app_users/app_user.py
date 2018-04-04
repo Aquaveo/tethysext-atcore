@@ -28,7 +28,7 @@ class AppUser(AppUsersBase):
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     username = Column(String)  #: Used to map to Django user object
-    role = Column(String)
+    role = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 
     # Relationships
