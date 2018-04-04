@@ -19,7 +19,9 @@ class Resource(StatusMixin, AppUsersBase):
     __tablename__ = 'resources'
 
     # Resource Types
-    TYPE = 'generic_resource_type'
+    TYPE = 'resource'
+    DISPLAY_TYPE_SINGULAR = 'Resource'
+    DISPLAY_TYPE_PLURAL = 'Resources'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String)

@@ -29,5 +29,5 @@ class AppUserInitializerTests(TethysTestCase):
             filter(AppUser.username == AppUser.STAFF_USERNAME). \
             one_or_none()
         self.assertIsNotNone(staff_user)
-        self.assertEqual(AppUser.UR_ROLES.DEVELOPER, staff_user.role)
+        self.assertEqual(AppUser.ROLES.DEVELOPER, staff_user.role)
         session.close()

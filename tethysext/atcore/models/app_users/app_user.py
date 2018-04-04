@@ -4,7 +4,7 @@ from sqlalchemy import Column, Boolean, String
 from sqlalchemy.orm import relationship, validates, reconstructor
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services._app_users import get_display_name_for_django_user
-from tethysext.atcore.services.app_users.user_roles import AppUserRoles
+from tethysext.atcore.services.app_users.user_roles import Roles
 
 from .associations import user_organization_association
 from .base import AppUsersBase
@@ -17,7 +17,7 @@ class AppUser(AppUsersBase):
     Definition for the app_user table. All app users are associated with django users.
     """
     # User Role Properties
-    UR_ROLES = AppUserRoles()
+    ROLES = Roles()
 
     # Staff user defaults
     STAFF_USERNAME = '_staff_user'
@@ -55,7 +55,7 @@ class AppUser(AppUsersBase):
     @validates('role')
     def validate_role(self, key, field):
         if key == 'role':
-            if not self.UR_ROLES.is_valid(field):
+            if not self.ROLES.is_valid(field):
                 raise ValueError('The value "{}" is not a valid role.'.format(field))
 
         return field
@@ -228,14 +228,14 @@ class AppUser(AppUsersBase):
         assignable_roles = []
 
         if self.is_staff():
-            assignable_roles.extend(self.UR_ROLES.list())
+            assignable_roles.extend(self.ROLES.list())
 
         else:
-            for role in self.UR_ROLES.list():
-                assign_permission = self.UR_ROLES.get_assign_permission_for(role)
+            for role in self.ROLES.list():
+                assign_permission = self.ROLES.get_assign_permission_for(role)
                 if has_permission(request, assign_permission, user=self.django_user):
                     assignable_roles.append(role)
         if as_options:
-            return [(self.UR_ROLES.get_display_name_for(r), r) for r in assignable_roles]
+            return [(self.ROLES.get_display_name_for(r), r) for r in assignable_roles]
 
         return assignable_roles

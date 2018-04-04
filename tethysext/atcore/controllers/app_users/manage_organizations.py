@@ -97,138 +97,134 @@ class ManageOrganizations(TethysController):
         can_modify_enterprise_organizations = has_permission(request, 'modify_enterprise_organizations')
 
         # Create cards for organizations
-        enterprise_org_cards = []
-        client_org_cards = []
+        organization_cards = {}
 
         for organization in organizations:
             members = set()
-            for app_user in organization.users:
-                django_user = app_user.get_django_user()
-
-                if django_user is None:
-                    continue
-
+            for app_user in organization.members:
                 members.add(
                     (
-                        get_display_name_for_django_user(django_user, append_username=True),
+                        app_user.get_display_name(append_username=True),
                         str(app_user.id)
                     )
                 )
 
-            # Create addon toggles reflecting addon status (enabled/disabled)
-            addons = []
-            addons_raw = organization.addons
-            if addons_raw is None:
-                addons_dict = get_default_addons_dict()
-            else:
-                addons_dict = json.loads(addons_raw)
+            # Group clients by type
+            clients = {}
+            for client in organization.clients:
+                if client.DISPLAY_TYPE_PLURAL not in clients:
+                    clients[client.DISPLAY_TYPE_PLURAL] = []
 
-            for key in addons_dict:
-                addon = addons_dict[key]
-                addon_dict = {'title': addon['title'],
-                              'enabled': addon['enabled']}
+                clients[client.DISPLAY_TYPE_PLURAL].append(client.__dict__)
 
-                if can_assign_addon_permissions:
-                    addon_dict['switch'] = ToggleSwitch(display_text=None,
-                                                        name=key,
-                                                        on_label='Enabled',
-                                                        off_label='Disabled',
-                                                        on_style='primary',
-                                                        off_style='default',
-                                                        initial=addon['enabled'],
-                                                        size='small',
-                                                        classes='addon-toggle',
-                                                        attributes={
-                                                            'data-organization-id': organization.id
-                                                        })
-                addons.append(addon_dict)
+            # Group resources by type
+            resources = {}
+            for resource in organization.resources:
+                if resource.DISPLAY_TYPE_PLURAL not in resources:
+                    resources[resource.DISPLAY_TYPE_PLURAL] = []
+
+                resources[resource.DISPLAY_TYPE_PLURAL].append(resource.__dict__)
+
+            # Get permissions
+            can_modify = has_permission(request, organization.get_modify_permission())
+            can_modify_members = has_permission(request, organization.get_modify_members_permission())
 
             organization_card = {
                 'id': organization.id,
                 'name': organization.name,
                 'is_active': 'Active' if organization.active else 'Disabled',
-                'license': LICENSE_DISPLAY_NAMES[organization.access_level],
-                'addons': addons,
                 'members': members,
-                'projects': [(project.name, str(project.id)) for project in organization.user_projects if
-                             not project.is_deleting()],
-                'modifiable': organization.type == CLIENT_ORG_TYPE or can_modify_enterprise_organizations,
-                'storage': calculate_storage_stats_for_organization(session, organization.id),
+                'clients': clients,
+                'consultant': organization.consultant,
+                'resources': resources,
+                'can_modify': can_modify,
+                'can_modify_members': can_modify_members
             }
+            from pprint import pprint
+            pprint(organization_card)
 
-            if organization.type == ENTERPRISE_ORG_TYPE:
-                # initialize client arrays
-                organization_card['standard_clients'] = []
-                organization_card['professional_clients'] = []
+            # Hook to allow for adding custom fields
+            organization_card = self.add_custom_fields(organization, organization_card)
 
-                # Add clients for enterprise orgs
-                for client in organization.clients:
-                    if client.access_level == ACCESS_STANDARD:
-                        organization_card['standard_clients'].append(client)
-                    elif client.access_level == ACCESS_PROFESSIONAL:
-                        organization_card['professional_clients'].append(client)
+            # Group organizations by display type
+            if organization.DISPLAY_TYPE_PLURAL not in organization_cards:
+                organization_cards[organization.DISPLAY_TYPE_PLURAL] = []
 
-                enterprise_org_cards.append(organization_card)
+            organization_cards[organization.DISPLAY_TYPE_PLURAL].append(organization_card)
 
-                # Compute stats for client usage visualization
-                max_standard = float(organization.get_max_clients_at_level(ACCESS_STANDARD))
-                used_standard = len(organization_card['standard_clients'])
-                over_standard = used_standard > max_standard
-
-                if over_standard:
-                    percent_standard = 100
-                else:
-                    if max_standard > 0:
-                        percent_standard = used_standard / max_standard * 100
-                    else:
-                        percent_standard = 0
-
-                organization_card['standard_client_stats'] = {
-                    'max': int(max_standard),
-                    'used': int(used_standard),
-                    'percentage': '{0:.0f}'.format(percent_standard) if percent_standard <= 100 else 100,
-                    'over': over_standard
-                }
-
-                max_professional = float(organization.get_max_clients_at_level(ACCESS_PROFESSIONAL))
-                used_professional = len(organization_card['professional_clients'])
-                over_professional = used_professional > max_professional
-
-                if over_professional:
-                    percent_professional = 100
-                else:
-                    if max_professional > 0:
-                        percent_professional = used_professional / max_professional * 100
-                    else:
-                        percent_professional = 0
-
-                organization_card['professional_client_stats'] = {
-                    'max': int(max_professional),
-                    'used': int(used_professional),
-                    'percentage': '{0:.0f}'.format(percent_professional) if percent_professional <= 100 else 100,
-                    'over': over_professional
-                }
-
-                organization_card['modify_storage'] = has_permission(request, 'manage_enterprise_storage')
-
-            elif organization.type == CLIENT_ORG_TYPE:
-                # Add owners for client orgs
-                organization_card['owners'] = organization.owners
-                organization_card['modify_storage'] = has_permission(request, 'manage_client_storage')
-                client_org_cards.append(organization_card)
+            # if organization.type == ENTERPRISE_ORG_TYPE:
+            #     # initialize client arrays
+            #     organization_card['standard_clients'] = []
+            #     organization_card['professional_clients'] = []
+            #
+            #     # Add clients for enterprise orgs
+            #     for client in organization.clients:
+            #         if client.access_level == ACCESS_STANDARD:
+            #             organization_card['standard_clients'].append(client)
+            #         elif client.access_level == ACCESS_PROFESSIONAL:
+            #             organization_card['professional_clients'].append(client)
+            #
+            #     enterprise_org_cards.append(organization_card)
+            #
+            #     # Compute stats for client usage visualization
+            #     max_standard = float(organization.get_max_clients_at_level(ACCESS_STANDARD))
+            #     used_standard = len(organization_card['standard_clients'])
+            #     over_standard = used_standard > max_standard
+            #
+            #     if over_standard:
+            #         percent_standard = 100
+            #     else:
+            #         if max_standard > 0:
+            #             percent_standard = used_standard / max_standard * 100
+            #         else:
+            #             percent_standard = 0
+            #
+            #     organization_card['standard_client_stats'] = {
+            #         'max': int(max_standard),
+            #         'used': int(used_standard),
+            #         'percentage': '{0:.0f}'.format(percent_standard) if percent_standard <= 100 else 100,
+            #         'over': over_standard
+            #     }
+            #
+            #     max_professional = float(organization.get_max_clients_at_level(ACCESS_PROFESSIONAL))
+            #     used_professional = len(organization_card['professional_clients'])
+            #     over_professional = used_professional > max_professional
+            #
+            #     if over_professional:
+            #         percent_professional = 100
+            #     else:
+            #         if max_professional > 0:
+            #             percent_professional = used_professional / max_professional * 100
+            #         else:
+            #             percent_professional = 0
+            #
+            #     organization_card['professional_client_stats'] = {
+            #         'max': int(max_professional),
+            #         'used': int(used_professional),
+            #         'percentage': '{0:.0f}'.format(percent_professional) if percent_professional <= 100 else 100,
+            #         'over': over_professional
+            #     }
+            #
+            #     organization_card['modify_storage'] = has_permission(request, 'manage_enterprise_storage')
+            #
+            # elif organization.type == CLIENT_ORG_TYPE:
+            #     # Add owners for client orgs
+            #     organization_card['owners'] = organization.owners
+            #     organization_card['modify_storage'] = has_permission(request, 'manage_client_storage')
+            #     client_org_cards.append(organization_card)
 
         session.close()
 
         context = {
-            'enterprise_org_cards': enterprise_org_cards,
-            'client_org_cards': client_org_cards,
+            'page_title': self.page_title,
+            'organization_cards': organization_cards,
             'show_new_button': can_modify_organizations,
-            'show_action_buttons': can_modify_organizations or can_modify_organization_members,
+            'load_delete_modal': can_modify_organizations,
             'show_manage_users_link': has_permission(request, 'view_users'),
             'show_manage_organizations_link': has_permission(request, 'view_organizations'),
             'link_to_members': can_modify_organizations,
-            'expand_enterprise': len(enterprise_org_cards) <= 1,
-            'expand_all': len(enterprise_org_cards) + len(client_org_cards) <= 2,
+            # 'expand_enterprise': len(enterprise_org_cards) <= 1,
+            # 'expand_all': len(enterprise_org_cards) + len(client_org_cards) <= 2,
             'show_modify_members_button': can_modify_organization_members,
             'show_edit_enterprise_button': can_modify_organizations,
             'show_edit_and_delete_client_buttons': can_modify_organizations,
@@ -249,8 +245,7 @@ class ManageOrganizations(TethysController):
         session = make_session()
         try:
             organization = session.query(_Organization).get(organization_id)
-            org_workspace_path = get_organization_workspace_path(organization.id)
-            rmtree(org_workspace_path)
+            self.perform_custom_delete_operations(request, organization)
             session.delete(organization)
             session.commit()
         except Exception as e:
@@ -258,3 +253,29 @@ class ManageOrganizations(TethysController):
                              'error': repr(e)}
         session.close()
         return JsonResponse(json_response)
+
+    def add_custom_fields(self, organization, organization_card):
+        """
+        Hook to add custom fields to each organization card.
+        Args:
+            organization(Organization): the sqlalchemy Organization instance.
+            organization_card(dict): the default organization card.
+        Returns:
+            dict: customized organization card.
+        """
+        return organization_card
+
+    def perform_custom_delete_operations(self, request, organization):
+        """
+        Hook to perform custom delete operations prior to the organization being deleted.
+        Args:
+            request(django.Request): the DELETE request object. 
+            organization(Organization): the sqlalchemy Organization instance to be deleted. 
+
+        Raises:
+            Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
+        """  # noqa: F401
+        pass
+        # TODO: Implement this in CityWater when migrating to ATCore.
+        # org_workspace_path = get_organization_workspace_path(organization.id)
+        # rmtree(org_workspace_path)

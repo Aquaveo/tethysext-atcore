@@ -26,7 +26,7 @@ def initialize_app_users_db(engine, first_time=False, app_user_model=AppUser):
     if not staff_user:
         new_user = app_user_model(
             username=app_user_model.STAFF_USERNAME,
-            role=app_user_model.UR_ROLES.DEVELOPER
+            role=app_user_model.ROLES.DEVELOPER
         )
         session.add(new_user)
         session.commit()

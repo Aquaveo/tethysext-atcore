@@ -8,7 +8,7 @@
 """
 
 
-class AppUserRoles:
+class Roles:
     """
     Container and methods for user roles.
     """

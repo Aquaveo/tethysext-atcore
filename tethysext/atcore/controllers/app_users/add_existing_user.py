@@ -86,7 +86,7 @@ class AddExistingUser(TethysController):
                 selected_portal_users_error = "Must select at least one user."
 
             # Must assign user to at least one organization
-            # if selected_role != _AppUser.UR_ROLES.APP_ADMIN and len(selected_organizations) < 1:
+            # if selected_role != _AppUser.ROLES.APP_ADMIN and len(selected_organizations) < 1:
             #     valid = False
             #     organization_select_error = "Must assign user to at least one organization"
             # TODO: Handle this again once permissions are implemented

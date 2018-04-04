@@ -7,7 +7,7 @@ from mock import patch
 
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.models.app_users import initialize_app_users_db
-from tethysext.atcore.services.app_users.user_roles import AppUserRoles
+from tethysext.atcore.services.app_users.user_roles import Roles
 from tethysext.atcore.tests import APP_USER_TEST_DB
 
 
@@ -81,7 +81,7 @@ class AppUserTests(TethysTestCase):
         self.session = Session(connection)
 
         self.username = "test_user"
-        self.role = AppUserRoles.ORG_USER
+        self.role = Roles.ORG_USER
         self.is_active = True
 
         self.user = AppUser(
@@ -189,8 +189,8 @@ class AppUserTests(TethysTestCase):
         self.assertIsNone(returned_django_user)
 
     def test_validate_role_valid(self):
-        self.user.role = AppUser.UR_ROLES.ORG_ADMIN
-        self.assertEqual(AppUser.UR_ROLES.ORG_ADMIN, self.user.role)
+        self.user.role = AppUser.ROLES.ORG_ADMIN
+        self.assertEqual(AppUser.ROLES.ORG_ADMIN, self.user.role)
 
     def test_validate_role_invalid(self):
         exception_thrown = False
@@ -362,17 +362,17 @@ class AppUserTests(TethysTestCase):
     def test_get_assignable_roles(self, mock_has_permission_function):
         assignable_roles = self.user.get_assignable_roles(self.user_request)
         self.assertEqual(2, len(assignable_roles))
-        expected_roles = [AppUser.UR_ROLES.ORG_USER, AppUser.UR_ROLES.ORG_ADMIN]
+        expected_roles = [AppUser.ROLES.ORG_USER, AppUser.ROLES.ORG_ADMIN]
         for role in assignable_roles:
             self.assertIn(role, expected_roles)
 
     def test_get_assignable_roles_staff(self):
         assignable_roles = self.staff_user.get_assignable_roles(self.user_request)
-        expected_roles = list(AppUser.UR_ROLES.list())
+        expected_roles = list(AppUser.ROLES.list())
         self.assertEqual(expected_roles, assignable_roles)
 
     def test_get_assignable_roles_as_options(self):
         assignable_options = self.staff_user.get_assignable_roles(self.user_request, as_options=True)
-        all_roles = AppUser.UR_ROLES.list()
-        expected_options = [(AppUser.UR_ROLES.get_display_name_for(r), r) for r in all_roles]
+        all_roles = AppUser.ROLES.list()
+        expected_options = [(AppUser.ROLES.get_display_name_for(r), r) for r in all_roles]
         self.assertEqual(expected_options, assignable_options)

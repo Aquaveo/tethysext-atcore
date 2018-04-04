@@ -55,5 +55,5 @@ class OrganizationTests(unittest.TestCase):
         for organization in all_organization:
             self.assertEqual(organization.name, self.name)
             self.assertEqual(organization.active, self.active)
-            self.assertEqual(organization.type, Organization.GENERIC_ORG_TYPE)
+            self.assertEqual(organization.type, Organization.TYPE)
             self.assertIsInstance(organization.id, uuid.UUID)
