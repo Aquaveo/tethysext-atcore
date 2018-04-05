@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 # Tethys core
+from sqlalchemy.exc import StatementError
+from sqlalchemy.orm.exc import NoResultFound
 from tethys_apps.base.controller import TethysController
 from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
@@ -61,7 +63,6 @@ class ModifyOrganization(TethysController):
         """
         Handle get requests.
         """
-        from django.contrib.auth.models import User
         _AppUser = self.get_app_user_model()
         _Organization = self.get_organization_model()
         _Resource = self.get_resource_model()
@@ -84,48 +85,17 @@ class ModifyOrganization(TethysController):
         old_license = None
 
         # Permissions
-        can_assign_enterprise = has_permission(
-            request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.ENTERPRISE))
-        can_assign_professional = has_permission(
-            request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.PROFESSIONAL))
-        can_assign_advanced = has_permission(
-            request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.ADVANCED))
-        can_assign_standard = has_permission(
-            request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.STANDARD))
+        licenses_can_assign = []
+        for license in _Organization.LICENSES.list():
+            if has_permission(
+                    request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.ENTERPRISE)):
+                licenses_can_assign.append(license)
 
         # Only allow users with correct permissions to create enterprise organizations
         license_options = []
-
-        if can_assign_standard:
+        for license in licenses_can_assign:
             license_options.append(
-                (
-                    _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.STANDARD),
-                    _Organization.LICENSES.STANDARD
-                )
-            )
-
-        if can_assign_advanced:
-            license_options.append(
-                (
-                    _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.ADVANCED),
-                    _Organization.LICENSES.ADVANCED
-                )
-            )
-
-        if can_assign_professional:
-            license_options.append(
-                (
-                    _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.PROFESSIONAL),
-                    _Organization.LICENSES.PROFESSIONAL
-                )
-            )
-
-        if can_assign_enterprise:
-            license_options.append(
-                (
-                    _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.ENTERPRISE),
-                    _Organization.LICENSES.ENTERPRISE
-                )
+                (_Organization.LICENSES.get_display_name_for(license), license)
             )
 
         # Process next
@@ -142,22 +112,22 @@ class ModifyOrganization(TethysController):
         editing = organization_id is not None
 
         # Don't have the ability to create more organizations
-        # TODO: Refactor this...
-        if not editing and not can_assign_standard and not can_assign_professional:
+        if not editing and not licenses_can_assign:
             messages.error(request, "We're sorry, but you are unable to create new organizations at this time.")
-            return redirect(reverse('epanet:manage_organizations'))
+            return redirect(reverse('{}:app_users_manage_organizations').format(app_namespace))
 
         if editing:
             # Initialize the parameters from the existing consultant
             edit_session = make_session()
 
-            organization = edit_session.query(_Organization). \
-                filter(_Organization.id == organization_id). \
-                one_or_none()
+            try:
+                organization = edit_session.query(_Organization).\
+                    filter(_Organization.id == organization_id).\
+                    one()
 
-            if organization is None:
+            except (StatementError, NoResultFound):
                 messages.warning(request, 'The organization could not be found.')
-                return redirect(reverse('{}:home'.format(app_namespace)))
+                return redirect(reverse('{}:app_users_manage_organizations'.format(app_namespace)))
 
             organization_name = organization.name
             old_license = organization.license
@@ -362,7 +332,6 @@ class ModifyOrganization(TethysController):
         }
 
         return render(request, self.template_name, context)
-
 
     def get_license_to_consultant_map(self, request, license_options, consultant_organizations):
         """
