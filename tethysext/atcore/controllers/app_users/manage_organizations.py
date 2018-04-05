@@ -24,8 +24,6 @@ class ManageOrganizations(TethysController):
     GET: Render list of all organizations.
     DELETE: Delete and organization.
     """
-
-    page_title = 'Organizations'
     template_name = 'atcore/app_users/manage_organizations.html'
     http_method_names = ['get', 'delete']
 
@@ -140,7 +138,7 @@ class ManageOrganizations(TethysController):
         session.close()
 
         context = {
-            'page_title': self.page_title,
+            'page_title': _Organization.DISPLAY_TYPE_PLURAL,
             'organization_cards': organization_cards,
             'show_new_button': can_modify_organizations,
             'load_delete_modal': can_modify_organizations,

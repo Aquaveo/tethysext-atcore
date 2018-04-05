@@ -72,6 +72,73 @@ class Organization(AppUsersBase):
         """
         return 'modify_organization_members'
 
+    def update_member_activity(self, session, request):
+        """
+        Update the active status of each member.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object
+            request(django.request): Django request object
+        """
+        for app_user in self.members:
+            # Skip staff users
+            if app_user.is_staff():
+                continue
+
+            app_user.update_activity(session, request)
+
+    def can_add_client_with_license(self, session, request, license):
+        """
+        Determine if this organization can add a new client with the given license.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object
+            request(django.request): Django request object
+            license: valid license.
+
+        Returns:
+            bool: True if can add client with given license, else False.
+        """
+        # TODO: In CityWater, use this to implement functionality of mapping part of get_owner_options_and_mapping.
+
+        # Cannot add client if cannot be a consultant.
+        if not self.can_have_clients():
+            return False
+
+        if not self.LICENSES.is_valid(license):
+            raise ValueError('Invalid license given: {}.'.format(license))
+
+        if license == self.LICENSES.STANDARD:
+            return self.can_have_clients()
+        elif license == self.LICENSES.ADVANCED:
+            return self.can_have_clients()
+        elif license == self.LICENSES.PROFESSIONAL:
+            return self.can_have_clients()
+        elif license == self.LICENSES.ENTERPRISE:
+            return self.can_have_clients()
+
+    def can_have_clients(self):
+        """
+        Pass through for LICENSES.can_have_clients.
+        Returns:
+            bool: True if can have clients, else false.
+        """
+        return self.LICENSES.can_have_clients(self.license)
+
+    def can_have_consultant(self):
+        """
+        Pass through for LICENSES.can_have_consultant.
+        Returns:
+            bool: True if can have consultant, else false.
+        """
+        return self.LICENSES.can_have_consultant(self.license)
+
+    def must_have_consultant(self):
+        """
+        Pass through for LICENSES.must_have_consultant.
+        Returns:
+            bool: True if must have consultant, else false.
+        """
+        return self.LICENSES.must_have_consultant(self.license)
+
 
 @event.listens_for(Organization, 'before_delete')
 def receive_before_delete(mapper, connection, target):

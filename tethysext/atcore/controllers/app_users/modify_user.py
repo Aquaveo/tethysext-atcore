@@ -15,8 +15,6 @@ class ModifyUser(TethysController):
     GET: Render form for adding/editing user.
     POST: Handle form submission to add/edit a new user.
     """
-
-    page_title = 'Add User'
     template_name = 'atcore/app_users/modify_user.html'
     http_method_names = ['get', 'post']
 
@@ -298,7 +296,6 @@ class ModifyUser(TethysController):
         )
 
         context = {
-            'action': 'New',
             'next_controller': next_controller,
             'editing': editing,
             'is_me': is_me,

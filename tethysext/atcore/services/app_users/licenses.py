@@ -128,3 +128,66 @@ class Licenses:
             return left_license
 
         return right_license
+
+    def can_have_clients(self, license):
+        """
+        License based test to determine if an organization is allowed to have clients.
+        Args:
+            license: valid license.
+
+        Returns:
+            bool: True if organization with this license can have clients, else False.
+        """
+        if not self.is_valid(license):
+            raise ValueError('Invalid license given: {}.'.format(license))
+
+        if license == self.STANDARD:
+            return False
+        elif license == self.ADVANCED:
+            return False
+        elif license == self.PROFESSIONAL:
+            return False
+        elif license == self.ENTERPRISE:
+            return True
+
+    def can_have_consultant(self, license):
+        """
+        License based test to determine if an organization is allowed to be assigned a consultant.
+        Args:
+            license: valid license.
+
+        Returns:
+            bool: True if organization with this license is allowed to be assigned a consultant, else False.
+        """
+        if not self.is_valid(license):
+            raise ValueError('Invalid license given: {}.'.format(license))
+
+        if license == self.STANDARD:
+            return True
+        elif license == self.ADVANCED:
+            return True
+        elif license == self.PROFESSIONAL:
+            return True
+        elif license == self.ENTERPRISE:
+            return False
+
+    def must_have_consultant(self, license):
+        """
+        License based test to determine if an organization must be assigned a consultant.
+        Args:
+            license: valid license.
+
+        Returns:
+            bool: True if organization with this license must be assigned a constultant, else False
+        """
+        if not self.is_valid(license):
+            raise ValueError('Invalid license given: {}.'.format(license))
+
+        if license == self.STANDARD:
+            return False
+        elif license == self.ADVANCED:
+            return False
+        elif license == self.PROFESSIONAL:
+            return False
+        elif license == self.ENTERPRISE:
+            return False

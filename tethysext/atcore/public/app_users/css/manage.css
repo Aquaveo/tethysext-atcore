@@ -122,3 +122,7 @@ td, th {
     margin-top: 10px;
     margin-bottom: 0;
 }
+
+.btn-delete-modal {
+    margin-top: 0;
+}

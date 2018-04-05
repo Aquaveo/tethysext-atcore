@@ -293,40 +293,8 @@ def can_create_client_organizations_at_level(session, request, level):
 
 
 def get_owner_options_and_mapping(session, request, license_options):
-    from tethys_sdk.permissions import has_permission
-
-    license_to_owner_options_mapping = {}
-    owner_options = set()
-    enterprise_orgs = get_assignable_enterprise_organizations(session, request)
-    can_assign_to_all_orgs = request.user.is_staff or has_permission(request, 'assign_any_consultant')
-
-    for license_option in license_options:
-        LICENSE = license_option[1]
-        license_to_owner_options_mapping[LICENSE] = []
-        for enterprise_org in enterprise_orgs:
-            # Staff can assign to any owner
-            if request.user.is_staff:
-                owner_options.add((enterprise_org.name, str(enterprise_org.id)))
-                license_to_owner_options_mapping[LICENSE].append(str(enterprise_org.id))
-                continue
-
-            # Check for unlimited max clients
-            if enterprise_org.get_max_clients_at_level(LICENSE) == app_model.UNLIMITED_MAX_CLIENTS or \
-                    can_assign_to_all_orgs:
-                owner_options.add((enterprise_org.name, str(enterprise_org.id)))
-                license_to_owner_options_mapping[LICENSE].append(str(enterprise_org.id))
-                continue
-
-            clients = enterprise_org.clients
-            num_licensed = 0
-            for client in clients:
-                if client.type == app_model.CLIENT_ORG_TYPE and client.access_level == LICENSE:
-                    num_licensed += 1
-            if num_licensed <= enterprise_org.get_max_clients_at_level(LICENSE) or can_assign_to_all_orgs:
-                owner_options.add((enterprise_org.name, str(enterprise_org.id)))
-                license_to_owner_options_mapping[LICENSE].append(str(enterprise_org.id))
-
-    return list(owner_options), license_to_owner_options_mapping
+    # TODO: refactored to app_users.get_organizations(consultants=True) and ModifyOrganization.get_get_license_to_consultant_map
+    pass
 
 
 def assign_user_permission(request_or_user, user_role, license=None, addons=None):
@@ -523,17 +491,8 @@ def active_user_required(*args, **kwargs):
 
 
 def modify_account_status_of_unique_users_of_organization(session, organization):
-    for app_user in organization.users:
-        django_user = app_user.get_django_user()
-        if django_user is None:
-            continue
-        is_active = False
-        for org in get_user_organizations(session, django_user):
-            if org.active:
-                is_active = True
-                break
-        app_user.is_active = is_active
-        session.commit()
+    # TODO: replace instances with organization.update_member_activity
+    pass
 
 
 def get_app_user_from_request(request, session=None):

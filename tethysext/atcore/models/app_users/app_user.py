@@ -124,14 +124,15 @@ class AppUser(AppUsersBase):
             return None
         return django_user
 
-    def get_organizations(self, session, request, as_options=False, cascade=True):
+    def get_organizations(self, session, request, as_options=False, cascade=True, consultants=False):
         """
         Get the Organizations to which the given user belongs.
         Args:
-            session: SQLAlchemy session object.
-            request: Django request object.
-            as_options: Return and select option pairs if True.
-            cascade: Return subordinate organizations if True.
+            session(sqlalchemy.session): SQLAlchemy session object.
+            request(django.request): Django request object.
+            as_options(bool): Return and select option pairs if True.
+            cascade(bool): Return subordinate organizations if True.
+            consultants(bool): Only organizations that can be a consultant if True.
 
         Returns:
             list: Organizations to which the user belongs with subordinate Organizations if cascade.
@@ -141,7 +142,7 @@ class AppUser(AppUsersBase):
         _Organization = self.get_organization_model()
         return_value = set()
 
-        if self.is_staff() or has_permission(request, 'view_all_organizations'):
+        if self.is_staff() or has_permission(request, 'view_all_organizations', user=self.django_user):
             user_organizations = session.query(_Organization).all()
 
         else:
@@ -156,6 +157,15 @@ class AppUser(AppUsersBase):
                 client_organizations.update(organization.clients)
 
             organizations.update(client_organizations)
+
+        if consultants:
+            consultant_organizations = set()
+
+            for organization in organizations:
+                if organization.can_have_clients():
+                    consultant_organizations.add(organization)
+
+            organizations = consultant_organizations
 
         if as_options:
             for organization in organizations:
@@ -245,7 +255,7 @@ class AppUser(AppUsersBase):
         Get AppUsers belonging to organizations to which this user belongs.
         Args:
             session(sqlalchemy.session): SQLAlchemy session object
-            request(djanog.request): Django request object
+            request(django.request): Django request object
             include_self(bool): Include self in list of users
             cascade(bool): Also retrieve resources of child organizations.
 
@@ -269,3 +279,17 @@ class AppUser(AppUsersBase):
                     manageable_users.add(user)
 
         return manageable_users
+
+    def update_activity(self, session, request):
+        """
+        Update the is_active status of this user based on the activity of the organizations to which it belongs.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object
+            request(django.request): Django request object
+        """
+        is_active = False
+        for org in self.get_organizations(session, request, cascade=False):
+            if org.active:
+                is_active = True
+                break
+        self.is_active = is_active

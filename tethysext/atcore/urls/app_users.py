@@ -1,7 +1,7 @@
 import inspect
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
-    ManageOrganizationMembers
+    ManageOrganizationMembers, ModifyOrganization
 
 
 def urls(url_map_maker, *args, **kwargs):
@@ -46,6 +46,7 @@ def urls(url_map_maker, *args, **kwargs):
     _AddExistingUser = AddExistingUser
     _ManageOrganizations = ManageOrganizations
     _ManageOrganizationMembers = ManageOrganizationMembers
+    _ModifyOrganization = ModifyOrganization
 
     # Validate controller classes
     for arg in args:
@@ -61,6 +62,8 @@ def urls(url_map_maker, *args, **kwargs):
             _ManageOrganizations = arg
         elif issubclass(arg, ManageOrganizationMembers):
             _ManageOrganizationMembers = arg
+        elif issubclass(arg, ModifyOrganization):
+            _ModifyOrganization = arg
 
     url_maps = (
         url_map_maker(
@@ -70,7 +73,7 @@ def urls(url_map_maker, *args, **kwargs):
         ),
         url_map_maker(
             name='app_users_add_user',
-            url='/'.join([base_url_path, 'users/add']) if base_url_path else 'users/add',
+            url='/'.join([base_url_path, 'users/new']) if base_url_path else 'users/new',
             controller=_ModifyUser.as_controller()
         ),
         url_map_maker(
@@ -92,7 +95,18 @@ def urls(url_map_maker, *args, **kwargs):
             name='app_users_manage_organization_members',
             url='/'.join([base_url_path, 'organizations/{organization_id}/members']) if base_url_path else 'organizations/{organization_id}/members',  # noqa: E501
             controller=_ManageOrganizationMembers.as_controller()
+        ),
+        url_map_maker(
+            name='app_users_new_organization',
+            url='/'.join([base_url_path, 'organizations/new']) if base_url_path else 'organizations/new',
+            controller=_ModifyOrganization.as_controller()
+        ),
+        url_map_maker(
+            name='app_users_edit_organization',
+            url='/'.join([base_url_path, 'organizations/{organization_id}/edit']) if base_url_path else 'organizations/{organization_id}/edit',  # noqa: E501
+            controller=_ModifyOrganization.as_controller()
         )
+
     )
 
     return url_maps

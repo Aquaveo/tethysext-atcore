@@ -1,4 +1,4 @@
-{% extends "epanet/base.html" %}
+{% extends "atcore/app_users/base.html" %}
 {% load staticfiles tethys_gizmos %}
 
 {% block app_navigation_items %}
@@ -19,12 +19,12 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-12">
-      <h1>{% if editing %}Edit{% else %}New{% endif %} Organization</h1>
+      <h1>{% if editing %}Edit{% else %}New{% endif %} {{ page_title }}</h1>
       <form id="new-user-group-form" method="post" action="">
         {% csrf_token %}
         {% gizmo text_input organization_name_input %}
         {% gizmo select_input organization_type_select %}
-        <div id="owner-select-wrapper">
+        <div id="consultant-select-wrapper">
           {% gizmo select_input owner_select %}
         </div>
         {% gizmo select_input project_select %}
@@ -37,6 +37,9 @@
       </form>
     </div>
   </div>
+  <div id="modify-organization-attributes"
+       data-license-to-consultant-map="{{ license_to_consultant_map|jsonify }}"
+       data-hide-consultant-licenses="{{ hide_consultant_licenses|jsonify }}"></div>
 {% endblock %}
 
 {% block styles %}
@@ -46,10 +49,5 @@
 
 {% block scripts %}
   {{ block.super }}
-  {% if license_to_owner_mapping %}
-    <script>
-        var LICENSE_TO_OWNER_MAPPING = "{{ license_to_owner_mapping }}";
-    </script>
-  {% endif %}
   <script src="{% static 'atcore/app_users/js/modify_organizations.js' %}" type="text/javascript"></script>
 {% endblock %}

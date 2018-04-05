@@ -1,52 +1,64 @@
-function hide_owner_if_enterprise() {
-    var selected_val = $('#organization-type option:selected').val();
+function hide_consultant_if_not_allowed() {
+    // Get data from page
+    var $modify_organization_attributes = $('#modify-organization-attributes');
+    var hide_consultant_licenses = JSON.parse(
+        $modify_organization_attributes.attr('data-hide-consultant-licenses')
+    );
 
-    // Owner select is not required for enterprise organizations
-    if (selected_val == 'access_level_enterprise')
+    var selected_license = $('#organization-license option:selected').val();
+
+    // Consultant select is not if the selected license does not
+    // permit the organization to have a consultant
+    if (hide_consultant_licenses.indexOf(selected_license) !== -1)
     {
-        // Hide Owner Select
-        $('#owner-select-wrapper').css('display', 'none');
+        // Hide Consultant Select
+        $('#consultant-select-wrapper').css('display', 'none');
     }
     else
     {
-        // Show Owner Select
-        $('#owner-select-wrapper').css('display', 'block');
+        // Show Consultant Select
+        $('#consultant-select-wrapper').css('display', 'block');
     }
 }
 
 function show_appropriate_owners() {
-    var selected_val = $('#organization-type option:selected').val();
-    // LICENSE_TO_OWNER_MAPPING is set in modify_organization.html with a Django context variable
-    var dictString = LICENSE_TO_OWNER_MAPPING.replace(/&quot;/g, '"');
-    license_to_owner_mapping = JSON.parse(dictString);
-    var owners_with_free_space_in_license = license_to_owner_mapping[selected_val];
+    // Get data from page
+    var $modify_organization_attributes = $('#modify-organization-attributes');
+    var license_to_consultant_map = JSON.parse(
+        $modify_organization_attributes.attr('data-license-to-consultant-map')
+    );
+
+    // Get selected license
+    var selected_license = $('#organization-license option:selected').val();
+    var consultants_can_add_client_with_license = license_to_consultant_map[selected_license];
     var selection_made = false;
-    $('#organization-owner option')
+
+    $('#organization-consultant option')
         .prop('disabled', false)
         .each(function () {
             var firstEnabledId;
-            var disabled = owners_with_free_space_in_license.indexOf(this.value) === -1
+            var disabled = consultants_can_add_client_with_license.indexOf(this.value) === -1
 
             if ($(this).is(':selected') && disabled) {
-                firstEnabledId = $('#organization-owner option:enabled').not(this).first().val();
-                $('#organization-owner').val(firstEnabledId).trigger('change');
+                firstEnabledId = $('#organization-consultant option:enabled').not(this).first().val();
+                $('#organization-consultant').val(firstEnabledId).trigger('change');
             }
 
             $(this).prop('disabled', disabled);
 
             // Select2 must be reinitialized to accurately reflect changes
-            $('#organization-owner').select2()
+            $('#organization-consultant').select2();
         });
 }
 
-$('#organization-type').select2().on('change', function(e) {
-    hide_owner_if_enterprise();
+$('#organization-license').select2().on('change', function(e) {
+    hide_consultant_if_not_allowed();
     show_appropriate_owners();
 });
 
 $(function() {
     // Hide owner if enterprise
-    hide_owner_if_enterprise();
+    hide_consultant_if_not_allowed();
     show_appropriate_owners();
 });
 
