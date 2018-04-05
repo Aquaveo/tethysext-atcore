@@ -132,7 +132,7 @@ class ModifyOrganization(TethysController):
             organization_name = organization.name
             old_license = organization.license
             selected_license = organization.license
-            selected_consultant = str(organization.consultant.id)
+            selected_consultant = str(organization.consultant.id) if organization.consultant else ""
             is_active = organization.active
 
             # Ensure old license option is in license options

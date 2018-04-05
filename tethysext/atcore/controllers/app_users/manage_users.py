@@ -112,7 +112,9 @@ class ManageUsers(TethysController):
             is_me = django_user == request.user
 
             editable = False
-            organizations = session.query(_Organization.name).filter(_Organization.members.contains(app_user))
+            organizations = session.query(_Organization.name, _Organization.id).\
+                filter(_Organization.members.contains(app_user)).\
+                all()
             permissions_groups = get_all_permissions_groups_for_user(django_user, as_display_name=True)
 
             # Find permission level and decide if request.user can edit other users
@@ -140,7 +142,7 @@ class ManageUsers(TethysController):
                 'username': app_user.username,
                 'fullname': 'Me' if is_me else app_user.get_display_name(append_username=True),
                 'email': django_user.email,
-                # 'role': get_role(session, django_user, True),  # TODO: Fix once organizations is implemented
+                'role': app_user.get_role(True),
                 'organizations': organizations,
                 'editable': editable
             }

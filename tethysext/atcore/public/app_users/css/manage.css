@@ -126,3 +126,8 @@ td, th {
 .btn-delete-modal {
     margin-top: 0;
 }
+
+.role-tag:hover {
+    background: #FFFFFF;
+}
+

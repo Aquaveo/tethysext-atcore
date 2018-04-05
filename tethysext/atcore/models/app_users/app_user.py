@@ -293,3 +293,14 @@ class AppUser(AppUsersBase):
                 is_active = True
                 break
         self.is_active = is_active
+
+    def get_role(self, display_name=False):
+        """
+        Get the most elevated role that has been applied to the given user.
+
+        Args:
+            display_name(bool): Return display friendly name of role if True.
+
+        Returns: Name of role
+        """
+        return self.ROLES.get_display_name_for(self.role) if display_name else self.role

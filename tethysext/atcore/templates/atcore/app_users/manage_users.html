@@ -29,7 +29,7 @@
       <td><span class="manage-tag role-tag">{{ user_card.role }}</span></td>
       <td>
         {% for organization in user_card.organizations %}
-        <span class="manage-tag role-tag">{{ organization.name }}</span>
+        <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-users"><span class="manage-tag organization-tag">{{ organization.name }}</span></a>
         {% endfor %}
       </td>
       {% if show_action_buttons %}
@@ -71,7 +71,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <a id="modal-delete-button" class="btn btn-danger" href="javascript:void(0);" data-delete-type="users">Delete</a>
+          <a id="modal-delete-button" class="btn btn-danger btn-delete-modal" href="javascript:void(0);" data-delete-type="users">Delete</a>
         </div>
       </div>
     </div>
@@ -90,7 +90,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <a id="modal-remove-button" class="btn btn-danger" href="javascript:void(0);" data-delete-type="users">Remove</a>
+          <a id="modal-remove-button" class="btn btn-danger btn-delete-modal" href="javascript:void(0);" data-delete-type="users">Remove</a>
         </div>
       </div>
     </div>
@@ -104,5 +104,6 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script src="{% static 'atcore/js/csrf.js' %}"></script>
   <script src="{% static 'atcore/app_users/js/manage.js' %}"></script>
 {% endblock %}

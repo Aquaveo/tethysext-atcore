@@ -5,8 +5,10 @@ from tethys_apps.decorators import permission_required
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 from tethysext.atcore.models.app_users import AppUser, Organization
-from tethysext.atcore.services._app_users import update_user_permissions
-
+#from tethysext.atcore.services._app_users import update_user_permissions
+from sqlalchemy.exc import StatementError
+from sqlalchemy.orm.exc import NoResultFound
+from django.contrib import messages
 
 class ModifyUser(TethysController):
     """
@@ -31,7 +33,7 @@ class ModifyUser(TethysController):
         """
         Route get requests.
         """
-        return self._handle_modify_user_requests(request)
+        return self._handle_modify_user_requests(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         """
@@ -93,7 +95,15 @@ class ModifyUser(TethysController):
             # Initialize the parameters from the existing consultant
             edit_session = make_session()
 
-            app_user = edit_session.query(_AppUser).get(user_id)
+            try:
+                app_user = edit_session.query(_AppUser).\
+                    filter(_AppUser.id == user_id).\
+                    one()
+
+            except (StatementError, NoResultFound):
+                messages.warning(request, 'The organization could not be found.')
+                return redirect(reverse('{}:app_users_manage_organizations'.format(app_namespace)))
+
             django_user = app_user.get_django_user()
             is_me = request.user == django_user
 
@@ -107,6 +117,9 @@ class ModifyUser(TethysController):
             email = django_user.email
             username = django_user.username
             selected_role = app_user.role
+            selected_organizations = []
+            for organization in app_user.get_organizations(edit_session, request, cascade=False):
+                selected_organizations.append(str(organization.id))
 
             edit_session.close()
 
@@ -115,7 +128,7 @@ class ModifyUser(TethysController):
             # Validate the form
             first_name = request.POST.get('first-name', '')
             last_name = request.POST.get('last-name', '')
-            is_active = request.POST.get('user-account-status', 'on') == 'on'
+            is_active = request.POST.get('user-account-status') == 'on'
             email = request.POST.get('email', "")
             password = request.POST.get('password', '')
             password_confirm = request.POST.get('password-confirm', '')
@@ -215,7 +228,8 @@ class ModifyUser(TethysController):
                 modify_session.commit()
 
                 # Update user permissions
-                update_user_permissions(modify_session, django_user)
+                # TODO: Update with permissions
+                #update_user_permissions(modify_session, django_user)
                 modify_session.close()
 
                 # Redirect

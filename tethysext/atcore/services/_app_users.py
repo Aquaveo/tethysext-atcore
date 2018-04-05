@@ -113,28 +113,7 @@ def get_role(session, request_or_user, display_name=False):
 
     Returns: Name of role
     """
-    from django.contrib.auth.models import User
-    from django.http.request import HttpRequest
-
-    if isinstance(request_or_user, HttpRequest):
-        user = request_or_user.user
-    elif isinstance(request_or_user, User):
-        user = request_or_user
-    else:
-        raise TypeError('request_or_user must be a Django request or User instance.')
-
-    app_user = session.query(AppUser).filter(AppUser.username == user.username).one_or_none()
-
-    if app_user.role == app_model.UR_APP_ADMIN:
-        return app_model.UR_APP_ADMIN if not display_name else UR_APP_ADMIN_DISPLAY
-
-    if app_user.role == app_model.UR_ADMIN:
-        return app_model.UR_ADMIN if not display_name else UR_ADMIN_DISPLAY
-
-    if app_user.role == app_model.UR_VIEWER:
-        return app_model.UR_VIEWER if not display_name else UR_VIEWER_DISPLAY
-
-    return ""
+    # TODO: Replaces instances with app_user.get_role
 
 
 def add_permissions_group(user, permissions_group_name):
