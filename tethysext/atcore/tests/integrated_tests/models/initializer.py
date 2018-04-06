@@ -4,14 +4,14 @@ from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.models.app_users.initializer import initialize_app_users_db
 from tethysext.atcore.models.app_users import AppUser
-from tethysext.atcore.tests import APP_USER_TEST_DB
+from tethysext.atcore.tests import TEST_DB_URL
 
 
 class AppUserInitializerTests(TethysTestCase):
 
     def setUp(self):
         # Connect to the database and create the schema within a transaction
-        self.engine = create_engine(APP_USER_TEST_DB)
+        self.engine = create_engine(TEST_DB_URL)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

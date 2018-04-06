@@ -4,14 +4,14 @@ from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.models.app_users import AppUsersBase, AppUser, Organization
 from tethysext.atcore.services.app_users.user_roles import Roles
-from tethysext.atcore.tests import APP_USER_TEST_DB
+from tethysext.atcore.tests import TEST_DB_URL
 
 
 def setUpModule():
     global transaction, connection, engine
 
     # Connect to the database and create the schema within a transaction
-    engine = create_engine(APP_USER_TEST_DB)
+    engine = create_engine(TEST_DB_URL)
     connection = engine.connect()
     transaction = connection.begin()
     AppUsersBase.metadata.create_all(connection)
