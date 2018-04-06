@@ -30,6 +30,7 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
 
     page_title = 'User Accounts'
     template_name = 'atcore/app_users/manage_users.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'delete']
 
     def get(self, request, *args, **kwargs):
@@ -152,6 +153,7 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
 
         context = {
             'page_title': self.page_title,
+            'base_template': self.base_template,
             'user_cards': paginated_user_cards,
             'show_new_button': has_permission(request, 'modify_users'),
             'show_action_buttons': has_permission(request, 'modify_users'),

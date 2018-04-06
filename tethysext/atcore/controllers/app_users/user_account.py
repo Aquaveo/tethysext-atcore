@@ -25,6 +25,7 @@ class UserAccount(TethysController, AppUsersControllerMixin):
     """
     page_title = 'My Account'
     template_name = 'atcore/app_users/user_account.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
@@ -64,6 +65,7 @@ class UserAccount(TethysController, AppUsersControllerMixin):
 
         context = {
             'page_title': self.page_title,
+            'base_template': self.base_template,
             'username': request_app_user.username,
             'user_role': request_app_user.get_role(display_name=True),
             'user_account_status': 'Active' if request_app_user.is_active else 'Disabled',

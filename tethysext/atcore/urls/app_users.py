@@ -5,7 +5,8 @@ from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddE
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 
 
-def urls(url_map_maker, app=None, persistent_store_name=None, custom_controllers=(), custom_models=(), *args, **kwargs):
+def urls(url_map_maker, base_url_path='', base_template='atcore/app_users/base.html', app=None,
+         persistent_store_name=None, custom_controllers=(), custom_models=()):
     """
     Generate UrlMap objects for app_users extension. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
@@ -15,25 +16,28 @@ def urls(url_map_maker, app=None, persistent_store_name=None, custom_controllers
         {% url 'my_first_app:app_users_edit_user, user_id=user.id %}
 
     Args:
-        root_url(str): value of root_url attribute of app class.
-        args: Any number of TethysController subclasses to override default controller classes.
-        kwargs: Any number of keyword options.
-
-    Keyword Options:
-        base_url_path(str, optional): url path to prepend to all app_user urls (e.g.: 'foo/bar').
+        url_map_maker(UrlMap): UrlMap class bound to app root url.
+        base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
+        base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful to add navigation to ManageUsers, ManageOrganizations, ManageResources, and UserAccount views.
+        app(TethysAppBase): instance of Tethys app class.
+        persistent_store_name(str): name of persistent store database setting the controllers should use to create sessions.
+        custom_controllers(list<TethysController>): Any number of TethysController subclasses to override default controller classes.
+        custom_models(cls): custom subclasses of AppUser, Organization, or Resource models.
 
     Url Map Names:
-        manage_users
-        add_user
-        edit_user <user_id>
-        add_existing_user
+        app_users_manage_users
+        app_users_add_user
+        app_users_edit_user <user_id>
+        app_users_add_existing_user
+        app_users_user_account
+        app_users_manage_organizations
+        app_users_manage_organization_members <organization_id>
+        app_users_new_organization
+        app_users_edit_organization <organization_id>
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
     """  # noqa: F401, E501
-    # Get kwargs
-    base_url_path = kwargs.get('base_url_path', '')
-
     # Validate kwargs
     if base_url_path:
         if base_url_path.startswith('/'):
@@ -93,7 +97,8 @@ def urls(url_map_maker, app=None, persistent_store_name=None, custom_controllers
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                base_template=base_template
             )
         ),
         url_map_maker(
@@ -137,7 +142,8 @@ def urls(url_map_maker, app=None, persistent_store_name=None, custom_controllers
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                base_template=base_template
             )
         ),
         url_map_maker(
@@ -148,7 +154,8 @@ def urls(url_map_maker, app=None, persistent_store_name=None, custom_controllers
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                base_template=base_template
             )
         ),
         url_map_maker(

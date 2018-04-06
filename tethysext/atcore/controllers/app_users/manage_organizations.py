@@ -25,6 +25,7 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
     DELETE: Delete and organization.
     """
     template_name = 'atcore/app_users/manage_organizations.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'delete']
 
     def get(self, request, *args, **kwargs):
@@ -127,6 +128,7 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
 
         context = {
             'page_title': _Organization.DISPLAY_TYPE_PLURAL,
+            'base_template': self.base_template,
             'organization_cards': organization_cards,
             'show_new_button': can_modify_organizations,
             'load_delete_modal': can_modify_organizations,
