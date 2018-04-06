@@ -183,12 +183,12 @@ class ManageOrganizations(TethysController):
         """
         Hook to perform custom delete operations prior to the organization being deleted.
         Args:
-            request(django.Request): the DELETE request object. 
-            organization(Organization): the sqlalchemy Organization instance to be deleted. 
+            request(django.Request): the DELETE request object.
+            organization(Organization): the sqlalchemy Organization instance to be deleted.
 
         Raises:
             Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
-        """  # noqa: F401
+        """  # noqa: E501
         pass
         # TODO: Implement this in CityWater when migrating to ATCore.
         # org_workspace_path = get_organization_workspace_path(organization.id)

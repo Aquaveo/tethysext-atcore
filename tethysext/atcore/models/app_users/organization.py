@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import event
 from sqlalchemy import Column, Boolean, String, ForeignKey, DateTime, func
-from sqlalchemy.orm import relationship, backref, validates, sessionmaker
+from sqlalchemy.orm import relationship, backref, validates
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.licenses import Licenses
 from .associations import organization_resource_association, user_organization_association

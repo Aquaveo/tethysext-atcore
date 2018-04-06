@@ -76,7 +76,7 @@ class ManageOrganizationMembers(TethysController):
 
         # Defaults
         session = make_session()
-        request_user = _AppUser.get_app_user_from_request(request,session)
+        request_user = _AppUser.get_app_user_from_request(request, session)
 
         # Lookup existing organization
         organization = session.query(_Organization).get(organization_id)
@@ -88,7 +88,7 @@ class ManageOrganizationMembers(TethysController):
             selected_members = request.POST.getlist('members-select')
 
             # Reset Members
-            original_members = set(organization.members)
+            # original_members = set(organization.members)
             organization.members = []
 
             # Add members and assign permissions again
@@ -103,8 +103,8 @@ class ManageOrganizationMembers(TethysController):
             # Members that need to be updated are those in the symmetric difference between the set of original members
             # and the set of updated members
             # See: http://www.linuxtopia.org/online_books/programming_books/python_programming/python_ch16s03.html
-            updated_members = set(organization.members)
-            removed_and_added_members = original_members ^ updated_members
+            # updated_members = set(organization.members)
+            # removed_and_added_members = original_members ^ updated_members
 
             # TODO: implement with permissions
             # for member in removed_and_added_members:

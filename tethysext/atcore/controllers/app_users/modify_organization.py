@@ -271,7 +271,7 @@ class ModifyOrganization(TethysController):
         # Populate projects select box
         resources = request_user.get_resources(session, request)
 
-        resource_options = [(resource.name, str(resource.id)) for resource in resources]
+        resource_options = [(r.name, str(r.id)) for r in resources]
 
         # Sort the project options
         project_select = SelectInput(

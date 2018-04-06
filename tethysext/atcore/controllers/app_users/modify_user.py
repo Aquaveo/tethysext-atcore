@@ -5,10 +5,11 @@ from tethys_apps.decorators import permission_required
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 from tethysext.atcore.models.app_users import AppUser, Organization
-#from tethysext.atcore.services._app_users import update_user_permissions
+# from tethysext.atcore.services._app_users import update_user_permissions
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from django.contrib import messages
+
 
 class ModifyUser(TethysController):
     """
@@ -50,7 +51,6 @@ class ModifyUser(TethysController):
         from django.contrib.auth.models import User
         _AppUser = self.get_app_user_model()
         _Organization = self.get_organization_model()
-        UR_APP_ADMIN = 'app_admin'  # TODO: Handle constants
         make_session = self.get_sessionmaker()
 
         # Defaults
@@ -236,7 +236,7 @@ class ModifyUser(TethysController):
 
                 # Update user permissions
                 # TODO: Update with permissions
-                #update_user_permissions(modify_session, django_user)
+                # update_user_permissions(modify_session, django_user)
                 modify_session.close()
 
                 # Redirect
