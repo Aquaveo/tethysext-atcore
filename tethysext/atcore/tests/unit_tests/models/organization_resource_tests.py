@@ -54,10 +54,12 @@ class OrganizationResourceTests(unittest.TestCase):
         # Test Organizations
         self.organization1 = Organization(
             name="organization1",
+            license=Organization.LICENSES.STANDARD
         )
 
         self.organization2 = Organization(
             name="organization2",
+            license=Organization.LICENSES.STANDARD
         )
 
         # Add users to organizations

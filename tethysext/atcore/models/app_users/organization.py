@@ -98,11 +98,6 @@ class Organization(AppUsersBase):
             bool: True if can add client with given license, else False.
         """
         # TODO: In CityWater, use this to implement functionality of mapping part of get_owner_options_and_mapping.
-
-        # Cannot add client if cannot be a consultant.
-        if not self.can_have_clients():
-            return False
-
         if not self.LICENSES.is_valid(license):
             raise ValueError('Invalid license given: {}.'.format(license))
 
@@ -167,7 +162,7 @@ def receive_before_delete(mapper, connection, target):
 
     # Remove users that would be orphaned
     for member in target.members:
-        if len(member.organizations) < 1:
+        if len(member.organizations) < 1 and not member.is_staff():
             delete_relationship = sql_template.format(
                 user_organization_association.name,
                 'app_user_id',

@@ -1,28 +1,16 @@
 import uuid
-from tethys_sdk.testing import TethysTestCase
+
 from django.contrib.auth.models import User
+from mock import patch
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import Session
-from mock import patch
-
+from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.models.app_users import initialize_app_users_db
 from tethysext.atcore.services.app_users.user_roles import Roles
 from tethysext.atcore.tests import APP_USER_TEST_DB
-
-
-class MockDjangoUser:
-    def __init__(self, username, is_staff):
-        self.username = username
-        self.is_staff = is_staff
-
-
-class MockDjangoRequest:
-    def __init__(self, user_username, user_is_staff):
-        self.user = MockDjangoUser(
-            username=user_username,
-            is_staff=user_is_staff
-        )
+from tethysext.atcore.tests.mock.django import MockDjangoRequest
+from tethysext.atcore.tests.mock.permissions import mock_has_permission_false, mock_has_permission_assignable_roles
 
 
 class CustomOrganization(Organization):
@@ -46,14 +34,6 @@ class CustomAppUser(AppUser):
     @staticmethod
     def get_resource_model():
         return CustomResource
-
-
-def mock_has_permission_false(*args, **kwargs):
-    return False
-
-
-def mock_has_permission_assignable_roles(request, permission, *args, **kwargs):
-    return permission in ['assign_org_users_role', 'assign_org_admin_role']
 
 
 def setUpModule():
@@ -99,17 +79,21 @@ class AppUserTests(TethysTestCase):
         self.org3_name = "Org3"
 
         self.org1 = Organization(
-            name=self.org1_name
+            name=self.org1_name,
+            license=Organization.LICENSES.STANDARD
         )
         self.org1.members.append(self.user)
 
         self.org2 = Organization(
-            name=self.org2_name
+            name=self.org2_name,
+            license=Organization.LICENSES.STANDARD
         )
+
         self.org2.consultant = self.org1
 
         self.org3 = Organization(
-            name=self.org3_name
+            name=self.org3_name,
+            license=Organization.LICENSES.STANDARD
         )
 
         self.session.add(self.org1)

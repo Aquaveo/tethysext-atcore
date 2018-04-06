@@ -21,7 +21,7 @@ class AppUser(AppUsersBase):
 
     # Staff user defaults
     STAFF_USERNAME = '_staff_user'
-    STAFF_ROLE = 100000
+    STAFF_ROLE = ROLES.DEVELOPER
     STAFF_DISPLAY_NAME = 'Developer'
 
     __tablename__ = 'app_users'
@@ -287,6 +287,9 @@ class AppUser(AppUsersBase):
             session(sqlalchemy.session): SQLAlchemy session object
             request(django.request): Django request object
         """
+        if self.is_staff():
+            return
+
         is_active = False
         for org in self.get_organizations(session, request, cascade=False):
             if org.active:

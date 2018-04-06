@@ -34,9 +34,13 @@ class AppUserUrlsTests(TethysTestCase):
     def setUp(self):
         self.base_url_path = 'foo/bar'
         self.names = ['app_users_manage_users', 'app_users_add_user', 'app_users_edit_user',
-                      'app_users_add_existing_user', 'app_users_manage_organizations']
-        self.urls = ['users', 'users/add', 'users/{user_id}/edit', 'users/add-existing', 'organizations']
-        self.num_urls = 5
+                      'app_users_add_existing_user', 'app_users_manage_organizations',
+                      'app_users_manage_organization_members', 'app_users_new_organization',
+                      'app_users_edit_organization']
+        self.urls = ['users', 'users/new', 'users/{user_id}/edit', 'users/add-existing', 'organizations',
+                     'organizations/{organization_id}/members', 'organizations/new',
+                     'organizations/{organization_id}/edit']
+        self.num_urls = 8
 
     def tearDown(self):
         pass

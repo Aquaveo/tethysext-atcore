@@ -104,3 +104,13 @@ class AppUserRoleTests(unittest.TestCase):
         self.assertRaises(ValueError, self.user_roles.compare, Roles.ORG_USER, self.invalid_role)
         self.assertRaises(ValueError, self.user_roles.compare, self.invalid_role, Roles.ORG_USER)
         self.assertRaises(ValueError, self.user_roles.compare, self.invalid_role, self.invalid_role)
+
+    def test_get_organization_required_roles(self):
+        out = self.user_roles.get_organization_required_roles()
+        self.assertEqual(2, len(out))
+        self.assertEqual([self.user_roles.ORG_USER, self.user_roles.ORG_ADMIN], out)
+
+    def test_get_no_organization_roles(self):
+        out = self.user_roles.get_no_organization_roles()
+        self.assertEqual(2, len(out))
+        self.assertEqual([self.user_roles.APP_ADMIN, self.user_roles.DEVELOPER], out)
