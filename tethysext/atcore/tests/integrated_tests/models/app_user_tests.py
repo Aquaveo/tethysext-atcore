@@ -69,6 +69,21 @@ class AppUserTests(TethysTestCase):
             role=self.role,
             is_active=self.is_active,
         )
+        self.peer_user = AppUser(
+            username="user1",
+            role=self.role,
+            is_active=self.is_active,
+        )
+        self.client_user = AppUser(
+            username="user2",
+            role=self.role,
+            is_active=self.is_active,
+        )
+        self.foreign_user = AppUser(
+            username="user3",
+            role=self.role,
+            is_active=self.is_active,
+        )
 
         self.session.add(self.user)
         self.session.commit()
@@ -80,14 +95,16 @@ class AppUserTests(TethysTestCase):
 
         self.org1 = Organization(
             name=self.org1_name,
-            license=Organization.LICENSES.STANDARD
+            license=Organization.LICENSES.ENTERPRISE
         )
         self.org1.members.append(self.user)
+        self.org1.members.append(self.peer_user)
 
         self.org2 = Organization(
             name=self.org2_name,
             license=Organization.LICENSES.STANDARD
         )
+        self.org2.members.append(self.client_user)
 
         self.org2.consultant = self.org1
 
@@ -95,6 +112,7 @@ class AppUserTests(TethysTestCase):
             name=self.org3_name,
             license=Organization.LICENSES.STANDARD
         )
+        self.org3.members.append(self.foreign_user)
 
         self.session.add(self.org1)
         self.session.add(self.org2)
@@ -311,6 +329,13 @@ class AppUserTests(TethysTestCase):
         for org_options in organizations:
             self.assertIn(org_options, expected_options)
 
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    def test_get_organizations_consultants(self, mock_has_permission_function):
+        organizations = self.user.get_organizations(self.session, self.user_request, consultants=True)
+        self.assertEqual(1, len(organizations))
+        for org in organizations:
+            self.assertEqual(self.org1_name, org.name)
+
     def test_get_resources_staff(self):
         resources = self.staff_user.get_resources(self.session, self.staff_user_request)
         self.assertEqual(3, len(resources))
@@ -360,3 +385,64 @@ class AppUserTests(TethysTestCase):
         all_roles = AppUser.ROLES.list()
         expected_options = [(AppUser.ROLES.get_display_name_for(r), r) for r in all_roles]
         self.assertEqual(expected_options, assignable_options)
+
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    def test_get_peers(self, mock_has_permission_function):
+        peers = self.user.get_peers(self.session, self.user_request)
+        self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
+        self.assertNotIn(self.client_user, peers, "Client user found in peers.")
+        self.assertNotIn(self.foreign_user, peers, "Peer user found in peers.")
+        self.assertNotIn(self.user, peers, "User found in peers.")
+
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    def test_get_peers_include_self(self, mock_has_permission_function):
+        peers = self.user.get_peers(self.session, self.user_request, include_self=True)
+        self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
+        self.assertNotIn(self.client_user, peers, "Client user found in peers.")
+        self.assertNotIn(self.foreign_user, peers, "Peer user found in peers.")
+        self.assertIn(self.user, peers, "User not found in peers.")
+
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    def test_get_peers_cascade(self, mock_has_permission_function):
+        peers = self.user.get_peers(self.session, self.user_request, cascade=True)
+        self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
+        self.assertIn(self.client_user, peers, "Client user not found in peers.")
+        self.assertNotIn(self.foreign_user, peers, "Peer user found in peers.")
+        self.assertNotIn(self.user, peers, "User found in peers.")
+
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    def test_get_peers_staff(self, mock_has_permission_function):
+        peers = self.staff_user.get_peers(self.session, self.staff_user_request)
+        self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
+        self.assertIn(self.client_user, peers, "Client user not found in peers.")
+        self.assertIn(self.foreign_user, peers, "Peer user not found in peers.")
+        self.assertIn(self.user, peers, "Staff user not found in peers.")
+        self.assertNotIn(self.staff_user, peers, "Staff user found in peers.")
+
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    def test_update_activity(self, mock_has_permission_function):
+        self.org1.active = False
+        self.user.update_activity(self.session, self.user_request)
+        self.session.commit()
+        self.assertFalse(self.user.is_active)
+
+        self.org1.active = True
+        self.user.update_activity(self.session, self.user_request)
+        self.session.commit()
+        self.assertTrue(self.user.is_active)
+
+    def test_update_activity_staff(self):
+        self.org1.members.append(self.staff_user)
+        self.org1.active = False
+        self.session.commit()
+        self.staff_user.update_activity(self.session, self.staff_user_request)
+        self.assertTrue(self.staff_user.is_active)
+
+    def test_get_role(self):
+        role = self.user.get_role()
+        self.assertEqual(self.user.role, role)
+
+    def test_get_role_display_name(self):
+        role = self.user.get_role(display_name=True)
+        display_name = self.user.ROLES.get_display_name_for(self.user.role)
+        self.assertEqual(display_name, role)

@@ -270,13 +270,14 @@ class AppUser(AppUsersBase):
 
         manageable_users = set()
         organizations = self.get_organizations(session, request, cascade=cascade)
+
         for organization in organizations:
             for user in organization.members:
                 # Don't add self to manage users
-                if user.username == self.username and include_self:
-                    manageable_users.add(user)
-                else:
-                    manageable_users.add(user)
+                if user.id == self.id and not include_self:
+                    continue
+
+                manageable_users.add(user)
 
         return manageable_users
 
