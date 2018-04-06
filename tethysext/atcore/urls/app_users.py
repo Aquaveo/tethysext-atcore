@@ -1,7 +1,7 @@
 import inspect
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
-    ManageOrganizationMembers, ModifyOrganization
+    ManageOrganizationMembers, ModifyOrganization, UserAccount
 
 
 def urls(url_map_maker, *args, **kwargs):
@@ -47,6 +47,7 @@ def urls(url_map_maker, *args, **kwargs):
     _ManageOrganizations = ManageOrganizations
     _ManageOrganizationMembers = ManageOrganizationMembers
     _ModifyOrganization = ModifyOrganization
+    _UserAccount = UserAccount
 
     # Validate controller classes
     for arg in args:
@@ -64,7 +65,8 @@ def urls(url_map_maker, *args, **kwargs):
             _ManageOrganizationMembers = arg
         elif issubclass(arg, ModifyOrganization):
             _ModifyOrganization = arg
-
+        elif issubclass(arg, UserAccount):
+            _UserAccount = arg
     url_maps = (
         url_map_maker(
             name='app_users_manage_users',
@@ -87,6 +89,11 @@ def urls(url_map_maker, *args, **kwargs):
             controller=_AddExistingUser.as_controller()
         ),
         url_map_maker(
+            name='app_users_user_account',
+            url='/'.join([base_url_path, 'users/me']) if base_url_path else 'users/me',
+            controller=_UserAccount.as_controller()
+        ),
+        url_map_maker(
             name='app_users_manage_organizations',
             url='/'.join([base_url_path, 'organizations']) if base_url_path else 'organizations',
             controller=_ManageOrganizations.as_controller()
@@ -106,7 +113,7 @@ def urls(url_map_maker, *args, **kwargs):
             url='/'.join([base_url_path, 'organizations/{organization_id}/edit']) if base_url_path else 'organizations/{organization_id}/edit',  # noqa: E501
             controller=_ModifyOrganization.as_controller()
         )
-
     )
+
 
     return url_maps

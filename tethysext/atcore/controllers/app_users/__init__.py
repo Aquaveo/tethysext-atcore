@@ -4,3 +4,4 @@ from add_existing_user import AddExistingUser  # noqa: F401
 from manage_organizations import ManageOrganizations  # noqa: F401
 from manage_organization_members import ManageOrganizationMembers  # noqa: F401
 from modify_organization import ModifyOrganization  # noqa: F401
+from user_account import UserAccount  # noqa: F401
