@@ -7,12 +7,11 @@
 ********************************************************************************
 """
 # Django
-from django.http import JsonResponse
 from django.shortcuts import render
 
 # Tethys core
 from tethys_sdk.base import TethysController
-from tethys_sdk.permissions import has_permission, permission_required
+from tethys_sdk.permissions import has_permission
 # ATCore
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 

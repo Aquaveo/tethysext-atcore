@@ -115,5 +115,4 @@ def urls(url_map_maker, *args, **kwargs):
         )
     )
 
-
     return url_maps
