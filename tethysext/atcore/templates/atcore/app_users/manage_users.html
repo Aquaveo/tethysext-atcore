@@ -99,11 +99,11 @@
 
 {% block styles %}
   {{ block.super }}
-  <link href="{% static 'atcore/app_users/css/manage.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
   <script src="{% static 'atcore/js/csrf.js' %}"></script>
-  <script src="{% static 'atcore/app_users/js/manage.js' %}"></script>
+  <script src="{% static 'atcore/app_users/js/app_users.js' %}"></script>
 {% endblock %}

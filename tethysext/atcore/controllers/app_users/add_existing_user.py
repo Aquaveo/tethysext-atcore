@@ -50,7 +50,6 @@ class AddExistingUser(TethysController):
         _AppUser = self.get_app_user_model()
         _Organization = self.get_organization_model()
         SessionMaker = self.get_sessionmaker()
-        UR_APP_ADMIN = 'app_admin'  # TODO: Generalize this variable.
 
         valid = True
         selected_portal_users = []
@@ -64,6 +63,7 @@ class AddExistingUser(TethysController):
         admin_user = _AppUser.get_app_user_from_request(request, session)
         organization_options = admin_user.get_organizations(session, request, as_options=True, cascade=True)
         role_options = admin_user.get_assignable_roles(request, as_options=True)
+        no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
         session.close()
 
         active_app = get_active_app(request)
@@ -74,7 +74,7 @@ class AddExistingUser(TethysController):
         if request.POST and 'add-existing-user-submit' in request.POST:
             selected_portal_users = request.POST.getlist('portal-users')
             selected_role = request.POST.get('assign-role', '')
-            selected_organizations = request.POST.getlist('assign-organizations')
+            selected_organizations = request.POST.getlist('assign-organizations', [])
 
             # Validate
             if not selected_role:
@@ -86,10 +86,14 @@ class AddExistingUser(TethysController):
                 selected_portal_users_error = "Must select at least one user."
 
             # Must assign user to at least one organization
-            # if selected_role != _AppUser.ROLES.APP_ADMIN and len(selected_organizations) < 1:
-            #     valid = False
-            #     organization_select_error = "Must assign user to at least one organization"
-            # TODO: Handle this again once permissions are implemented
+            organization_required_roles = _AppUser.ROLES.get_organization_required_roles()
+            if selected_role in organization_required_roles and not selected_organizations:
+                valid = False
+                organization_select_error = "Must assign user to at least one organization"
+
+            # Reset selected organization (if any) when role requires no organization
+            if selected_organizations and selected_role in no_organization_roles:
+                selected_organizations = []
 
             if valid:
                 # Create a new AppUser for each django user and associate it with the Django users with the username
@@ -98,9 +102,10 @@ class AddExistingUser(TethysController):
                 for django_username in selected_portal_users:
                     new_app_user = _AppUser(
                         username=django_username,
+                        role=selected_role
                     )
 
-                    django_user = new_app_user.get_django_user()
+                    # django_user = new_app_user.get_django_user()
 
                     # To be safe we will remove all roles that may
                     # already be applied to the user to give us a clean slate
@@ -111,7 +116,7 @@ class AddExistingUser(TethysController):
                     #     new_app_user.role = selected_role
 
                     # Add user to selected organizations and assign permissions
-                    if selected_role != UR_APP_ADMIN:
+                    if selected_role not in no_organization_roles:
                         for organization_id in selected_organizations:
                             organization = create_session.query(_Organization).get(organization_id)
                             new_app_user.organizations.append(organization)
@@ -131,9 +136,6 @@ class AddExistingUser(TethysController):
         # Get App Users
         session = SessionMaker()
         app_users = session.query(_AppUser).all()
-
-        # Get My User
-        # admin_user = session.query(_AppUser).filter(_AppUser.username == request.user.username).one_or_none()
 
         # Setup portal users select
         all_app_usernames = [u.username for u in app_users]
@@ -181,6 +183,7 @@ class AddExistingUser(TethysController):
             'portal_users_select': portal_users_select,
             'role_select': role_select,
             'organization_select': organization_select,
-            'next_controller': next_controller
+            'next_controller': next_controller,
+            'no_organization_roles': no_organization_roles
         }
         return render(request, 'atcore/app_users/add_existing_user.html', context)

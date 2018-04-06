@@ -76,6 +76,7 @@ class ModifyUser(TethysController):
         admin_user = _AppUser.get_app_user_from_request(request, session)
         organization_options = admin_user.get_organizations(session, request, as_options=True, cascade=True)
         role_options = admin_user.get_assignable_roles(request, as_options=True)
+        no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
         session.close()
 
         # Process next
@@ -101,8 +102,8 @@ class ModifyUser(TethysController):
                     one()
 
             except (StatementError, NoResultFound):
-                messages.warning(request, 'The organization could not be found.')
-                return redirect(reverse('{}:app_users_manage_organizations'.format(app_namespace)))
+                messages.warning(request, 'The user could not be found.')
+                return redirect(reverse(next_controller))
 
             django_user = app_user.get_django_user()
             is_me = request.user == django_user
@@ -133,13 +134,18 @@ class ModifyUser(TethysController):
             password = request.POST.get('password', '')
             password_confirm = request.POST.get('password-confirm', '')
             selected_role = request.POST.get('assign-role', '')
-            selected_organizations = request.POST.getlist('assign-organizations')
+            selected_organizations = request.POST.getlist('assign-organizations', [])
 
             # Validate
             # Must assign user to at least one organization
-            if selected_role != UR_APP_ADMIN and len(selected_organizations) < 1:
+            organization_required_roles = _AppUser.ROLES.get_organization_required_roles()
+            if selected_role in organization_required_roles and not selected_organizations:
                 valid = False
                 organization_select_error = "Must assign user to at least one organization"
+
+            # Reset selected organization (if any) when role requires no organization
+            if selected_organizations and selected_role in no_organization_roles:
+                selected_organizations = []
 
             # Only get and validate username if creating a new user, not when editing
             if not editing:
@@ -203,6 +209,7 @@ class ModifyUser(TethysController):
                     # Only set username if not editing (username cannot be changed, because it is an id)
                     app_user.username = username
                     django_user.username = username
+                    modify_session.add(app_user)
 
                 # Set attributes of the django user
                 django_user.first_name = first_name
@@ -322,5 +329,6 @@ class ModifyUser(TethysController):
             'confirm_password_input': confirm_password_input,
             'role_select': role_select,
             'organization_select': organization_select,
+            'no_organization_roles': no_organization_roles
         }
         return render(request, self.template_name, context)

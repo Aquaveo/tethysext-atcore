@@ -37,14 +37,14 @@
       </form>
     </div>
   </div>
-  <div id="modify-organization-attributes"
+  <div id="app-users-attributes"
        data-license-to-consultant-map="{{ license_to_consultant_map|jsonify }}"
        data-hide-consultant-licenses="{{ hide_consultant_licenses|jsonify }}"></div>
 {% endblock %}
 
 {% block styles %}
   {{ block.super }}
-  <link href="{% static 'atcore/app_users/css/manage.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}

@@ -125,3 +125,19 @@ class Roles:
             return left_role
 
         return right_role
+
+    def get_organization_required_roles(self):
+        """
+        Users with these roles must be assigned to an organization.
+        Returns:
+            list: organization roles.
+        """
+        return [self.ORG_USER, self.ORG_ADMIN]
+
+    def get_no_organization_roles(self):
+        """
+        Users with these roles cannot be assigned to an organization.
+        Returns:
+            list: organization roles.
+        """
+        return [self.APP_ADMIN, self.DEVELOPER]

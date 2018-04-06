@@ -114,7 +114,7 @@ class ModifyOrganization(TethysController):
         # Don't have the ability to create more organizations
         if not editing and not licenses_can_assign:
             messages.error(request, "We're sorry, but you are unable to create new organizations at this time.")
-            return redirect(reverse('{}:app_users_manage_organizations').format(app_namespace))
+            return redirect(reverse(next_controller))
 
         if editing:
             # Initialize the parameters from the existing consultant
@@ -127,7 +127,7 @@ class ModifyOrganization(TethysController):
 
             except (StatementError, NoResultFound):
                 messages.warning(request, 'The organization could not be found.')
-                return redirect(reverse('{}:app_users_manage_organizations'.format(app_namespace)))
+                return redirect(reverse(next_controller))
 
             organization_name = organization.name
             old_license = organization.license

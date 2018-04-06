@@ -1,15 +1,20 @@
 function hide_organization_if_admin() {
-    var selected_val = $('#assign-role option:selected').val();
+    // Get data from page
+    var $app_users_attributes = $('#app-users-attributes');
+    var no_organization_roles = JSON.parse(
+        $app_users_attributes.attr('data-no-organization-roles')
+    );
+    var selected_role = $('#assign-role option:selected').val();
 
-    // Owner select is not required for enterprise organizations
-    if (selected_val == 'user_role_app_admin')
+    // Hide organization select if role cannot be assigned to an organization
+    if (no_organization_roles.indexOf(selected_role) !== -1)
     {
-        // Hide Owner Select
+        // Hide Organization Select
         $('#organization-select-wrapper').css('display', 'none');
     }
     else
     {
-        // Show Owner Select
+        // Show Organization Select
         $('#organization-select-wrapper').css('display', 'block');
     }
 }
@@ -19,6 +24,6 @@ $('#assign-role').select2().on('change', function(e) {
 });
 
 $(function() {
-    // Hide owner if enterprise
+    // Hide Organization Select if admin
     hide_organization_if_admin();
 });

@@ -1,8 +1,8 @@
 function hide_consultant_if_not_allowed() {
     // Get data from page
-    var $modify_organization_attributes = $('#modify-organization-attributes');
+    var $app_users_attributes = $('#app-users-attributes');
     var hide_consultant_licenses = JSON.parse(
-        $modify_organization_attributes.attr('data-hide-consultant-licenses')
+        $app_users_attributes.attr('data-hide-consultant-licenses')
     );
 
     var selected_license = $('#organization-license option:selected').val();
@@ -23,9 +23,9 @@ function hide_consultant_if_not_allowed() {
 
 function show_appropriate_owners() {
     // Get data from page
-    var $modify_organization_attributes = $('#modify-organization-attributes');
+    var $app_users_attributes = $('#app-users-attributes');
     var license_to_consultant_map = JSON.parse(
-        $modify_organization_attributes.attr('data-license-to-consultant-map')
+        $app_users_attributes.attr('data-license-to-consultant-map')
     );
 
     // Get selected license
