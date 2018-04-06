@@ -5,11 +5,11 @@ from django.utils.decorators import method_decorator
 from tethys_apps.base.controller import TethysController
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
-from tethysext.atcore.models.app_users import AppUser, Organization
 from tethysext.atcore.services._app_users import get_display_name_for_django_user
+from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 
 
-class AddExistingUser(TethysController):
+class AddExistingUser(TethysController, AppUsersControllerMixin):
     """
     Controller for add_existing_user page.
 
@@ -19,15 +19,6 @@ class AddExistingUser(TethysController):
     page_title = 'Add Existing User'
     template_name = 'atcore/app_users/add_existing_user.html'
     http_method_names = ['get', 'post']
-
-    def get_app_user_model(self):
-        return AppUser
-
-    def get_organization_model(self):
-        return Organization
-
-    def get_sessionmaker(self):
-        return NotImplementedError
 
     def get(self, request, *args, **kwargs):
         """

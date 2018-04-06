@@ -15,13 +15,12 @@ from django.utils.decorators import method_decorator
 from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.models.app_users import AppUser, Organization
-# App User Services
 from tethysext.atcore.services._app_users import remove_all_epanet_permissions_groups, get_user_peers, \
                                                  get_all_permissions_groups_for_user
+from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 
 
-class ManageUsers(TethysController):
+class ManageUsers(TethysController, AppUsersControllerMixin):
     """
     Controller for manage_users page.
 
@@ -32,15 +31,6 @@ class ManageUsers(TethysController):
     page_title = 'User Accounts'
     template_name = 'atcore/app_users/manage_users.html'
     http_method_names = ['get', 'delete']
-
-    def get_app_user_model(self):
-        return AppUser
-
-    def get_organization_model(self):
-        return Organization
-
-    def get_sessionmaker(self):
-        return NotImplementedError
 
     def get(self, request, *args, **kwargs):
         """

@@ -13,10 +13,10 @@ from django.shortcuts import render
 from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission
 # ATCore
-from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 
 
-class UserAccount(TethysController):
+class UserAccount(TethysController, AppUsersControllerMixin):
     """
     Controller for user_account page.
 
@@ -26,18 +26,6 @@ class UserAccount(TethysController):
     page_title = 'My Account'
     template_name = 'atcore/app_users/user_account.html'
     http_method_names = ['get']
-
-    def get_app_user_model(self):
-        return AppUser
-
-    def get_organization_model(self):
-        return Organization
-
-    def get_resource_model(self):
-        return Resource
-
-    def get_sessionmaker(self):
-        return NotImplementedError
 
     def get(self, request, *args, **kwargs):
         """

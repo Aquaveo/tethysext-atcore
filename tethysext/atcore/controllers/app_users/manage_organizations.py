@@ -14,10 +14,10 @@ from django.shortcuts import render
 from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 
 
-class ManageOrganizations(TethysController):
+class ManageOrganizations(TethysController, AppUsersControllerMixin):
     """
     Controller for manage_organizations page.
 
@@ -26,18 +26,6 @@ class ManageOrganizations(TethysController):
     """
     template_name = 'atcore/app_users/manage_organizations.html'
     http_method_names = ['get', 'delete']
-
-    def get_app_user_model(self):
-        return AppUser
-
-    def get_organization_model(self):
-        return Organization
-
-    def get_resource_model(self):
-        return Resource
-
-    def get_sessionmaker(self):
-        return NotImplementedError
 
     def get(self, request, *args, **kwargs):
         """

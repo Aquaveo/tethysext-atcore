@@ -15,10 +15,10 @@ from tethys_apps.decorators import permission_required
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
 # CityWater
-from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 
 
-class ManageOrganizationMembers(TethysController):
+class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
     """
     Controller for manage_organization_members page.
 
@@ -29,18 +29,6 @@ class ManageOrganizationMembers(TethysController):
     page_title = 'Members'
     template_name = 'atcore/app_users/manage_organization_members.html'
     http_method_names = ['get', 'post']
-
-    def get_app_user_model(self):
-        return AppUser
-
-    def get_organization_model(self):
-        return Organization
-
-    def get_resource_model(self):
-        return Resource
-
-    def get_sessionmaker(self):
-        return NotImplementedError
 
     def get(self, request, *args, **kwargs):
         """

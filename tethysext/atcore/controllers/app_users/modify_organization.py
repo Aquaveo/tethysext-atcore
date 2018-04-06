@@ -18,10 +18,10 @@ from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 # ATCore
-from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 
 
-class ModifyOrganization(TethysController):
+class ModifyOrganization(TethysController, AppUsersControllerMixin):
     """
     Controller for modify_organization page.
 
@@ -32,18 +32,6 @@ class ModifyOrganization(TethysController):
     page_title = 'Add Organization'
     template_name = 'atcore/app_users/modify_organization.html'
     http_method_names = ['get', 'post']
-
-    def get_app_user_model(self):
-        return AppUser
-
-    def get_organization_model(self):
-        return Organization
-
-    def get_resource_model(self):
-        return Resource
-
-    def get_sessionmaker(self):
-        return NotImplementedError
 
     def get(self, request, *args, **kwargs):
         """
