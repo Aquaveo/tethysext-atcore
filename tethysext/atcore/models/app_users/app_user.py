@@ -3,8 +3,9 @@ import uuid
 from sqlalchemy import Column, Boolean, String
 from sqlalchemy.orm import relationship, validates, reconstructor
 from tethysext.atcore.models.types.guid import GUID
-from tethysext.atcore.services._app_users import get_display_name_for_django_user
+from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.user_roles import Roles
+from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
 from .associations import user_organization_association
 from .base import AppUsersBase
@@ -42,6 +43,7 @@ class AppUser(AppUsersBase):
         """
         self._django_user = None
 
+
         # Call super class
         super(AppUser, self).__init__(*args, **kwargs)
 
@@ -67,7 +69,17 @@ class AppUser(AppUsersBase):
         return self._django_user
 
     @classmethod
-    def get_app_user_from_request(cls, request, session):
+    def get_app_user_from_request(cls, request, session, redirect_if_invalid=True):
+        """
+        Get the AppUser cooresponding with the request user and redirect if no app user exists.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object.
+            request(django.request): Django request object.
+            redirect_if_invalid (bool): Redirects to app library page if no app user is found for the request user.
+
+        Returns:
+            AppUser: app user cooresponding with the request user or None if one does not exist and redirect is False.
+        """
         if request.user.is_staff:
             username = cls.STAFF_USERNAME
         else:
@@ -75,7 +87,15 @@ class AppUser(AppUsersBase):
 
         app_user = session.query(cls).filter(cls.username == username).one_or_none()
 
-        session.close()
+        # If no app user found, redirect to the apps library page and warn.
+        if redirect_if_invalid:
+            if app_user is None and not request.user.is_staff and redirect_if_invalid:
+                from django.contrib import messages
+                from django.urls import reverse
+                from django.shortcuts import redirect
+                messages.warning(request, "We're sorry, but you do not have an account in this app.")
+                session.close()
+                return redirect(reverse('app_library'))
 
         return app_user
 
@@ -307,4 +327,36 @@ class AppUser(AppUsersBase):
 
         Returns: Name of role
         """
-        return self.ROLES.get_display_name_for(self.role) if display_name else self.role
+        return self.ROLES.get_display_name_for(str(self.role)) if display_name else self.role
+
+    def update_permissions(self, session, request, app_namespace):
+        """
+        Update permissions of this user based on its role and the licenses of the organizations to which it belongs.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object.
+            request(django.request): Django request object.
+            app_namespace(str): Namespace to use to differentiate these permissions from other apps with the same permissions. 
+        """  # noqa: E501
+        # Get models
+        _Organization = self.get_organization_model()
+
+        # Create permissions manager
+        permissions_manager = AppPermissionsManager(app_namespace, self.ROLES, _Organization.LICENSES)
+
+        # Clear all epanet permissions
+        permissions_manager.remove_all_permissions_groups(self.django_user)
+
+        # App admins shouldn't belong to any organizations (i.e.: have license restrictions)
+        if self.role == self.ROLES.APP_ADMIN:
+            # Clear organizations
+            self.organizations = []
+
+            # Assign permissions
+            permissions_manager.assign_user_permission(self.django_user, str(self.role), _Organization.LICENSES.NONE)
+
+        # Other user roles belong to organizations, which impose license restrictions
+        # Assign permissions according to organization membership
+        for organization in self.get_organizations(session, request, cascade=False):
+            permissions_manager.assign_user_permission(self.django_user, str(self.role), str(organization.license))
+
+        self.django_user.save()

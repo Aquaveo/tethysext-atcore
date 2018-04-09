@@ -16,6 +16,7 @@ class Licenses:
     ADVANCED = 'advanced'
     PROFESSIONAL = 'professional'
     ENTERPRISE = 'enterprise'
+    NONE = 'no-license'
 
     def __contains__(self, item):
         return item in self.list()
