@@ -43,7 +43,6 @@ class AppUser(AppUsersBase):
         """
         self._django_user = None
 
-
         # Call super class
         super(AppUser, self).__init__(*args, **kwargs)
 
@@ -335,7 +334,7 @@ class AppUser(AppUsersBase):
         Args:
             session(sqlalchemy.session): SQLAlchemy session object.
             request(django.request): Django request object.
-            app_namespace(str): Namespace to use to differentiate these permissions from other apps with the same permissions. 
+            app_namespace(str): Namespace to use to differentiate these permissions from other apps with the same permissions.
         """  # noqa: E501
         # Get models
         _Organization = self.get_organization_model()

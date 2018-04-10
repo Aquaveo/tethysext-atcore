@@ -8,7 +8,6 @@
 """
 
 
-
 class AppPermissionsManager:
 
     _STD_V_ROLE = 'standard_viewer_role'
@@ -69,7 +68,7 @@ class AppPermissionsManager:
         # Handle all combinations
         if role == self.ROLES.ORG_USER:
             if license == self.LICENSES.STANDARD:
-                 return self.STANDARD_VIEWER_ROLE
+                return self.STANDARD_VIEWER_ROLE
             elif license == self.LICENSES.ADVANCED:
                 return self.ADVANCED_VIEWER_ROLE
             elif license == self.LICENSES.PROFESSIONAL:

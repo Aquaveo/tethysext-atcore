@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils.functional import wraps
 
+
 # TODO: Generalize to work with function and method controllers. If possible...
 def active_user_required(*args, **kwargs):
     def decorator(controller_func):
