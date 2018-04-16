@@ -5,8 +5,8 @@ from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddE
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 
 
-def urls(url_map_maker, base_url_path='', base_template='atcore/app_users/base.html', app=None,
-         persistent_store_name=None, custom_controllers=(), custom_models=()):
+def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html',
+         custom_controllers=(), custom_models=()):
     """
     Generate UrlMap objects for app_users extension. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
@@ -17,10 +17,10 @@ def urls(url_map_maker, base_url_path='', base_template='atcore/app_users/base.h
 
     Args:
         url_map_maker(UrlMap): UrlMap class bound to app root url.
-        base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
-        base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful to add navigation to ManageUsers, ManageOrganizations, ManageResources, and UserAccount views.
         app(TethysAppBase): instance of Tethys app class.
         persistent_store_name(str): name of persistent store database setting the controllers should use to create sessions.
+        base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
+        base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful to add navigation to ManageUsers, ManageOrganizations, ManageResources, and UserAccount views.
         custom_controllers(list<TethysController>): Any number of TethysController subclasses to override default controller classes.
         custom_models(cls): custom subclasses of AppUser, Organization, or Resource models.
 

@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship, validates, reconstructor
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.user_roles import Roles
-from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
 from .associations import user_organization_association
 from .base import AppUsersBase
@@ -66,6 +65,33 @@ class AppUser(AppUsersBase):
         if self._django_user is None:
             self._django_user = self.get_django_user()
         return self._django_user
+
+    @property
+    def email(self):
+        return self.django_user.email
+
+    @email.setter
+    def email(self, value):
+        self.django_user.email = value
+        self.django_user.save()
+
+    @property
+    def first_name(self):
+        return self.django_user.first_name
+
+    @first_name.setter
+    def first_name(self, value):
+        self.django_user.first_name = value
+        self.django_user.save()
+
+    @property
+    def last_name(self):
+        return self.django_user.last_name
+
+    @last_name.setter
+    def last_name(self, value):
+        self.django_user.last_name = value
+        self.django_user.save()
 
     @classmethod
     def get_app_user_from_request(cls, request, session, redirect_if_invalid=True):
@@ -328,22 +354,19 @@ class AppUser(AppUsersBase):
         """
         return self.ROLES.get_display_name_for(str(self.role)) if display_name else self.role
 
-    def update_permissions(self, session, request, app_namespace):
+    def update_permissions(self, session, request, permissions_manager):
         """
         Update permissions of this user based on its role and the licenses of the organizations to which it belongs.
         Args:
             session(sqlalchemy.session): SQLAlchemy session object.
             request(django.request): Django request object.
-            app_namespace(str): Namespace to use to differentiate these permissions from other apps with the same permissions.
-        """  # noqa: E501
+            permissions_manager(AppPermissionsManager): Permissions manager bound to current app.
+        """
         # Get models
         _Organization = self.get_organization_model()
 
-        # Create permissions manager
-        permissions_manager = AppPermissionsManager(app_namespace, self.ROLES, _Organization.LICENSES)
-
         # Clear all epanet permissions
-        permissions_manager.remove_all_permissions_groups(self.django_user)
+        permissions_manager.remove_all_permissions_groups(self)
 
         # App admins shouldn't belong to any organizations (i.e.: have license restrictions)
         if self.role == self.ROLES.APP_ADMIN:
@@ -351,11 +374,11 @@ class AppUser(AppUsersBase):
             self.organizations = []
 
             # Assign permissions
-            permissions_manager.assign_user_permission(self.django_user, str(self.role), _Organization.LICENSES.NONE)
+            permissions_manager.assign_user_permission(self, str(self.role), _Organization.LICENSES.NONE)
 
         # Other user roles belong to organizations, which impose license restrictions
         # Assign permissions according to organization membership
         for organization in self.get_organizations(session, request, cascade=False):
-            permissions_manager.assign_user_permission(self.django_user, str(self.role), str(organization.license))
+            permissions_manager.assign_user_permission(self, str(self.role), str(organization.license))
 
         self.django_user.save()

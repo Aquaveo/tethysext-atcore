@@ -15,6 +15,7 @@ from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class ManageOrganizations(TethysController, AppUsersControllerMixin):
@@ -46,7 +47,7 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
 
         return JsonResponse({'success': False, 'error': 'Invalid action: {}'.format(action)})
 
-    # @method_decorator(active_user_required) #TODO: Generalize active_user_required
+    @active_user_required()
     @permission_required('view_organizations')
     def _handle_get(self, request, *args, **kwargs):
         """

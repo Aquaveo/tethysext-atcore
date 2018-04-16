@@ -19,6 +19,7 @@ from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 # ATCore
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class ModifyOrganization(TethysController, AppUsersControllerMixin):
@@ -45,7 +46,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         """
         return self._handle_modify_user_requests(request, *args, **kwargs)
 
-    # @method_decorator(active_user_required) #TODO: Generalize active_user_required
+    @active_user_required()
     @permission_required('modify_organizations')
     def _handle_modify_user_requests(self, request, organization_id=None, *args, **kwargs):
         """
@@ -222,11 +223,10 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
                 create_session.commit()
 
                 # Update organization member permissions if license changed
-                # TODO: Implement with permissions
-                # if selected_license != old_license:
-                #     for member in organization.users:
-                #         django_user = member.get_django_user()
-                #         update_user_permissions(create_session, django_user)
+                if selected_license != old_license:
+                    permissions_manager = self.get_permissions_manager()
+                    for member in organization.users:
+                        member.update_permissions(create_session, request, permissions_manager)
 
                 create_session.close()
 

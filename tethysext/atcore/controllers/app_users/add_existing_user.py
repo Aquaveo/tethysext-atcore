@@ -96,27 +96,34 @@ class AddExistingUser(TethysController, AppUsersControllerMixin):
                         role=selected_role
                     )
 
+                    # Get permissions manager
+                    permissions_manager = self.get_permissions_manager()
+
                     # django_user = new_app_user.get_django_user()
 
                     # To be safe we will remove all roles that may
-                    # already be applied to the user to give us a clean slate
-                    # TODO: Implement once permissions are implemented
-                    # remove_all_epanet_permissions_groups(django_user)
+                    # already be applied to the user django user associated with the new app user
+                    # to give us a clean slate
+                    permissions_manager.remove_all_permissions_groups(new_app_user)
 
-                    # if selected_role and new_app_user.username != request.user.username:
-                    #     new_app_user.role = selected_role
+                    # Users cannot change their own role
+                    if selected_role and new_app_user.username != request.user.username:
+                        new_app_user.role = selected_role
 
                     # Add user to selected organizations and assign permissions
                     if selected_role not in no_organization_roles:
                         for organization_id in selected_organizations:
                             organization = create_session.query(_Organization).get(organization_id)
                             new_app_user.organizations.append(organization)
-                            # assign_user_permission(django_user, new_app_user.role, organization.access_level)
+                            permissions_manager.assign_user_permission(
+                                new_app_user,
+                                new_app_user.role,
+                                organization.license
+                            )
 
                     # If user has app admin role, assign app admin permission
                     else:
-                        # assign_user_permission(django_user, new_app_user.role)
-                        pass
+                        permissions_manager.assign_user_permission(new_app_user, new_app_user.role)
 
                     create_session.add(new_app_user)
 

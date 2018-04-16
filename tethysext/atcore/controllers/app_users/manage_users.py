@@ -15,9 +15,8 @@ from django.utils.decorators import method_decorator
 from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.services._app_users import remove_all_epanet_permissions_groups, get_user_peers, \
-                                                 get_all_permissions_groups_for_user
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class ManageUsers(TethysController, AppUsersControllerMixin):
@@ -53,7 +52,7 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
 
         return JsonResponse({'success': False, 'error': 'Invalid action: {}'.format(action)})
 
-    # @method_decorator(active_user_required) #TODO: Generalize active_user_required
+    @active_user_required()
     @permission_required('view_users')
     def _handle_get(self, request, *args, **kwargs):
         """
@@ -61,8 +60,10 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
         """
         _AppUser = self.get_app_user_model()
         _Organization = self.get_organization_model()
+        permissions_manager = self.get_permissions_manager()
         make_session = self.get_sessionmaker()
         session = make_session()
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # List users
         user_cards = []
@@ -78,35 +79,33 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
             app_users = session.query(_AppUser).all()
         else:
             # All others can manage users that belong to their organizations
-            app_users = get_user_peers(session, request, include_self=False, cascade=True)
+            app_users = request_app_user.get_peers(session, request, include_self=False, cascade=True)
 
         app_users = sorted(app_users, key=lambda u: u.username)
 
+        # TODO: Refactor this with permissions
         permission_value_dict = {'standard viewer': 0, 'standard admin': 1,
                                  'professional viewer': 2, 'professional admin': 3,
                                  'enterprise viewer': 4, 'enterprise admin': 5,
                                  'app admin': 100, 'staff': 1000}
 
-        me = _AppUser.get_app_user_from_request(request, session)
-
-        if me:
-            app_users.insert(0, me)
+        # Handle how current user is shown (me)
+        if request_app_user:
+            app_users.insert(0, request_app_user)
             request_permission_value = None
 
         for app_user in app_users:
-            django_user = app_user.get_django_user()
-
             # This should only happen with staff users...
-            if django_user is None:
+            if app_user.is_staff():
                 continue
 
-            is_me = django_user == request.user
+            is_me = app_user.username == request_app_user.username
 
             editable = False
             organizations = session.query(_Organization.name, _Organization.id).\
                 filter(_Organization.members.contains(app_user)).\
                 all()
-            permissions_groups = get_all_permissions_groups_for_user(django_user, as_display_name=True)
+            permissions_groups = permissions_manager.get_all_permissions_groups_for(app_user, as_display_name=True)
 
             # Find permission level and decide if request.user can edit other users
             permission_value_list = [-1]
@@ -132,7 +131,7 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
                 'id': app_user.id,
                 'username': app_user.username,
                 'fullname': 'Me' if is_me else app_user.get_display_name(append_username=True),
-                'email': django_user.email,
+                'email': app_user.email,
                 'role': app_user.get_role(True),
                 'organizations': organizations,
                 'editable': editable
@@ -216,15 +215,14 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
             JsonResponse: success and error.
         """
         _AppUser = self.get_app_user_model()
+        permissions_manager = self.get_permissions_manager()
         make_session = self.get_sessionmaker()
 
         json_response = {'success': True}
         session = make_session()
         try:
             app_user = session.query(_AppUser).get(user_id)
-            django_user = app_user.get_django_user()
-            remove_all_epanet_permissions_groups(django_user)
-            django_user.save()
+            permissions_manager.remove_all_permissions_groups(app_user)
             session.delete(app_user)
             session.commit()
         except Exception as e:

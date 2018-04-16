@@ -9,6 +9,7 @@ from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 # from tethysext.atcore.services._app_users import update_user_permissions
+from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class ModifyUser(TethysController, AppUsersControllerMixin):
@@ -33,7 +34,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
         """
         return self._handle_modify_user_requests(request, *args, **kwargs)
 
-    # @method_decorator(active_user_required) #TODO: Generalize active_user_required
+    @active_user_required()
     @permission_required('modify_users')
     def _handle_modify_user_requests(self, request, user_id=None, *args, **kwargs):
         """
@@ -187,7 +188,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
                 # Lookup existing app user and django user
                 if editing:
                     app_user = modify_session.query(_AppUser).get(user_id)
-                    django_user = app_user.get_django_user()
+                    django_user = app_user.django_user
 
                     # Reset organizations
                     app_user.organizations = []
@@ -226,8 +227,8 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
                 modify_session.commit()
 
                 # Update user permissions
-                # TODO: Update with permissions
-                # update_user_permissions(modify_session, django_user)
+                permissions_manager = self.get_permissions_manager()
+                app_user.update_permissions(modify_session, request, permissions_manager)
                 modify_session.close()
 
                 # Redirect

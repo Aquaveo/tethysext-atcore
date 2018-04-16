@@ -7,12 +7,14 @@
 ********************************************************************************
 """
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
 
 class AppUsersControllerMixin:
     _AppUser = AppUser
     _Organization = Organization
     _Resource = Resource
+    _PermissionsManager = AppPermissionsManager
     _app = None
     _persistent_store_name = ''
 
@@ -24,6 +26,9 @@ class AppUsersControllerMixin:
 
     def get_resource_model(self):
         return self._Resource
+
+    def get_permissions_manager(self):
+        return self._PermissionsManager(self._app.namespace)
 
     def get_sessionmaker(self):
         if not self._app:

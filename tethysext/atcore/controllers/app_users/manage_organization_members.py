@@ -16,6 +16,7 @@ from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
 # CityWater
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
@@ -42,7 +43,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
         """
         return self._handle_manage_member_request(request, *args, **kwargs)
 
-    # @method_decorator(active_user_required) #TODO: Generalize active_user_required
+    @active_user_required()
     @permission_required('modify_organizations')
     def _handle_manage_member_request(self, request, organization_id, *args, **kwargs):
         """
@@ -64,7 +65,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
 
         # Defaults
         session = make_session()
-        request_user = _AppUser.get_app_user_from_request(request, session)
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Lookup existing organization
         organization = session.query(_Organization).get(organization_id)
@@ -76,7 +77,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
             selected_members = request.POST.getlist('members-select')
 
             # Reset Members
-            # original_members = set(organization.members)
+            original_members = set(organization.members)
             organization.members = []
 
             # Add members and assign permissions again
@@ -91,15 +92,13 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
             # Members that need to be updated are those in the symmetric difference between the set of original members
             # and the set of updated members
             # See: http://www.linuxtopia.org/online_books/programming_books/python_programming/python_ch16s03.html
-            # updated_members = set(organization.members)
-            # removed_and_added_members = original_members ^ updated_members
+            updated_members = set(organization.members)
+            removed_and_added_members = original_members ^ updated_members
 
-            # TODO: implement with permissions
-            # for member in removed_and_added_members:
-            #     django_user = member.get_django_user()
-            #     if django_user is None:
-            #         continue
-            #     update_user_permissions(session, django_user)
+            permissions_manager = self.get_permissions_manager()
+
+            for member in removed_and_added_members:
+                member.update_permissions(session, request, permissions_manager)
 
             session.close()
 
@@ -107,7 +106,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
             return redirect(reverse(next_controller))
 
         # Populate members select box
-        peers = request_user.get_peers(session, request, include_self=True, cascade=True)
+        peers = request_app_user.get_peers(session, request, include_self=True, cascade=True)
         peers = sorted(peers, key=lambda u: u.username)
 
         members_options = set()

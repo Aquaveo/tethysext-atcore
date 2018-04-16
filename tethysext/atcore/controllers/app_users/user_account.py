@@ -8,12 +8,12 @@
 """
 # Django
 from django.shortcuts import render
-
 # Tethys core
 from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission
 # ATCore
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class UserAccount(TethysController, AppUsersControllerMixin):
@@ -34,7 +34,7 @@ class UserAccount(TethysController, AppUsersControllerMixin):
         """
         return self._handle_get(request)
 
-    # @method_decorator(active_user_required) #TODO: Generalize active_user_required
+    @active_user_required()
     def _handle_get(self, request, *args, **kwargs):
         """
         Handle get requests.
@@ -42,6 +42,7 @@ class UserAccount(TethysController, AppUsersControllerMixin):
         _AppUser = self.get_app_user_model()
         _Organization = self.get_organization_model()
         make_session = self.get_sessionmaker()
+        permissions_manager = self.get_permissions_manager()
         session = make_session()
 
         request_app_user = _AppUser.get_app_user_from_request(request, session)
@@ -59,9 +60,11 @@ class UserAccount(TethysController, AppUsersControllerMixin):
                 'license': _Organization.LICENSES.get_display_name_for(user_organization.license)
             })
 
-        # TODO: Implement with permissions
-        permissions_groups = []
-        # permissions_groups = get_all_permissions_groups_for_user(django_user, as_display_name=True)
+        # Get permissions groups
+        permissions_groups = permissions_manager.get_all_permissions_groups_for(
+            request_app_user,
+            as_display_name=True
+        )
 
         context = {
             'page_title': self.page_title,
