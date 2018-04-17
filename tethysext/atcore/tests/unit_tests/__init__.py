@@ -5,3 +5,4 @@ from models.organization_resource_tests import OrganizationResourceTests  # noqa
 from models.resource_tests import ResourceTests  # noqa: F401
 from services.app_users.licenses import LicensesTests  # noqa: F401
 from services.app_users.user_roles import AppUserRoleTests  # noqa: F401
+from services.paginate import PaginateTests  # noqa: F401

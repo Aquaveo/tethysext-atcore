@@ -64,7 +64,6 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
         else:
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
 
-
         session = make_session()
         request_app_user = _AppUser.get_app_user_from_request(request, session)
 
@@ -103,8 +102,8 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
                 session.commit()
 
                 # Reset custom_permissions on set of old and new members
-                # Members that need to be updated are those in the symmetric difference between the set of original members
-                # and the set of updated members
+                # Members that need to be updated are those in the symmetric difference between
+                # the set of original members and the set of updated members
                 # See: http://www.linuxtopia.org/online_books/programming_books/python_programming/python_ch16s03.html
                 updated_members = set(organization.members)
                 removed_and_added_members = original_members ^ updated_members
@@ -115,7 +114,10 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
                 for member in removed_members:
                     if not member.organizations:
                         organization.members.append(member)
-                        messages.warning(request, 'Member "{}" was not removed to prevent from being orphaned.'.format(member.username))
+                        messages.warning(
+                            request,
+                            'Member "{}" was not removed to prevent from being orphaned.'.format(member.username)
+                        )
 
                 # Persist changes
                 session.commit()

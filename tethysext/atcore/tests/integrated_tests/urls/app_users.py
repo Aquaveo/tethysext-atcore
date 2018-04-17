@@ -164,13 +164,21 @@ class AppUserUrlsTests(TethysTestCase):
         self.controller_asserts(url_maps, ['app_users_manage_organization_members'], ManageOrganizationMembers, CustomManageOrganizationMembers)  # noqa: E501
 
     def test_invalid_controller_arg_class(self):
-        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, custom_controllers=[InvalidController])
+        mockapp = object()
+        mock_db_name = "foo"
+        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          custom_controllers=[InvalidController])
 
     def test_invalid_controller_arg_not_class(self):
-        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, custom_controllers=['not-a-class'])
+        mockapp = object()
+        mock_db_name = "foo"
+        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          custom_controllers=['not-a-class'])
 
     def test_custom_base_url_path_and_models(self):
-        url_maps = app_users.urls(MockUrlMapMaker, None, None, base_url_path=self.base_url_path,
+        mockapp = object()
+        mock_db_name = "foo"
+        url_maps = app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, base_url_path=self.base_url_path,
                                   custom_controllers=[CustomManageUsers, CustomModifyUser, CustomAddExistingUser])
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
@@ -180,7 +188,10 @@ class AppUserUrlsTests(TethysTestCase):
 
     def test_custom_models(self):
         # NOTE: Don't know how to validate this... for not just test that it doesn't throw an error.
-        app_users.urls(MockUrlMapMaker, None, None, custom_models=[CustomAppUser])
-        app_users.urls(MockUrlMapMaker, None, None, custom_models=[CustomOrganization])
-        app_users.urls(MockUrlMapMaker, None, None, custom_models=[CustomResource])
-        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, custom_models=['invalid-model'])
+        mockapp = object()
+        mock_db_name = "foo"
+        app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomAppUser])
+        app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomOrganization])
+        app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomResource])
+        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          custom_models=['invalid-model'])

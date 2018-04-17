@@ -361,7 +361,7 @@ class AppUser(AppUsersBase):
             session(sqlalchemy.session): SQLAlchemy session object.
             request(django.request): Django request object.
             permissions_manager(AppPermissionsManager): Permissions manager bound to current app.
-        """
+        """  # noqa: E501
         # Get models
         _Organization = self.get_organization_model()
 
