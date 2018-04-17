@@ -109,7 +109,7 @@ class OrganizationTests(TethysTestCase):
         perm = self.organization.get_modify_members_permission()
         self.assertEqual('modify_organization_members', perm)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_update_member_activity(self, mock_has_permission_function):
         self.organization.active = False
         self.organization.update_member_activity(self.session, self.mock_request)

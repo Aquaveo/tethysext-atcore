@@ -12,9 +12,9 @@ class Roles:
     """
     Container and methods for user roles.
     """
-    ORG_USER = 'user_role_org_user'  # TODO: migrate 'user_role_viewer' to this.
-    ORG_ADMIN = 'user_role_org_admin'  # TODO: migrate 'user_role_viewer' to this.
-    APP_ADMIN = 'user_role_app_admin'  # TODO: migrate 'app_admin' to this.
+    ORG_USER = 'user_role_org_user'
+    ORG_ADMIN = 'user_role_org_admin'
+    APP_ADMIN = 'user_role_app_admin'
     DEVELOPER = 'user_role_developer'
 
     def __contains__(self, item):
@@ -95,7 +95,6 @@ class Roles:
         if not self.is_valid(role):
             raise ValueError('Invalid role given: {}.'.format(role))
 
-        # TODO: IMPLEMENT THESE PERMISSIONS AND REFACTOR ACCORDINGLY
         if role == self.ORG_USER:
             return 'assign_org_users_role'
         elif role == self.ORG_ADMIN:

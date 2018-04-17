@@ -98,7 +98,7 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
 
                 resources[resource.DISPLAY_TYPE_PLURAL].append(resource.__dict__)
 
-            # Get permissions
+            # Get custom_permissions
             can_modify = has_permission(request, organization.get_modify_permission())
             can_modify_members = has_permission(request, organization.get_modify_members_permission())
 

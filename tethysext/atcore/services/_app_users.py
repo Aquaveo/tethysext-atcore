@@ -125,7 +125,7 @@ def get_all_permissions_groups_for_user(user, as_display_name=False):
         user: Django User object.
         as_display_name: Returns display names instead of programmatic name if True.
 
-    Returns: Returns a list of all epanet permissions group objects for this user.
+    Returns: Returns a list of all epanet custom_permissions group objects for this user.
     """
     # TODO: Replace instances with app_permissions_manager.get_all_permissions_groups_for()
 
@@ -196,7 +196,7 @@ def get_owner_options_and_mapping(session, request, license_options):
 
 def assign_user_permission(request_or_user, user_role, license=None, addons=None):
     """
-    Add permissions based on combo of user_role and level
+    Add custom_permissions based on combo of user_role and level
     Args:
         request_or_user: Django Request or User object.
         user_role: Role of user (Admin, Viewer, or App Admin).
@@ -207,7 +207,7 @@ def assign_user_permission(request_or_user, user_role, license=None, addons=None
 
 def remove_user_permission(request_or_user, user_role, license=None):
     """
-    Remove permissions based on combo of user_role and level
+    Remove custom_permissions based on combo of user_role and level
     Args:
         request_or_user: Django Request or User object.
         user_role: Role of user (Admin, Viewer, or App Admin).
@@ -218,7 +218,7 @@ def remove_user_permission(request_or_user, user_role, license=None):
 
 def update_user_permissions(session, request_or_user):
     """
-    Update permissions for user. Permissions are a combination of the user's role (Admin, Viewer, or App Admin), and
+    Update custom_permissions for user. Permissions are a combination of the user's role (Admin, Viewer, or App Admin), and
     the license of the organizations the user belongs to (Standard, Professional, Enterprise).
     Args:
         session: SQLAlchemy session object.

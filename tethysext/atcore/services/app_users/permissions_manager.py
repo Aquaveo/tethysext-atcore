@@ -11,58 +11,71 @@ from tethysext.atcore.services.app_users.licenses import Licenses
 
 
 class AppPermissionsManager:
-    _STD_V_ROLE = 'standard_viewer_role'
-    _STD_A_ROLE = 'standard_admin_role'
-    _ADV_V_ROLE = 'advanced_viewer_role'
-    _ADV_A_ROLE = 'advanced_admin_role'
-    _PRO_V_ROLE = 'professional_viewer_role'
-    _PRO_A_ROLE = 'professional_admin_role'
-    _ENT_V_ROLE = 'enterprise_viewer_role'
-    _ENT_A_ROLE = 'enterprise_admin_role'
-    _APP_A_ROLE = 'app_admin_role'
+    STD_V_ROLE = 'standard_viewer_role'
+    STD_A_ROLE = 'standard_admin_role'
+    ADV_V_ROLE = 'advanced_viewer_role'
+    ADV_A_ROLE = 'advanced_admin_role'
+    PRO_V_ROLE = 'professional_viewer_role'
+    PRO_A_ROLE = 'professional_admin_role'
+    ENT_V_ROLE = 'enterprise_viewer_role'
+    ENT_A_ROLE = 'enterprise_admin_role'
+    APP_A_ROLE = 'app_admin_role'
 
     ROLES = Roles()
     LICENSES = Licenses()
 
     def __init__(self, app_namespace):
         """
-        Manages permissions for a given app.
+        Manages custom_permissions for a given app.
         Args:
             app_namespace(str): Namespace of the app (e.g.: "epanet").
         """
         self.app_namespace = app_namespace
 
-        self.STANDARD_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self._STD_V_ROLE)
-        self.STANDARD_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self._STD_A_ROLE)
-        self.ADVANCED_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self._ADV_V_ROLE)
-        self.ADVANCED_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self._ADV_A_ROLE)
-        self.PROFESSIONAL_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self._PRO_V_ROLE)
-        self.PROFESSIONAL_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self._PRO_A_ROLE)
-        self.ENTERPRISE_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self._ENT_V_ROLE)
-        self.ENTERPRISE_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self._ENT_A_ROLE)
-        self.APP_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self._APP_A_ROLE)
+        self.STANDARD_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.STD_V_ROLE)
+        self.STANDARD_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.STD_A_ROLE)
+        self.ADVANCED_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.ADV_V_ROLE)
+        self.ADVANCED_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.ADV_A_ROLE)
+        self.PROFESSIONAL_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.PRO_V_ROLE)
+        self.PROFESSIONAL_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.PRO_A_ROLE)
+        self.ENTERPRISE_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.ENT_V_ROLE)
+        self.ENTERPRISE_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.ENT_A_ROLE)
+        self.APP_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.APP_A_ROLE)
 
-    def list(self):
+    def list(self, with_namespace=False):
         """
         List all permission groups.
         Returns:
-            list<str>: names of all the permissions groups.
+            list<str>: names of all the custom_permissions groups.
         """
-        return [
-            self.STANDARD_VIEWER_ROLE,
-            self.STANDARD_ADMIN_ROLE,
-            self.ADVANCED_VIEWER_ROLE,
-            self.ADVANCED_ADMIN_ROLE,
-            self.PROFESSIONAL_VIEWER_ROLE,
-            self.PROFESSIONAL_ADMIN_ROLE,
-            self.ENTERPRISE_VIEWER_ROLE,
-            self.ENTERPRISE_ADMIN_ROLE,
-            self.APP_ADMIN_ROLE
-        ]
+        if with_namespace:
+            return [
+                self.STANDARD_VIEWER_ROLE,
+                self.STANDARD_ADMIN_ROLE,
+                self.ADVANCED_VIEWER_ROLE,
+                self.ADVANCED_ADMIN_ROLE,
+                self.PROFESSIONAL_VIEWER_ROLE,
+                self.PROFESSIONAL_ADMIN_ROLE,
+                self.ENTERPRISE_VIEWER_ROLE,
+                self.ENTERPRISE_ADMIN_ROLE,
+                self.APP_ADMIN_ROLE
+            ]
+        else:
+            return [
+                self.STD_V_ROLE,
+                self.STD_A_ROLE,
+                self.ADV_V_ROLE,
+                self.ADV_A_ROLE,
+                self.PRO_V_ROLE,
+                self.PRO_A_ROLE,
+                self.ENT_V_ROLE,
+                self.ENT_A_ROLE,
+                self.APP_A_ROLE
+            ]
 
     def get_permissions_group_for(self, role, license=None, **kwargs):
         """
-        Get the name of the permissions group for the given role, license, and other criteria.
+        Get the name of the custom_permissions group for the given role, license, and other criteria.
         Args:
             role(str): Role of user.
             license(str): License of organization to which user belongs.
@@ -102,7 +115,7 @@ class AppPermissionsManager:
             permissions_group(django.contrib.auth.models.Group): permission group.
 
         Returns:
-            str: Display name for the given permissions group.
+            str: Display name for the given custom_permissions group.
         """
         if permissions_group == self.STANDARD_VIEWER_ROLE:
             return 'Standard Viewer'
@@ -182,13 +195,13 @@ class AppPermissionsManager:
 
     def get_all_permissions_groups_for(self, app_user, as_display_name=False):
         """
-        Get all of the permissions groups to which the given user is assigned.
+        Get all of the custom_permissions groups to which the given user is assigned.
         Args:
             app_user(tethysext.atcore.models.AppUser): AppUser object
             as_display_name(bool): Returns display names instead of programmatic name if True.
 
         Returns:
-            list: all permissions group objects of the bound app to which the user belongs.
+            list: all custom_permissions group objects of the bound app to which the user belongs.
         """
         namespace = self.app_namespace + ':'
         if app_user.is_staff():
@@ -212,7 +225,7 @@ class AppPermissionsManager:
 
     def assign_user_permission(self, app_user, role, license, **kwargs):
         """
-        Add permissions based on combo of role, license and other given criteria.
+        Add custom_permissions based on combo of role, license and other given criteria.
 
         Args:
             app_user(tethysext.atcore.models.AppUser): AppUser object
@@ -231,7 +244,7 @@ class AppPermissionsManager:
 
     def remove_user_permission(self, app_user, role, license=None, **kwargs):
         """
-        Remove permissions based on combo of role, license and other given criteria.
+        Remove custom_permissions based on combo of role, license and other given criteria.
 
         Args:
             app_user(tethysext.atcore.models.AppUser): AppUser object            role(str): Role of user.

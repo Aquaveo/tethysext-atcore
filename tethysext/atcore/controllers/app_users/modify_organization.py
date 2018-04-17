@@ -80,7 +80,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
                     request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.ENTERPRISE)):
                 licenses_can_assign.append(license)
 
-        # Only allow users with correct permissions to create enterprise organizations
+        # Only allow users with correct custom_permissions to create enterprise organizations
         license_options = []
         for license in licenses_can_assign:
             license_options.append(
@@ -222,7 +222,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
 
                 create_session.commit()
 
-                # Update organization member permissions if license changed
+                # Update organization member custom_permissions if license changed
                 if selected_license != old_license:
                     permissions_manager = self.get_permissions_manager()
                     for member in organization.users:

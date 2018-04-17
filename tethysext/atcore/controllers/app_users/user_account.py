@@ -60,7 +60,7 @@ class UserAccount(TethysController, AppUsersControllerMixin):
                 'license': _Organization.LICENSES.get_display_name_for(user_organization.license)
             })
 
-        # Get permissions groups
+        # Get custom_permissions groups
         permissions_groups = permissions_manager.get_all_permissions_groups_for(
             request_app_user,
             as_display_name=True

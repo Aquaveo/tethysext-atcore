@@ -51,9 +51,9 @@ class AddExistingUser(TethysController, AppUsersControllerMixin):
         organization_select_error = ""
 
         session = SessionMaker()
-        admin_user = _AppUser.get_app_user_from_request(request, session)
-        organization_options = admin_user.get_organizations(session, request, as_options=True, cascade=True)
-        role_options = admin_user.get_assignable_roles(request, as_options=True)
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
+        organization_options = request_app_user.get_organizations(session, request, as_options=True, cascade=True)
+        role_options = request_app_user.get_assignable_roles(request, as_options=True)
         no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
         session.close()
 
@@ -96,7 +96,7 @@ class AddExistingUser(TethysController, AppUsersControllerMixin):
                         role=selected_role
                     )
 
-                    # Get permissions manager
+                    # Get custom_permissions manager
                     permissions_manager = self.get_permissions_manager()
 
                     # django_user = new_app_user.get_django_user()
@@ -110,7 +110,7 @@ class AddExistingUser(TethysController, AppUsersControllerMixin):
                     if selected_role and new_app_user.username != request.user.username:
                         new_app_user.role = selected_role
 
-                    # Add user to selected organizations and assign permissions
+                    # Add user to selected organizations and assign custom_permissions
                     if selected_role not in no_organization_roles:
                         for organization_id in selected_organizations:
                             organization = create_session.query(_Organization).get(organization_id)

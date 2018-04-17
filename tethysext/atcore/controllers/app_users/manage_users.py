@@ -83,7 +83,7 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
 
         app_users = sorted(app_users, key=lambda u: u.username)
 
-        # TODO: Refactor this with permissions
+        # TODO: Refactor this with custom_permissions
         permission_value_dict = {'standard viewer': 0, 'standard admin': 1,
                                  'professional viewer': 2, 'professional admin': 3,
                                  'enterprise viewer': 4, 'enterprise admin': 5,
@@ -110,7 +110,7 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
             # Find permission level and decide if request.user can edit other users
             permission_value_list = [-1]
             for group in permissions_groups:
-                # Ignore addon permissions groups
+                # Ignore addon custom_permissions groups
                 if group.lower() in permission_value_dict:
                     permission_value = permission_value_dict[group.lower()]
                     permission_value_list.append(permission_value)

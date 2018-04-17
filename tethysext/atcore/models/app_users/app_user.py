@@ -240,7 +240,7 @@ class AppUser(AppUsersBase):
             _Resource = self.get_resource_model()
         resources = set()
 
-        if self.is_staff() or has_permission(request, 'assign_any_project', user=self.django_user):
+        if self.is_staff() or has_permission(request, 'assign_any_resource', user=self.django_user):
             resources = session.query(_Resource).all()
 
         # Other users can only assign resources that belong to their organizations
@@ -356,7 +356,7 @@ class AppUser(AppUsersBase):
 
     def update_permissions(self, session, request, permissions_manager):
         """
-        Update permissions of this user based on its role and the licenses of the organizations to which it belongs.
+        Update custom_permissions of this user based on its role and the licenses of the organizations to which it belongs.
         Args:
             session(sqlalchemy.session): SQLAlchemy session object.
             request(django.request): Django request object.
@@ -365,7 +365,7 @@ class AppUser(AppUsersBase):
         # Get models
         _Organization = self.get_organization_model()
 
-        # Clear all epanet permissions
+        # Clear all epanet custom_permissions
         permissions_manager.remove_all_permissions_groups(self)
 
         # App admins shouldn't belong to any organizations (i.e.: have license restrictions)
@@ -373,11 +373,11 @@ class AppUser(AppUsersBase):
             # Clear organizations
             self.organizations = []
 
-            # Assign permissions
+            # Assign custom_permissions
             permissions_manager.assign_user_permission(self, str(self.role), _Organization.LICENSES.NONE)
 
         # Other user roles belong to organizations, which impose license restrictions
-        # Assign permissions according to organization membership
+        # Assign custom_permissions according to organization membership
         for organization in self.get_organizations(session, request, cascade=False):
             permissions_manager.assign_user_permission(self, str(self.role), str(organization.license))
 

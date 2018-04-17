@@ -80,7 +80,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
             original_members = set(organization.members)
             organization.members = []
 
-            # Add members and assign permissions again
+            # Add members and assign custom_permissions again
             for user_id in selected_members:
                 user = session.query(_AppUser).get(user_id)
                 organization.members.append(user)
@@ -88,7 +88,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
             # Persist changes
             session.commit()
 
-            # Reset permissions on set of old and new members
+            # Reset custom_permissions on set of old and new members
             # Members that need to be updated are those in the symmetric difference between the set of original members
             # and the set of updated members
             # See: http://www.linuxtopia.org/online_books/programming_books/python_programming/python_ch16s03.html

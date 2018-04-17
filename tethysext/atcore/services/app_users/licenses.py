@@ -99,7 +99,6 @@ class Licenses:
         if not self.is_valid(license):
             raise ValueError('Invalid license given: {}.'.format(license))
 
-        # TODO: IMPLEMENT THESE PERMISSIONS AND REFACTOR ACCORDINGLY
         if license == self.STANDARD:
             return 'assign_standard_license'
         elif license == self.ADVANCED:

@@ -303,7 +303,7 @@ class AppUserTests(TethysTestCase):
         organizations = self.staff_user.get_organizations(self.session, self.staff_user_request)
         self.assertEqual(3, len(organizations))
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_organizations(self, mock_has_permission_function):
         organizations = self.user.get_organizations(self.session, self.user_request)
         self.assertEqual(2, len(organizations))
@@ -311,7 +311,7 @@ class AppUserTests(TethysTestCase):
         for org in organizations:
             self.assertIn(org.name, expected_names)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_organizations_no_cascade(self, mock_has_permission_function):
         organizations = self.user.get_organizations(self.session, self.user_request, cascade=False)
         self.assertEqual(1, len(organizations))
@@ -329,7 +329,7 @@ class AppUserTests(TethysTestCase):
         for org_options in organizations:
             self.assertIn(org_options, expected_options)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_organizations_consultants(self, mock_has_permission_function):
         organizations = self.user.get_organizations(self.session, self.user_request, consultants=True)
         self.assertEqual(1, len(organizations))
@@ -340,7 +340,7 @@ class AppUserTests(TethysTestCase):
         resources = self.staff_user.get_resources(self.session, self.staff_user_request)
         self.assertEqual(3, len(resources))
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_resources(self, mock_has_permission_function):
         resources = self.user.get_resources(self.session, self.user_request)
         self.assertEqual(2, len(resources))
@@ -348,14 +348,14 @@ class AppUserTests(TethysTestCase):
         for rsrc in resources:
             self.assertIn(rsrc.name, expected_names)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_resources_no_cascade(self, mock_has_permission_function):
         resources = self.user.get_resources(self.session, self.user_request, cascade=False)
         self.assertEqual(1, len(resources))
         for rsrc in resources:
             self.assertEqual(self.rsrc1_name, rsrc.name)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_resources_of_type(self, mock_has_permission_function):
         resources = self.user.get_resources(self.session, self.user_request, of_type=CustomResource)
         self.assertEqual(1, len(resources))
@@ -367,7 +367,7 @@ class AppUserTests(TethysTestCase):
         out_resources = self.user.filter_resources(in_resources)
         self.assertEqual(in_resources, out_resources)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_assignable_roles)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_assignable_roles)
     def test_get_assignable_roles(self, mock_has_permission_function):
         assignable_roles = self.user.get_assignable_roles(self.user_request)
         self.assertEqual(2, len(assignable_roles))
@@ -386,7 +386,7 @@ class AppUserTests(TethysTestCase):
         expected_options = [(AppUser.ROLES.get_display_name_for(r), r) for r in all_roles]
         self.assertEqual(expected_options, assignable_options)
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_peers(self, mock_has_permission_function):
         peers = self.user.get_peers(self.session, self.user_request)
         self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
@@ -394,7 +394,7 @@ class AppUserTests(TethysTestCase):
         self.assertNotIn(self.foreign_user, peers, "Peer user found in peers.")
         self.assertNotIn(self.user, peers, "User found in peers.")
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_peers_include_self(self, mock_has_permission_function):
         peers = self.user.get_peers(self.session, self.user_request, include_self=True)
         self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
@@ -402,7 +402,7 @@ class AppUserTests(TethysTestCase):
         self.assertNotIn(self.foreign_user, peers, "Peer user found in peers.")
         self.assertIn(self.user, peers, "User not found in peers.")
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_peers_cascade(self, mock_has_permission_function):
         peers = self.user.get_peers(self.session, self.user_request, cascade=True)
         self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
@@ -410,7 +410,7 @@ class AppUserTests(TethysTestCase):
         self.assertNotIn(self.foreign_user, peers, "Peer user found in peers.")
         self.assertNotIn(self.user, peers, "User found in peers.")
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_get_peers_staff(self, mock_has_permission_function):
         peers = self.staff_user.get_peers(self.session, self.staff_user_request)
         self.assertIn(self.peer_user, peers, "Peer user not found in peers.")
@@ -419,7 +419,7 @@ class AppUserTests(TethysTestCase):
         self.assertIn(self.user, peers, "Staff user not found in peers.")
         self.assertNotIn(self.staff_user, peers, "Staff user found in peers.")
 
-    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
+    @patch('tethys_sdk.custom_permissions.has_permission', side_effect=mock_has_permission_false)
     def test_update_activity(self, mock_has_permission_function):
         self.org1.active = False
         self.user.update_activity(self.session, self.user_request)

@@ -226,7 +226,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
                 django_user.save()
                 modify_session.commit()
 
-                # Update user permissions
+                # Update user custom_permissions
                 permissions_manager = self.get_permissions_manager()
                 app_user.update_permissions(modify_session, request, permissions_manager)
                 modify_session.close()
