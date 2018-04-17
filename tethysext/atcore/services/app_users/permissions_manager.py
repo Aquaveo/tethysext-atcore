@@ -6,20 +6,20 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from tethysext.atcore.services.app_users.user_roles import Roles
+from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.services.app_users.licenses import Licenses
 
 
 class AppPermissionsManager:
-    STD_V_ROLE = 'standard_viewer_role'
-    STD_A_ROLE = 'standard_admin_role'
-    ADV_V_ROLE = 'advanced_viewer_role'
-    ADV_A_ROLE = 'advanced_admin_role'
-    PRO_V_ROLE = 'professional_viewer_role'
-    PRO_A_ROLE = 'professional_admin_role'
-    ENT_V_ROLE = 'enterprise_viewer_role'
-    ENT_A_ROLE = 'enterprise_admin_role'
-    APP_A_ROLE = 'app_admin_role'
+    STD_U_PERMS = 'standard_user_perms'
+    STD_A_PERMS = 'standard_admin_perms'
+    ADV_U_PERMS = 'advanced_user_perms'
+    ADV_A_PERMS = 'advanced_admin_perms'
+    PRO_U_PERMS = 'professional_user_perms'
+    PRO_A_PERMS = 'professional_admin_perms'
+    ENT_U_PERMS = 'enterprise_user_perms'
+    ENT_A_PERMS = 'enterprise_admin_perms'
+    APP_A_PERMS = 'app_admin_perms'
 
     ROLES = Roles()
     LICENSES = Licenses()
@@ -32,15 +32,15 @@ class AppPermissionsManager:
         """
         self.app_namespace = app_namespace
 
-        self.STANDARD_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.STD_V_ROLE)
-        self.STANDARD_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.STD_A_ROLE)
-        self.ADVANCED_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.ADV_V_ROLE)
-        self.ADVANCED_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.ADV_A_ROLE)
-        self.PROFESSIONAL_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.PRO_V_ROLE)
-        self.PROFESSIONAL_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.PRO_A_ROLE)
-        self.ENTERPRISE_VIEWER_ROLE = '{}:{}'.format(self.app_namespace, self.ENT_V_ROLE)
-        self.ENTERPRISE_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.ENT_A_ROLE)
-        self.APP_ADMIN_ROLE = '{}:{}'.format(self.app_namespace, self.APP_A_ROLE)
+        self.STANDARD_USER_PERMS = '{}:{}'.format(self.app_namespace, self.STD_U_PERMS)
+        self.STANDARD_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.STD_A_PERMS)
+        self.ADVANCED_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_U_PERMS)
+        self.ADVANCED_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_A_PERMS)
+        self.PROFESSIONAL_USER_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_U_PERMS)
+        self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_A_PERMS)
+        self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_U_PERMS)
+        self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_A_PERMS)
+        self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.APP_A_PERMS)
 
     def list(self, with_namespace=False):
         """
@@ -50,27 +50,27 @@ class AppPermissionsManager:
         """
         if with_namespace:
             return [
-                self.STANDARD_VIEWER_ROLE,
-                self.STANDARD_ADMIN_ROLE,
-                self.ADVANCED_VIEWER_ROLE,
-                self.ADVANCED_ADMIN_ROLE,
-                self.PROFESSIONAL_VIEWER_ROLE,
-                self.PROFESSIONAL_ADMIN_ROLE,
-                self.ENTERPRISE_VIEWER_ROLE,
-                self.ENTERPRISE_ADMIN_ROLE,
-                self.APP_ADMIN_ROLE
+                self.STANDARD_USER_PERMS,
+                self.STANDARD_ADMIN_PERMS,
+                self.ADVANCED_USER_PERMS,
+                self.ADVANCED_ADMIN_PERMS,
+                self.PROFESSIONAL_USER_PERMS,
+                self.PROFESSIONAL_ADMIN_PERMS,
+                self.ENTERPRISE_USER_PERMS,
+                self.ENTERPRISE_ADMIN_PERMS,
+                self.APP_ADMIN_PERMS
             ]
         else:
             return [
-                self.STD_V_ROLE,
-                self.STD_A_ROLE,
-                self.ADV_V_ROLE,
-                self.ADV_A_ROLE,
-                self.PRO_V_ROLE,
-                self.PRO_A_ROLE,
-                self.ENT_V_ROLE,
-                self.ENT_A_ROLE,
-                self.APP_A_ROLE
+                self.STD_U_PERMS,
+                self.STD_A_PERMS,
+                self.ADV_U_PERMS,
+                self.ADV_A_PERMS,
+                self.PRO_U_PERMS,
+                self.PRO_A_PERMS,
+                self.ENT_U_PERMS,
+                self.ENT_A_PERMS,
+                self.APP_A_PERMS
             ]
 
     def get_permissions_group_for(self, role, license=None, **kwargs):
@@ -87,55 +87,84 @@ class AppPermissionsManager:
         # Handle all combinations
         if role == self.ROLES.ORG_USER:
             if license == self.LICENSES.STANDARD:
-                return self.STANDARD_VIEWER_ROLE
+                return self.STANDARD_USER_PERMS
             elif license == self.LICENSES.ADVANCED:
-                return self.ADVANCED_VIEWER_ROLE
+                return self.ADVANCED_USER_PERMS
             elif license == self.LICENSES.PROFESSIONAL:
-                return self.PROFESSIONAL_VIEWER_ROLE
+                return self.PROFESSIONAL_USER_PERMS
             elif license == self.LICENSES.ENTERPRISE:
-                return self.ENTERPRISE_VIEWER_ROLE
+                return self.ENTERPRISE_USER_PERMS
 
         elif role == self.ROLES.ORG_ADMIN:
             if license == self.LICENSES.STANDARD:
-                return self.STANDARD_ADMIN_ROLE
+                return self.STANDARD_ADMIN_PERMS
             elif license == self.LICENSES.ADVANCED:
-                return self.ADVANCED_ADMIN_ROLE
+                return self.ADVANCED_ADMIN_PERMS
             elif license == self.LICENSES.PROFESSIONAL:
-                return self.PROFESSIONAL_ADMIN_ROLE
+                return self.PROFESSIONAL_ADMIN_PERMS
             elif license == self.LICENSES.ENTERPRISE:
-                return self.ENTERPRISE_ADMIN_ROLE
+                return self.ENTERPRISE_ADMIN_PERMS
 
         elif role == self.ROLES.APP_ADMIN:
-            return self.APP_ADMIN_ROLE
+            return self.APP_ADMIN_PERMS
 
     def get_display_name_for(self, permissions_group):
         """
         Get the display name for the given permission group.
         Args:
-            permissions_group(django.contrib.auth.models.Group): permission group.
+            permissions_group(str): name of permission group.
 
         Returns:
             str: Display name for the given custom_permissions group.
         """
-        if permissions_group == self.STANDARD_VIEWER_ROLE:
-            return 'Standard Viewer'
-        elif permissions_group == self.STANDARD_ADMIN_ROLE:
+        if permissions_group == self.STANDARD_USER_PERMS:
+            return 'Standard User'
+        elif permissions_group == self.STANDARD_ADMIN_PERMS:
             return 'Standard Admin'
-        elif permissions_group == self.ADVANCED_VIEWER_ROLE:
-            return 'Advanced Viewer'
-        elif permissions_group == self.ADVANCED_ADMIN_ROLE:
+        elif permissions_group == self.ADVANCED_USER_PERMS:
+            return 'Advanced User'
+        elif permissions_group == self.ADVANCED_ADMIN_PERMS:
             return 'Advanced Admin'
-        elif permissions_group == self.PROFESSIONAL_VIEWER_ROLE:
-            return 'Professional Viewer'
-        elif permissions_group == self.PROFESSIONAL_ADMIN_ROLE:
+        elif permissions_group == self.PROFESSIONAL_USER_PERMS:
+            return 'Professional User'
+        elif permissions_group == self.PROFESSIONAL_ADMIN_PERMS:
             return 'Professional Admin'
-        elif permissions_group == self.ENTERPRISE_VIEWER_ROLE:
-            return 'Enterprise Viewer'
-        elif permissions_group == self.ENTERPRISE_ADMIN_ROLE:
+        elif permissions_group == self.ENTERPRISE_USER_PERMS:
+            return 'Enterprise User'
+        elif permissions_group == self.ENTERPRISE_ADMIN_PERMS:
             return 'Enterprise Admin'
-        elif permissions_group == self.APP_ADMIN_ROLE:
+        elif permissions_group == self.APP_ADMIN_PERMS:
             return 'App Admin'
         return ''
+
+    def get_rank_for(self, permissions_group):
+        """
+        Get the rank for the given permission group.
+        Args:
+            permissions_group(float): name of permission group.
+
+        Returns:
+            int: Rank for given permission group.
+        """
+        if permissions_group == self.STANDARD_USER_PERMS:
+            return 100.0
+        elif permissions_group == self.STANDARD_ADMIN_PERMS:
+            return 200.0
+        elif permissions_group == self.ADVANCED_USER_PERMS:
+            return 300.0
+        elif permissions_group == self.ADVANCED_ADMIN_PERMS:
+            return 400.0
+        elif permissions_group == self.PROFESSIONAL_USER_PERMS:
+            return 500.0
+        elif permissions_group == self.PROFESSIONAL_ADMIN_PERMS:
+            return 600.0
+        elif permissions_group == self.ENTERPRISE_USER_PERMS:
+            return 700.0
+        elif permissions_group == self.ENTERPRISE_ADMIN_PERMS:
+            return 800.0
+        elif permissions_group == self.APP_ADMIN_PERMS:
+            return 1000.0
+        return None
 
     @staticmethod
     def add_permissions_group(app_user, permissions_group_name):

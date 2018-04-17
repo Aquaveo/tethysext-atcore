@@ -1,5 +1,5 @@
 import unittest
-from tethysext.atcore.services.app_users.user_roles import Roles
+from tethysext.atcore.services.app_users.roles import Roles
 
 
 class AppUserRoleTests(unittest.TestCase):

@@ -12,11 +12,12 @@
   </div>
   <h1>{{ page_title|default:'User Accounts' }}</h1>
   {% if user_cards %}
-  {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header"  %}
+  {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header" %}
   {% endif %}
   <table class="table table-striped table-condensed">
     <tr>
       <th>Full Name / Username</th>
+      <th>Active</th>
       <th>Role</th>
       <th>Organizations</th>
       {% if show_action_buttons %}
@@ -26,6 +27,7 @@
     {% for user_card in user_cards %}
     <tr>
       <td>{{ user_card.fullname }}</td>
+      <td><span class="manage-tag activity-tag">{% if user_card.active %}Yes{% else %}No{% endif %}</span></td>
       <td><span class="manage-tag role-tag">{{ user_card.role }}</span></td>
       <td>
         {% for organization in user_card.organizations %}
@@ -100,6 +102,7 @@
 {% block styles %}
   {{ block.super }}
   <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/flex.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}

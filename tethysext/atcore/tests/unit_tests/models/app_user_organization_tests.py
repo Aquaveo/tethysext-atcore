@@ -3,7 +3,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.models.app_users import AppUsersBase, AppUser, Organization
-from tethysext.atcore.services.app_users.user_roles import Roles
+from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.tests import TEST_DB_URL
 
 

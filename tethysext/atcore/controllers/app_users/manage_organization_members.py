@@ -9,6 +9,7 @@
 # Django
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.contrib import messages
 # Tethys core
 from tethys_apps.base.controller import TethysController
 from tethys_apps.decorators import permission_required
@@ -44,7 +45,7 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
         return self._handle_manage_member_request(request, *args, **kwargs)
 
     @active_user_required()
-    @permission_required('modify_organizations')
+    @permission_required('modify_organization_members')
     def _handle_manage_member_request(self, request, organization_id, *args, **kwargs):
         """
         Handle get requests.
@@ -63,47 +64,72 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
         else:
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
 
-        # Defaults
+
         session = make_session()
         request_app_user = _AppUser.get_app_user_from_request(request, session)
 
-        # Lookup existing organization
+        # Defaults
         organization = session.query(_Organization).get(organization_id)
         selected_members = [str(u.id) for u in organization.members]
+        members_select_errors = ""
+        is_client = organization.consultant and organization.consultant.is_member(request_app_user)
 
         # Process form submission
         if request.POST and 'modify-members-submit' in request.POST:
             # Validate the form
             selected_members = request.POST.getlist('members-select')
 
-            # Reset Members
-            original_members = set(organization.members)
-            organization.members = []
+            # Cannot remove self
+            valid = True
 
-            # Add members and assign custom_permissions again
-            for user_id in selected_members:
-                user = session.query(_AppUser).get(user_id)
-                organization.members.append(user)
+            no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
+            if not request_app_user.is_staff() and request_app_user.role not in no_organization_roles:
+                if not is_client and str(request_app_user.id) not in selected_members:
+                    valid = False
+                    selected_members.append(str(request_app_user.id))
+                    members_select_errors = "You cannot remove yourself from this organization."
 
-            # Persist changes
-            session.commit()
+            if valid:
+                # Reset Members
+                original_members = set(organization.members)
+                organization.members = []
 
-            # Reset custom_permissions on set of old and new members
-            # Members that need to be updated are those in the symmetric difference between the set of original members
-            # and the set of updated members
-            # See: http://www.linuxtopia.org/online_books/programming_books/python_programming/python_ch16s03.html
-            updated_members = set(organization.members)
-            removed_and_added_members = original_members ^ updated_members
+                # Add members and assign custom_permissions again
+                for user_id in selected_members:
+                    user = session.query(_AppUser).get(user_id)
+                    organization.members.append(user)
 
-            permissions_manager = self.get_permissions_manager()
+                # Persist changes
+                session.commit()
 
-            for member in removed_and_added_members:
-                member.update_permissions(session, request, permissions_manager)
+                # Reset custom_permissions on set of old and new members
+                # Members that need to be updated are those in the symmetric difference between the set of original members
+                # and the set of updated members
+                # See: http://www.linuxtopia.org/online_books/programming_books/python_programming/python_ch16s03.html
+                updated_members = set(organization.members)
+                removed_and_added_members = original_members ^ updated_members
 
-            session.close()
+                # Validate removal
+                removed_members = original_members - updated_members
 
-            # Redirect
-            return redirect(reverse(next_controller))
+                for member in removed_members:
+                    if not member.organizations:
+                        organization.members.append(member)
+                        messages.warning(request, 'Member "{}" was not removed to prevent from being orphaned.'.format(member.username))
+
+                # Persist changes
+                session.commit()
+
+                # Update permissions
+                permissions_manager = self.get_permissions_manager()
+
+                for member in removed_and_added_members:
+                    member.update_permissions(session, request, permissions_manager)
+
+                session.close()
+
+                # Redirect
+                return redirect(reverse(next_controller))
 
         # Populate members select box
         peers = request_app_user.get_peers(session, request, include_self=True, cascade=True)
@@ -122,7 +148,8 @@ class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
             name='members-select',
             multiple=True,
             options=members_options,
-            initial=selected_members
+            initial=selected_members,
+            error=members_select_errors
         )
 
         session.close()

@@ -134,6 +134,21 @@ class Organization(AppUsersBase):
         """
         return self.LICENSES.must_have_consultant(self.license)
 
+    def is_member(self, app_user):
+        """
+        Determine if given app_user is a member of this organization.
+        Args:
+            app_user(AppUser): app_user to test.
+
+        Returns:
+            bool: True when app_user is a member of this organization, else False.
+        """
+        for member in self.members:
+            if member.id == app_user.id:
+                return True
+
+        return False
+
 
 @event.listens_for(Organization, 'before_delete')
 def receive_before_delete(mapper, connection, target):

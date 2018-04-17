@@ -1,0 +1,45 @@
+.flex {
+    display: flex;
+}
+.flex-row {
+    flex-direction: row;
+}
+.flex-col {
+    flex-direction: column;
+}
+.flex-nowrap {
+    flex-wrap: nowrap;
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+.flex-centeredContent {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-spaceBetweenContent {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-spaceAroundContent {
+    align-items: center;
+    justify-content: space-around;
+}
+
+.flex-grow2 {
+    flex: 2 0 auto;
+}
+
+.textAlign-left {
+    text-align: left;
+}
+
+.text-centered {
+    text-align: center;
+}
+
+.labelAndInput {
+    padding: 15px;
+}

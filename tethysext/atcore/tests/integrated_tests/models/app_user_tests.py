@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.models.app_users import initialize_app_users_db
-from tethysext.atcore.services.app_users.user_roles import Roles
+from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.tests.mock.django import MockDjangoRequest
 from tethysext.atcore.tests.mock.permissions import mock_has_permission_false, mock_has_permission_assignable_roles

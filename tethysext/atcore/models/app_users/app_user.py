@@ -4,7 +4,7 @@ from sqlalchemy import Column, Boolean, String
 from sqlalchemy.orm import relationship, validates, reconstructor
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
-from tethysext.atcore.services.app_users.user_roles import Roles
+from tethysext.atcore.services.app_users.roles import Roles
 
 from .associations import user_organization_association
 from .base import AppUsersBase
@@ -382,3 +382,22 @@ class AppUser(AppUsersBase):
             permissions_manager.assign_user_permission(self, str(self.role), str(organization.license))
 
         self.django_user.save()
+
+    def get_rank(self, permissions_manager):
+        """
+        Get the maximum permissions-based rank of the user.
+        Args:
+            permissions_manager(AppPermissionsManager): Permissions manager bound to current app.
+
+        Returns:
+            float: highest permissions-based rank of the user.
+        """
+        permissions_groups = permissions_manager.get_all_permissions_groups_for(self)
+
+        all_permissions_ranks = [-1]
+
+        for permissions_group in permissions_groups:
+            permission_rank = permissions_manager.get_rank_for(permissions_group)
+            all_permissions_ranks.append(permission_rank)
+
+        return max(all_permissions_ranks)

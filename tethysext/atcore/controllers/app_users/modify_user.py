@@ -62,12 +62,12 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
         selected_organizations = []
         organization_select_error = ""
         disable_role_select = False
-        is_me = False
 
         session = make_session()
-        admin_user = _AppUser.get_app_user_from_request(request, session)
-        organization_options = admin_user.get_organizations(session, request, as_options=True, cascade=True)
-        role_options = admin_user.get_assignable_roles(request, as_options=True)
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
+        is_me = user_id == str(request_app_user.id)
+        organization_options = request_app_user.get_organizations(session, request, as_options=True, cascade=True)
+        role_options = request_app_user.get_assignable_roles(request, as_options=True)
         no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
         session.close()
 
@@ -89,7 +89,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
             edit_session = make_session()
 
             try:
-                app_user = edit_session.query(_AppUser).\
+                target_app_user = edit_session.query(_AppUser).\
                     filter(_AppUser.id == user_id).\
                     one()
 
@@ -97,21 +97,20 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
                 messages.warning(request, 'The user could not be found.')
                 return redirect(reverse(next_controller))
 
-            django_user = app_user.get_django_user()
-            is_me = request.user == django_user
+            django_user = target_app_user.get_django_user()
 
             # Normal users are disallowed from changing their own role
-            if not request.user.is_staff and app_user.username == request.user.username:
+            if not request.user.is_staff and target_app_user.username == request.user.username:
                 disable_role_select = True
 
             first_name = django_user.first_name
             last_name = django_user.last_name
-            is_active = True if app_user.is_active is None else app_user.is_active
+            is_active = target_app_user.is_active
             email = django_user.email
             username = django_user.username
-            selected_role = app_user.role
+            selected_role = target_app_user.role
             selected_organizations = []
-            for organization in app_user.get_organizations(edit_session, request, cascade=False):
+            for organization in target_app_user.get_organizations(edit_session, request, cascade=False):
                 selected_organizations.append(str(organization.id))
 
             edit_session.close()
@@ -121,7 +120,10 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
             # Validate the form
             first_name = request.POST.get('first-name', '')
             last_name = request.POST.get('last-name', '')
-            is_active = request.POST.get('user-account-status') == 'on'
+
+            if not is_me:
+                is_active = request.POST.get('user-account-status') == 'on'
+
             email = request.POST.get('email', "")
             password = request.POST.get('password', '')
             password_confirm = request.POST.get('password-confirm', '')
@@ -182,45 +184,53 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
                     valid = False
                     password_confirm_error = "Passwords do not match."
 
+            # Validations for editing
+            if editing and is_me:
+                if not selected_organizations:
+                    valid = False
+                    organization_select_error = "You cannot remove yourself from all organization. " \
+                                                "You must belong to at least one."
+
             if valid:
                 modify_session = make_session()
 
                 # Lookup existing app user and django user
                 if editing:
-                    app_user = modify_session.query(_AppUser).get(user_id)
-                    django_user = app_user.django_user
+                    target_app_user = modify_session.query(_AppUser).get(user_id)
+                    django_user = target_app_user.django_user
 
                     # Reset organizations
-                    app_user.organizations = []
+                    target_app_user.organizations = []
 
                 # Create new client
                 else:
-                    app_user = _AppUser()
+                    is_active = True
+                    target_app_user = _AppUser()
                     django_user = User()
 
                     # Only set username if not editing (username cannot be changed, because it is an id)
-                    app_user.username = username
+                    target_app_user.username = username
                     django_user.username = username
-                    modify_session.add(app_user)
+                    modify_session.add(target_app_user)
 
                 # Set attributes of the django user
                 django_user.first_name = first_name
                 django_user.last_name = last_name
                 django_user.email = email
-                app_user.is_active = is_active
+                target_app_user.is_active = is_active
 
                 # Only set password if one is provided and it is valid
                 if password:
                     django_user.set_password(password)
 
                 # Update role
-                if selected_role and app_user.username != request.user.username:
-                    app_user.role = selected_role
+                if selected_role and target_app_user.username != request.user.username:
+                    target_app_user.role = selected_role
 
                 # Update organizations
                 for selected_organization in selected_organizations:
                     organization = modify_session.query(_Organization).get(selected_organization)
-                    app_user.organizations.append(organization)
+                    target_app_user.organizations.append(organization)
 
                 # Persist changes
                 django_user.save()
@@ -228,7 +238,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
 
                 # Update user custom_permissions
                 permissions_manager = self.get_permissions_manager()
-                app_user.update_permissions(modify_session, request, permissions_manager)
+                target_app_user.update_permissions(modify_session, request, permissions_manager)
                 modify_session.close()
 
                 # Redirect
@@ -286,7 +296,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
             off_style='default',
             initial=is_active,
             size='medium',
-            classes='user-activity-toggle'
+            classes='user-activity-toggle',
         )
 
         role_select = SelectInput(
@@ -305,7 +315,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
             multiple=True,
             initial=selected_organizations,
             options=organization_options,
-            error=organization_select_error
+            error=organization_select_error,
         )
 
         context = {

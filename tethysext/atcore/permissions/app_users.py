@@ -147,8 +147,8 @@ class PermissionsGenerator:
         )
 
         # Role identifier custom_permissions
-        has_standard_viewer_role = Permission(
-            name='has_standard_viewer_role',
+        has_standard_user_role = Permission(
+            name='has_standard_user_role',
             description='Has Standard Viewer role'
         )
 
@@ -157,8 +157,8 @@ class PermissionsGenerator:
             description='Has Standard Admin role'
         )
 
-        has_advanced_viewer_role = Permission(
-            name='has_advanced_viewer_role',
+        has_advanced_user_role = Permission(
+            name='has_advanced_user_role',
             description='Has Advanced Viewer role'
         )
 
@@ -167,8 +167,8 @@ class PermissionsGenerator:
             description='Has Advanced Admin role'
         )
 
-        has_professional_viewer_role = Permission(
-            name='has_professional_viewer_role',
+        has_professional_user_role = Permission(
+            name='has_professional_user_role',
             description='Has Professional Viewer role'
         )
 
@@ -177,8 +177,8 @@ class PermissionsGenerator:
             description='Has Professional Admin role'
         )
 
-        has_enterprise_viewer_role = Permission(
-            name='has_enterprise_viewer_role',
+        has_enterprise_user_role = Permission(
+            name='has_enterprise_user_role',
             description='Has Enterprise Viewer role'
         )
 
@@ -213,85 +213,85 @@ class PermissionsGenerator:
         )
 
         # Standard Viewer
-        standard_viewer_perms = [
+        standard_user_perms = [
             view_resource_details,
             view_organizations
         ]
 
-        standard_viewer_role = PermissionGroup(
-            name=self.permission_manager.STD_V_ROLE,
-            permissions=standard_viewer_perms + [has_standard_viewer_role] + 
-                        self.custom_permissions[self.permission_manager.STD_V_ROLE]
+        standard_user_role = PermissionGroup(
+            name=self.permission_manager.STD_U_PERMS,
+            permissions=standard_user_perms + [has_standard_user_role] +
+                        self.custom_permissions[self.permission_manager.STD_U_PERMS]
         )
 
         # Standard Admin
-        standard_admin_perms = standard_viewer_perms + [
+        standard_admin_perms = standard_user_perms + [
             create_resource, edit_resource, delete_resource,
             view_users, modify_users, modify_organization_members,
             assign_org_users_role
         ]
 
         standard_admin_role = PermissionGroup(
-            name=self.permission_manager.STD_A_ROLE,
+            name=self.permission_manager.STD_A_PERMS,
             permissions=standard_admin_perms + [has_standard_admin_role] + 
-                        self.custom_permissions[self.permission_manager.STD_A_ROLE]
+                        self.custom_permissions[self.permission_manager.STD_A_PERMS]
         )
 
         # Advanced Viewer
-        advanced_viewer_perms = standard_viewer_perms
+        advanced_user_perms = standard_user_perms
 
-        advanced_viewer_role = PermissionGroup(
-            name=self.permission_manager.ADV_V_ROLE,
-            permissions=advanced_viewer_perms + [has_advanced_viewer_role] + 
-                        self.custom_permissions[self.permission_manager.ADV_V_ROLE]
+        advanced_user_role = PermissionGroup(
+            name=self.permission_manager.ADV_U_PERMS,
+            permissions=advanced_user_perms + [has_advanced_user_role] +
+                        self.custom_permissions[self.permission_manager.ADV_U_PERMS]
         )
 
         # Advanced Admin
-        advanced_admin_perms = standard_admin_perms + advanced_viewer_perms
+        advanced_admin_perms = standard_admin_perms + advanced_user_perms
 
         advanced_admin_role = PermissionGroup(
-            name=self.permission_manager.ADV_A_ROLE,
+            name=self.permission_manager.ADV_A_PERMS,
             permissions=advanced_admin_perms + [has_advanced_admin_role] + 
-                        self.custom_permissions[self.permission_manager.ADV_A_ROLE]
+                        self.custom_permissions[self.permission_manager.ADV_A_PERMS]
         )
 
         # Professional Viewer
-        professional_viewer_perms = advanced_viewer_perms
+        professional_user_perms = advanced_user_perms
 
-        professional_viewer_role = PermissionGroup(
-            name=self.permission_manager.PRO_V_ROLE,
-            permissions=professional_viewer_perms + [has_professional_viewer_role] + 
-                        self.custom_permissions[self.permission_manager.PRO_V_ROLE]
+        professional_user_role = PermissionGroup(
+            name=self.permission_manager.PRO_U_PERMS,
+            permissions=professional_user_perms + [has_professional_user_role] +
+                        self.custom_permissions[self.permission_manager.PRO_U_PERMS]
         )
 
         # Professional Admin
-        professional_admin_perms = advanced_admin_perms + professional_viewer_perms
+        professional_admin_perms = advanced_admin_perms + professional_user_perms
 
         professional_admin_role = PermissionGroup(
-            name=self.permission_manager.PRO_A_ROLE,
+            name=self.permission_manager.PRO_A_PERMS,
             permissions=professional_admin_perms + [has_professional_admin_role] + 
-                        self.custom_permissions[self.permission_manager.PRO_A_ROLE]
+                        self.custom_permissions[self.permission_manager.PRO_A_PERMS]
         )
 
         # Enterprise Viewer
-        enterprise_viewer_perms = professional_viewer_perms
+        enterprise_user_perms = professional_user_perms
 
-        enterprise_viewer_role = PermissionGroup(
-            name=self.permission_manager.ENT_V_ROLE,
-            permissions=enterprise_viewer_perms + [has_enterprise_viewer_role] + 
-                        self.custom_permissions[self.permission_manager.ENT_V_ROLE]
+        enterprise_user_role = PermissionGroup(
+            name=self.permission_manager.ENT_U_PERMS,
+            permissions=enterprise_user_perms + [has_enterprise_user_role] +
+                        self.custom_permissions[self.permission_manager.ENT_U_PERMS]
         )
 
         # Enterprise Admin
-        enterprise_admin_perms = professional_admin_perms + enterprise_viewer_perms + [
+        enterprise_admin_perms = professional_admin_perms + enterprise_user_perms + [
             modify_organizations, assign_advanced_license,
             assign_standard_license, assign_professional_license
         ]
 
         enterprise_admin_role = PermissionGroup(
-            name=self.permission_manager.ENT_A_ROLE,
+            name=self.permission_manager.ENT_A_PERMS,
             permissions=enterprise_admin_perms + [has_enterprise_admin_role] + 
-                        self.custom_permissions[self.permission_manager.ENT_A_ROLE]
+                        self.custom_permissions[self.permission_manager.ENT_A_PERMS]
         )
 
         # App admin role
@@ -300,22 +300,22 @@ class PermissionsGenerator:
             view_all_resources, create_resource, edit_resource, delete_resource, always_delete_resource,
             modify_user_manager, modify_users, view_users, view_all_users, assign_org_users_role,
             assign_org_admin_role, assign_app_admin_role, assign_developer_role, view_organizations,
-            view_all_organizations, modify_organizations,
+            view_all_organizations, modify_organizations, modify_organization_members,
             assign_any_resource, assign_any_organization, assign_any_user, assign_advanced_license,
             assign_standard_license, assign_professional_license, assign_enterprise_license
         ]
 
         app_admin_role = PermissionGroup(
-            name=self.permission_manager.APP_A_ROLE,
+            name=self.permission_manager.APP_A_PERMS,
             permissions=app_admin_perms + [has_app_admin_role] + 
-                        self.custom_permissions[self.permission_manager.APP_A_ROLE]
+                        self.custom_permissions[self.permission_manager.APP_A_PERMS]
         )
 
         permissions = [
-            standard_viewer_role, standard_admin_role,
-            advanced_viewer_role, advanced_admin_role,
-            professional_viewer_role, professional_admin_role,
-            enterprise_viewer_role, enterprise_admin_role, app_admin_role
+            standard_user_role, standard_admin_role,
+            advanced_user_role, advanced_admin_role,
+            professional_user_role, professional_admin_role,
+            enterprise_user_role, enterprise_admin_role, app_admin_role
         ]
         
         return permissions

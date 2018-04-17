@@ -29,7 +29,9 @@
         </div>
         {% gizmo select_input project_select %}
         <div id="status-toggle-wrapper">
-        {% gizmo organization_status_toggle %}
+        {% if not am_member %}
+          {% gizmo organization_status_toggle %}
+        {% endif %}
         </div>
         <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
         <input type="submit" class="btn btn-success" name="modify-organization-submit"

@@ -58,7 +58,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         make_session = self.get_sessionmaker()
 
         user_session = make_session()
-        request_user = _AppUser.get_app_user_from_request(request, user_session)
+        request_app_user = _AppUser.get_app_user_from_request(request, user_session)
         user_session.close()
 
         # Defaults
@@ -72,12 +72,12 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         consultant_error = ""
         license_error = ""
         old_license = None
+        am_member = False
 
         # Permissions
         licenses_can_assign = []
         for license in _Organization.LICENSES.list():
-            if has_permission(
-                    request, _Organization.LICENSES.get_assign_permission_for(_Organization.LICENSES.ENTERPRISE)):
+            if has_permission(request, _Organization.LICENSES.get_assign_permission_for(license)):
                 licenses_can_assign.append(license)
 
         # Only allow users with correct custom_permissions to create enterprise organizations
@@ -145,6 +145,9 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
             for resource in organization.resources:
                 selected_resources.append(str(resource.id))
 
+            # Determine if current user is a member of the organization
+            am_member = organization.is_member(request_app_user)
+
             edit_session.close()
 
         # Process form submission
@@ -154,7 +157,9 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
             selected_resources = request.POST.getlist('organization-resources')
             selected_consultant = request.POST.get('organization-consultant', "")
             selected_license = request.POST.get('organization-license', "")
-            is_active = True if request.POST.get('organization-status') == 'on' else False
+
+            if not am_member:
+                is_active = request.POST.get('organization-status') == 'on'
 
             # Organization name is required
             if organization_name == "":
@@ -168,12 +173,12 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
 
             # Validate license assign permission
             assign_permission = _Organization.LICENSES.get_assign_permission_for(selected_license)
-            if not request_user.is_staff() and not has_permission(request, assign_permission):
+            if not has_permission(request, assign_permission) and selected_license != old_license:
                 valid = False
                 license_error = "You do not have permission to assign this license to this organization."
 
             # Validate consultant
-            if not request_user.is_staff() and not selected_consultant \
+            if not request_app_user.is_staff() and not selected_consultant \
                     and _Organization.LICENSES.must_have_consultant(selected_license):
                 valid = False
                 consultant_error = "You must assign the organization to at least one consultant organization."
@@ -225,7 +230,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
                 # Update organization member custom_permissions if license changed
                 if selected_license != old_license:
                     permissions_manager = self.get_permissions_manager()
-                    for member in organization.users:
+                    for member in organization.members:
                         member.update_permissions(create_session, request, permissions_manager)
 
                 create_session.close()
@@ -254,10 +259,10 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         # Populate users select box
         session = make_session()
 
-        request_user = _AppUser.get_app_user_from_request(request, session)
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Populate projects select box
-        resources = request_user.get_resources(session, request)
+        resources = request_app_user.get_resources(session, request)
 
         resource_options = [(r.name, str(r.id)) for r in resources]
 
@@ -271,8 +276,8 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         )
 
         # Populate owner select box
-        consultant_options = request_user.get_organizations(session, request, as_options=True, consultants=True)
-        consultant_organizations = request_user.get_organizations(session, request, consultants=True)
+        consultant_options = request_app_user.get_organizations(session, request, as_options=True, consultants=True)
+        consultant_organizations = request_app_user.get_organizations(session, request, consultants=True)
 
         # Default selected consultant if none selected yet.
         if len(consultant_options) > 0 and not selected_consultant:
@@ -309,6 +314,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         context = {
             'page_title': _Organization.DISPLAY_TYPE_SINGULAR,
             'editing': editing,
+            'am_member': am_member,
             'organization_name_input': organization_name_input,
             'organization_type_select': organization_type_select,
             'owner_select': constultant_select,
