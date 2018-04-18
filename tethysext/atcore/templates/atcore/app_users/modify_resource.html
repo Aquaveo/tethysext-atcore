@@ -1,0 +1,128 @@
+{% extends "epanet/base.html" %}
+{% load staticfiles tethys_gizmos %}
+
+{% block app_navigation_items %}
+  {% if show_reset_map_button %}
+  <li class="title">Actions</li>
+    <li><a id="submit-reset-geoserver" class="nav-btn nav-btn-warning {% if disable_reset_map_button %}disabled{% endif %}"
+           role="button" data-toggle="modal" href="#reset-map-layers-modal"
+           {% if disable_reset_map_button %}style="background: url(/static/epanet/images/geoserver.gif);"{% endif %}>
+      <span class="glyphicon glyphicon-refresh"></span> Reset Map Layers
+    </a></li>
+  {% endif %}
+  <li class="title">Help</li>
+  <p style="margin-bottom: 5px;"><b>Name:</b></p>
+  <p>The name of the new project.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Organizations:</b></p>
+  <p>Projects will be accessible to the members of the organizations to which the project is assigned.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Spatial Reference System:</b></p>
+  <p>
+    The spatial reference system that was used to define the spatial features of your EPANET project. If you don't know
+    the spatial reference system or no spatial reference system was used to create your EPANET project, then leave it
+    blank. You may want to use <a href="http://spatialreference.org/">spatialref.org</a> to help you identify the
+    appropriate spatial reference system.
+  </p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Description:</b></p>
+  <p>A more detailed description of the project</p>
+  <li class="separator"></li>
+  {% if show_input_file_button %}
+  <p style="margin-bottom: 5px;"><b>Input File:</b></p>
+  <p>Upload the EPANET input file (.inp) for your project.</p>
+  {% if can_run_peak_day_fire_flow %}
+  <p style="margin-bottom: 5px;"><b>Peakday Fire Flow:</b></p>
+  <p>
+    The fireflow available at each junction in your model will be calculated and made viewable as a color-coded,
+    interactive map layer. If this option is selected, the user must also specify the residual pressure and peakday
+    time that are to be used in the calculations.
+  </p>
+  {% endif %}
+  <br><br><br><br><br><br><br>
+  {% endif %}
+
+{% endblock %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-12">
+      <h1>{% if editing %}Edit{% else %}New{% endif %} Project</h1>
+      <form id="new-project-form" method="post" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6">
+            {% gizmo text_input project_name_input %}
+            <div class="form-group" id="project-description-group">
+              <label for="project-description">Description</label>
+              <textarea id="project-description" name="project-description" class="form-control" rows=5 style="width: 100%;">{{ project_description }}</textarea>
+            </div>
+            {% gizmo select_input organization_select %}
+            <div class="form-group" id="spatial-ref-select-group">
+              <label for="spatial-ref-select">Spatial Reference System (Optional)</label>
+              <select id="spatial-ref-select" name="spatial-ref-select" class="js-query-srid-ajax">
+                {% if project_srid_text %}
+                <option value="{{ project_srid }}" selected="selected">{{ project_srid_text }}</option>
+                {% endif %}
+              </select>
+            </div>
+            {% if show_input_file_button %}
+            <div class="form-group {% if project_input_file_error %}has-error{% endif %}" id="input-file-upload-wrapper">
+              <label for="input-file-upload">EPANET Input File</label>
+              <div class="input-file-wrapper">
+                <input id="input-file-upload" class="file-input" name="input-file-upload" type="file" accept=".inp">
+                <label for="input-file-upload" class="btn btn-default btn-file-input">Browse</label>
+              </div>
+              <span class="help-block">{{ project_input_file_error }}</span>
+            </div>
+            {% endif %}
+            {% if can_run_peak_day_fire_flow %}
+            <div class="form-group" id="fireflow-select-group">
+              <label>Peakday Fire Flow (Optional)</label><br>
+              <input type="checkbox" id="checkbox-includeFireflow" name="include-fireflow"> Run available peakday fireflow for whole model <span style="color: #e59400;" class="glyphicon glyphicon-warning-sign" title="WARNING: The peakday fireflow analysis could add significant processing time up front."></span>
+              <br><br>
+              <div id="fireflow-fields" class="hidden">
+                <div class="form-group">
+                  <label for="fireflow-time">Peakday Time</label>
+                  <input type="time" value="00:00:00" id="fireflow-time" class="form-control" name="fireflow-time">
+                </div>
+                <div class="form-group">
+                  <label for="fireflow-pressure">Residual Pressure</label>
+                  <div class="input-group">
+                    <input type="number" value="20" id="fireflow-pressure" class="form-control" name="fireflow-pressure">
+                    <span class="input-group-addon">psi</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            <a class="btn btn-default" href="{{ next_url }}">Cancel</a>
+            <input type="submit" class="btn btn-success" name="modify-project-submit" value="{% if editing %}Save Changes{% else %}Create Project{% endif %}">
+          </div>
+        </div>
+      </form>
+      {% if show_reset_map_button %}
+        {% gizmo message_box reset_map_layers_box %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+  <link href="{% static 'epanet/css/manage.css' %}" rel="stylesheet"/>
+  <link href="{% static 'epanet/css/srid_select.css' %}" rel="stylesheet"/>
+  <link href="{% static 'epanet/css/file_input.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'epanet/js/srid_select.js' %}" type="text/javascript"></script>
+  {% if editing %}
+  <script src="{% static 'epanet/js/geoserver_reset_button.js' %}" type="text/javascript"></script>
+  {% endif %}
+  {% if show_input_file_button %}
+  <script src="{% static 'epanet/js/file_input.js' %}" type="text/javascript"></script>
+  {% endif %}
+  <script>$(function () { $('#project-name').focus(); });</script>
+{% endblock %}

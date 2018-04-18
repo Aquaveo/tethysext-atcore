@@ -138,7 +138,7 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
 
         return render(request, self.template_name, context)
 
-    @permission_required('modify_users')
+    @permission_required('modify_organizations')
     def _handle_delete(self, request, organization_id):
         """
         Handle delete user requests.

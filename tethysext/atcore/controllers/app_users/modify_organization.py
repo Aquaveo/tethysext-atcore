@@ -94,6 +94,8 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
 
         if next_arg == 'manage-users':
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
+        elif next_arg == 'manage-resources':
+            next_controller = '{}:app_users_manage_resources'.format(app_namespace)
         else:
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)
 
@@ -262,7 +264,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Populate projects select box
-        resources = request_app_user.get_resources(session, request)
+        resources = request_app_user.get_resources(session, request, for_assigning=True)
 
         resource_options = [(r.name, str(r.id)) for r in resources]
 

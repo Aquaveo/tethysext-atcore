@@ -1,7 +1,7 @@
 import inspect
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
-    ManageOrganizationMembers, ModifyOrganization, UserAccount
+    ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 
 
@@ -25,6 +25,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         custom_models(cls): custom subclasses of AppUser, Organization, or Resource models.
 
     Url Map Names:
+        app_users_manage_resources
         app_users_manage_users
         app_users_add_user
         app_users_edit_user <user_id>
@@ -53,6 +54,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     _ManageOrganizationMembers = ManageOrganizationMembers
     _ModifyOrganization = ModifyOrganization
     _UserAccount = UserAccount
+    _ManageResources = ManageResources
 
     # Default model classes
     _AppUser = AppUser
@@ -190,7 +192,19 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource
             )
-        )
+        ),
+        url_map_maker(
+            name='app_users_manage_resources',
+            url='/'.join([base_url_path, _Resource.DISPLAY_TYPE_PLURAL.lower()]) if base_url_path else _Resource.DISPLAY_TYPE_PLURAL.lower(),  # noqa: E501
+            controller=_ManageResources.as_controller(
+                _app=app,
+                _persistent_store_name=persistent_store_name,
+                _AppUser=_AppUser,
+                _Organization=_Organization,
+                _Resource=_Resource,
+                base_template=base_template
+            )
+        ),
     )
 
     return url_maps

@@ -7,6 +7,7 @@ from tethysext.atcore.services.app_users.func import get_display_name_for_django
 from tethysext.atcore.services.app_users.roles import Roles
 
 from .associations import user_organization_association
+from .user_setting import UserSetting
 from .base import AppUsersBase
 
 __all__ = ['AppUser']
@@ -24,6 +25,9 @@ class AppUser(AppUsersBase):
     STAFF_ROLE = ROLES.DEVELOPER
     STAFF_DISPLAY_NAME = 'Developer'
 
+    # Models
+    _UserSetting = UserSetting
+
     __tablename__ = 'app_users'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
@@ -36,6 +40,8 @@ class AppUser(AppUsersBase):
                                  secondary=user_organization_association,
                                  back_populates='members')
 
+    settings = relationship('UserSetting', back_populates='user')
+
     def __init__(self, *args, **kwargs):
         """
         Contstructor.
@@ -44,6 +50,9 @@ class AppUser(AppUsersBase):
 
         # Call super class
         super(AppUser, self).__init__(*args, **kwargs)
+
+    def _get_user_setting_model(self):
+        return self._UserSetting
 
     @reconstructor
     def init_on_load(self):
@@ -222,7 +231,7 @@ class AppUser(AppUsersBase):
 
         return return_value
 
-    def get_resources(self, session, request, of_type=None, cascade=True):
+    def get_resources(self, session, request, of_type=None, cascade=True, for_assigning=False):
         """
         Get the resources that the request user is able to assign to clients and consultants.
         Args:
@@ -230,6 +239,7 @@ class AppUser(AppUsersBase):
             request(djanog.request): Django request object
             of_type(Resource): A subclass of Resource.
             cascade(bool): Also retrieve resources of child organizations.
+            for_assigning(bool): check assign permission versus view permission.
         Returns:
         """
         from tethys_sdk.permissions import has_permission
@@ -240,7 +250,12 @@ class AppUser(AppUsersBase):
             _Resource = self.get_resource_model()
         resources = set()
 
-        if self.is_staff() or has_permission(request, 'assign_any_resource', user=self.django_user):
+        if for_assigning:
+            can_get_all = has_permission(request, 'assign_any_resource', user=self.django_user)
+        else:
+            can_get_all = has_permission(request, 'view_all_resources', user=self.django_user)
+
+        if self.is_staff() or can_get_all:
             resources = session.query(_Resource).all()
 
         # Other users can only assign resources that belong to their organizations
@@ -401,3 +416,116 @@ class AppUser(AppUsersBase):
             all_permissions_ranks.append(permission_rank)
 
         return max(all_permissions_ranks)
+
+    def get_setting(self, session, key, resource=None, secondary_id=None, page=None, as_value=False):
+        """
+        Get user setting using given criteria.
+        Args:
+            session(sqlalchemy.session): database session.
+            resource(Resource): instance of Resource to which the setting applies.
+            secondary_id(str): secondary resource identifier for additional filtering.
+            page(str): name of page/view to which the setting applies.
+            key(str): name of setting.
+            as_value(bool): return value of setting, instead of UserSetting instance if True.
+        Returns:
+            UserSetting: the user setting or None if does not exist.
+        """
+        _UserSetting = self._get_user_setting_model()
+
+        setting_query = session.query(_UserSetting) \
+            .filter(_UserSetting.user_id == self.id) \
+            .filter(_UserSetting.key == key) \
+
+        if resource:
+            setting_query = setting_query.filter(_UserSetting.user_project_id == resource.id)
+
+        if secondary_id:
+            setting_query = setting_query.filter(_UserSetting.secondary_id == secondary_id)
+
+        if page:
+            setting_query = setting_query.filter(_UserSetting.page == page)
+
+        setting = setting_query.one_or_none()
+
+        if as_value:
+            return setting.value if setting else None
+
+        return setting
+
+    def get_all_settings(self, session, resource=None, secondary_id=None, page=None):
+        """
+        Get all user settings for the given criteria.
+        Args:
+            session(sqlalchemy.session): database session.
+            resource(Resource): instance of Resource to which the setting applies.
+            secondary_id(str): secondary resource identifier for additional filtering.
+            page(str): name of page/view to which the setting applies.
+        Returns:
+            list<UserSetting>: All user settings associated with given criteria.
+        """
+        _UserSetting = self._get_user_setting_model()
+
+        settings_query = session.query(_UserSetting) \
+            .filter(_UserSetting.user_id == self.id)
+
+        if resource:
+            settings_query = settings_query.filter(_UserSetting.user_project_id == resource.id)
+
+        if secondary_id:
+            settings_query = settings_query.filter(_UserSetting.secondary_id == secondary_id)
+
+        if page:
+            settings_query = settings_query.filter(_UserSetting.page == page)
+
+        settings = settings_query.all()
+
+        return settings
+
+    @staticmethod
+    def delete_existing_settings(session, settings):
+        """
+        Delete all given settings.
+        Args:
+            session(sqlalchemy.session): database session.
+            settings(list<UserSetting>): list of UserSettings to delete.
+        """
+        for setting in settings:
+            session.delete(setting)
+
+        session.commit()
+
+    def update_setting(self, session, key, value, resource=None, secondary_id=None, page=None, commit=True):
+        """
+        Update the value of the setting matching the given criteria.
+        Args:
+            session(sqlalchemy.session): database session.
+            resource(Resource): instance of Resource to which the setting applies.
+            secondary_id(str): secondary resource identifier for additional filtering.
+            page(str): name of page/view to which the setting applies.
+            key(str): name of setting.
+            value(str): value of setting.
+            commit(bool): commit the changes if True.
+        """
+        _UserSetting = self._get_user_setting_model()
+
+        setting = self.get_setting(
+            session=session,
+            resource=resource,
+            secondary_id=secondary_id,
+            page=page,
+            key=key
+        )
+
+        if not setting:
+            setting = _UserSetting()
+            setting.user_id = self.id
+            setting.user_project_id = resource.id if resource else None
+            setting.secondary_id = secondary_id
+            setting.page = page
+            setting.key = key
+            session.add(setting)
+
+        setting.value = value
+
+        if commit:
+            session.commit()

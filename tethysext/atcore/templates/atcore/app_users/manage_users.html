@@ -14,43 +14,47 @@
   {% if user_cards %}
   {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header" %}
   {% endif %}
-  <table class="table table-striped table-condensed">
-    <tr>
-      <th>Full Name / Username</th>
-      <th>Active</th>
-      <th>Role</th>
-      <th>Organizations</th>
-      {% if show_action_buttons %}
-      <th></th>
-      {% endif %}
-    </tr>
-    {% for user_card in user_cards %}
-    <tr>
-      <td>{{ user_card.fullname }}</td>
-      <td><span class="manage-tag activity-tag">{% if user_card.active %}Yes{% else %}No{% endif %}</span></td>
-      <td><span class="manage-tag role-tag">{{ user_card.role }}</span></td>
-      <td>
-        {% for organization in user_card.organizations %}
-        <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-users"><span class="manage-tag organization-tag">{{ organization.name }}</span></a>
-        {% endfor %}
-      </td>
-      {% if show_action_buttons %}
-      <td>
-        <div class="pull-right">
-          {% if user_card.editable %}
-            <a class="btn btn-default btn-edit" href="{% url tethys_app.namespace|add:':app_users_edit_user' user_id=user_card.id %}" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
-            <a class="btn btn-default btn-delete-manage btn-delete" href="javascript:void(0);" data-id="{{ user_card.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
-          {% endif %}
-          {% if show_remove_button %}
-            <a class="btn btn-default btn-remove-user btn-remove" href="javascript:void(0);" data-id="{{ user_card.id }}" data-toggle="tooltip" data-placement="top" title="Remove"><span class="glyphicon glyphicon-remove"></span></a>
-          {% endif %}
-        </div>
-      </td>
-      {% endif %}
-    </tr>
-    {% empty %}
-    <tr><td colspan="4"><b>There are no users.</b></td></tr>
-    {% endfor %}
+  <table class="table table-hover table-bottom-border">
+    <thead>
+      <tr>
+        <th>Full Name / Username</th>
+        <th>Active</th>
+        <th>Role</th>
+        <th>Organizations</th>
+        {% if show_action_buttons %}
+        <th></th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for user_card in user_cards %}
+      <tr>
+        <td>{{ user_card.fullname }}</td>
+        <td><span class="manage-tag activity-tag">{% if user_card.active %}Yes{% else %}No{% endif %}</span></td>
+        <td><span class="manage-tag role-tag">{{ user_card.role }}</span></td>
+        <td>
+          {% for organization in user_card.organizations %}
+          <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-users"><span class="manage-tag organization-tag">{{ organization.name }}</span></a>
+          {% endfor %}
+        </td>
+        {% if show_action_buttons %}
+        <td class="btn-td">
+          <div class="pull-right">
+            {% if user_card.editable %}
+              <a class="btn btn-default btn-edit btn-flat" href="{% url tethys_app.namespace|add:':app_users_edit_user' user_id=user_card.id %}" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+              <a class="btn btn-default btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ user_card.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+            {% endif %}
+            {% if show_remove_button %}
+              <a class="btn btn-default btn-remove-user btn-remove btn-flat" href="javascript:void(0);" data-id="{{ user_card.id }}" data-toggle="tooltip" data-placement="top" title="Remove"><span class="glyphicon glyphicon-remove"></span></a>
+            {% endif %}
+          </div>
+        </td>
+        {% endif %}
+      </tr>
+      {% empty %}
+      <tr><td colspan="4"><b>There are no users.</b></td></tr>
+      {% endfor %}
+    </tbody>
   </table>
   {% if user_cards %}
   {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}

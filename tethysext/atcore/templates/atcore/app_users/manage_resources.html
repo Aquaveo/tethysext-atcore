@@ -1,0 +1,196 @@
+{% extends base_template %}
+
+{% load staticfiles tethys_gizmos %}
+
+{% block app_content %}
+  {% if show_new_button and resources %}
+  <div class="top-action-btns pull-right">
+    <a class="btn btn-default manage-action-btn btn-new" href="todo" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
+  </div>
+  {% endif %}
+  <h1>{{ page_title }}</h1>
+
+  {% if resources %}
+    {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header"  %}
+    <div class="module-content">
+      <div id="resources-table" class="table-responsive table-sortable">
+        <table class="table table-hover table-bottom-border" id="resource_table">
+          <thead>
+            {# NAME HEADER #}
+            <th>
+              <span class="sortable" data-sort-field="name">Name</span>
+              {% if 'name' in pagination_info.sort_by %}
+              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              {% endif %}
+            </th>
+
+            {# DESCRIPTION HEADER #}
+            <th>
+              <span class="sortable" data-sort-field="description">Description</span>
+              {% if 'description' in pagination_info.sort_by %}
+              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              {% endif %}
+            </th>
+
+            {# ORGANIZATION HEADER #}
+            <th>
+              <span class="sortable" data-sort-field="description">Organizations</span>
+              {% if 'organizations' in pagination_info.sort_by %}
+              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              {% endif %}
+            </th>
+
+            {# CREATED BY HEADER #}
+            <th>
+            <span class="sortable" data-sort-field="created_by">Created By</span>
+            {% if 'created_by' in pagination_info.sort_by %}
+            <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+            {% endif %}
+            </th>
+
+            {# DATE CREATED HEADER #}
+            <th>
+              <span class="sortable" data-sort-field="date_created">Date Created</span>
+              {% if 'date_created' in pagination_info.sort_by %}
+              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              {% endif %}
+            </th>
+
+            {# DEBUGGING FIELDS #}
+            {% if show_debugging_info %}
+            <th>
+              <span class="sortable" data-sort-field="location">Location</span>
+              {% if 'location' in pagination_info.sort_by %}
+              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              {% endif %}
+            </th>
+            {% endif %}
+
+            {# BUTTONS HEADER #}
+            <th></th>
+          </thead>
+          <tbody>
+            {% for resource in resources %}
+              <tr>
+                {# NAME VALUE #}
+                <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  <a href="todo">{{ resource.name }}</a>
+                </td>
+
+                {# DESCRIPTION VALUE #}
+                {% if not resource.description %}
+                <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  <i><font color="#A8A8A8">No Description</font></i>
+                </td>
+                {% else %}
+                <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  {{ resource.description }}
+                </td>
+                {% endif %}
+
+                {# ORGANIZATIONS VALUE #}
+                 <td>
+                  {% for organization in resource.organizations %}
+                  <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag">{{ organization.name }}</span></a>
+                  {% endfor %}
+                </td>
+
+                {# CREATED BY VALUE #}
+                {% if resource.created_by %}
+                <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  {{ resource.created_by }}
+                </td>
+                {% else %}
+                <td class="created_by" data-id="Unknown" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  <i><font color="#A8A8A8">Unknown</font></i>
+                </td>
+                {% endif %}
+
+                {# DATE CREATED VALUE #}
+                <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  {{ resource.date_created }} UTC
+                </td>
+
+                {# DEBUGGING FIELDS #}
+                {% if show_debugging_info %}
+                <td class="location" onclick="window.document.location='todo';" style="cursor: pointer;">
+                  {{ resource.location }}
+                </td>
+                {% endif %}
+
+                {# BUTTONS #}
+                <td class="btn-td">
+                  <div class="btn-toolbar pull-right">
+                    {% if resource.editable %}
+                      <a class="btn btn-default btn-edit btn-flat" href="todo" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+                    {% endif %}
+                    {% if resource.deletable %}
+                      <a class="btn btn-default btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+                    {% endif %}
+                    <a class="btn btn-s btn-primary btn-flat btn-launch" href="todo" data-toggle="tooltip" data-placement="top" title="{{ launch_verb }}"><span class="glyphicon glyphicon-chevron-right"></span></a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
+  {% else %}
+      {% if show_new_button %}
+      <div class="new-resource center-parent">
+        <div class="centered">
+          <h4>No {{ type_plural }} Found</h4>
+          <a class="btn btn-primary btn-huge" href="todo">Upload New {{ type_singular }}</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="new-resource center-parent">
+        <h4 class="centered">No {{ type_plural }} Available</h4>
+      </div>
+      {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block after_app_content %}
+  {% if load_delete_modal %}
+    {% csrf_token %}
+    <!-- Delete Modal -->
+    <div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="delete-modal-label">Delete {{ type_singular }}</h4>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this {{ type_singular|lower }}? This action cannot be undone.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <a id="modal-delete-button" class="btn btn-danger btn-delete-modal" href="javascript:void(0);" data-delete-type="resources">Delete</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block app_actions %}
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/css/center.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/sort.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+  <script src="{% static 'atcore/js/csrf.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/app_users/js/app_users.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/app_users/js/sort.js' %}" type="text/javascript"></script>
+{% endblock %}
+

@@ -125,7 +125,12 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
             user_cards.append(user_card)
 
         # Generate pagination
-        paginated_user_cards, pagination_info = paginate(user_cards, results_per_page, page)
+        paginated_user_cards, pagination_info = paginate(
+            objects=user_cards,
+            results_per_page=results_per_page,
+            page=page,
+            result_name='users'
+        )
 
         context = {
             'page_title': self.page_title,

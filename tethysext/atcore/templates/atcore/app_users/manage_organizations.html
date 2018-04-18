@@ -24,20 +24,34 @@
 
     {% for organization_license, organization_cards in organization_cards.items %}
       <h5>{{ organization_license }}</h5>
-      <div class="panel-group" id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
+      <div class="panel-group manage-panel-group" id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
       {% for organization_card in organization_cards %}
-        <div class="panel panel-default">
+        <div class="panel panel-default manage-panel">
 
           {# PANEL HEADER #}
-          <div class="panel-heading" role="tab" id="heading-{{ organization_card.id }}">
+          <div class="panel-heading manage-panel-heading" role="tab" id="heading-{{ organization_card.id }}">
+
+            {# ORG TITLE #}
+            <div class="manage-item-title-wrapper">
+              <span class="manage-item-title">
+                <a role="button"
+                   data-toggle="collapse"
+                   data-parent="#{{ organization_license|slugify }}-cards"
+                   href="#collapse-{{ organization_card.id }}"
+                   aria-expanded="{% if expand_all or expand_first and forloop.first %}true{% else %}false{% endif %}"
+                   aria-controls="collapse-{{ organization_card.id }}">
+                  {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
+                </a>
+              </span>
+            </div>
 
             {# ACTION BUTTONS #}
             {% if organization_card.can_modify_members or organization_card.can_modify %}
-            <div class="manage-grid-actions pull-right">
+            <div class="manage-grid-actions">
 
               {# MODIFY MEMBERS BUTTON #}
               {% if organization_card.can_modify_members %}
-              <a class="btn btn-default btn-users"
+              <a class="btn btn-default btn-users btn-flat"
                  href="{% url tethys_app.namespace|add:':app_users_manage_organization_members' organization_card.id %}?next=manage-organizations"
                  data-toggle="tooltip"
                  data-placement="top"
@@ -48,7 +62,7 @@
 
               {# EDIT ORG BUTTON #}
               {% if organization_card.can_modify %}
-              <a class="btn btn-default btn-edit"
+              <a class="btn btn-default btn-edit btn-flat"
                  href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization_card.id %}"
                  data-toggle="tooltip"
                  data-placement="top"
@@ -59,7 +73,7 @@
 
               {# DELETE ORG BUTTON #}
               {% if organization_card.can_modify %}
-              <a class="btn btn-default btn-delete-manage btn-delete"
+              <a class="btn btn-default btn-delete-manage btn-delete btn-flat"
                  href="javascript:void(0);"
                  data-id="{{ organization_card.id }}"
                  data-toggle="tooltip"
@@ -70,18 +84,6 @@
               {% endif %}
             </div>
             {% endif %}
-
-            {# ORG TITLE #}
-            <span class="manage-item-title">
-              <a role="button"
-                 data-toggle="collapse"
-                 data-parent="#{{ organization_license|slugify }}-cards"
-                 href="#collapse-{{ organization_card.id }}"
-                 aria-expanded="{% if expand_all or expand_first and forloop.first %}true{% else %}false{% endif %}"
-                 aria-controls="collapse-{{ organization_card.id }}">
-                {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
-              </a>
-            </span>
           </div>
 
           {# PANEL BODY #}

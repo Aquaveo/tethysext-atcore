@@ -6,6 +6,30 @@ td, th {
     margin: 3px;
 }
 
+.btn-huge {
+  font-size: 26px;
+}
+
+.btn-td {
+    padding: 0!important;
+    min-width: 200px;
+}
+
+.btn-flat {
+    height: 60px;
+    margin: 0!important;
+    padding: 20px 15px;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    min-width: 60px;
+}
+
+.btn-launch {
+    background-color: #337ab7;
+    min-width: 80px;
+}
+
 .btn:hover {
     color: white;
 }
@@ -44,13 +68,35 @@ td, th {
     border-color: #d43f3a;
 }
 
+.manage-panel-heading {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+    border-radius: 0;
+}
+
+.panel-group  {
+    border-radius: 0;
+}
+
+.panel {
+    border-radius: 0!important;
+}
+
+.list-group-item:last-child {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .manage-grid-actions .btn {
     margin-top: 0;
     margin-bottom: 0;
 }
 
 .manage-item-title {
-    margin-bottom: 0;
+    display: block;
+    margin: 13px 10px;
     font-size: 24px;
 }
 
@@ -133,5 +179,17 @@ td, th {
 
 .activity-tag:hover {
     background: #FFFFFF;
+}
+
+#app-content {
+    height: 100%;
+}
+
+.new-resource {
+    height: 75%;
+}
+
+.table-bottom-border tr td {
+    border-bottom: 1px solid #ddd;
 }
 

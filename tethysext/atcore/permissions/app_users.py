@@ -43,6 +43,11 @@ class PermissionsGenerator:
             description='View all resources'
         )
 
+        view_resources = Permission(
+            name='view_resources',
+            description='View resources'
+        )
+
         view_resource_details = Permission(
             name='view_resource_details',
             description='View details for resources'
@@ -215,7 +220,8 @@ class PermissionsGenerator:
         # Standard Viewer
         standard_user_perms = [
             view_resource_details,
-            view_organizations
+            view_organizations,
+            view_resources
         ]
 
         standard_user_role = PermissionGroup(
