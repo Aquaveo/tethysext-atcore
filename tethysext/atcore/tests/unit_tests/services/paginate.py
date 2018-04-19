@@ -14,9 +14,11 @@ class PaginateTests(unittest.TestCase):
         objects = range(7)
         results_per_page = 10
         page = 1
-        paginated_objects, pagination_info = paginate(objects, results_per_page, page)
+        result_name = 'foos'
+        paginated_objects, pagination_info = paginate(objects, results_per_page, page, result_name)
         self.assertEqual(objects, paginated_objects)
         self.assertEqual(len(objects), pagination_info['num_results'])
+        self.assertEqual(result_name, pagination_info['result_name'])
         self.assertEqual(page, pagination_info['page'])
         self.assertEqual(page + 1, pagination_info['next_page'])
         self.assertEqual(page - 1, pagination_info['previous_page'])
@@ -32,9 +34,11 @@ class PaginateTests(unittest.TestCase):
         objects = range(42)
         results_per_page = 40
         page = 1
-        paginated_objects, pagination_info = paginate(objects, results_per_page, page)
+        result_name = 'foos'
+        paginated_objects, pagination_info = paginate(objects, results_per_page, page, result_name)
         self.assertEqual(objects[:40], paginated_objects)
         self.assertEqual(len(objects), pagination_info['num_results'])
+        self.assertEqual(result_name, pagination_info['result_name'])
         self.assertEqual(page, pagination_info['page'])
         self.assertEqual(page + 1, pagination_info['next_page'])
         self.assertEqual(page - 1, pagination_info['previous_page'])
@@ -50,9 +54,11 @@ class PaginateTests(unittest.TestCase):
         objects = range(42)
         results_per_page = 40
         page = 2
-        paginated_objects, pagination_info = paginate(objects, results_per_page, page)
+        result_name = 'foos'
+        paginated_objects, pagination_info = paginate(objects, results_per_page, page, result_name)
         self.assertEqual(objects[40:], paginated_objects)
         self.assertEqual(len(objects), pagination_info['num_results'])
+        self.assertEqual(result_name, pagination_info['result_name'])
         self.assertEqual(page, pagination_info['page'])
         self.assertEqual(page + 1, pagination_info['next_page'])
         self.assertEqual(page - 1, pagination_info['previous_page'])
@@ -68,9 +74,11 @@ class PaginateTests(unittest.TestCase):
         objects = range(120)
         results_per_page = 120
         page = 1
-        paginated_objects, pagination_info = paginate(objects, results_per_page, page)
+        result_name = 'foos'
+        paginated_objects, pagination_info = paginate(objects, results_per_page, page, result_name)
         self.assertEqual(objects, paginated_objects)
         self.assertEqual(len(objects), pagination_info['num_results'])
+        self.assertEqual(result_name, pagination_info['result_name'])
         self.assertEqual(page, pagination_info['page'])
         self.assertEqual(page + 1, pagination_info['next_page'])
         self.assertEqual(page - 1, pagination_info['previous_page'])

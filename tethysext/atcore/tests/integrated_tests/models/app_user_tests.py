@@ -10,7 +10,8 @@ from tethysext.atcore.models.app_users import initialize_app_users_db
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.tests.mock.django import MockDjangoRequest
-from tethysext.atcore.tests.mock.permissions import mock_has_permission_false, mock_has_permission_assignable_roles
+from tethysext.atcore.tests.mock.permissions import mock_has_permission_false, mock_has_permission_assignable_roles, \
+    mock_has_permission_true
 
 
 class CustomOrganization(Organization):
@@ -336,7 +337,8 @@ class AppUserTests(TethysTestCase):
         for org in organizations:
             self.assertEqual(self.org1_name, org.name)
 
-    def test_get_resources_staff(self):
+    @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_true)
+    def test_get_resources_staff(self, mock_has_permission_function):
         resources = self.staff_user.get_resources(self.session, self.staff_user_request)
         self.assertEqual(3, len(resources))
 

@@ -66,11 +66,16 @@ class AppUserUrlsTests(TethysTestCase):
         self.names = ['app_users_manage_users', 'app_users_add_user', 'app_users_edit_user',
                       'app_users_add_existing_user', 'app_users_manage_organizations',
                       'app_users_manage_organization_members', 'app_users_new_organization',
-                      'app_users_edit_organization', 'app_users_user_account']
+                      'app_users_edit_organization', 'app_users_user_account',
+                      'app_users_manage_resources', 'app_users_new_resource', 'app_users_edit_resource',
+                      'app_users_resource_details']
         self.urls = ['users', 'users/new', 'users/{user_id}/edit', 'users/add-existing', 'organizations',
                      'organizations/{organization_id}/members', 'organizations/new',
-                     'organizations/{organization_id}/edit', 'users/me']
-        self.num_urls = 9
+                     'organizations/{organization_id}/edit', 'users/me',
+                     Resource.DISPLAY_TYPE_PLURAL.lower(), Resource.DISPLAY_TYPE_PLURAL.lower() + '/new',
+                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/edit',
+                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/details']
+        self.num_urls = 13
 
     def tearDown(self):
         pass
