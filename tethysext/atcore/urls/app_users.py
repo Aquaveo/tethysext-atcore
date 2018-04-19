@@ -1,7 +1,7 @@
 import inspect
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
-    ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources
+    ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources, ModifyResource
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 
 
@@ -25,7 +25,6 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         custom_models(cls): custom subclasses of AppUser, Organization, or Resource models.
 
     Url Map Names:
-        app_users_manage_resources
         app_users_manage_users
         app_users_add_user
         app_users_edit_user <user_id>
@@ -35,6 +34,9 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         app_users_manage_organization_members <organization_id>
         app_users_new_organization
         app_users_edit_organization <organization_id>
+        app_users_manage_resources
+        app_users_new_resource
+        app_users_edit_resource <resource_id>
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
@@ -55,6 +57,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     _ModifyOrganization = ModifyOrganization
     _UserAccount = UserAccount
     _ManageResources = ManageResources
+    _ModifyResource = ModifyResource
 
     # Default model classes
     _AppUser = AppUser
@@ -79,6 +82,10 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             _ModifyOrganization = custom_controller
         elif issubclass(custom_controller, UserAccount):
             _UserAccount = custom_controller
+        elif issubclass(custom_controller, ManageResources):
+            _ManageResources = custom_controller
+        elif issubclass(custom_controller, ModifyResource):
+            _ModifyResource = custom_controller
 
     for custom_model in custom_models:
         if inspect.isclass(custom_model) and issubclass(custom_model, AppUser):
@@ -90,10 +97,24 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         else:
             raise ValueError('custom_models must contain only subclasses of AppUser, Resources, or Organization.')
 
+    # Url Patterns
+    users_url =                         'users'  # noqa: E222
+    new_user_url =                      'users/new'  # noqa: E222
+    add_existing_user_url =             'users/add-existing'  # noqa: E222
+    edit_user_url =                     'users/{user_id}/edit'  # noqa: E222
+    user_account_url =                  'users/me'  # noqa: E222
+    organizations_url =                 'organizations'  # noqa: E222
+    new_organization_url =              'organizations/new'  # noqa: E222
+    edit_organization_url =             'organizations/{organization_id}/edit'  # noqa: E222
+    manage_organization_members_url =   'organizations/{organization_id}/members'  # noqa: E222
+    manage_resources_url =              _Resource.DISPLAY_TYPE_PLURAL.lower()  # noqa: E222
+    new_resource_url =                  _Resource.DISPLAY_TYPE_PLURAL.lower() + '/new'  # noqa: E222
+    edit_resource_url =                 _Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/edit'  # noqa: E222
+
     url_maps = (
         url_map_maker(
             name='app_users_manage_users',
-            url='/'.join([base_url_path, 'users']) if base_url_path else 'users',
+            url='/'.join([base_url_path, users_url]) if base_url_path else users_url,
             controller=_ManageUsers.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -105,7 +126,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_add_user',
-            url='/'.join([base_url_path, 'users/new']) if base_url_path else 'users/new',
+            url='/'.join([base_url_path, new_user_url]) if base_url_path else new_user_url,
             controller=_ModifyUser.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -116,7 +137,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_edit_user',
-            url='/'.join([base_url_path, 'users/{user_id}/edit']) if base_url_path else 'users/{user_id}/edit',
+            url='/'.join([base_url_path, edit_user_url]) if base_url_path else edit_user_url,
             controller=_ModifyUser.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -127,7 +148,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_add_existing_user',
-            url='/'.join([base_url_path, 'users/add-existing']) if base_url_path else 'users/add-existing',
+            url='/'.join([base_url_path, add_existing_user_url]) if base_url_path else add_existing_user_url,
             controller=_AddExistingUser.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -138,7 +159,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_user_account',
-            url='/'.join([base_url_path, 'users/me']) if base_url_path else 'users/me',
+            url='/'.join([base_url_path, user_account_url]) if base_url_path else user_account_url,
             controller=_UserAccount.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -150,7 +171,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_manage_organizations',
-            url='/'.join([base_url_path, 'organizations']) if base_url_path else 'organizations',
+            url='/'.join([base_url_path, organizations_url]) if base_url_path else organizations_url,
             controller=_ManageOrganizations.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -162,7 +183,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_manage_organization_members',
-            url='/'.join([base_url_path, 'organizations/{organization_id}/members']) if base_url_path else 'organizations/{organization_id}/members',  # noqa: E501
+            url='/'.join([base_url_path, manage_organization_members_url]) if base_url_path else manage_organization_members_url,  # noqa: E501
             controller=_ManageOrganizationMembers.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -173,7 +194,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_new_organization',
-            url='/'.join([base_url_path, 'organizations/new']) if base_url_path else 'organizations/new',
+            url='/'.join([base_url_path, new_organization_url]) if base_url_path else new_organization_url,
             controller=_ModifyOrganization.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -184,7 +205,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_edit_organization',
-            url='/'.join([base_url_path, 'organizations/{organization_id}/edit']) if base_url_path else 'organizations/{organization_id}/edit',  # noqa: E501
+            url='/'.join([base_url_path, edit_organization_url]) if base_url_path else edit_organization_url,
             controller=_ModifyOrganization.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -195,7 +216,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         ),
         url_map_maker(
             name='app_users_manage_resources',
-            url='/'.join([base_url_path, _Resource.DISPLAY_TYPE_PLURAL.lower()]) if base_url_path else _Resource.DISPLAY_TYPE_PLURAL.lower(),  # noqa: E501
+            url='/'.join([base_url_path, manage_resources_url]) if base_url_path else manage_resources_url,
             controller=_ManageResources.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -203,6 +224,28 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource,
                 base_template=base_template
+            )
+        ),
+        url_map_maker(
+            name='app_users_new_resource',
+            url='/'.join([base_url_path, new_resource_url]) if base_url_path else new_resource_url,
+            controller=_ModifyResource.as_controller(
+                _app=app,
+                _persistent_store_name=persistent_store_name,
+                _AppUser=_AppUser,
+                _Organization=_Organization,
+                _Resource=_Resource
+            )
+        ),
+        url_map_maker(
+            name='app_users_edit_resource',
+            url='/'.join([base_url_path, edit_resource_url]) if base_url_path else edit_resource_url,
+            controller=_ModifyResource.as_controller(
+                _app=app,
+                _persistent_store_name=persistent_store_name,
+                _AppUser=_AppUser,
+                _Organization=_Organization,
+                _Resource=_Resource
             )
         ),
     )

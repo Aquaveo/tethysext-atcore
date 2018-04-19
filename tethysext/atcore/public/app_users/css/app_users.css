@@ -1,3 +1,11 @@
+#app-content-wrapper #app-content #app-navigation .nav li.title {
+    padding: 10px 0;
+}
+
+#inner-app-content {
+    overflow: auto;
+}
+
 td, th {
     vertical-align: middle!important;
 }

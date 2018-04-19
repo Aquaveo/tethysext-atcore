@@ -6,3 +6,4 @@ from manage_organizations import ManageOrganizations  # noqa: F401
 from modify_organization import ModifyOrganization  # noqa: F401
 from manage_organization_members import ManageOrganizationMembers  # noqa: F401
 from manage_resources import ManageResources  # noqa: F401
+from modify_resource import ModifyResource  # noqa: F401

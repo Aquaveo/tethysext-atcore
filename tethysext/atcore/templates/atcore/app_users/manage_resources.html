@@ -5,7 +5,7 @@
 {% block app_content %}
   {% if show_new_button and resources %}
   <div class="top-action-btns pull-right">
-    <a class="btn btn-default manage-action-btn btn-new" href="todo" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
+    <a class="btn btn-default manage-action-btn btn-new" href="{% url tethys_app.namespace|add:':app_users_new_resource' %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
   </div>
   {% endif %}
   <h1>{{ page_title }}</h1>
@@ -59,7 +59,7 @@
             {# DEBUGGING FIELDS #}
             {% if show_debugging_info %}
             <th>
-              <span class="sortable" data-sort-field="location">Location</span>
+              <span class="sortable" data-sort-field="location">Debugging</span>
               {% if 'location' in pagination_info.sort_by %}
               <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
               {% endif %}
@@ -113,8 +113,8 @@
 
                 {# DEBUGGING FIELDS #}
                 {% if show_debugging_info %}
-                <td class="location" onclick="window.document.location='todo';" style="cursor: pointer;">
-                  {{ resource.location }}
+                <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
+                  {{ resource.debugging }}
                 </td>
                 {% endif %}
 
@@ -122,7 +122,7 @@
                 <td class="btn-td">
                   <div class="btn-toolbar pull-right">
                     {% if resource.editable %}
-                      <a class="btn btn-default btn-edit btn-flat" href="todo" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+                      <a class="btn btn-default btn-edit btn-flat" href="{% url tethys_app.namespace|add:':app_users_edit_resource' resource.id %}" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
                     {% endif %}
                     {% if resource.deletable %}
                       <a class="btn btn-default btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
@@ -142,7 +142,7 @@
       <div class="new-resource center-parent">
         <div class="centered">
           <h4>No {{ type_plural }} Found</h4>
-          <a class="btn btn-primary btn-huge" href="todo">Upload New {{ type_singular }}</a>
+          <a class="btn btn-primary btn-huge" href="{% url tethys_app.namespace|add:':app_users_new_resource' %}">Upload New {{ type_singular }}</a>
         </div>
       </div>
       {% else %}
@@ -182,9 +182,9 @@
 
 {% block styles %}
   {{ block.super }}
-  <link href="{% static 'atcore/css/center.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
-  <link href="{% static 'atcore/app_users/css/sort.css' %}" rel="stylesheet"/>
+<link href="{% static 'atcore/app_users/css/sort.css' %}" rel="stylesheet"/>
+<link href="{% static 'atcore/css/flex.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}

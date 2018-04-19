@@ -74,8 +74,6 @@ class ManageResources(TethysController, AppUsersControllerMixin):
         results_per_page = params.get('show', None)
         sort_by_raw = params.get('sort_by', None)
 
-
-
         # Update setting if user made a change
         if results_per_page:
             request_app_user.update_setting(
@@ -134,6 +132,7 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             resource_card['editable'] = self.can_edit_resource(session, request, resource)
             resource_card['deletable'] = self.can_delete_resource(session, request, resource)
             resource_card['organizations'] = resource.organizations
+            resource_card['debugging'] = resource.attributes
             resource_cards.append(resource_card)
 
         # Only attempt to sort if the sort field is a valid attribute of _Resource
@@ -204,7 +203,7 @@ class ManageResources(TethysController, AppUsersControllerMixin):
         Args:
             session(sqlalchemy.session): open sqlalchemy session.
             request(django.request): the Django request.
-            request_app_user(AppUser): app user that is making the request. 
+            request_app_user(AppUser): app user that is making the request.
 
         Returns:
             list<Resources>: the list of resources to render on the manage_resources page.
@@ -235,7 +234,6 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             bool: the edit button will be displayed for this resource if True.
         """
         return has_permission(request, 'edit_resource')
-
 
     def can_delete_resource(self, session, request, resource):
         """

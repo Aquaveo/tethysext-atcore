@@ -81,7 +81,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
         else:
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
 
-        # If an ID is provided, then we are editing an existing consultant
+        # If ID is provided, then we are editing, otherwise we are creating a new user
         editing = user_id is not None
 
         if editing:
