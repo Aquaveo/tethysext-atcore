@@ -34,10 +34,7 @@
 
             {# ORGANIZATION HEADER #}
             <th>
-              <span class="sortable" data-sort-field="description">Organizations</span>
-              {% if 'organizations' in pagination_info.sort_by %}
-              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
-              {% endif %}
+              <span>Organizations</span>
             </th>
 
             {# CREATED BY HEADER #}
@@ -90,9 +87,13 @@
 
                 {# ORGANIZATIONS VALUE #}
                  <td>
-                  {% for organization in resource.organizations %}
-                  <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag">{{ organization.name }}</span></a>
-                  {% endfor %}
+                   {% for organization in resource.organizations %}
+                     {% if show_organizations_links %}
+                       <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
+                     {% else %}
+                       <span class="manage-tag organization-tag">{{ organization.name }}</span>
+                     {% endif %}
+                   {% endfor %}
                 </td>
 
                 {# CREATED BY VALUE #}

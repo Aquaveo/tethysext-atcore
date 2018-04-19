@@ -139,7 +139,7 @@ class ManageResources(TethysController, AppUsersControllerMixin):
         if hasattr(_Resource, sort_by):
             sorted_resources = sorted(
                 resource_cards,
-                key=lambda resource_card: resource_card[sort_by],
+                key=lambda resource_card: (not resource_card[sort_by], resource_card[sort_by]),
                 reverse=sort_reversed
             )
         else:
@@ -166,8 +166,7 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             'show_new_button': has_permission(request, 'create_resource'),
             'show_debugging_info': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),
-            'show_manage_users_link': has_permission(request, 'view_users'),
-            'show_manage_organizations_link': has_permission(request, 'view_organizations')
+            'show_organizations_links': has_permission(request, 'modify_organizations')
         }
 
         session.close()

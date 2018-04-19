@@ -38,7 +38,7 @@
                    data-toggle="collapse"
                    data-parent="#{{ organization_license|slugify }}-cards"
                    href="#collapse-{{ organization_card.id }}"
-                   aria-expanded="{% if expand_all or expand_first and forloop.first %}true{% else %}false{% endif %}"
+                   aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
                    aria-controls="collapse-{{ organization_card.id }}">
                   {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
                 </a>
@@ -88,7 +88,7 @@
 
           {# PANEL BODY #}
           <div id="collapse-{{ organization_card.id }}"
-               class="panel-collapse collapse {% if expand_all or expand_enterprise and forloop.first %}in{% endif %}"
+               class="panel-collapse collapse {% if forloop.first %}in{% endif %}"
                role="tabpanel"
                aria-labelledby="heading-{{ organization_card.id }}">
             <div class="panel-body list-group-panel-body">
@@ -133,7 +133,7 @@
                 <li class="list-group-item">
                   <p class="manage-section-title">{{ resource_display_type|upper }}</p>
                   {% for resource in resources %}
-                  <a href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}?back=manage-organizations"><span class="manage-tag project-tag">{{ resource.name }}</span></a>
+                  <a href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}?back=manage-organizations"><span class="manage-tag project-tag manage-tag-hover">{{ resource.name }}</span></a>
                   {% endfor %}
                 </li>
                 {% endfor %}
