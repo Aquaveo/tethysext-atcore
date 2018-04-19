@@ -118,6 +118,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
 
             except (StatementError, NoResultFound):
                 messages.warning(request, 'The organization could not be found.')
+                edit_session.close()
                 return redirect(reverse(next_controller))
 
             organization_name = organization.name

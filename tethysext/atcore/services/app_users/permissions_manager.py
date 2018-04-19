@@ -28,7 +28,7 @@ class AppPermissionsManager:
         """
         Manages custom_permissions for a given app.
         Args:
-            app_namespace(str): Namespace of the app (e.g.: "epanet").
+            app_namespace(str): Namespace of the app (e.g.: "my_first_app").
         """
         self.app_namespace = app_namespace
 

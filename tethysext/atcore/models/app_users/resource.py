@@ -28,7 +28,6 @@ class Resource(StatusMixin, AppUsersBase):
     name = Column(String)
     description = Column(String)
     type = Column(String)
-    location = Column(String)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     created_by = Column(String)
     status = Column(String)

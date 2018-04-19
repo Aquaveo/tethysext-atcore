@@ -133,8 +133,7 @@
                 <li class="list-group-item">
                   <p class="manage-section-title">{{ resource_display_type|upper }}</p>
                   {% for resource in resources %}
-                  {# TODO: IMPLEMENT WHEN RESOURCES ARE IMPLEMENTED #}
-                  <a href="{% url 'epanet:project_details' resource.id %}"><span class="manage-tag project-tag">{{ resource.name }}</span></a>
+                  <a href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}?back=manage-organizations"><span class="manage-tag project-tag">{{ resource.name }}</span></a>
                   {% endfor %}
                 </li>
                 {% endfor %}
@@ -212,13 +211,10 @@
   {{ block.super }}
   <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/app_users/css/collapse_list_group.css' %}" rel="stylesheet"/>
-  <link href="{% static 'atcore/boostrap_spinner/css/bootstrap_spinner.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
   <script src="{% static 'atcore/js/csrf.js' %}"></script>
   <script src="{% static 'atcore/app_users/js/app_users.js' %}"></script>
-  <script src="{% static 'atcore/boostrap_spinner/js/bootstrap_spinner.js' %}"></script>
-  <script src="{% static 'atcore/app_users/js/organizations.js' %}"></script>
 {% endblock %}

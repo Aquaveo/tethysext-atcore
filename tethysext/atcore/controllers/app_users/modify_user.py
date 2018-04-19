@@ -8,7 +8,6 @@ from tethys_apps.decorators import permission_required
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
-# from tethysext.atcore.services._app_users import update_user_permissions
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
@@ -95,6 +94,7 @@ class ModifyUser(TethysController, AppUsersControllerMixin):
 
             except (StatementError, NoResultFound):
                 messages.warning(request, 'The user could not be found.')
+                edit_session.close()
                 return redirect(reverse(next_controller))
 
             django_user = target_app_user.get_django_user()

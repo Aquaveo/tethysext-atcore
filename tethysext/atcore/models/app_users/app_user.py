@@ -380,7 +380,7 @@ class AppUser(AppUsersBase):
         # Get models
         _Organization = self.get_organization_model()
 
-        # Clear all epanet custom_permissions
+        # Clear all permissions
         permissions_manager.remove_all_permissions_groups(self)
 
         # App admins shouldn't belong to any organizations (i.e.: have license restrictions)
@@ -529,3 +529,23 @@ class AppUser(AppUsersBase):
 
         if commit:
             session.commit()
+
+    def can_view(self, session, request, resource):
+        """
+        Check whether this user can view the given resource.
+        Args:
+            session(sqlalchemy.session): SQLAlchemy session object
+            request(django.request): Django request object
+            resource(Resource): resource to test.
+
+        Returns:
+            bool: True if user can view the resource, else False.
+        """
+        organizations = self.get_organizations(session, request)
+
+        for organization in organizations:
+            for r in organization.resources:
+                if r.id == resource.id:
+                    return True
+
+        return False
