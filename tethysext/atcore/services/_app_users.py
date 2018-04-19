@@ -35,7 +35,7 @@ def get_user_organizations(session, request_or_user, as_options=False, cascade=F
     Returns:
 
     """
-    # TODO: Replace instances with app_user.get_organizations()
+    # Replace instances with app_user.get_organizations()
 
 
 def get_user_projects(session, request):
@@ -47,7 +47,7 @@ def get_user_projects(session, request):
 
     Returns:
     """
-    # TODO: Replace instances with app_user.get_resources()
+    # Replace instances with app_user.get_resources()
 
 
 def get_assignable_roles(request, as_options=False):
@@ -60,7 +60,7 @@ def get_assignable_roles(request, as_options=False):
     Returns: list of user roles the request user can assign
 
     """
-    # TODO: Replace instances with app_user.get_assignable_roles()
+    # Replace instances with app_user.get_assignable_roles()
     # roles = []
     #
     # if True:
@@ -86,7 +86,7 @@ def get_role(session, request_or_user, display_name=False):
 
     Returns: Name of role
     """
-    # TODO: Replaces instances with app_user.get_role
+    # Replaces instances with app_user.get_role
 
 
 def add_permissions_group(user, permissions_group_name):
@@ -96,7 +96,7 @@ def add_permissions_group(user, permissions_group_name):
         user: Django User object
         permissions_group_name: Name of group to add
     """
-    # TODO: Replace instances with app_permissions_manager.add_permissions_group()
+    # Replace instances with app_permissions_manager.add_permissions_group()
 
 
 def remove_permissions_group(user, permissions_group_name):
@@ -106,7 +106,7 @@ def remove_permissions_group(user, permissions_group_name):
         user: Django User object
         permissions_group_name: Name of group to remove
     """
-    # TODO: Replace instances with app_permissions_manager.remove_permissions_group()
+    # Replace instances with app_permissions_manager.remove_permissions_group()
 
 
 def remove_all_epanet_permissions_groups(user):
@@ -115,7 +115,7 @@ def remove_all_epanet_permissions_groups(user):
     Args:
         user:  Django User object
     """
-    # TODO: Replace instances with app_permissions_manager.remove_all_permissions_groups()
+    # Replace instances with app_permissions_manager.remove_all_permissions_groups()
 
 
 def get_all_permissions_groups_for_user(user, as_display_name=False):
@@ -127,7 +127,7 @@ def get_all_permissions_groups_for_user(user, as_display_name=False):
 
     Returns: Returns a list of all epanet custom_permissions group objects for this user.
     """
-    # TODO: Replace instances with app_permissions_manager.get_all_permissions_groups_for()
+    # Replace instances with app_permissions_manager.get_all_permissions_groups_for()
 
 
 def get_user_peers(session, request, include_self=False, cascade=False):
@@ -140,7 +140,7 @@ def get_user_peers(session, request, include_self=False, cascade=False):
 
     Returns: A list of AppUser objects.
     """
-    # TODO: Replace instances with app_user.get_peers()
+    # Replace instances with app_user.get_peers()
 
 
 def is_app_user(session, request):
@@ -186,11 +186,11 @@ def can_create_client_organizations_at_level(session, request, level):
 
     Returns: True when the user is able to create standard organizations.
     """
-    # TODO: refactor to Licenses.get_assign_permission_for() methodology. See: ModifyOrganization controller for example.
+    # refactor to Licenses.get_assign_permission_for() methodology. See: ModifyOrganization controller for example.
 
 
 def get_owner_options_and_mapping(session, request, license_options):
-    # TODO: refactored to app_users.get_organizations(consultants=True) and ModifyOrganization.get_get_license_to_consultant_map
+    # refactored to app_users.get_organizations(consultants=True) and ModifyOrganization.get_get_license_to_consultant_map
     pass
 
 
@@ -202,7 +202,7 @@ def assign_user_permission(request_or_user, user_role, license=None, addons=None
         user_role: Role of user (Admin, Viewer, or App Admin).
         license: License or access level of permission (Standard, Professional, Enterprise).
     """
-    # TODO: Replace instances with app_permissions_manager.assign_user_permission()
+    # Replace instances with app_permissions_manager.assign_user_permission()
 
 
 def remove_user_permission(request_or_user, user_role, license=None):
@@ -213,7 +213,7 @@ def remove_user_permission(request_or_user, user_role, license=None):
         user_role: Role of user (Admin, Viewer, or App Admin).
         license: License or access level of permission (Standard, Professional, Enterprise).
     """
-    # TODO: Replace instances with app_permissions_manager.remove_user_permission()
+    # Replace instances with app_permissions_manager.remove_user_permission()
 
 
 def update_user_permissions(session, request_or_user):
@@ -224,7 +224,7 @@ def update_user_permissions(session, request_or_user):
         session: SQLAlchemy session object.
         request_or_user: Django Request or User object.
     """
-    # TODO: Replace instances with app_user.update_permissions()
+    # Replace instances with app_user.update_permissions()
 
 
 def active_user_required(*args, **kwargs):
@@ -251,11 +251,11 @@ def active_user_required(*args, **kwargs):
 
 
 def modify_account_status_of_unique_users_of_organization(session, organization):
-    # TODO: replace instances with organization.update_member_activity
+    # replace instances with organization.update_member_activity
     pass
 
 
 def get_app_user_from_request(request, session=None):
     """
     """
-    # TODO: replace instances with AppUser.get_app_user_from_request
+    # replace instances with AppUser.get_app_user_from_request
