@@ -1,12 +1,9 @@
 import uuid
-
 from sqlalchemy import Column, Boolean, String
 from sqlalchemy.orm import relationship, validates, reconstructor
-from sqlalchemy.orm.exc import MultipleResultsFound
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.roles import Roles
-
 from .associations import user_organization_association
 from .user_setting import UserSetting
 from .base import AppUsersBase
@@ -409,75 +406,47 @@ class AppUser(AppUsersBase):
 
         return max(all_permissions_ranks)
 
-    def get_setting(self, session, key, resource=None, secondary_id=None, page=None, as_value=False):
+    def get_setting(self, session, key, as_value=False, **kwargs):
         """
         Get user setting using given criteria.
         Args:
             session(sqlalchemy.session): database session.
-            resource(Resource): instance of Resource to which the setting applies.
-            secondary_id(str): secondary resource identifier for additional filtering.
-            page(str): name of page/view to which the setting applies.
             key(str): name of setting.
             as_value(bool): return value of setting, instead of UserSetting instance if True.
+            kwargs: Any number of key value attributes to attach for filtering (i.e.: page, secondary_id, resource).
         Returns:
             UserSetting: the user setting or None if does not exist.
         """
         _UserSetting = self._get_user_setting_model()
 
-        setting_query = session.query(_UserSetting) \
+        q = session.query(_UserSetting) \
             .filter(_UserSetting.user_id == self.id) \
             .filter(_UserSetting.key == key) \
 
-        if resource:
-            setting_query = setting_query.filter(_UserSetting.resource_id == resource.id)
+        attributes_string = _UserSetting.build_attributes_string(**kwargs)
+        q = q.filter(_UserSetting._attributes == attributes_string)
 
-        if secondary_id:
-            setting_query = setting_query.filter(_UserSetting.secondary_id == secondary_id)
-
-        if page:
-            setting_query = setting_query.filter(_UserSetting.page == page)
-
-        try:
-            setting = setting_query.one_or_none()
-        except MultipleResultsFound:
-            settings = setting_query.all()
-            setting = None
-            for s in settings:
-                resource_id = resource.id if resource else None
-                if s.resource_id == resource_id and s.secondary_id == secondary_id and s.page == page:
-                   setting = s
+        setting = q.one_or_none()
 
         if as_value:
             return setting.value if setting else None
 
         return setting
 
-    def get_all_settings(self, session, resource=None, secondary_id=None, page=None):
+    def get_all_settings(self, session):
         """
-        Get all user settings for the given criteria.
+        Get all user settings.
         Args:
             session(sqlalchemy.session): database session.
-            resource(Resource): instance of Resource to which the setting applies.
-            secondary_id(str): secondary resource identifier for additional filtering.
-            page(str): name of page/view to which the setting applies.
         Returns:
             list<UserSetting>: All user settings associated with given criteria.
         """
         _UserSetting = self._get_user_setting_model()
 
-        settings_query = session.query(_UserSetting) \
+        q = session.query(_UserSetting) \
             .filter(_UserSetting.user_id == self.id)
 
-        if resource:
-            settings_query = settings_query.filter(_UserSetting.resource_id == resource.id)
-
-        if secondary_id:
-            settings_query = settings_query.filter(_UserSetting.secondary_id == secondary_id)
-
-        if page:
-            settings_query = settings_query.filter(_UserSetting.page == page)
-
-        settings = settings_query.all()
+        settings = q.all()
 
         return settings
 
@@ -494,35 +463,29 @@ class AppUser(AppUsersBase):
 
         session.commit()
 
-    def update_setting(self, session, key, value, resource=None, secondary_id=None, page=None, commit=True):
+    def update_setting(self, session, key, value, commit=True, **kwargs):
         """
         Update the value of the setting matching the given criteria.
         Args:
             session(sqlalchemy.session): database session.
-            resource(Resource): instance of Resource to which the setting applies.
-            secondary_id(str): secondary resource identifier for additional filtering.
-            page(str): name of page/view to which the setting applies.
             key(str): name of setting.
             value(str): value of setting.
             commit(bool): commit the changes if True.
+            kwargs: Any number of key value attributes to attach for filtering (i.e.: page, secondary_id, resource).
         """
         _UserSetting = self._get_user_setting_model()
 
         setting = self.get_setting(
             session=session,
-            resource=resource,
-            secondary_id=secondary_id,
-            page=page,
-            key=key
+            key=key,
+            **kwargs
         )
 
         if not setting:
             setting = _UserSetting()
-            setting.user_id = self.id
-            setting.resource_id = resource.id if resource else None
-            setting.secondary_id = secondary_id
-            setting.page = page
             setting.key = key
+            setting.user_id = self.id
+            setting.attributes = _UserSetting.build_attributes(**kwargs)
             session.add(setting)
 
         setting.value = value

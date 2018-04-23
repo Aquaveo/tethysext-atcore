@@ -7,13 +7,15 @@
 ********************************************************************************
 """
 import uuid
+import json
 from sqlalchemy import Column, ForeignKey, String
 from tethysext.atcore.models.types.guid import GUID
 from sqlalchemy.orm import relationship
 from .base import AppUsersBase
+from tethysext.atcore.mixins import AttributesMixin
 
 
-class UserSetting(AppUsersBase):
+class UserSetting(AttributesMixin, AppUsersBase):
     """
     SQLAlchemy interface for user_settings table.
     """
@@ -24,9 +26,7 @@ class UserSetting(AppUsersBase):
     user_id = Column(GUID, ForeignKey('app_users.id'))
 
     # Properties
-    resource_id = Column(GUID, nullable=True, default=None)
-    secondary_id = Column(String, nullable=True, default=None)
-    page = Column(String, nullable=True, default=None)
+    _attributes = Column(String, default=json.dumps({}))
     key = Column(String)
     value = Column(String)
 

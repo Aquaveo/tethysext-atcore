@@ -1,11 +1,10 @@
 import datetime
 import uuid
-import json
 
 from sqlalchemy import Column, Boolean, DateTime, String
 from sqlalchemy.orm import relationship
 from tethysext.atcore.models.types.guid import GUID
-from tethysext.atcore.mixins import StatusMixin
+from tethysext.atcore.mixins import StatusMixin, AttributesMixin
 
 from .app_user import AppUsersBase
 from .associations import organization_resource_association
@@ -13,7 +12,7 @@ from .associations import organization_resource_association
 __all__ = ['Resource']
 
 
-class Resource(StatusMixin, AppUsersBase):
+class Resource(StatusMixin, AttributesMixin, AppUsersBase):
     """
     Definition for the resources table.
     """
@@ -44,38 +43,3 @@ class Resource(StatusMixin, AppUsersBase):
         'polymorphic_identity': TYPE,
         'polymorphic_on': type
     }
-
-    @property
-    def attributes(self):
-        if not self._attributes:
-            self._attributes = json.dumps({})
-        return json.loads(self._attributes)
-
-    @attributes.setter
-    def attributes(self, value):
-        self._attributes = json.dumps(value)
-
-    def get_attribute(self, key):
-        """
-        Get value of a specific attribute.
-        Args:
-            key(str): key of attribute.
-
-        Returns:
-            varies: value of attribute.
-        """
-        if key not in self.attributes:
-            return None
-
-        return self.attributes[key]
-
-    def set_attribute(self, key, value):
-        """
-        Set value of a specific attribute.
-        Args:
-            key(str): key of attribute
-            value: value of attribute
-        """
-        attrs = self.attributes
-        attrs[key] = value
-        self.attributes = attrs

@@ -555,6 +555,109 @@ class AppUserTests(TethysTestCase):
         apm.get_all_permissions_groups_for.assert_called()
         self.assertEqual(200.0, rank)
 
+    def _init_settings_same_keys(self):
+        setting1 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='1',
+        )
+
+        setting2 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='2',
+        )
+        a = UserSetting.build_attributes(page='a_page')
+        setting2.attributes = a
+
+        setting3 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='3',
+        )
+        a = UserSetting.build_attributes(resource=self.rsrc1)
+        setting3.attributes = a
+
+        setting4 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='4',
+        )
+        a = UserSetting.build_attributes(secondary_id='another-id')
+        setting4.attributes = a
+
+        self.session.add_all([setting1, setting2, setting3, setting4])
+        self.session.commit()
+        return [setting1, setting2, setting3, setting4]
+
+    def _init_settings_same_keys_same_values(self):
+        setting1 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='1',
+        )
+
+        setting2 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='1',
+        )
+        a = UserSetting.build_attributes(page='a_page')
+        setting2.attributes = a
+
+        setting3 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='1',
+        )
+        a = UserSetting.build_attributes(resource=self.rsrc1)
+        setting3.attributes = a
+
+        setting4 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='1',
+        )
+        a = UserSetting.build_attributes(secondary_id='another-id')
+        setting4.attributes = a
+
+        self.session.add_all([setting1, setting2, setting3, setting4])
+        self.session.commit()
+        return [setting1, setting2, setting3, setting4]
+
+    def _init_settings_different_keys(self):
+        setting1 = UserSetting(
+            user_id=self.user.id,
+            key='one',
+            value='1',
+        )
+        setting2 = UserSetting(
+            user_id=self.user.id,
+            key='two',
+            value='1',
+        )
+        a = UserSetting.build_attributes(page='a_page')
+        setting2.attributes = a
+
+        setting3 = UserSetting(
+            user_id=self.user.id,
+            key='three',
+            value='1',
+        )
+        a = UserSetting.build_attributes(resource=self.rsrc1)
+        setting3.attributes = a
+
+        setting4 = UserSetting(
+            user_id=self.user.id,
+            key='three',
+            value='1',
+        )
+        a = UserSetting.build_attributes(secondary_id='another-id')
+        setting4.attributes = a
+
+        self.session.add_all([setting1, setting2, setting3, setting4])
+        self.session.commit()
+        return [setting1, setting2, setting3, setting4]
 
     def test_get_setting(self):
         setting = UserSetting(
@@ -573,35 +676,10 @@ class AppUserTests(TethysTestCase):
         self.assertIsNone(return_val)
 
     def test_get_setting_multiple_same_key(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='2',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='3',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='4',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
-        return_val = self.user.get_setting(self.session,'one')
+        self._init_settings_same_keys()
+        return_val = self.user.get_setting(self.session, 'one')
         self.assertIsInstance(return_val, UserSetting)
         self.assertEqual('1', return_val.value)
-
 
     def test_get_setting_as_value(self):
         setting = UserSetting(
@@ -619,8 +697,10 @@ class AppUserTests(TethysTestCase):
             user_id=self.user.id,
             key='foo',
             value='bar',
-            resource_id=self.rsrc1.id
         )
+        a = UserSetting.build_attributes(resource=self.rsrc1)
+        setting.attributes = a
+
         self.session.add(setting)
         self.session.commit()
         return_val = self.user.get_setting(self.session, key='foo', resource=self.rsrc1)
@@ -632,8 +712,10 @@ class AppUserTests(TethysTestCase):
             user_id=self.user.id,
             key='foo',
             value='bar',
-            page='a_page'
         )
+        a = UserSetting.build_attributes(page='a_page')
+        setting.attributes = a
+
         self.session.add(setting)
         self.session.commit()
         return_val = self.user.get_setting(self.session, key='foo', page='a_page')
@@ -645,197 +727,31 @@ class AppUserTests(TethysTestCase):
             user_id=self.user.id,
             key='foo',
             value='bar',
-            secondary_id='another-identifier'
         )
+        a = UserSetting.build_attributes(secondary_id='another-id')
+        setting.attributes = a
+
         self.session.add(setting)
         self.session.commit()
-        return_val = self.user.get_setting(self.session, key='foo', secondary_id='another-identifier')
+        return_val = self.user.get_setting(self.session, key='foo', secondary_id='another-id')
         self.assertIsInstance(return_val, UserSetting)
         self.assertEqual('bar', return_val.value)
 
     def test_get_all_settings(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='two',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
+        self._init_settings_different_keys()
         return_val = self.user.get_all_settings(self.session)
         self.assertIsNotNone(return_val)
         self.assertEqual(4, len(return_val))
 
-    def test_get_all_settings_resource(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='two',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
-        return_val = self.user.get_all_settings(self.session, resource=self.rsrc1)
-        self.assertIsNotNone(return_val)
-        self.assertEqual(1, len(return_val))
-
-    def test_get_all_settings_secondary_id(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='two',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
-        return_val = self.user.get_all_settings(self.session, secondary_id='another-id')
-        self.assertIsNotNone(return_val)
-        self.assertEqual(1, len(return_val))
-
-    def test_get_all_settings_page(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='two',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='three',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
-        return_val = self.user.get_all_settings(self.session, page='a_page')
-        self.assertIsNotNone(return_val)
-        self.assertEqual(1, len(return_val))
-
-    def test_get_all_settings_none(self):
-        return_val = self.user.get_all_settings(self.session)
-        self.assertIsNotNone(return_val)
-        self.assertEqual(0, len(return_val))
-
     def test_delete_existing_settings(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
-
-        settings_to_delete = [setting1, setting3]
+        settings = self._init_settings_same_keys()
+        settings_to_delete = [settings[0], settings[2]]
         self.user.delete_existing_settings(self.session, settings_to_delete)
         count = self.session.query(UserSetting).count()
         self.assertEqual(2, count)
 
     def test_update_setting(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
+        self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2')
         settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
         self.assertEqual(1, len(settings))
@@ -846,100 +762,42 @@ class AppUserTests(TethysTestCase):
         self.assertEqual(1, len(settings))
 
     def test_update_setting_resource(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
+        self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', resource=self.rsrc1)
         settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_secondary_id(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
+        self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', secondary_id='another-id')
         settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_page(self):
-        setting1 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-        )
-        setting2 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            page='a_page'
-        )
-        setting3 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            resource_id=self.rsrc1.id
-        )
-        setting4 = UserSetting(
-            user_id=self.user.id,
-            key='one',
-            value='1',
-            secondary_id='another-id'
-        )
-        self.session.add_all([setting1, setting2, setting3, setting4])
-        self.session.commit()
+        self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', page='a_page')
         settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_no_commit(self):
+        self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', commit=False)
-        self.assertTrue(self.session.new)
+        self.session.rollback()
+        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        self.assertEqual(0, len(settings))
+
+    def test_update_setting_multiple_times(self):
+        self.user.update_setting(self.session, 'one', '1')
+        settings = self.session.query(UserSetting).filter(UserSetting.value == '1').all()
+        self.assertEqual(1, len(settings))
+        self.user.update_setting(self.session, 'one', '2')
         settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
         self.assertEqual(1, len(settings))
+        self.user.update_setting(self.session, 'one', '3')
+        settings = self.session.query(UserSetting).filter(UserSetting.value == '3').all()
+        self.assertEqual(1, len(settings))
+        all_one_settings = self.session.query(UserSetting).filter(UserSetting.key == 'one').all()
+        self.assertEqual(1, len(all_one_settings))
 
     @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)
     def test_can_view_direct_true(self, mock_has_permission_function):
