@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Column, Boolean, String
 from sqlalchemy.orm import relationship, validates, reconstructor
+from sqlalchemy.orm.exc import MultipleResultsFound
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.roles import Roles
@@ -120,16 +121,6 @@ class AppUser(AppUsersBase):
             username = request.user.username
 
         app_user = session.query(cls).filter(cls.username == username).one_or_none()
-
-        # If no app user found, redirect to the apps library page and warn.
-        if redirect_if_invalid:
-            if app_user is None and not request.user.is_staff and redirect_if_invalid:
-                from django.contrib import messages
-                from django.urls import reverse
-                from django.shortcuts import redirect
-                messages.warning(request, "We're sorry, but you do not have an account in this app.")
-                session.close()
-                return redirect(reverse('app_library'))
 
         return app_user
 
@@ -384,17 +375,18 @@ class AppUser(AppUsersBase):
         permissions_manager.remove_all_permissions_groups(self)
 
         # App admins shouldn't belong to any organizations (i.e.: have license restrictions)
-        if self.role == self.ROLES.APP_ADMIN:
+        if self.role in self.ROLES.get_no_organization_roles():
             # Clear organizations
             self.organizations = []
 
             # Assign custom_permissions
             permissions_manager.assign_user_permission(self, str(self.role), _Organization.LICENSES.NONE)
 
-        # Other user roles belong to organizations, which impose license restrictions
-        # Assign custom_permissions according to organization membership
-        for organization in self.get_organizations(session, request, cascade=False):
-            permissions_manager.assign_user_permission(self, str(self.role), str(organization.license))
+        else:
+            # Other user roles belong to organizations, which impose license restrictions
+            # Assign custom_permissions according to organization membership
+            for organization in self.get_organizations(session, request, cascade=False):
+                permissions_manager.assign_user_permission(self, str(self.role), str(organization.license))
 
         self.django_user.save()
 
@@ -437,7 +429,7 @@ class AppUser(AppUsersBase):
             .filter(_UserSetting.key == key) \
 
         if resource:
-            setting_query = setting_query.filter(_UserSetting.user_project_id == resource.id)
+            setting_query = setting_query.filter(_UserSetting.resource_id == resource.id)
 
         if secondary_id:
             setting_query = setting_query.filter(_UserSetting.secondary_id == secondary_id)
@@ -445,7 +437,15 @@ class AppUser(AppUsersBase):
         if page:
             setting_query = setting_query.filter(_UserSetting.page == page)
 
-        setting = setting_query.one_or_none()
+        try:
+            setting = setting_query.one_or_none()
+        except MultipleResultsFound:
+            settings = setting_query.all()
+            setting = None
+            for s in settings:
+                resource_id = resource.id if resource else None
+                if s.resource_id == resource_id and s.secondary_id == secondary_id and s.page == page:
+                   setting = s
 
         if as_value:
             return setting.value if setting else None
@@ -469,7 +469,7 @@ class AppUser(AppUsersBase):
             .filter(_UserSetting.user_id == self.id)
 
         if resource:
-            settings_query = settings_query.filter(_UserSetting.user_project_id == resource.id)
+            settings_query = settings_query.filter(_UserSetting.resource_id == resource.id)
 
         if secondary_id:
             settings_query = settings_query.filter(_UserSetting.secondary_id == secondary_id)
@@ -519,7 +519,7 @@ class AppUser(AppUsersBase):
         if not setting:
             setting = _UserSetting()
             setting.user_id = self.id
-            setting.user_project_id = resource.id if resource else None
+            setting.resource_id = resource.id if resource else None
             setting.secondary_id = secondary_id
             setting.page = page
             setting.key = key

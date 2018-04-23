@@ -225,9 +225,9 @@ class PermissionsGenerator:
         ]
 
         standard_user_role = PermissionGroup(
-            name=self.permission_manager.STD_U_PERMS,
+            name=self.permission_manager._STD_U_PERMS,
             permissions=standard_user_perms + [has_standard_user_role] +
-                        self.custom_permissions[self.permission_manager.STD_U_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._STD_U_PERMS]  # noqa: E131
         )
 
         # Standard Admin
@@ -238,54 +238,54 @@ class PermissionsGenerator:
         ]
 
         standard_admin_role = PermissionGroup(
-            name=self.permission_manager.STD_A_PERMS,
+            name=self.permission_manager._STD_A_PERMS,
             permissions=standard_admin_perms + [has_standard_admin_role] +
-                        self.custom_permissions[self.permission_manager.STD_A_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._STD_A_PERMS]  # noqa: E131
         )
 
         # Advanced Viewer
         advanced_user_perms = standard_user_perms
 
         advanced_user_role = PermissionGroup(
-            name=self.permission_manager.ADV_U_PERMS,
+            name=self.permission_manager._ADV_U_PERMS,
             permissions=advanced_user_perms + [has_advanced_user_role] +
-                        self.custom_permissions[self.permission_manager.ADV_U_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._ADV_U_PERMS]  # noqa: E131
         )
 
         # Advanced Admin
         advanced_admin_perms = standard_admin_perms + advanced_user_perms
 
         advanced_admin_role = PermissionGroup(
-            name=self.permission_manager.ADV_A_PERMS,
+            name=self.permission_manager._ADV_A_PERMS,
             permissions=advanced_admin_perms + [has_advanced_admin_role] +
-                        self.custom_permissions[self.permission_manager.ADV_A_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._ADV_A_PERMS]  # noqa: E131
         )
 
         # Professional Viewer
         professional_user_perms = advanced_user_perms
 
         professional_user_role = PermissionGroup(
-            name=self.permission_manager.PRO_U_PERMS,
+            name=self.permission_manager._PRO_U_PERMS,
             permissions=professional_user_perms + [has_professional_user_role] +
-                        self.custom_permissions[self.permission_manager.PRO_U_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._PRO_U_PERMS]  # noqa: E131
         )
 
         # Professional Admin
         professional_admin_perms = advanced_admin_perms + professional_user_perms
 
         professional_admin_role = PermissionGroup(
-            name=self.permission_manager.PRO_A_PERMS,
+            name=self.permission_manager._PRO_A_PERMS,
             permissions=professional_admin_perms + [has_professional_admin_role] +
-                        self.custom_permissions[self.permission_manager.PRO_A_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._PRO_A_PERMS]  # noqa: E131
         )
 
         # Enterprise Viewer
         enterprise_user_perms = professional_user_perms
 
         enterprise_user_role = PermissionGroup(
-            name=self.permission_manager.ENT_U_PERMS,
+            name=self.permission_manager._ENT_U_PERMS,
             permissions=enterprise_user_perms + [has_enterprise_user_role] +
-                        self.custom_permissions[self.permission_manager.ENT_U_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._ENT_U_PERMS]  # noqa: E131
         )
 
         # Enterprise Admin
@@ -295,9 +295,9 @@ class PermissionsGenerator:
         ]
 
         enterprise_admin_role = PermissionGroup(
-            name=self.permission_manager.ENT_A_PERMS,
+            name=self.permission_manager._ENT_A_PERMS,
             permissions=enterprise_admin_perms + [has_enterprise_admin_role] +
-                        self.custom_permissions[self.permission_manager.ENT_A_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._ENT_A_PERMS]  # noqa: E131
         )
 
         # App admin role
@@ -312,9 +312,9 @@ class PermissionsGenerator:
         ]
 
         app_admin_role = PermissionGroup(
-            name=self.permission_manager.APP_A_PERMS,
+            name=self.permission_manager._APP_A_PERMS,
             permissions=app_admin_perms + [has_app_admin_role] +
-                        self.custom_permissions[self.permission_manager.APP_A_PERMS]  # noqa: E131
+                        self.custom_permissions[self.permission_manager._APP_A_PERMS]  # noqa: E131
         )
 
         permissions = [

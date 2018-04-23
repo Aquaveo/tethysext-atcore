@@ -24,9 +24,9 @@ class UserSetting(AppUsersBase):
     user_id = Column(GUID, ForeignKey('app_users.id'))
 
     # Properties
-    resource_id = Column(GUID)
-    secondary_id = Column(String)
-    page = Column(String)
+    resource_id = Column(GUID, nullable=True, default=None)
+    secondary_id = Column(String, nullable=True, default=None)
+    page = Column(String, nullable=True, default=None)
     key = Column(String)
     value = Column(String)
 

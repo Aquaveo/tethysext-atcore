@@ -11,15 +11,15 @@ from tethysext.atcore.services.app_users.licenses import Licenses
 
 
 class AppPermissionsManager:
-    STD_U_PERMS = 'standard_user_perms'
-    STD_A_PERMS = 'standard_admin_perms'
-    ADV_U_PERMS = 'advanced_user_perms'
-    ADV_A_PERMS = 'advanced_admin_perms'
-    PRO_U_PERMS = 'professional_user_perms'
-    PRO_A_PERMS = 'professional_admin_perms'
-    ENT_U_PERMS = 'enterprise_user_perms'
-    ENT_A_PERMS = 'enterprise_admin_perms'
-    APP_A_PERMS = 'app_admin_perms'
+    _STD_U_PERMS = 'standard_user_perms'
+    _STD_A_PERMS = 'standard_admin_perms'
+    _ADV_U_PERMS = 'advanced_user_perms'
+    _ADV_A_PERMS = 'advanced_admin_perms'
+    _PRO_U_PERMS = 'professional_user_perms'
+    _PRO_A_PERMS = 'professional_admin_perms'
+    _ENT_U_PERMS = 'enterprise_user_perms'
+    _ENT_A_PERMS = 'enterprise_admin_perms'
+    _APP_A_PERMS = 'app_admin_perms'
 
     ROLES = Roles()
     LICENSES = Licenses()
@@ -32,15 +32,15 @@ class AppPermissionsManager:
         """
         self.app_namespace = app_namespace
 
-        self.STANDARD_USER_PERMS = '{}:{}'.format(self.app_namespace, self.STD_U_PERMS)
-        self.STANDARD_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.STD_A_PERMS)
-        self.ADVANCED_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_U_PERMS)
-        self.ADVANCED_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_A_PERMS)
-        self.PROFESSIONAL_USER_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_U_PERMS)
-        self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_A_PERMS)
-        self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_U_PERMS)
-        self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_A_PERMS)
-        self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.APP_A_PERMS)
+        self.STANDARD_USER_PERMS = '{}:{}'.format(self.app_namespace, self._STD_U_PERMS)
+        self.STANDARD_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._STD_A_PERMS)
+        self.ADVANCED_USER_PERMS = '{}:{}'.format(self.app_namespace, self._ADV_U_PERMS)
+        self.ADVANCED_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._ADV_A_PERMS)
+        self.PROFESSIONAL_USER_PERMS = '{}:{}'.format(self.app_namespace, self._PRO_U_PERMS)
+        self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._PRO_A_PERMS)
+        self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self._ENT_U_PERMS)
+        self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._ENT_A_PERMS)
+        self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._APP_A_PERMS)
 
     def list(self, with_namespace=False):
         """
@@ -62,15 +62,15 @@ class AppPermissionsManager:
             ]
         else:
             return [
-                self.STD_U_PERMS,
-                self.STD_A_PERMS,
-                self.ADV_U_PERMS,
-                self.ADV_A_PERMS,
-                self.PRO_U_PERMS,
-                self.PRO_A_PERMS,
-                self.ENT_U_PERMS,
-                self.ENT_A_PERMS,
-                self.APP_A_PERMS
+                self._STD_U_PERMS,
+                self._STD_A_PERMS,
+                self._ADV_U_PERMS,
+                self._ADV_A_PERMS,
+                self._PRO_U_PERMS,
+                self._PRO_A_PERMS,
+                self._ENT_U_PERMS,
+                self._ENT_A_PERMS,
+                self._APP_A_PERMS
             ]
 
     def get_permissions_group_for(self, role, license=None, **kwargs):
@@ -164,7 +164,7 @@ class AppPermissionsManager:
             return 800.0
         elif permissions_group == self.APP_ADMIN_PERMS:
             return 1000.0
-        return None
+        return -1.0
 
     @staticmethod
     def add_permissions_group(app_user, permissions_group_name):
