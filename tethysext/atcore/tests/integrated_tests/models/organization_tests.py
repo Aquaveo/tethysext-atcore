@@ -57,6 +57,11 @@ class OrganizationTests(TethysTestCase):
         )
         self.organization.members.extend([self.staff_user, self.normal_user])
 
+        self.non_member_user = AppUser(
+            username='nonmember',
+            role=AppUser.ROLES.ORG_USER
+        )
+
         self.resource = Resource(
             name="res1"
         )
@@ -240,3 +245,11 @@ class OrganizationTests(TethysTestCase):
 
         resource = self.session.query(Resource).filter(Resource.id == self.resource_id).one_or_none()
         self.assertIsNone(resource)
+
+    def test_is_member_true(self):
+        ret = self.organization.is_member(self.normal_user)
+        self.assertTrue(ret)
+
+    def test_is_member_false(self):
+        ret = self.organization.is_member(self.non_member_user)
+        self.assertFalse(ret)
