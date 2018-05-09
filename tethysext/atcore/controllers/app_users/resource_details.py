@@ -24,10 +24,9 @@ from tethysext.atcore.services.app_users.decorators import active_user_required
 
 class ResourceDetails(TethysController, AppUsersControllerMixin):
     """
-    Controller for manage_resources page.
+    Controller for resource_details page.
 
-    GET: Render list of all resources.
-    DELETE: Delete and organization.
+    GET: Render detail view of given resource.
     """
     template_name = 'atcore/app_users/resource_details.html'
     base_template = 'atcore/app_users/base.html'

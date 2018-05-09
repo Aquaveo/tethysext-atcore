@@ -25,7 +25,7 @@ from tethysext.atcore.exceptions import ATCoreException
 
 class ModifyResource(TethysController, AppUsersControllerMixin):
     """
-    Controller for modify_organization page.
+    Controller for modify_resource page.
 
     GET: Render form for adding/editing resource.
     POST: Handle form submission to add/edit a new resource.
@@ -53,17 +53,17 @@ class ModifyResource(TethysController, AppUsersControllerMixin):
         """
         Route get requests.
         """
-        return self._handle_modify_user_requests(request, *args, **kwargs)
+        return self._handle_modify_resource_requests(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         """
         Route post requests.
         """
-        return self._handle_modify_user_requests(request, *args, **kwargs)
+        return self._handle_modify_resource_requests(request, *args, **kwargs)
 
     @active_user_required()
     @permission_required('modify_resources')
-    def _handle_modify_user_requests(self, request, resource_id=None, *args, **kwargs):
+    def _handle_modify_resource_requests(self, request, resource_id=None, *args, **kwargs):
         """
         Handle get requests.
         """
@@ -213,7 +213,7 @@ class ModifyResource(TethysController, AppUsersControllerMixin):
                 resource_description = resource.description
 
                 if self.include_srid:
-                    resource_srid = resource.srid
+                    resource_srid = resource.get_attribute('srid')
 
                 # Get organizations of user
                 for organization in resource.organizations:

@@ -1,4 +1,5 @@
 import inspect
+from django.utils.text import slugify
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
     ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources, ModifyResource, ResourceDetails
@@ -111,10 +112,10 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     new_organization_url =              'organizations/new'  # noqa: E222
     edit_organization_url =             'organizations/{organization_id}/edit'  # noqa: E222
     manage_organization_members_url =   'organizations/{organization_id}/members'  # noqa: E222
-    manage_resources_url =              _Resource.DISPLAY_TYPE_PLURAL.lower()  # noqa: E222
-    new_resource_url =                  _Resource.DISPLAY_TYPE_PLURAL.lower() + '/new'  # noqa: E222
-    edit_resource_url =                 _Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/edit'  # noqa: E222
-    resource_details_url =              _Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/details'  # noqa: E222
+    manage_resources_url =              slugify(_Resource.DISPLAY_TYPE_PLURAL.lower())  # noqa: E222
+    new_resource_url =                  slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/new'  # noqa: E222
+    edit_resource_url =                 slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/edit'  # noqa: E222, E501
+    resource_details_url =              slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/details'  # noqa: E222, E501
 
     url_maps = (
         url_map_maker(

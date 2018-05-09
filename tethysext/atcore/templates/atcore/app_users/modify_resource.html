@@ -13,7 +13,7 @@
   <li class="separator"></li>
 
   <p style="margin-bottom: 5px;"><b>Organizations:</b></p>
-  <p>{{ type_plural|title }} will be accessible to the members of the organizations to which the {{ type_singular|lower }} is assigned.</p>
+  <p>{{ type_plural }} will be accessible to the members of the organizations to which the {{ type_singular|lower }} is assigned.</p>
   <li class="separator"></li>
 
   {% if show_srid_field %}
@@ -36,7 +36,7 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-12">
-      <h1>{% if editing %}Edit{% else %}New{% endif %} {{ type_singular|title }}</h1>
+      <h1>{% if editing %}Edit{% else %}New{% endif %} {{ type_singular }}</h1>
       <form id="new-resource-form" method="post" action="" {% if show_file_upload_field %}enctype="multipart/form-data"{% endif %}>
         {% csrf_token %}
         <div class="row">
@@ -93,7 +93,7 @@
             <input type="submit"
                    class="btn btn-success"
                    name="modify-resource-submit"
-                   value="{% if editing %}Save Changes{% else %}Create {{ type_singular|title }}{% endif %}">
+                   value="{% if editing %}Save Changes{% else %}Create {{ type_singular }}{% endif %}">
           </div>
         </div>
       </form>

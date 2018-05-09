@@ -133,6 +133,7 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             resource_card['deletable'] = self.can_delete_resource(session, request, resource)
             resource_card['organizations'] = resource.organizations
             resource_card['debugging'] = resource.attributes
+            resource_card['debugging']['id'] = str(resource.id)
             resource_cards.append(resource_card)
 
         # Only attempt to sort if the sort field is a valid attribute of _Resource
