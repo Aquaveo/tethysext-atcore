@@ -61,7 +61,7 @@
               {% endif %}
 
               {# EDIT ORG BUTTON #}
-              {% if organization_card.can_modify %}
+              {% if organization_card.can_edit %}
               <a class="btn btn-default btn-edit btn-flat"
                  href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization_card.id %}"
                  data-toggle="tooltip"
@@ -72,7 +72,7 @@
               {% endif %}
 
               {# DELETE ORG BUTTON #}
-              {% if organization_card.can_modify %}
+              {% if organization_card.can_delete %}
               <a class="btn btn-default btn-delete-manage btn-delete btn-flat"
                  href="javascript:void(0);"
                  data-id="{{ organization_card.id }}"
@@ -115,11 +115,7 @@
                   <p class="manage-section-title">MEMBERS</p>
                   {% for member in organization_card.members %}
                     {% if link_to_members %}
-                    <a href="{% url tethys_app.namespace|add:':app_users_edit_user' member.1 %}?next=manage-organizations">
-                      <span class="manage-tag member-tag">
-                        {% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}
-                      </span>
-                    </a>
+                    <a href="{% url tethys_app.namespace|add:':app_users_edit_user' member.1 %}?next=manage-organizations"><span class="manage-tag member-tag manage-tag-hover">{% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}</span></a>
                     {% else %}
                     <span class="manage-tag member-tag">
                       {% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}

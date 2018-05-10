@@ -106,9 +106,17 @@ class OrganizationTests(TethysTestCase):
             self.assertIsInstance(e, ValueError)
         self.assertTrue(exception_raised)
 
-    def test_get_modify_permission(self):
-        perm = self.organization.get_modify_permission()
-        self.assertEqual('modify_organizations', perm)
+    def test_get_create_permission(self):
+        perm = self.organization.get_create_permission()
+        self.assertEqual('create_organizations', perm)
+
+    def test_get_edit_permission(self):
+        perm = self.organization.get_edit_permission()
+        self.assertEqual('edit_organizations', perm)
+
+    def test_get_delete_permission(self):
+        perm = self.organization.get_delete_permission()
+        self.assertEqual('delete_organizations', perm)
 
     def test_get_modify_member_permission(self):
         perm = self.organization.get_modify_members_permission()

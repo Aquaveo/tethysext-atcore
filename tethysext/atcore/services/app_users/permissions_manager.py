@@ -141,7 +141,7 @@ class AppPermissionsManager:
         """
         Get the rank for the given permission group.
         Args:
-            permissions_group(float): name of permission group.
+            permissions_group(str): name of permission group.
 
         Returns:
             int: Rank for given permission group.
@@ -252,7 +252,7 @@ class AppPermissionsManager:
 
         return groups
 
-    def assign_user_permission(self, app_user, role, license, **kwargs):
+    def assign_user_permission(self, app_user, role, license=None, **kwargs):
         """
         Add custom_permissions based on combo of role, license and other given criteria.
 

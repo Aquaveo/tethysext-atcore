@@ -7,7 +7,7 @@
 ********************************************************************************
 """
 # Django
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
 
 # Tethys core
@@ -65,10 +65,13 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
         else:
             organizations = request_app_user.get_organizations(session, request, cascade=True)
 
-        organizations = sorted(organizations, key=lambda c: c.name)
+        organizations = sorted(organizations, key=lambda c: (c.license, c.name))
 
         # Permissions
-        can_modify_organizations = has_permission(request, 'modify_organizations')
+        can_create_organizations = has_permission(request, _Organization.get_create_permission())
+        can_delete_organizations = has_permission(request, _Organization.get_delete_permission())
+        can_modify_users = has_permission(request, 'modify_users')
+        load_delete_modal = can_delete_organizations
 
         # Create cards for organizations
         organization_cards = {}
@@ -99,7 +102,11 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
                 resources[resource.DISPLAY_TYPE_PLURAL].append(resource.__dict__)
 
             # Get custom_permissions
-            can_modify = has_permission(request, organization.get_modify_permission())
+            can_edit = has_permission(request, organization.get_edit_permission())
+            can_delete = has_permission(request, organization.get_delete_permission()) \
+                or organization.consultant is not None
+            if can_delete:
+                load_delete_modal = True
             can_modify_members = has_permission(request, organization.get_modify_members_permission())
 
             organization_card = {
@@ -110,7 +117,8 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
                 'clients': clients,
                 'consultant': organization.consultant,
                 'resources': resources,
-                'can_modify': can_modify,
+                'can_edit': can_edit,
+                'can_delete': can_delete,
                 'can_modify_members': can_modify_members,
                 'license': _Organization.LICENSES.get_display_name_for(organization.license)
             }
@@ -131,26 +139,45 @@ class ManageOrganizations(TethysController, AppUsersControllerMixin):
             'page_title': _Organization.DISPLAY_TYPE_PLURAL,
             'base_template': self.base_template,
             'organization_cards': organization_cards,
-            'show_new_button': can_modify_organizations,
-            'load_delete_modal': can_modify_organizations,
-            'link_to_members': can_modify_organizations,
+            'show_new_button': can_create_organizations,
+            'load_delete_modal': load_delete_modal,
+            'link_to_members': can_modify_users,
+            'show_users_link': can_modify_users,
+            'show_resources_link': has_permission(request, 'view_resources'),
+            'show_organizations_link': has_permission(request, 'view_organizations')
         }
 
         return render(request, self.template_name, context)
 
-    @permission_required('modify_organizations')
     def _handle_delete(self, request, organization_id):
         """
         Handle delete user requests.
         """
         _Organization = self.get_organization_model()
+        _AppUser = self.get_app_user_model()
         make_session = self.get_sessionmaker()
 
         json_response = {'success': True}
         session = make_session()
+
         try:
+            request_app_user = _AppUser.get_app_user_from_request(request, session)
             organization = session.query(_Organization).get(organization_id)
             self.perform_custom_delete_operations(request, organization)
+
+            # Validate permission to delete the organization
+            can_delete_organizations = has_permission(request, 'delete_organizations')
+
+            # If user is a member of the consultant organization and admin they can delete it
+            consultant = organization.consultant
+
+            if consultant is not None and consultant in request_app_user.organizations \
+               and request_app_user.role == _AppUser.ROLES.ORG_ADMIN:
+                can_delete_organizations = True
+
+            if not can_delete_organizations:
+                return HttpResponseForbidden()
+
             session.delete(organization)
             session.commit()
         except Exception as e:

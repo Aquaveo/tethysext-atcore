@@ -34,7 +34,7 @@
         <td><span class="manage-tag role-tag">{{ user_card.role }}</span></td>
         <td>
           {% for organization in user_card.organizations %}
-            {% if show_organizations_links %}
+            {% if show_links_to_organizations %}
               <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-users"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
             {% else %}
               <span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span>

@@ -74,8 +74,9 @@ class UserAccount(TethysController, AppUsersControllerMixin):
             'user_account_status': 'Active' if request_app_user.is_active else 'Disabled',
             'permissions_groups': permissions_groups,
             'organizations': organizations,
-            'show_manage_users_link': has_permission(request, 'view_users'),
-            'show_manage_organizations_link': has_permission(request, 'view_organizations')
+            'show_users_link': has_permission(request, 'modify_users'),
+            'show_resources_link': has_permission(request, 'view_resources'),
+            'show_organizations_link': has_permission(request, 'view_organizations')
         }
 
         session.close()

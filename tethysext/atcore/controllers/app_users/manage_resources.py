@@ -50,7 +50,7 @@ class ManageResources(TethysController, AppUsersControllerMixin):
         return JsonResponse({'success': False, 'error': 'Invalid action: {}'.format(action)})
 
     @active_user_required()
-    @permission_required('view_resources')
+    @permission_required('view_resources', 'view_all_resources', use_or=True)
     def _handle_get(self, request, *args, **kwargs):
         """
         Handle get requests.
@@ -167,14 +167,17 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             'show_new_button': has_permission(request, 'create_resource'),
             'show_debugging_info': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),
-            'show_organizations_links': has_permission(request, 'modify_organizations')
+            'show_links_to_organizations': has_permission(request, 'edit_organizations'),
+            'show_users_link': has_permission(request, 'modify_users'),
+            'show_resources_link': has_permission(request, 'view_resources'),
+            'show_organizations_link': has_permission(request, 'view_organizations')
         }
 
         session.close()
 
         return render(request, self.template_name, context)
 
-    @permission_required('modify_resources')
+    @permission_required('delete_resource')
     def _handle_delete(self, request, resource_id):
         """
         Handle delete user requests.

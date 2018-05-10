@@ -47,7 +47,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         return self._handle_modify_user_requests(request, *args, **kwargs)
 
     @active_user_required()
-    @permission_required('modify_organizations')
+    @permission_required('edit_organizations', 'create_organizations', use_or=True)
     def _handle_modify_user_requests(self, request, organization_id=None, *args, **kwargs):
         """
         Handle get requests.
@@ -112,8 +112,8 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
             edit_session = make_session()
 
             try:
-                organization = edit_session.query(_Organization).\
-                    filter(_Organization.id == organization_id).\
+                organization = edit_session.query(_Organization). \
+                    filter(_Organization.id == organization_id). \
                     one()
 
             except (StatementError, NoResultFound):
@@ -137,7 +137,8 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
                 license_options.append(old_license_option)
 
             # Ensure enterprise users cannot change their license on their own.
-            if organization.license == _Organization.LICENSES.ENTERPRISE:
+            if not has_permission(request, 'assign_any_license') \
+                    and organization.license == _Organization.LICENSES.ENTERPRISE:
                 license_options = (
                     (
                         _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.ENTERPRISE),
@@ -218,6 +219,8 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
                 if selected_consultant:
                     consultant = create_session.query(_Organization).get(selected_consultant)
                     organization.consultant = consultant
+                else:
+                    organization.consultant = None
 
                 # Update user account active status
                 organization.update_member_activity(create_session, request)
@@ -249,7 +252,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
             error=organization_name_error
         )
 
-        organization_type_select = SelectInput(
+        license_select = SelectInput(
             display_text='License',
             name='organization-license',
             multiple=False,
@@ -281,6 +284,18 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         # Populate owner select box
         consultant_options = request_app_user.get_organizations(session, request, as_options=True, consultants=True)
         consultant_organizations = request_app_user.get_organizations(session, request, consultants=True)
+
+        # Remove this organization for consultant options if present
+        if editing:
+            temp_consultant_options = []
+            for consultant_option in consultant_options:
+                if consultant_option[1] != str(organization.id):
+                    temp_consultant_options.append(consultant_option)
+
+            consultant_options = temp_consultant_options
+
+        # Prepend None option
+        consultant_options.insert(0, ('None', ''))
 
         # Default selected consultant if none selected yet.
         if len(consultant_options) > 0 and not selected_consultant:
@@ -319,7 +334,7 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
             'editing': editing,
             'am_member': am_member,
             'organization_name_input': organization_name_input,
-            'organization_type_select': organization_type_select,
+            'organization_type_select': license_select,
             'owner_select': constultant_select,
             'project_select': project_select,
             'next_controller': next_controller,
@@ -343,16 +358,17 @@ class ModifyOrganization(TethysController, AppUsersControllerMixin):
         make_session = self.get_sessionmaker()
         session = make_session()
         license_to_consultant_map = {}
+        _Organization = self.get_organization_model()
 
-        for _, license in license_options:
+        for _, lic in license_options:
             # Lazy load
-            if license not in license_to_consultant_map:
-                license_to_consultant_map[license] = []
+            if lic not in license_to_consultant_map:
+                license_to_consultant_map[lic] = [] if _Organization.LICENSES.must_have_consultant(lic) else ['']
 
             # Check each organization to see if it can still add clients of the given license.
             for organization in consultant_organizations:
-                if organization.can_add_client_with_license(session, request, license):
-                    license_to_consultant_map[license].append(str(organization.id))
+                if organization.can_add_client_with_license(session, request, lic):
+                    license_to_consultant_map[lic].append(str(organization.id))
 
         session.close()
         return license_to_consultant_map

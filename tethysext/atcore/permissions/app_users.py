@@ -120,9 +120,19 @@ class PermissionsGenerator:
             description='View any organization'
         )
 
-        modify_organizations = Permission(
-            name='modify_organizations',
+        create_organizations = Permission(
+            name='create_organizations',
             description='Edit, delete, and create organizations'
+        )
+
+        edit_organizations = Permission(
+            name='edit_organizations',
+            description='Edit organizations'
+        )
+
+        delete_organizations = Permission(
+            name='delete_organizations',
+            description='Delete organizations'
         )
 
         modify_organization_members = Permission(
@@ -217,6 +227,11 @@ class PermissionsGenerator:
             description='Assign enterprise license'
         )
 
+        assign_any_license = Permission(
+            name='assign_any_license',
+            description='Assign any license'
+        )
+
         # Standard Viewer
         standard_user_perms = [
             view_resource_details,
@@ -234,7 +249,7 @@ class PermissionsGenerator:
         standard_admin_perms = standard_user_perms + [
             create_resource, edit_resource, delete_resource,
             view_users, modify_users, modify_organization_members,
-            assign_org_users_role
+            assign_org_users_role, assign_org_admin_role
         ]
 
         standard_admin_role = PermissionGroup(
@@ -290,8 +305,8 @@ class PermissionsGenerator:
 
         # Enterprise Admin
         enterprise_admin_perms = professional_admin_perms + enterprise_user_perms + [
-            modify_organizations, assign_advanced_license,
-            assign_standard_license, assign_professional_license
+            create_organizations, edit_organizations, assign_advanced_license,
+            assign_standard_license, assign_professional_license,
         ]
 
         enterprise_admin_role = PermissionGroup(
@@ -302,13 +317,14 @@ class PermissionsGenerator:
 
         # App admin role
         app_admin_perms = [
-            view_resource_details,
-            view_all_resources, create_resource, edit_resource, delete_resource, always_delete_resource,
+            view_resource_details, view_resources, view_all_resources, create_resource,
+            edit_resource, delete_resource, always_delete_resource,
             modify_user_manager, modify_users, view_users, view_all_users, assign_org_users_role,
             assign_org_admin_role, assign_app_admin_role, assign_developer_role, view_organizations,
-            view_all_organizations, modify_organizations, modify_organization_members,
+            view_all_organizations, create_organizations, edit_organizations, delete_organizations,
+            modify_organization_members,
             assign_any_resource, assign_any_organization, assign_any_user, assign_advanced_license,
-            assign_standard_license, assign_professional_license, assign_enterprise_license
+            assign_standard_license, assign_professional_license, assign_enterprise_license, assign_any_license
         ]
 
         app_admin_role = PermissionGroup(

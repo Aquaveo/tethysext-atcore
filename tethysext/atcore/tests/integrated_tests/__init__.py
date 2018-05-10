@@ -3,3 +3,4 @@ from models.organization_tests import OrganizationTests  # noqa: F401
 from urls.app_users import AppUserUrlsTests  # noqa: F401
 from models.initializer import AppUserInitializerTests  # noqa: F401
 from permissions.app_users import PermissionsGeneratorTests  # noqa: F401
+from services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401

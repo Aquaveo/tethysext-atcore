@@ -62,7 +62,7 @@ class ModifyResource(TethysController, AppUsersControllerMixin):
         return self._handle_modify_resource_requests(request, *args, **kwargs)
 
     @active_user_required()
-    @permission_required('modify_resources')
+    @permission_required('create_resource', 'edit_resource', use_or=True)
     def _handle_modify_resource_requests(self, request, resource_id=None, *args, **kwargs):
         """
         Handle get requests.

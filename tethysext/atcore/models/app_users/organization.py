@@ -56,13 +56,32 @@ class Organization(AppUsersBase):
 
         return field
 
-    def get_modify_permission(self):
+    @staticmethod
+    def get_create_permission():
         """
-        Get name of modify permission.
+        Get name of create permission.
         Returns:
-            str: name of modify permission for this type of organization.
+            str: name of create permission for this type of organization.
         """
-        return 'modify_organizations'
+        return 'create_organizations'
+
+    @staticmethod
+    def get_edit_permission():
+        """
+        Get name of edit permission.
+        Returns:
+            str: name of edit permission for this type of organization.
+        """
+        return 'edit_organizations'
+
+    @staticmethod
+    def get_delete_permission():
+        """
+        Get name of delete permission.
+        Returns:
+            str: name of delete permission for this type of organization.
+        """
+        return 'delete_organizations'
 
     def get_modify_members_permission(self):
         """

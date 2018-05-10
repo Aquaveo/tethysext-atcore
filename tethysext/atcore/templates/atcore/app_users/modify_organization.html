@@ -2,7 +2,6 @@
 {% load staticfiles tethys_gizmos %}
 
 {% block app_navigation_items %}
-  <li class="title">Help</li>
   <p style="margin-bottom: 5px;"><b>Name:</b></p>
   <p>Name of the organization (e.g.: Salt Lake City).</p>
   <li class="separator"></li>
@@ -47,4 +46,9 @@
 {% block styles %}
   {{ block.super }}
   <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/app_users/js/modify_organizations.js' %}" type="text/javascript"></script>
 {% endblock %}

@@ -140,8 +140,11 @@ class ManageUsers(TethysController, AppUsersControllerMixin):
             'show_action_buttons': has_permission(request, 'modify_users'),
             'show_remove_button': request.user.is_staff,
             'show_add_existing_button': request.user.is_staff,
-            'show_organizations_links': has_permission(request, 'modify_organizations'),
-            'pagination_info': pagination_info
+            'show_links_to_organizations': has_permission(request, 'view_organizations'),
+            'pagination_info': pagination_info,
+            'show_users_link': has_permission(request, 'modify_users'),
+            'show_resources_link': has_permission(request, 'view_resources'),
+            'show_organizations_link': has_permission(request, 'view_organizations')
         }
 
         session.close()
