@@ -14,7 +14,7 @@ class Organization(AppUsersBase):
     """
     Definition for organizations table.
     """
-    __tablename__ = 'organizations'
+    __tablename__ = 'app_users_organizations'
 
     # Organization Types
     TYPE = 'organization'
@@ -23,7 +23,7 @@ class Organization(AppUsersBase):
     LICENSES = Licenses()
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    parent_id = Column(GUID, ForeignKey('organizations.id'))
+    parent_id = Column(GUID, ForeignKey('app_users_organizations.id'))
     name = Column(String)
     type = Column(String)
     created = Column(DateTime, default=func.now())

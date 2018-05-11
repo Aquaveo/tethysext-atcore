@@ -26,7 +26,7 @@ class AppUser(AppUsersBase):
     # Models
     _UserSetting = UserSetting
 
-    __tablename__ = 'app_users'
+    __tablename__ = 'app_users_app_users'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     username = Column(String)  #: Used to map to Django user object

@@ -16,7 +16,7 @@ class Resource(StatusMixin, AttributesMixin, AppUsersBase):
     """
     Definition for the resources table.
     """
-    __tablename__ = 'resources'
+    __tablename__ = 'app_users_resources'
 
     # Resource Types
     TYPE = 'resource'

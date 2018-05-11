@@ -19,11 +19,11 @@ class UserSetting(AttributesMixin, AppUsersBase):
     """
     SQLAlchemy interface for user_settings table.
     """
-    __tablename__ = "user_settings"
+    __tablename__ = "app_users_user_settings"
 
     # Primary and Foreign Keys
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    user_id = Column(GUID, ForeignKey('app_users.id'))
+    user_id = Column(GUID, ForeignKey('app_users_app_users.id'))
 
     # Properties
     _attributes = Column(String, default=json.dumps({}))
