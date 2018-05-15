@@ -3,16 +3,7 @@ from tethysext.atcore.models.app_users import AppUser, Resource, Organization
 from tethysext.atcore.urls import app_users
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, UserAccount, \
     ModifyOrganization, ManageOrganizationMembers, ManageOrganizations, ManageResources, ModifyResource, ResourceDetails
-
-
-class MockUrlMapMaker:
-    """
-    Mock the UrlMap meta class for testing.
-    """
-    def __init__(self, name, url, controller):
-        self.name = name
-        self.url = url
-        self.controller = controller
+from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
 
 
 class CustomAppUser(AppUser):

@@ -27,6 +27,12 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', custom_con
     Returns:
         tuple: UrlMap objects for the spatial reference gizmo.
     """  # noqa: F401, E501
+    # Validate kwargs
+    if base_url_path:
+        if base_url_path.startswith('/'):
+            base_url_path = base_url_path[1:]
+        if base_url_path.endswith('/'):
+            base_url_path = base_url_path[:-1]
 
     # Default controller classes
     _QuerySpatialReference = QuerySpatialReference
