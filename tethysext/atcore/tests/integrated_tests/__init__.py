@@ -5,3 +5,4 @@ from models.initializer import AppUserInitializerTests  # noqa: F401
 from permissions.app_users import PermissionsGeneratorTests  # noqa: F401
 from services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401
 from urls.spatial_reference import SpatialReferenceUrlsTests  # noqa: F401
+from controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401

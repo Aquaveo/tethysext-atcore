@@ -20,7 +20,8 @@ ext_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'teth
 dependencies = [
     'sqlalchemy',
     'future',
-    'mock'
+    'mock',
+    'factory_boy'
 ]
 
 # -- Get Resource File -- #

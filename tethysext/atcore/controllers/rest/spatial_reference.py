@@ -47,7 +47,6 @@ class QuerySpatialReference(TethysController):
         This controller is normally called by the select2 Ajax for looking up SRIDs from the SQL database
         """
         query_words = request.GET.get('q', '').split()
-        print(query_words)
         _engine = self.get_engine()
         srs = self._SpatialReferenceService(_engine)
         dict = srs.get_spatial_reference_system_by_query_string(query_words)
