@@ -21,6 +21,8 @@ from tethys_gizmos.gizmo_options import TextInput, SelectInput
 from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.exceptions import ATCoreException
+from tethysext.atcore.gizmos import SpatialReferenceSelect
+from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
 
 class ModifyResource(TethysController, AppUsersControllerMixin):
@@ -79,7 +81,7 @@ class ModifyResource(TethysController, AppUsersControllerMixin):
         resource_name = ""
         resource_name_error = ""
         resource_description = ""
-        resource_srid = ""
+        resource_srid = self.srid_default
         resource_srid_text = ""
         resource_srid_error = ""
         selected_organizations = []
@@ -229,11 +231,32 @@ class ModifyResource(TethysController, AppUsersControllerMixin):
                 error=resource_name_error
             )
 
-            # Spatial reference text
-            # TODO: Implement after generalizing the srid lookup.
-            # if resource_srid:
-            #     possible_srids = get_spatial_reference_system_by_srid(resource_srid)['results']
-            #     resource_srid_text = possible_srids[0]['text'] if len(possible_srids) > 0 else ''
+            # Initial spatial reference value
+            srid_initial = None
+
+            if resource_srid:
+                srs = SpatialReferenceService(session)
+                possible_srids = srs.get_spatial_reference_system_by_srid(resource_srid)['results']
+                resource_srid_text = possible_srids[0]['text'] if len(possible_srids) > 0 else ''
+
+            if resource_srid_text and resource_srid:
+                srid_initial = (resource_srid_text, resource_srid)
+
+            # Spatial reference service/url
+            spatial_reference_controller = '{}:atcore_query_spatial_reference'.format(app_namespace)
+            spatial_reference_url = reverse(spatial_reference_controller)
+
+            # Spatial reference select gizmo
+            spatial_reference_select = SpatialReferenceSelect(
+                display_name='Spatial Reference System',
+                name='spatial-ref-select',
+                placeholder='No Basemap Available If Left Blank',
+                min_length=2,
+                query_delay=500,
+                initial=srid_initial,
+                error=resource_srid_error,
+                spatial_reference_service=spatial_reference_url
+            )
 
             # Populate organizations select
             organization_options = request_app_user.get_organizations(session, request, as_options=True)
@@ -275,9 +298,7 @@ class ModifyResource(TethysController, AppUsersControllerMixin):
             'organization_select': organization_select,
             'resource_description': resource_description,
             'show_srid_field': self.include_srid,
-            'resource_srid': resource_srid,
-            'resource_srid_text': resource_srid_text,
-            'resource_srid_error': resource_srid_error,
+            'spatial_reference_select': spatial_reference_select,
             'show_file_upload_field': self.include_file_upload and creating,
             'file_upload_multiple': self.file_upload_multiple,
             'file_upload_error': file_upload_error,

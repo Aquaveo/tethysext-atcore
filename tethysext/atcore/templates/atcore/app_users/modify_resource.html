@@ -57,15 +57,7 @@
 
             {# SPATIAL REFERENCE FIELD #}
             {% if show_srid_field %}
-            <div class="form-group {% if resource_srid_error %}has-error{% endif %}" id="spatial-ref-select-group">
-              <label class="control-label" for="spatial-ref-select">Spatial Reference System</label>
-              <select id="spatial-ref-select" name="spatial-ref-select" class="js-query-srid-ajax">
-                {% if resource_srid_text %}
-                <option value="{{ resource_srid }}" selected="selected">{{ resource_srid_text }}</option>
-                {% endif %}
-              </select>
-              <span class="help-block">{{ resource_srid_error }}</span>
-            </div>
+              {% gizmo spatial_reference_select %}
             {% endif %}
             {{ resource_srid_error }}
 
@@ -104,10 +96,6 @@
 
   <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
 
-  {% if show_srid_field %}
-  <link href="{% static 'atcore/srid_select/css/srid_select.css' %}" rel="stylesheet"/>
-  {% endif %}
-
   {% if show_file_upload_field %}
   <link href="{% static 'atcore/file_input/css/file_input.css' %}" rel="stylesheet"/>
   {% endif %}
@@ -115,10 +103,6 @@
 
 {% block scripts %}
   {{ block.super }}
-
-  {% if show_srid_field %}
-  <script src="{% static 'atcore/srid_select/js/srid_select.js' %}" type="text/javascript"></script>
-  {% endif %}
 
   {% if show_file_upload_field %}
   <script src="{% static 'atcore/file_input/js/file_input.js' %}" type="text/javascript"></script>
