@@ -7,3 +7,4 @@ from services.app_users.licenses import LicensesTests  # noqa: F401
 from services.app_users.user_roles import AppUserRoleTests  # noqa: F401
 from services.paginate import PaginateTests  # noqa: F401
 from services.spatial_reference import SpatialReferenceServiceTests  # noqa: F401
+from gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
