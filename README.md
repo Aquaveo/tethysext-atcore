@@ -23,7 +23,25 @@ $ python setup.py install
 
 # Testing
 
-This extension has two types of tests: unit tests and integrated tests. To run unit tests:
+This extension has two types of tests: unit tests and integrated tests.
+
+## Setup
+
+Some of the tests require a test database. The database must be a PostgreSQL 9.6 or higher with the postgis extension intalled. Create an empty database before hand. The default database connection string is:
+
+```bash
+'postgresql://tethys_super:pass@172.17.0.1:5435/atcore_tests'
+```
+
+To specify a custom database connection string, define the `ATCORE_TEST_DATABASE` environment variable:
+
+```bash
+export ATCORE_TEST_DATABASE="postgresql://<username>:<password>@<ipaddress>:<port>/<dbname>"
+```
+
+## Running the Tests
+
+To run unit tests:
 
 ```bash
 $ coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests 
@@ -38,10 +56,18 @@ $ coverage run --rcfile=coverage.ini <TETHYS_HOME>/src/manage.py test tethysext.
 $ coverage report
 ```
 
-# Linting
+## Linting
 
 We are using flake8 to enforce the pep 8 standard. Any change to the rules can be made in the tox.ini file.
 
 ```bash
 $ flake8 [dir]
+```
+
+## Run All Tests
+
+To run all of the test and linting with cumulative coverage:
+
+```bash
+. test.sh </path/to/tethys/manage.py>
 ```
