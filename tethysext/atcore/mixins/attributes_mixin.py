@@ -9,8 +9,8 @@
 import json
 
 
-class AttributesMixin:
-    _attributes = NotImplemented
+class AttributesMixin(object):
+    _attributes = None
 
     @property
     def attributes(self):

@@ -1,4 +1,5 @@
 from mixins.status_mixin import StatusMixinTests  # noqa: F401
+from mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from model_types.guid_tests import GuidTests  # noqa: F401
 from models.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from models.organization_resource_tests import OrganizationResourceTests  # noqa: F401
