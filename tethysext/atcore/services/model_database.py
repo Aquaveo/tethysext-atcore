@@ -8,16 +8,14 @@
 ********************************************************************************
 """
 import uuid
-import logging
+import operator
 
 from tethysext.atcore.services.model_database_connection import ModelDatabaseConnection
-
-log = logging.getLogger("tethys.citywater")  # TODO: logging?
 
 
 class ModelDatabase(object):
     """
-    Represents a Model Database.
+    Represents a Model Database. Manages the creation of model databases and will load-balance between multiple database connections if defined by the app.
     """
 
     def __init__(self, app, database_id=None):
@@ -125,32 +123,35 @@ class ModelDatabase(object):
         Args:
             declarative_bases(tuple): one or more SQLAlchemy declarative base classes used to initialize tables.
         """
-        cluster_connection_name = self._get_cluster_connection_name()
-        # result = app.create_persistent_store(
-        #     self.database_id, connection_name=cluster_connection_name,
-        #     spatial=True
-        # )
-        #
-        # if not result:
-        #     return False
-        #
-        # engine = self._app.get_persistent_store_database(self.database_id)
-        #
-        # for declarative_base in declarative_bases:
-        #     declarative_base.metadata.create_all(engine)
+        # Get database cluster name to create new database on.
+        cluster_connection_name = self._get_cluster_connection_name_for_new_database()
 
-        # Initialize alembic
-        # self._initialize_alembic(engine)
+        result = self._app.create_persistent_store(
+            self.database_id, connection_name=cluster_connection_name,
+            spatial=True
+        )
 
-        return True
+        if not result:
+            return False
 
-    def _get_cluster_connection_name(self):
+        engine = self._app.get_persistent_store_database(self.database_id)
+
+        self.pre_initialize(engine)
+
+        for declarative_base in declarative_bases:
+            declarative_base.metadata.create_all(engine)
+
+        self.post_initialize(engine)
+
+        return self.database_id
+
+    def _get_cluster_connection_name_for_new_database(self):
         """
-        Determine connection with (1) least number of databases and (2) least size if tied on number of database.
+        Determine which database to connection to use based on a simple load balancing algorithm: (1) least number of databases and (2) least size if tied on number of database.
         Returns:
             Name of connection to use for creation of next database.
         """
-        db_stats = dict()
+        db_stats = []
         connection_names = self._app.list_persistent_store_connections()
 
         for connection_name in connection_names:
@@ -180,32 +181,27 @@ class ModelDatabase(object):
             for row in response:
                 size_bytes = row.size
 
-            db_stats[connection_name] = {
-                'count': count,
-                'size': size_bytes
-            }
+            db_stats.append((connection_name, count, size_bytes))
 
         # Logic for which connection here
-        from pprint import pprint
-        pprint(db_stats)
+        if not db_stats:
+            return None
 
-        # return connection_name
+        db_stats.sort(key=operator.itemgetter(1, 2))
 
-    def _initialize_alembic(self, engine):
+        return db_stats[0][0]
+
+    def pre_initialize(self, engine):
         """
-        Initialize the alembic table and set to latest version.
-
-        Args:
-            engine(sqlalchemy.engine): model database engine.
+        Override to perform additional initialize steps before the database and tables have been initialized.
         """
-        # TODO: generalize alembic table functions
-        # try:
-        #     initialize_alembic_table(engine)
-        #     latest_version = get_latest_alembic_version()
-        #     set_alembic_version(engine, latest_version)
-        # except:
-        #     log.exception('Unable to initialize alembic tables properly.')
+        pass
 
+    def post_initialize(self, engine):
+        """
+        Override to perform additional initialize steps after the database and tables have been initialized.
+        """
+        pass
 
     def exists(self):
         """
