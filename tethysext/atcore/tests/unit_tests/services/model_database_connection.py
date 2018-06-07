@@ -7,21 +7,8 @@
 ********************************************************************************
 """
 import unittest
-from mock import patch
 import sqlalchemy
 from tethysext.atcore.services.model_database import ModelDatabaseConnection
-
-
-def mock_make_session():
-    return 'session'
-
-
-def mock_sessionmaker(bind):
-    return 'sessionmaker'
-
-
-def mock_create_engine(db_url):
-    return 'engine'
 
 
 class ModelDatabaseConnectionTests(unittest.TestCase):
@@ -61,9 +48,7 @@ class ModelDatabaseConnectionTests(unittest.TestCase):
         result = mdc.get_session_maker()
         self.assertIsInstance(result, sqlalchemy.orm.session.sessionmaker)
 
-    @patch('sqlalchemy.create_engine', return_value=mock_create_engine)
-    @patch('sqlalchemy.orm.sessionmaker', return_value=mock_make_session)
-    def test_get_session(self, _, __):
+    def test_get_session(self):
         mdc = ModelDatabaseConnection(self.db_url, self.app_namespace)
         result = mdc.get_session()
         self.assertIsInstance(result, sqlalchemy.orm.session.Session)
