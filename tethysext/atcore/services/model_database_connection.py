@@ -51,6 +51,13 @@ class ModelDatabaseConnection(object):
         """
         return create_engine(self.db_url)
 
+    def get_session_maker(self):
+        """
+        Returns an SQLAlchemy session maker for the model database.
+        """
+        engine = create_engine(self.db_url)
+        return sessionmaker(bind=engine)
+
     def get_session(self):
         """
         Returns an SQLAlchemy session for the model database.
@@ -58,10 +65,3 @@ class ModelDatabaseConnection(object):
         engine = create_engine(self.db_url)
         make_session = sessionmaker(bind=engine)
         return make_session()
-
-    def get_session_maker(self):
-        """
-        Returns an SQLAlchemy session maker for the model database.
-        """
-        engine = create_engine(self.db_url)
-        return sessionmaker(bind=engine)

@@ -4,7 +4,6 @@
 * Author: nswain
 * Created On: June 5, 2018
 * Copyright: (c) Aquaveo 2018
-* License: 
 ********************************************************************************
 """
 import uuid
@@ -15,7 +14,7 @@ from tethysext.atcore.services.model_database_connection import ModelDatabaseCon
 
 class ModelDatabase(object):
     """
-    Represents a Model Database. Manages the creation of model databases and will load-balance between multiple database connections if defined by the app.
+    Manages the creation of databases for models and will load-balance between multiple database connections if defined by the app.  # noqa: E501
     """
 
     def __init__(self, app, database_id=None):
@@ -116,19 +115,20 @@ class ModelDatabase(object):
         """
         return self.model_db_connection.get_session_maker()
 
-    def initialize(self, declarative_bases=()):
+    def initialize(self, declarative_bases=(), spatial=False):
         """
         Creates a new model database if it doesn't exist and initializes it with the data models passed in (if any).
 
         Args:
             declarative_bases(tuple): one or more SQLAlchemy declarative base classes used to initialize tables.
+            spatial(bool): enable postgis extension on model database if True.
         """
         # Get database cluster name to create new database on.
         cluster_connection_name = self._get_cluster_connection_name_for_new_database()
 
         result = self._app.create_persistent_store(
             self.database_id, connection_name=cluster_connection_name,
-            spatial=True
+            spatial=spatial
         )
 
         if not result:
@@ -143,11 +143,13 @@ class ModelDatabase(object):
 
         self.post_initialize(engine)
 
+        engine.dispose()
+
         return self.database_id
 
     def _get_cluster_connection_name_for_new_database(self):
         """
-        Determine which database to connection to use based on a simple load balancing algorithm: (1) least number of databases and (2) least size if tied on number of database.
+        Determine which database to connection to use based on a simple load balancing algorithm: (1) least number of databases and (2) least size if tied on number of database.  # noqa: E501
         Returns:
             Name of connection to use for creation of next database.
         """
@@ -171,8 +173,8 @@ class ModelDatabase(object):
             for row in response:
                 count = row.count
 
-            # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d
-            # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d
+            # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d  # noqa: E501
+            # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d  # noqa: E501
             response = curr_engine.execute(
                 'SELECT sum(pg_catalog.pg_database_size(d.datname)) AS size '
                 'FROM pg_catalog.pg_database d;'
@@ -182,6 +184,8 @@ class ModelDatabase(object):
                 size_bytes = row.size
 
             db_stats.append((connection_name, count, size_bytes))
+
+            curr_engine.dispose()
 
         # Logic for which connection here
         if not db_stats:
