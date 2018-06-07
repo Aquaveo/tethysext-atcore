@@ -118,30 +118,29 @@ class ModelDatabase(object):
         """
         return self.model_db_connection.get_session_maker()
 
-    def initialize(self, app, declarative_bases=()):
+    def initialize(self, declarative_bases=()):
         """
         Creates a new model database if it doesn't exist and initializes it with the data models passed in (if any).
 
         Args:
-            app(TethysApp): Tethys App class or instance.
             declarative_bases(tuple): one or more SQLAlchemy declarative base classes used to initialize tables.
         """
         cluster_connection_name = self._get_cluster_connection_name()
-        result = app.create_persistent_store(
-            self.database_id, connection_name=cluster_connection_name,
-            spatial=True
-        )
-
-        if not result:
-            return False
-
-        engine = app.get_persistent_store_database(self.database_id)
-
-        for declarative_base in declarative_bases:
-            declarative_base.metadata.create_all(engine)
+        # result = app.create_persistent_store(
+        #     self.database_id, connection_name=cluster_connection_name,
+        #     spatial=True
+        # )
+        #
+        # if not result:
+        #     return False
+        #
+        # engine = self._app.get_persistent_store_database(self.database_id)
+        #
+        # for declarative_base in declarative_bases:
+        #     declarative_base.metadata.create_all(engine)
 
         # Initialize alembic
-        self._initialize_alembic(engine)
+        # self._initialize_alembic(engine)
 
         return True
 
@@ -163,14 +162,20 @@ class ModelDatabase(object):
                 continue
 
             # Get count of all databases: SELECT count(*) FROM pg_database;
-            response = curr_engine.execute('SELECT count(*) AS count FROM pg_database;')
+            response = curr_engine.execute(
+                'SELECT count(*) AS count '
+                'FROM pg_database;'
+            )
 
             for row in response:
                 count = row.count
 
             # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d
             # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d
-            response = curr_engine.execute('SELECT sum(pg_catalog.pg_database_size(d.datname)) AS size FROM pg_catalog.pg_database d;')
+            response = curr_engine.execute(
+                'SELECT sum(pg_catalog.pg_database_size(d.datname)) AS size '
+                'FROM pg_catalog.pg_database d;'
+            )
 
             for row in response:
                 size_bytes = row.size
@@ -181,6 +186,8 @@ class ModelDatabase(object):
             }
 
         # Logic for which connection here
+        from pprint import pprint
+        pprint(db_stats)
 
         # return connection_name
 
