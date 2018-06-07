@@ -146,10 +146,43 @@ class ModelDatabase(object):
         return True
 
     def _get_cluster_connection_name(self):
-        pass
-        # Get count of all databases: SELECT count(*) FROM pg_database;
-        # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d
-        # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d
+        """
+        Determine connection with (1) least number of databases and (2) least size if tied on number of database.
+        Returns:
+            Name of connection to use for creation of next database.
+        """
+        db_stats = dict()
+        connection_names = self._app.list_persistent_store_connections()
+
+        for connection_name in connection_names:
+            count = None
+            size_bytes = None
+            curr_engine = self._app.get_persistent_store_connection(connection_name)
+
+            if not curr_engine:
+                continue
+
+            # Get count of all databases: SELECT count(*) FROM pg_database;
+            response = curr_engine.execute('SELECT count(*) AS count FROM pg_database;')
+
+            for row in response:
+                count = row.count
+
+            # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d
+            # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d
+            response = curr_engine.execute('SELECT sum(pg_catalog.pg_database_size(d.datname)) AS size FROM pg_catalog.pg_database d;')
+
+            for row in response:
+                size_bytes = row.size
+
+            db_stats[connection_name] = {
+                'count': count,
+                'size': size_bytes
+            }
+
+        # Logic for which connection here
+
+        # return connection_name
 
     def _initialize_alembic(self, engine):
         """
