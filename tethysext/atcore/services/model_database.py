@@ -57,8 +57,9 @@ class ModelDatabase(object):
             selection = 'SUM(pg_total_relation_size(C.oid))'
         else:
             selection = 'pg_size_pretty(SUM(pg_total_relation_size(C.oid)))'
+
         query = '''
-        SELECT {selection} AS "size"
+          SELECT {selection} AS "size"
           FROM pg_class C
           LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
           WHERE nspname NOT IN ('pg_catalog', 'information_schema')
@@ -125,6 +126,9 @@ class ModelDatabase(object):
         """
         # Get database cluster name to create new database on.
         cluster_connection_name = self._get_cluster_connection_name_for_new_database()
+
+        if not cluster_connection_name:
+            return False
 
         result = self._app.create_persistent_store(
             self.database_id, connection_name=cluster_connection_name,

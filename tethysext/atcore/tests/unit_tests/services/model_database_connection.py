@@ -8,7 +8,7 @@
 """
 import unittest
 import sqlalchemy
-from tethysext.atcore.services.model_database import ModelDatabaseConnection
+from tethysext.atcore.services.model_database_connection import ModelDatabaseConnection
 
 
 class ModelDatabaseConnectionTests(unittest.TestCase):
