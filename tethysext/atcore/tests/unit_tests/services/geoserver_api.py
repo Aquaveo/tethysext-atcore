@@ -259,14 +259,147 @@ class GeoServerAPITests(unittest.TestCase):
         mock_get.assert_called_with(rest_endpoint, auth=self.auth)
         mock_logger.error.assert_called()
 
-    def test_create_postgis_store_validate_connection(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_postgis_store_validate_connection(self, mock_post):
+        mock_post.return_value = MockResponse(201)
+        name = 'foo'
+        db_host = 'localhost'
+        db_port = '5432'
+        db_name = 'foo_db'
+        db_username = 'user'
+        db_password = 'pass'
+        max_connections = 10
+        max_connection_idle_time = 40
+        evictor_run_periodicity = 60
 
-    def test_create_postgis_store_validate_connection_false(self):
-        pass
+        xml = """
+              <dataStore>
+                <name>{0}</name>
+                <connectionParameters>
+                  <entry key="host">{1}</entry>
+                  <entry key="port">{2}</entry>
+                  <entry key="database">{3}</entry>
+                  <entry key="user">{4}</entry>
+                  <entry key="passwd">{5}</entry>
+                  <entry key="dbtype">postgis</entry>
+                  <entry key="max connections">{6}</entry>
+                  <entry key="Max connection idle time">{7}</entry>
+                  <entry key="Evictor run periodicity">{8}</entry>
+                  <entry key="validate connections">{9}</entry>
+                </connectionParameters>
+              </dataStore>
+              """.format(name, db_host, db_port, db_name, db_username, db_password,
+                         max_connections, max_connection_idle_time, evictor_run_periodicity,
+                         'true')
 
-    def test_create_postgis_store_validate_connection_error_response(self):
-        pass
+        expected_headers = {
+            "Content-type": "text/xml",
+            "Accept": "application/xml"
+        }
+
+        rest_endpoint = '{endpoint}workspaces/{workspace}/datastores'.format(
+            endpoint=self.endpoint,
+            workspace=self.workspace
+        )
+        self.gs_api.create_postgis_store(self.workspace, name, db_host, db_port, db_name, db_username, db_password,
+                                         max_connections, max_connection_idle_time, evictor_run_periodicity)
+        mock_post.assert_called_with(url=rest_endpoint, data=xml, headers=expected_headers, auth=self.auth)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_postgis_store_validate_connection_false(self, mock_post):
+        mock_post.return_value = MockResponse(201)
+        name = 'foo'
+        db_host = 'localhost'
+        db_port = '5432'
+        db_name = 'foo_db'
+        db_username = 'user'
+        db_password = 'pass'
+        max_connections = 10
+        max_connection_idle_time = 40
+        evictor_run_periodicity = 60
+
+        xml = """
+              <dataStore>
+                <name>{0}</name>
+                <connectionParameters>
+                  <entry key="host">{1}</entry>
+                  <entry key="port">{2}</entry>
+                  <entry key="database">{3}</entry>
+                  <entry key="user">{4}</entry>
+                  <entry key="passwd">{5}</entry>
+                  <entry key="dbtype">postgis</entry>
+                  <entry key="max connections">{6}</entry>
+                  <entry key="Max connection idle time">{7}</entry>
+                  <entry key="Evictor run periodicity">{8}</entry>
+                  <entry key="validate connections">{9}</entry>
+                </connectionParameters>
+              </dataStore>
+              """.format(name, db_host, db_port, db_name, db_username, db_password,
+                         max_connections, max_connection_idle_time, evictor_run_periodicity,
+                         'false')
+
+        expected_headers = {
+            "Content-type": "text/xml",
+            "Accept": "application/xml"
+        }
+
+        rest_endpoint = '{endpoint}workspaces/{workspace}/datastores'.format(
+            endpoint=self.endpoint,
+            workspace=self.workspace
+        )
+        self.gs_api.create_postgis_store(self.workspace, name, db_host, db_port, db_name, db_username, db_password,
+                                         max_connections, max_connection_idle_time, evictor_run_periodicity, False)
+        mock_post.assert_called_with(url=rest_endpoint, data=xml, headers=expected_headers, auth=self.auth)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_postgis_store_not_201(self, mock_post, mock_logger):
+        mock_post.return_value = MockResponse(500)
+        name = 'foo'
+        db_host = 'localhost'
+        db_port = '5432'
+        db_name = 'foo_db'
+        db_username = 'user'
+        db_password = 'pass'
+        max_connections = 10
+        max_connection_idle_time = 40
+        evictor_run_periodicity = 60
+
+        xml = """
+              <dataStore>
+                <name>{0}</name>
+                <connectionParameters>
+                  <entry key="host">{1}</entry>
+                  <entry key="port">{2}</entry>
+                  <entry key="database">{3}</entry>
+                  <entry key="user">{4}</entry>
+                  <entry key="passwd">{5}</entry>
+                  <entry key="dbtype">postgis</entry>
+                  <entry key="max connections">{6}</entry>
+                  <entry key="Max connection idle time">{7}</entry>
+                  <entry key="Evictor run periodicity">{8}</entry>
+                  <entry key="validate connections">{9}</entry>
+                </connectionParameters>
+              </dataStore>
+              """.format(name, db_host, db_port, db_name, db_username, db_password,
+                         max_connections, max_connection_idle_time, evictor_run_periodicity,
+                         'true')
+
+        expected_headers = {
+            "Content-type": "text/xml",
+            "Accept": "application/xml"
+        }
+
+        rest_endpoint = '{endpoint}workspaces/{workspace}/datastores'.format(
+            endpoint=self.endpoint,
+            workspace=self.workspace
+        )
+
+        self.assertRaises(requests.RequestException, self.gs_api.create_postgis_store, self.workspace, name, db_host,
+                          db_port, db_name, db_username, db_password, max_connections, max_connection_idle_time,
+                          evictor_run_periodicity)
+        mock_logger.error.assert_called()
+        mock_post.assert_called_with(url=rest_endpoint, data=xml, headers=expected_headers, auth=self.auth)
 
     def test_create_layer_create_new(self):
         pass
