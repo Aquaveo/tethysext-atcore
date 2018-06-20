@@ -6,9 +6,11 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import os
 import unittest
 import mock
 import requests
+from jinja2 import Template
 from tethysext.atcore.services.geoserver_api import GeoServerAPI
 
 
@@ -32,6 +34,12 @@ class MockResponse(object):
         return self.json_obj
 
 
+def create_layer_put(url, headers, auth, data):
+
+
+    return MockResponse(200)
+
+
 class GeoServerAPITests(unittest.TestCase):
 
     def setUp(self):
@@ -50,6 +58,17 @@ class GeoServerAPITests(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def get_file(self, filename):
+        """
+        Helper method that renders templates.
+        """
+        test_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        files_dir = os.path.join(test_dir, 'files')
+        file_path = os.path.join(files_dir, filename)
+        with open(file_path, 'r') as f:
+            text = f.read()
+        return text
 
     def test_get_ows_endpoint_public(self):
         results = self.gs_api.get_ows_endpoint(self.workspace)
@@ -401,8 +420,48 @@ class GeoServerAPITests(unittest.TestCase):
         mock_logger.error.assert_called()
         mock_post.assert_called_with(url=rest_endpoint, data=xml, headers=expected_headers, auth=self.auth)
 
-    def test_create_layer_create_new(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_layer(self, mock_post, mock_put, mock_logger):
+        mock_post.return_value = MockResponse(201)
+        mock_put.side_effect = create_layer_put
+        datastore_name = 'foo'
+        feature_name = 'bar'
+        geometry_type = 'Point'
+        srid = 4236
+        sql = 'SELECT * FROM foo'
+        default_style = 'points'
+
+        sql_view_url = '{endpoint}workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
+            endpoint=self.endpoint,
+            workspace=self.workspace,
+            datastore=datastore_name
+        )
+        layer_url = '{endpoint}layers/{feature_name}.xml'.format(
+            endpoint=self.endpoint,
+            feature_name=feature_name
+        )
+        gwc_layer_url = '{gwc_endpoint}layers/{workspace}:{feature_name}.xml'.format(
+            gwc_endpoint=self.gwc_endpoint,
+            workspace=self.workspace,
+            feature_name=feature_name
+        )
+        expected_headers = {
+            "Content-type": "text/xml"
+        }
+        expected_sql_xml = self.get_file('test_create_layer_sql_view.xml')
+        expected_layer_xml = self.get_file('test_create_layer_layer.xml')
+        expected_gwc_lyr_xml = self.get_file('test_create_layer_gwc_layer.xml')
+
+        self.gs_api.create_layer(self.workspace, datastore_name, feature_name, geometry_type, srid, sql, default_style)
+        mock_post.assert_called_with(sql_view_url, headers=expected_headers, auth=self.auth, data=expected_sql_xml)
+        layer_call = mock.call(layer_url, headers=expected_headers, auth=self.auth, data=expected_layer_xml)
+        gwc_layer_call = mock.call(gwc_layer_url, headers=expected_headers, auth=self.auth, data=expected_gwc_lyr_xml)
+        # mock_put.assert_has_calls(layer_call, gwc_layer_call)
+        mock_put.assert_called()
+        mock_logger.info.assert_called()
+
 
     def test_create_layer_create_existing(self):
         pass

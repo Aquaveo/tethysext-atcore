@@ -1,0 +1,40 @@
+<featureType>
+  <name>{{ feature_name }}</name>
+  <nativeName>{{ feature_name }}</nativeName>
+  <namespace>
+    <name>{{ workspace }}</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}namespaces/{{ workspace }}.xml" type="application/xml"/>
+  </namespace>
+  <title>{{ feature_name }}</title>
+  <keywords>
+    <string>features</string>
+    <string>{{ feature_name }}</string>
+  </keywords>
+  <srs>EPSG:{{ srid }}</srs>
+  <enabled>true</enabled>
+  <metadata>
+    <entry key="JDBC_VIRTUAL_TABLE">
+      <virtualTable>
+        <name>{{ feature_name }}</name>
+        <sql>{{ sql }}</sql>
+        <escapeSql>false</escapeSql>
+        <geometry>
+          <name>{{ geometry_name }}</name>
+          <type>{{ geometry_type }}</type>
+          <srid>{{ srid }}</srid>
+        </geometry>
+        {%- for parameter in parameters -%}
+        <parameter>
+          <name>{{ parameter.name }}</name>
+          <defaultValue>{{ parameter.default_value }}</defaultValue>
+          <regexpValidator>{{ parameter.regex_validator }}</regexpValidator>
+        </parameter>
+        {% endfor %}
+      </virtualTable>
+    </entry>
+  </metadata>
+  <store class="dataStore">
+    <name>{{ workspace }}:{{ datastore_name }}</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ workspace }}/datastores/{{ datastore_name }}.xml" type="application/xml"/>
+  </store>
+</featureType>

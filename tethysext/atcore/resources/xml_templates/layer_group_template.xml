@@ -1,0 +1,13 @@
+<layerGroup>
+    <name>{{ name }}</name>
+    <layers>
+        {% for layer in layers %}
+            <layer>{{ layer }}</layer>
+        {% endfor %}
+    </layers>
+    <styles>
+        {% for style in styles %}
+            <style>{{ style }}</style>
+        {% endfor %}
+    </styles>
+</layerGroup>
