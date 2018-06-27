@@ -897,17 +897,131 @@ class GeoServerAPITests(unittest.TestCase):
         mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
         mock_logger.error.assert_called()
 
-    def test_delete_layer_group(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_layer_group(self, mock_delete):
+        mock_delete.return_value = mock.MagicMock(status_code=200)
+        name = 'layer_group_name'
 
-    def test_delete_layer_group_no_group(self):
-        pass
+        self.gs_api.delete_layer_group(self.workspace, name)
 
-    def test_delete_style(self):
-        pass
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/layergroups/{lg}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            lg=name
+        )
 
-    def test_delete_style_exception(self):
-        pass
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_layer_group_no_group(self, mock_delete):
+        mock_delete.return_value = mock.MagicMock(status_code=404, text='No such layer group')
+        name = 'layer_group_name'
+
+        self.gs_api.delete_layer_group(self.workspace, name)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/layergroups/{lg}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            lg=name
+        )
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_layer_group_exception(self, mock_delete, mock_logger):
+        mock_delete.return_value = mock.MagicMock(status_code=404, text="These aren't the droids you're looking for...")
+        name = 'layer_group_name'
+
+        self.assertRaises(requests.RequestException, self.gs_api.delete_layer_group, self.workspace, name)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/layergroups/{lg}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            lg=name
+        )
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth)
+        mock_logger.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_style(self, mock_delete):
+        mock_delete.return_value = mock.MagicMock(status_code=200)
+        name = 'style_name'
+
+        self.gs_api.delete_style(self.workspace, name)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/styles/{s}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            s=name
+        )
+
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        params = {'purge': False}
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_style_warning(self, mock_delete, mock_logger):
+        mock_delete.return_value = mock.MagicMock(status_code=404)
+        name = 'style_name'
+
+        self.gs_api.delete_style(self.workspace, name, purge=True)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/styles/{s}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            s=name
+        )
+
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        params = {'purge': True}
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
+        mock_logger.warning.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_style_exception(self, mock_delete, mock_logger):
+        mock_delete.return_value = mock.MagicMock(status_code=500)
+        name = 'style_name'
+
+        self.assertRaises(requests.RequestException, self.gs_api.delete_style, self.workspace, name)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/styles/{s}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            s=name
+        )
+
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        params = {'purge': False}
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
+        mock_logger.error.assert_called()
 
     def test_modify_tile_cache_GWC_OPERATIONS(self):
         pass
