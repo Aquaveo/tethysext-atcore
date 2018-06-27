@@ -1,0 +1,38 @@
+<GeoServerLayer>
+  <name>{{ workspace }}:{{ feature_name }}</name>
+  <enabled>true</enabled>
+  <inMemoryCached>true</inMemoryCached>
+  <mimeFormats>
+    <string>image/png</string>
+  </mimeFormats>
+  <gridSubsets>
+    <gridSubset>
+      <gridSetName>EPSG:900913</gridSetName>
+    </gridSubset>
+  </gridSubsets>
+  <metaWidthHeight>
+    <int>4</int>
+    <int>4</int>
+  </metaWidthHeight>
+  <expireCache>0</expireCache>
+  <expireClients>0</expireClients>
+  <parameterFilters>
+    <stringParameterFilter>
+      <key>STYLES</key>
+      <defaultValue>{{ workspace }}:{{ default_style }}</defaultValue>
+      {%- if other_styles|length > 0 -%}
+      <values>
+        {% for other_style in other_styles %}
+        <string>{{ workspace }}:{{ other_style }}</string>
+        {% endfor %}
+      </values>
+      {% endif %}
+    </stringParameterFilter>
+    <regexParameterFilter>
+      <key>VIEWPARAMS</key>
+      <defaultValue/>
+      <regex>.*</regex>
+    </regexParameterFilter>
+  </parameterFilters>
+  <gutter>0</gutter>
+</GeoServerLayer>

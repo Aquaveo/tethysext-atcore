@@ -21,7 +21,9 @@ dependencies = [
     'sqlalchemy',
     'future',
     'mock',
-    'factory_boy'
+    'factory_boy',
+    'jinja2',
+    'requests'
 ]
 
 # -- Get Resource File -- #

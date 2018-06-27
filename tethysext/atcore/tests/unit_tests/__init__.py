@@ -10,5 +10,6 @@ from services.paginate import PaginateTests  # noqa: F401
 from services.spatial_reference import SpatialReferenceServiceTests  # noqa: F401
 from services.model_database_connection import ModelDatabaseConnectionTests  # noqa: F401
 from services.model_database import ModelDatabaseTests  # noqa: F401
+from services.geoserver_api import GeoServerAPITests  # noqa: F401
 from gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
 from gizmos.slide_sheet import SlideSheetTests  # noqa: F401

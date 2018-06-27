@@ -1,0 +1,33 @@
+<featureType>
+  <name>bar</name>
+  <nativeName>bar</nativeName>
+  <namespace>
+    <name>foo</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8181/geoserver/rest/namespaces/foo.xml" type="application/xml"/>
+  </namespace>
+  <title>bar</title>
+  <keywords>
+    <string>features</string>
+    <string>bar</string>
+  </keywords>
+  <srs>EPSG:4236</srs>
+  <enabled>true</enabled>
+  <metadata>
+    <entry key="JDBC_VIRTUAL_TABLE">
+      <virtualTable>
+        <name>bar</name>
+        <sql>SELECT * FROM foo</sql>
+        <escapeSql>false</escapeSql>
+        <geometry>
+          <name>geometry</name>
+          <type>Point</type>
+          <srid>4236</srid>
+        </geometry>
+      </virtualTable>
+    </entry>
+  </metadata>
+  <store class="dataStore">
+    <name>foo:foo</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8181/geoserver/rest/workspaces/foo/datastores/foo.xml" type="application/xml"/>
+  </store>
+</featureType>
