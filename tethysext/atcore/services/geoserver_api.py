@@ -4,13 +4,11 @@
 * Author: nswain
 * Created On: April 28, 2016
 * Copyright: (c) Aquaveo 2016
-* License: 
+* License:
 ********************************************************************************
 """
 import logging
 import os
-import sys
-
 import requests
 from jinja2 import Template
 
@@ -51,7 +49,6 @@ class GeoServerAPI(object):
         Constructor
         """
         self.gs_engine = gs_engine
-        self.sld_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sld_templates')
         self.xml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'xml_templates')
 
     def get_ows_endpoint(self, workspace, public_endpoint=True):
@@ -244,7 +241,7 @@ class GeoServerAPI(object):
 
           engine.create_postgis_store(workspace='workspace', store_name='store_name', host='localhost', port='5432', database='database_name', user='user', password='pass')
 
-        """
+        """  # noqa: E501
         # Create the store
         validate_connections_string = 'true' if validate_connections else 'false'
 
@@ -415,8 +412,7 @@ class GeoServerAPI(object):
                 log.info('Successfully created GeoWebCache layer {}'.format(feature_name))
                 break
             else:
-                sys.stderr.write("GWC DID NOT RETURN 200, but instead: {}. {}\n".format(response.status_code,
-                                                                                        response.text))
+                log.warning("GWC DID NOT RETURN 200, but instead: {}. {}\n".format(response.status_code, response.text))
                 retries_remaining -= 1
                 if retries_remaining == 0:
                     msg = "Create GWC Layer Status Code {0}: {1}".format(response.status_code, response.text)
@@ -463,28 +459,27 @@ class GeoServerAPI(object):
         Args
           workspace: the name of the workspace to add the style to
           style_name: the name of the style to create
-          sld_template: the name of the SLD template file located in epanet_adapter/resources/sld_templates directory.
+          sld_template: path to SLD template file.
           sld_context: a dictionary with context variables to be rendered in the template.
           overwrite (bool, optional): Will overwrite existing style with same name if True. Defaults to False.
         """
-        sld = os.path.join(self.sld_path, sld_template)
         url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/styles'
 
         if overwrite:
             try:
                 self.delete_style(workspace=workspace, style_name=style_name, purge=True)
             except Exception as e:
-                if 'no such style' in str(e):
-                    pass
                 if 'referenced by existing' in str(e):
+                    log.error(str(e))
                     raise
 
         # Use post request to create style container first
         headers = {'Content-type': 'application/vnd.ogc.sld+xml'}
 
         # Render the SLD template
-        with open(sld, 'r') as sld_file:
+        with open(sld_template, 'r') as sld_file:
             text = sld_file.read()
+
         if sld_context is not None:
             template = Template(text)
             text = template.render(sld_context)
@@ -504,12 +499,14 @@ class GeoServerAPI(object):
             msg = 'Create Style Status Code {0}: {1}'.format(response.status_code, response.text)
             if response.status_code == 500:
                 if 'Unable to find style for event' in response.text or 'Error persisting' in response.text:
-                    pass
+                    log.warning('Created style {} with warnings: {}'.format(style_name, response.text))
                 else:
                     exception = requests.RequestException(msg, response=response)
+                    log.error(msg)
                     raise exception
             else:
                 exception = requests.RequestException(msg, response=response)
+                log.error(msg)
                 raise exception
 
     def delete_layer(self, workspace, datastore, name, recurse=False):
@@ -622,7 +619,7 @@ class GeoServerAPI(object):
         Raises:
             requests.RequestException: if modify tile cache operation is not submitted successfully.
             ValueError: if invalid value is provided for an argument.
-        """
+        """  # noqa: E501
         if operation not in self.GWC_OPERATIONS:
             raise ValueError('Invalid value "{}" provided for argument "operation". Must be "{}".'.format(
                 operation, '" or "'.join(self.GWC_OPERATIONS))
@@ -720,7 +717,6 @@ class GeoServerAPI(object):
             exception = requests.RequestException(msg, response=response)
             raise exception
 
-
     def query_tile_cache_tasks(self, workspace, name):
         """
         Get the status of running tile cache tasks for a layer.
@@ -734,7 +730,7 @@ class GeoServerAPI(object):
 
         Raises:
             requests.RequestException: if query tile cache operation cannot be submitted successfully.
-        """
+        """  # noqa: E501
         url = self.get_gwc_endpoint() + 'seed/' + workspace + ':' + name + '.json'
         status_list = []
 

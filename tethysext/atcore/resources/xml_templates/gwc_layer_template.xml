@@ -20,7 +20,7 @@
     <stringParameterFilter>
       <key>STYLES</key>
       <defaultValue>{{ workspace }}:{{ default_style }}</defaultValue>
-      {% if other_styles|length > 0 %}
+      {%- if other_styles|length > 0 -%}
       <values>
         {% for other_style in other_styles %}
         <string>{{ workspace }}:{{ other_style }}</string>

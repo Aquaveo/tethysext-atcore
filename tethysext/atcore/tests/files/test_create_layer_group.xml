@@ -1,0 +1,5 @@
+<layerGroup>
+    <name>test_group</name>
+    <layers><layer>layer1</layer><layer>layer2</layer></layers>
+    <styles><style>style1</style><style>style2</style></styles>
+</layerGroup>

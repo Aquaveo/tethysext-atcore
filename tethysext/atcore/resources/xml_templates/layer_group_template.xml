@@ -1,13 +1,13 @@
 <layerGroup>
     <name>{{ name }}</name>
     <layers>
-        {% for layer in layers %}
+        {%- for layer in layers -%}
             <layer>{{ layer }}</layer>
-        {% endfor %}
+        {%- endfor -%}
     </layers>
     <styles>
-        {% for style in styles %}
+        {%- for style in styles -%}
             <style>{{ style }}</style>
-        {% endfor %}
+        {%- endfor -%}
     </styles>
 </layerGroup>
