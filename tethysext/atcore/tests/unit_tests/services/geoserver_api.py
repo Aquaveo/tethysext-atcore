@@ -1135,8 +1135,36 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         mock_post.assert_called_with(url, auth=self.auth, data={'kill_all': self.gs_api.GWC_KILL_ALL})
 
-    def test_query_tile_cache_tasks(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.get')
+    def test_query_tile_cache_tasks(self, mock_get):
+        mock_response = mock.MagicMock(status_code=200)
+        mock_response.json.return_value = {'long-array-array': [
+            [1, 100, 99, 1, 1],
+            [10, 100, 90, 2, -2]
+        ]}
+        mock_get.return_value = mock_response
+        name = 'gwc_layer_name'
+        ret = self.gs_api.query_tile_cache_tasks(self.workspace, name)
 
-    def test_query_tile_cache_tasks_exception(self):
-        pass
+        url = '{endpoint}seed/{workspace}:{name}.json'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace,
+            name=name
+        )
+
+        # Create feature type call
+        mock_get.assert_called_with(url, auth=self.auth)
+
+        self.assertIsInstance(ret, list)
+        self.assertEqual(2, len(ret))
+        self.assertEqual({'tiles_processed': 1, 'total_to_process': 100, 'num_remaining': 99,
+                          'task_id': 1, 'task_status': 'Running'}, ret[0])
+        self.assertEqual({'tiles_processed': 10, 'total_to_process': 100, 'num_remaining': 90,
+                          'task_id': 2, 'task_status': -2}, ret[1])
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.get')
+    def test_query_tile_cache_tasks_exception(self, mock_get):
+        mock_response = mock.MagicMock(status_code=500)
+        mock_get.return_value = mock_response
+        name = 'gwc_layer_name'
+        self.assertRaises(requests.RequestException, self.gs_api.query_tile_cache_tasks, self.workspace, name)
