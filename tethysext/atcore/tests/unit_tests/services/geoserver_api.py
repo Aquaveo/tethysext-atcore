@@ -10,7 +10,6 @@ import os
 import unittest
 import mock
 import requests
-from jinja2 import Template
 from tethysext.atcore.services.geoserver_api import GeoServerAPI
 
 
@@ -810,7 +809,7 @@ class GeoServerAPITests(unittest.TestCase):
         mock_logger.info.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
-    def test_create_style_referenced_by_existing(self, mock_logger):
+    def test_create_style_overwrite_referenced_by_existing(self, mock_logger):
         self.gs_api.delete_style = mock.MagicMock()
         self.gs_api.delete_style.side_effect = ValueError('referenced by existing')
         style_name = 'style_name'
@@ -819,14 +818,84 @@ class GeoServerAPITests(unittest.TestCase):
         self.assertRaises(ValueError, self.gs_api.create_style, self.workspace, style_name,
                           sld_template, sld_context, overwrite=True)
 
-    def test_create_style_overwrite_referenced_by_existing(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_layer(self, mock_delete):
+        mock_delete.return_value = mock.MagicMock(status_code=200)
+        datastore = 'datastore_name'
+        name = 'layer_name'
 
-    def test_delete_layer(self):
-        pass
+        self.gs_api.delete_layer(self.workspace, datastore, name)
 
-    def test_delete_layer_exception(self):
-        pass
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/datastores/{d}/featuretypes/{f}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            d=datastore,
+            f=name
+        )
+
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        params = {'recurse': False}
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_layer_warning(self, mock_delete, mock_logger):
+        mock_delete.return_value = mock.MagicMock(status_code=404)
+        datastore = 'datastore_name'
+        name = 'layer_name'
+
+        self.gs_api.delete_layer(self.workspace, datastore, name)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/datastores/{d}/featuretypes/{f}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            d=datastore,
+            f=name
+        )
+
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        params = {'recurse': False}
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
+        mock_logger.warning.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_layer_exception(self, mock_delete, mock_logger):
+        mock_delete.return_value = mock.MagicMock(status_code=500)
+        datastore = 'datastore_name'
+        name = 'layer_name'
+
+        self.assertRaises(requests.RequestException, self.gs_api.delete_layer, self.workspace, datastore, name)
+
+        # Validate endpoint calls
+        url = '{endpoint}workspaces/{w}/datastores/{d}/featuretypes/{f}'.format(
+            endpoint=self.endpoint,
+            w=self.workspace,
+            d=datastore,
+            f=name
+        )
+
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        params = {'recurse': False}
+
+        # Create feature type call
+        mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
+        mock_logger.error.assert_called()
 
     def test_delete_layer_group(self):
         pass
@@ -866,48 +935,3 @@ class GeoServerAPITests(unittest.TestCase):
 
     def test_query_tile_cache_tasks_exception(self):
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

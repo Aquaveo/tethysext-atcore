@@ -548,6 +548,11 @@ class GeoServerAPI(object):
                 raise exception
 
     def delete_layer_group(self, workspace, group_name):
+        """
+        Args:
+            workspace: Name of workspace
+            group_name: name of layer group
+        """
         url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/layergroups/{0}'.format(group_name)
         response = requests.delete(url, auth=(self.gs_engine.username, self.gs_engine.password))
         if response.status_code != 200:
