@@ -1023,17 +1023,84 @@ class GeoServerAPITests(unittest.TestCase):
         mock_delete.assert_called_with(url, auth=self.auth, headers=headers, params=params)
         mock_logger.error.assert_called()
 
-    def test_modify_tile_cache_GWC_OPERATIONS(self):
-        pass
+    def test_modify_tile_cache_invalid_operation(self):
+        name = 'gwc_layer_name'
+        operation = 'invalid-operation'
+        self.assertRaises(ValueError, self.gs_api.modify_tile_cache, self.workspace, name, operation)
 
-    def test_modify_tile_cache_GWC_OP_MASS_TRUNCATE(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_modify_tile_cache_mass_truncate(self, mock_post, mock_logger):
+        mock_post.return_value = mock.MagicMock(status_code=200)
+        name = 'gwc_layer_name'
+        operation = self.gs_api.GWC_OP_MASS_TRUNCATE
+        self.gs_api.modify_tile_cache(self.workspace, name, operation)
 
-    def test_modify_tile_cache(self):
-        pass
+        url = '{endpoint}masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
 
-    def test_modify_tile_cache_exception(self):
-        pass
+        # Create feature type call
+        post_call_args = mock_post.call_args_list
+        # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
+        self.assertEqual(url, post_call_args[0][0][0])
+        mock_logger.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_modify_tile_cache_seed(self, mock_post, mock_logger):
+        mock_post.return_value = mock.MagicMock(status_code=200)
+        name = 'gwc_layer_name'
+        operation = self.gs_api.GWC_OP_SEED
+        self.gs_api.modify_tile_cache(self.workspace, name, operation)
+
+        url = '{endpoint}seed/{workspace}:{name}.xml'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace,
+            name=name
+        )
+
+        # Create feature type call
+        post_call_args = mock_post.call_args_list
+        # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
+        self.assertEqual(url, post_call_args[0][0][0])
+        self.assertIn(operation, post_call_args[0][1]['data'])
+        mock_logger.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_modify_tile_cache_reseed(self, mock_post, mock_logger):
+        mock_post.return_value = mock.MagicMock(status_code=200)
+        name = 'gwc_layer_name'
+        operation = self.gs_api.GWC_OP_RESEED
+        self.gs_api.modify_tile_cache(self.workspace, name, operation)
+
+        url = '{endpoint}seed/{workspace}:{name}.xml'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace,
+            name=name
+        )
+
+        # Create feature type call
+        post_call_args = mock_post.call_args_list
+        # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
+        self.assertEqual(url, post_call_args[0][0][0])
+        self.assertIn(operation, post_call_args[0][1]['data'])
+        mock_logger.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_modify_tile_cache_exception(self, mock_post, mock_logger):
+        mock_post.return_value = mock.MagicMock(status_code=500)
+        name = 'gwc_layer_name'
+        operation = self.gs_api.GWC_OP_MASS_TRUNCATE
+        self.assertRaises(requests.RequestException, self.gs_api.modify_tile_cache, self.workspace, name, operation)
+
+        url = '{endpoint}masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
+
+        # Create feature type call
+        post_call_args = mock_post.call_args_list
+        # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
+        self.assertEqual(url, post_call_args[0][0][0])
+        mock_logger.error.assert_called()
 
     def test_terminate_tile_cache_tasks_not_GWC_KILL_OPERATIONS(self):
         pass

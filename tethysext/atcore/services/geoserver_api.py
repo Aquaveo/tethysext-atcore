@@ -687,6 +687,7 @@ class GeoServerAPI(object):
                 operation, workspace, name, response.status_code, response.text
             )
             exception = requests.RequestException(msg, response=response)
+            log.error(msg)
             raise exception
 
     def terminate_tile_cache_tasks(self, workspace, name, kill='all'):
