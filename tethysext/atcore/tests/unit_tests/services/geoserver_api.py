@@ -33,10 +33,6 @@ class MockResponse(object):
         return self.json_obj
 
 
-def create_layer_put(url, **kwargs):
-    return MockResponse(200)
-
-
 class GeoServerAPITests(unittest.TestCase):
 
     def setUp(self):
@@ -1102,14 +1098,42 @@ class GeoServerAPITests(unittest.TestCase):
         self.assertEqual(url, post_call_args[0][0][0])
         mock_logger.error.assert_called()
 
-    def test_terminate_tile_cache_tasks_not_GWC_KILL_OPERATIONS(self):
-        pass
+    def test_terminate_tile_cache_tasks_invalid_operation(self):
+        name = 'gwc_layer_name'
+        operation = 'invalid-operation'
+        self.assertRaises(ValueError, self.gs_api.terminate_tile_cache_tasks, self.workspace, name, kill=operation)
 
-    def test_terminate_tile_cache_tasks_GWC_KILL_OPERATIONS(self):
-        pass
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_terminate_tile_cache_tasks(self, mock_post):
+        mock_post.return_value = mock.MagicMock(status_code=200)
+        name = 'gwc_layer_name'
 
-    def test_terminate_tile_cache_tasks_exception(self):
-        pass
+        self.gs_api.terminate_tile_cache_tasks(self.workspace, name)
+
+        url = '{endpoint}seed/{workspace}:{name}'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace,
+            name=name
+        )
+
+        # Create feature type call
+        mock_post.assert_called_with(url, auth=self.auth, data={'kill_all': self.gs_api.GWC_KILL_ALL})
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_terminate_tile_cache_tasks_exception(self, mock_post):
+        mock_post.return_value = mock.MagicMock(status_code=500)
+        name = 'gwc_layer_name'
+
+        self.assertRaises(requests.RequestException, self.gs_api.terminate_tile_cache_tasks, self.workspace, name)
+
+        url = '{endpoint}seed/{workspace}:{name}'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace,
+            name=name
+        )
+
+        # Create feature type call
+        mock_post.assert_called_with(url, auth=self.auth, data={'kill_all': self.gs_api.GWC_KILL_ALL})
 
     def test_query_tile_cache_tasks(self):
         pass
