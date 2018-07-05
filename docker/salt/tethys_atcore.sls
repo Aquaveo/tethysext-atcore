@@ -1,8 +1,5 @@
-{% set ALLOWED_HOST = salt['environ.get']('ALLOWED_HOST') %} 
-{% set CONDA_HOME = salt['environ.get']('CONDA_HOME') %} 
-{% set CONDA_ENV_NAME = salt['environ.get']('CONDA_ENV_NAME') %} 
-{% set TETHYSAPP_DIR = salt['environ.get']('TETHYSAPP_DIR') %}
-{% set TETHYSEXT_DIR = salt['environ.get']('TETHYSEXT_DIR') %}
+{% set CONDA_HOME = salt['environ.get']('CONDA_HOME') %}
+{% set CONDA_ENV_NAME = salt['environ.get']('CONDA_ENV_NAME') %}
 
 
 Sync_Atcore:

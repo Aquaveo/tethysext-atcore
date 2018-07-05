@@ -1,15 +1,12 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v2.0.4-r8
-
+FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v2.0.4-r9
 
 #####################
 # Default Variables #
 #####################
-
 ENV TETHYSAPP_DIR /var/www/tethys/apps
 ENV TETHYSEXT_DIR /var/www/tethys/exts
 ENV CONDA_HOME /usr/lib/tethys/miniconda
-
 
 #########
 # SETUP #
@@ -50,18 +47,15 @@ RUN export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}'
   ; find /usr/lib/tethys/keys ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
   ; find /usr/lib/tethys/src ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
 
-
 #########################
 # CONFIGURE ENVIRONMENT #
 #########################
 EXPOSE 80
 
-
 ################
 # COPY IN SALT #
 ################
 ADD docker/salt/ /srv/salt/
-
 
 #######
 # RUN #
