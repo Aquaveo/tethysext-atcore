@@ -31,7 +31,11 @@ class ModelDatabaseConnection(object):
         if db_app_namespace:
             self.db_id = self.db_name.replace(db_app_namespace + '_', '')
         else:
-            self.db_id = self.db_name
+            name_parts = self.db_name.split('_')
+            if len(name_parts) > 1:
+                self.db_id = '_'.join(name_parts[1:])
+            else:
+                self.db_id = self.db_name
 
     def get_id(self):
         """
