@@ -146,7 +146,7 @@ class ModelDatabaseTests(unittest.TestCase):
     def test_get_id(self):
         md = ModelDatabase(self.mock_app, self.database_id)
         result = md.get_id()
-        self.assertEqual('{}_{}'.format('foo', self.database_id), result)
+        self.assertEqual(self.database_id, result)
 
     @mock.patch('tethysext.atcore.services.model_database.ModelDatabaseConnection')
     def test_get_size(self, mock_mdc):

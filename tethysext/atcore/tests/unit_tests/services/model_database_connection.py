@@ -14,17 +14,24 @@ from tethysext.atcore.services.model_database_connection import ModelDatabaseCon
 class ModelDatabaseConnectionTests(unittest.TestCase):
 
     def setUp(self):
-        self.db_id = '123456789'
+        self.db_id = '123_456_789'
         self.app_namespace = 'foo'
         self.db_url = 'postgresql://name:pass@localhost:5435/{}_{}'.format(self.app_namespace, self.db_id)
 
     def tearDown(self):
         pass
 
-    def test_get_id_without_namespace(self):
+    def test_get_id_without_namespace_with_underscores_in_id(self):
         mdc = ModelDatabaseConnection(self.db_url)
         result = mdc.get_id()
-        self.assertEqual('{}_{}'.format(self.app_namespace, self.db_id), result)
+        self.assertEqual(self.db_id, result)
+
+    def test_get_id_without_namespace_no_underscores_in_id(self):
+        db_id = '123-456-789'
+        db_url = 'postgresql://name:pass@localhost:5435/{}'.format(db_id)
+        mdc = ModelDatabaseConnection(db_url)
+        result = mdc.get_id()
+        self.assertEqual(db_id, result)
 
     def test_get_id_with_namespace(self):
         mdc = ModelDatabaseConnection(self.db_url, self.app_namespace)
