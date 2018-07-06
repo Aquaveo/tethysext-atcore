@@ -34,7 +34,6 @@ class SpatialManager(object):
         self.gs_engine = geoserver_engine
         self.gs_api = GeoServerAPI(geoserver_engine)
 
-
     def get_ows_endpoint(self, public_endpoint=True):
         """
         Returns the GeoServer endpoint for OWS services (with trailing slash).
