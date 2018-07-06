@@ -8,13 +8,13 @@ Sync_Atcore:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "/usr/lib/tethys/atcore_setup_complete" ];"
 
-Collect_Static:
+Collect_Static_Atcore:
   cmd.run:
     - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && tethys manage collectstatic --noinput
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "/usr/lib/tethys/atcore_setup_complete" ];"
 
-Flag_Complete_Setup:
+Flag_Complete_Setup_Atcore:
   cmd.run:
     - name: touch /usr/lib/tethys/atcore_setup_complete
     - shell: /bin/bash
