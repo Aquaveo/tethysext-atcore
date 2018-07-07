@@ -25,10 +25,14 @@ class SpatialManagerTests(unittest.TestCase):
         spatial_manger.get_ows_endpoint()
         spatial_manger.gs_api.get_ows_endpoint.assert_called_with(SpatialManager.WORKSPACE, True)
 
-    def test_get_wms_endpoint(self):
-        pass
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_wms_endpoint(self, _):
+        spatial_manger = SpatialManager(self.geoserver_engine)
+        spatial_manger.get_wms_endpoint()
+        spatial_manger.gs_api.get_wms_endpoint.assert_called_with(SpatialManager.WORKSPACE, True)
 
-    def test_link_geoserver_to_db(self):
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_link_geoserver_to_db(self, _):
         pass
 
     def test_link_geoserver_to_db_with_out_reload_config(self):
