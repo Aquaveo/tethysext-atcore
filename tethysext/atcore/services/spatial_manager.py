@@ -23,6 +23,11 @@ class SpatialManager(object):
     LABELS_SUFFIX = 'labels'
     GLOBAL_SUFFIX = 'global'
 
+    GT_POLYGON = 'Polygon'
+    GT_LINE = 'LineString'
+    GT_POINT = 'Point'
+    GT_RASTER = 'Raster'
+
     def __init__(self, geoserver_engine):
         """
         Constructor
