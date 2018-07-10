@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.geoserver_api import GeoServerAPI
 
 
@@ -61,6 +62,9 @@ class SpatialManager(object):
     GT_POINT = 'Point'
     GT_RASTER = 'Raster'
 
+    U_METRIC = 'metric'
+    U_IMPERIAL = 'imperial'
+
     def __init__(self, geoserver_engine):
         """
         Constructor
@@ -71,13 +75,14 @@ class SpatialManager(object):
         """
         self.gs_engine = geoserver_engine
         self.gs_api = GeoServerAPI(geoserver_engine)
+        self._projection_units = None
 
     def get_ows_endpoint(self, public_endpoint=True):
         """
         Returns the GeoServer endpoint for OWS services (with trailing slash).
 
         Args:
-            public_endpoint (bool): return with the public endpoint if True.
+            public_endpoint(bool): return with the public endpoint if True.
         """
         return self.gs_api.get_ows_endpoint(self.WORKSPACE, public_endpoint)
 
@@ -86,17 +91,60 @@ class SpatialManager(object):
         Returns the GeoServer endpoint for WMS services (with trailing slash).
 
         Args:
-            public (bool): return with the public endpoint if True.
+            public(bool): return with the public endpoint if True.
         """
         return self.gs_api.get_wms_endpoint(public)
+
+    def get_projection_units(self, model_db, srid):
+        """
+        Get units of the given projection.
+
+        Args:
+            model_db(ModelDatabase): the object representing the model database.:
+            srid(int): EPSG spatial reference identifier.
+
+        Returns:
+            str: SpatialManager.U_METRIC or SpatialManager.U_IMPERIAL
+        """
+        if self._projection_units is None:
+            db_engine = model_db.get_engine()
+            sql = "SELECT srid, proj4text FROM spatial_ref_sys WHERE srid = {}".format(srid)
+            ret = db_engine.execute(sql)
+
+            # Parse proj4text to get units
+            # e.g.: +proj=utm +zone=21 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
+            proj4text = ''
+            units = ''
+
+            for row in ret:
+                proj4text = row.proj4text
+
+            proj4parts = proj4text.split('+')
+
+            for part in proj4parts:
+                spart = part.strip()
+                if 'units' in spart:
+                    units = spart.replace('units=', '')
+
+            if not units:
+                raise UnitsNotFound('Unable to determine units of project with srid: {}'.format(srid))
+
+            if 'ft' in units:
+                self._projection_units = self.U_IMPERIAL
+            elif 'm' in units:
+                self._projection_units = self.U_METRIC
+            else:
+                raise UnknownUnits('"{}" is an unrecognized form of units. From srid: {}'.format(units, srid))
+
+        return self._projection_units
 
     def link_geoserver_to_db(self, model_db, reload_config=True):
         """
         Link GeoServer to a Model Database.
 
         Args:
-            model_db (ModelDatabase): the object representing the model database.
-            reload_config (bool): Reload the geoserver node configuration and catalog before returning if True.
+            model_db(ModelDatabase): the object representing the model database.
+            reload_config(bool): Reload the geoserver node configuration and catalog before returning if True.
         """
         db_url = model_db.db_url_obj
 
@@ -118,9 +166,9 @@ class SpatialManager(object):
         Unlink GeoServer from a Model Database.
 
         Args:
-            model_db (ModelDatabase): the object representing the model database.
-            purge (bool): delete configuration files from filesystem if True.
-            recurse (bool): recursively delete any dependent objects if True.
+            model_db(ModelDatabase): the object representing the model database.
+            purge(bool): delete configuration files from filesystem if True.
+            recurse(bool): recursively delete any dependent objects if True.
         """
         store_id = self.get_db_specific_store_id(model_db)
         response = self.gs_engine.delete_store(
@@ -146,7 +194,7 @@ class SpatialManager(object):
         Construct the model database specific store id.
 
         Args:
-            model_db (ModelDatabase): the object representing the model database.
+            model_db(ModelDatabase): the object representing the model database.
         """
         return '{0}:{1}'.format(self.WORKSPACE, model_db.get_id())
 

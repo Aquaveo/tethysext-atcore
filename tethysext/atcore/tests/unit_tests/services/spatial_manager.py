@@ -8,6 +8,7 @@
 """
 import mock
 import unittest
+from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.spatial_manager import SpatialManager, reload_config
 
 
@@ -25,6 +26,64 @@ class SpatialManagerTests(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_units_us_ft(self, _):
+        srid = 2232
+        mock_row = mock.MagicMock(proj4text='+proj=utm +zone=20 +datum=WGS84 +units=us-ft +no_defs ')
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_units(mock_model_db, srid)
+        self.assertEqual(SpatialManager.U_IMPERIAL, ret)
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_units_ft(self, _):
+        srid = 2232
+        mock_row = mock.MagicMock(proj4text='+proj=utm +zone=20 +datum=WGS84 +units=ft +no_defs ')
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_units(mock_model_db, srid)
+        self.assertEqual(SpatialManager.U_IMPERIAL, ret)
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_units_m(self, _):
+        srid = 2232
+        mock_row = mock.MagicMock(proj4text='+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs ')
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_units(mock_model_db, srid)
+        self.assertEqual(SpatialManager.U_METRIC, ret)
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_units_no_units(self, _):
+        srid = 2232
+        mock_row = mock.MagicMock(proj4text='+proj=utm +zone=20 +datum=WGS84 +no_defs ')
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        self.assertRaises(UnitsNotFound, spatial_manager.get_projection_units, mock_model_db, srid)
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_units_unknown_units(self, _):
+        srid = 2232
+        mock_row = mock.MagicMock(proj4text='+proj=utm +zone=20 +datum=WGS84 +units=teva +no_defs ')
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        self.assertRaises(UnknownUnits, spatial_manager.get_projection_units, mock_model_db, srid)
 
     @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
     def test_reload_config_decorator(self, _):
