@@ -8,7 +8,14 @@
 """
 import mock
 import unittest
-from tethysext.atcore.services.spatial_manager import SpatialManager
+from tethysext.atcore.services.spatial_manager import SpatialManager, reload_config
+
+
+class Foo(SpatialManager):
+    """For testing the reload_config decorator."""
+    @reload_config()
+    def test_decorator(self, reload_config=True):
+        return reload_config
 
 
 class SpatialManagerTests(unittest.TestCase):
@@ -18,6 +25,27 @@ class SpatialManagerTests(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_reload_config_decorator(self, _):
+        foo = Foo(self.geoserver_engine)
+        ret = foo.test_decorator()
+        self.assertTrue(ret)
+        foo.gs_api.reload.assert_called()
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_reload_config_decorator_no_reload_config(self, _):
+        foo = Foo(self.geoserver_engine)
+        ret = foo.test_decorator(reload_config=False)
+        self.assertFalse(ret)
+        foo.gs_api.reload.assert_not_called()
+
+    def test_reload_config_decorator_non_method(self):
+        @reload_config()
+        def not_a_method(number, string):
+            pass
+
+        self.assertRaises(ValueError, not_a_method, 1, 'foo')
 
     @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
     def test_get_ows_endpoint(self, _):

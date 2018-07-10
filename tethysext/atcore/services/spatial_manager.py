@@ -9,6 +9,39 @@
 from tethysext.atcore.services.geoserver_api import GeoServerAPI
 
 
+def reload_config(public_endpoint=False, reload_config_default=True):
+    """
+    Decorator that handles config reload for methods of the GsshaSpatialManager class.
+
+    Args:
+        public_endpoint(bool): Use public GeoServer endpoint for the reload call.
+        reload_config_default(bool): Default to use if the "reload_config" parameter is not specified.
+    """
+    def reload_decorator(method):
+        def wrapper(*args, **kwargs):
+            if not isinstance(args[0], SpatialManager):
+                raise ValueError('The "reload_config" decorator can only be used on methods of SpatialManager '
+                                 'dervied classes.')
+
+            # Call the method
+            return_value = method(*args, **kwargs)
+
+            # Call handle reload_config parameter
+            if 'reload_config' in kwargs:
+                should_reload = kwargs['reload_config']
+            else:
+                should_reload = reload_config_default
+
+            if should_reload:
+                self = args[0]
+                self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
+            return return_value
+
+        return wrapper
+
+    return reload_decorator
+
+
 class SpatialManager(object):
     """
     Base class for SpatialManagers.
