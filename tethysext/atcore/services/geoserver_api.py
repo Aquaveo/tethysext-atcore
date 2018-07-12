@@ -525,7 +525,7 @@ class GeoServerAPI(object):
                     log.error(exception)
                     raise exception
 
-    def create_coverage_layer(self, workspace, coverage_name, coverage_type, coverage_file, srid, default_style,
+    def create_coverage_layer(self, workspace, coverage_name, coverage_type, coverage_file, default_style='',
                               other_styles=None):
         """
         Create a coverage store, coverage resource, and layer in the given workspace.
@@ -535,14 +535,15 @@ class GeoServerAPI(object):
             coverage_name (str): Name of the coverage and coverage store that will be created.
             coverage_type (str): Type of coverage store to create (e.g.: GeoServerAPI.CT_ARC_GRID, GeoServerAPI.CT_GEOTIFF, GeoServerAPI.CT_GRASS_GRID).
             coverage_file (str): Path to coverage file or zip archive containing coverage file.
-            srid (int): EPSG spatial reference id. EPSG spatial reference ID.
             default_style (str): The name of the default style (note: it is assumed this style belongs to the workspace).
             other_styles (list): A list of other default style names (assumption: these styles belong to the workspace).
         """  # noqa: E501
         # Validate coverage type
         if coverage_type not in self.VALID_COVERAGE_TYPES:
-            raise ValueError('"{0}" is not a valid coverage_type. Use either {1}'.format(
+            exception = ValueError('"{0}" is not a valid coverage_type. Use either {1}'.format(
                 coverage_type, ', '.join(self.VALID_COVERAGE_TYPES)))
+            log.error(exception)
+            raise exception
 
         # Only one coverage per coverage store, so we name coverage store the same as the coverage
         coverage_store_name = coverage_name
@@ -563,11 +564,13 @@ class GeoServerAPI(object):
             working_dir_contents = os.listdir(working_dir)
             num_working_dir_items = len(working_dir_contents)
             if num_working_dir_items > 2:
-                raise ValueError('Expected 1 or 2 files for coverage type "{}" but got {} instead: "{}"'.format(
+                exception = ValueError('Expected 1 or 2 files for coverage type "{}" but got {} instead: "{}"'.format(
                     self.CT_GRASS_GRID,
                     num_working_dir_items,
                     '", "'.join(working_dir_contents)
                 ))
+                log.error(exception)
+                raise exception
 
             for item in working_dir_contents:
                 # Skip directories
@@ -607,8 +610,10 @@ class GeoServerAPI(object):
                         corrupt_file = True
 
                 if corrupt_file:
-                    raise IOError('GRASS file could not be processed, check to ensure the GRASS grid is correctly '
-                                  'formatted or included.')
+                    exception = IOError('GRASS file could not be processed, check to ensure the GRASS grid is '
+                                        'correctly formatted or included.')
+                    log.error(exception)
+                    raise exception
 
                 # Calcuate new header
                 xllcorner = east
@@ -677,12 +682,11 @@ class GeoServerAPI(object):
                 log.info('Successfully created coverage {}'.format(coverage_name))
                 break
             if response.status_code == 500 and 'already exists' in response.text:
+                log.warning('Coverage already exists {}'.format(coverage_name))
                 break
             if response.status_code == 500 and 'Error occured unzipping file' in response.text:
                 zip_error_retries -= 1
                 if zip_error_retries == 0:
-                    import pdb
-                    pdb.set_trace()
                     raise_error = True
             else:
                 retries_remaining -= 1
@@ -699,9 +703,7 @@ class GeoServerAPI(object):
         files['file'].close()
 
         if working_dir:
-            for item in os.listdir(working_dir):
-                os.remove(os.path.join(working_dir, item))
-            os.rmdir(working_dir)
+            shutil.rmtree(working_dir)
 
         # Add styles to new layer
         self.update_layer_styles(

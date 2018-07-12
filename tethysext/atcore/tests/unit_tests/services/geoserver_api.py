@@ -431,17 +431,14 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_layer(self.workspace, datastore_name, feature_name, geometry_type, srid, sql, default_style)
 
         # Validate endpoint calls
-        sql_view_url = '{endpoint}workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
-            endpoint=self.endpoint,
+        sql_view_url = 'workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
             workspace=self.workspace,
             datastore=datastore_name
         )
-        layer_url = '{endpoint}layers/{feature_name}.xml'.format(
-            endpoint=self.endpoint,
+        layer_url = 'layers/{feature_name}.xml'.format(
             feature_name=feature_name
         )
-        gwc_layer_url = '{gwc_endpoint}layers/{workspace}:{feature_name}.xml'.format(
-            gwc_endpoint=self.gwc_endpoint,
+        gwc_layer_url = 'layers/{workspace}:{feature_name}.xml'.format(
             workspace=self.workspace,
             feature_name=feature_name
         )
@@ -452,16 +449,16 @@ class GeoServerAPITests(unittest.TestCase):
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
-        self.assertEqual(sql_view_url, post_call_args[0][0][0])
+        self.assertIn(sql_view_url, post_call_args[0][0][0])
         self.assertEqual(expected_sql_xml, post_call_args[0][1]['data'])
 
         # Create layer call
         put_call_args = mock_put.call_args_list
-        self.assertEqual(layer_url, put_call_args[0][0][0])
+        self.assertIn(layer_url, put_call_args[0][0][0])
         self.assertEqual(expected_layer_xml, str(put_call_args[0][1]['data']))
 
         # GWC Call
-        self.assertEqual(gwc_layer_url, put_call_args[1][0][0])
+        self.assertIn(gwc_layer_url, put_call_args[1][0][0])
         self.assertEqual(expected_gwc_lyr_xml, str(put_call_args[1][1]['data']))
         mock_logger.info.assert_called()
 
@@ -482,17 +479,14 @@ class GeoServerAPITests(unittest.TestCase):
                                  default_style)
 
         # Validate endpoint calls
-        sql_view_url = '{endpoint}workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
-            endpoint=self.endpoint,
+        sql_view_url = 'workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
             workspace=self.workspace,
             datastore=datastore_name
         )
-        layer_url = '{endpoint}layers/{feature_name}.xml'.format(
-            endpoint=self.endpoint,
+        layer_url = 'layers/{feature_name}.xml'.format(
             feature_name=feature_name
         )
-        gwc_layer_url = '{gwc_endpoint}layers/{workspace}:{feature_name}.xml'.format(
-            gwc_endpoint=self.gwc_endpoint,
+        gwc_layer_url = 'layers/{workspace}:{feature_name}.xml'.format(
             workspace=self.workspace,
             feature_name=feature_name
         )
@@ -500,14 +494,14 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(sql_view_url, post_call_args[0][0][0])
+        self.assertIn(sql_view_url, post_call_args[0][0][0])
 
         # Create layer call
         put_call_args = mock_put.call_args_list
-        self.assertEqual(layer_url, put_call_args[0][0][0])
+        self.assertIn(layer_url, put_call_args[0][0][0])
 
         # GWC Call
-        self.assertEqual(gwc_layer_url, put_call_args[1][0][0])
+        self.assertIn(gwc_layer_url, put_call_args[1][0][0])
         mock_logger.info.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -527,8 +521,7 @@ class GeoServerAPITests(unittest.TestCase):
                           feature_name, geometry_type, srid, sql, default_style)
 
         # Validate endpoint calls
-        sql_view_url = '{endpoint}workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
-            endpoint=self.endpoint,
+        sql_view_url = 'workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
             workspace=self.workspace,
             datastore=datastore_name
         )
@@ -536,7 +529,7 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(sql_view_url, post_call_args[0][0][0])
+        self.assertIn(sql_view_url, post_call_args[0][0][0])
 
         mock_put.assert_not_called()
         mock_logger.error.assert_called()
@@ -558,24 +551,22 @@ class GeoServerAPITests(unittest.TestCase):
                           feature_name, geometry_type, srid, sql, default_style)
 
         # Validate endpoint calls
-        sql_view_url = '{endpoint}workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
-            endpoint=self.endpoint,
+        sql_view_url = 'workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
             workspace=self.workspace,
             datastore=datastore_name
         )
-        layer_url = '{endpoint}layers/{feature_name}.xml'.format(
-            endpoint=self.endpoint,
+        layer_url = 'layers/{feature_name}.xml'.format(
             feature_name=feature_name
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(sql_view_url, post_call_args[0][0][0])
+        self.assertIn(sql_view_url, post_call_args[0][0][0])
 
         # Create layer call
         put_call_args = mock_put.call_args_list
-        self.assertEqual(layer_url, put_call_args[0][0][0])
+        self.assertIn(layer_url, put_call_args[0][0][0])
         mock_logger.error.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -602,17 +593,14 @@ class GeoServerAPITests(unittest.TestCase):
                           feature_name, geometry_type, srid, sql, default_style)
 
         # Validate endpoint calls
-        sql_view_url = '{endpoint}workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
-            endpoint=self.endpoint,
+        sql_view_url = 'workspaces/{workspace}/datastores/{datastore}/featuretypes'.format(
             workspace=self.workspace,
             datastore=datastore_name
         )
-        layer_url = '{endpoint}layers/{feature_name}.xml'.format(
-            endpoint=self.endpoint,
+        layer_url = 'layers/{feature_name}.xml'.format(
             feature_name=feature_name
         )
-        gwc_layer_url = '{gwc_endpoint}layers/{workspace}:{feature_name}.xml'.format(
-            gwc_endpoint=self.gwc_endpoint,
+        gwc_layer_url = 'layers/{workspace}:{feature_name}.xml'.format(
             workspace=self.workspace,
             feature_name=feature_name
         )
@@ -620,14 +608,14 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(sql_view_url, post_call_args[0][0][0])
+        self.assertIn(sql_view_url, post_call_args[0][0][0])
 
         # Create layer call
         put_call_args = mock_put.call_args_list
-        self.assertEqual(layer_url, put_call_args[0][0][0])
+        self.assertIn(layer_url, put_call_args[0][0][0])
 
         # GWC Call
-        self.assertEqual(gwc_layer_url, put_call_args[1][0][0])
+        self.assertIn(gwc_layer_url, put_call_args[1][0][0])
         mock_logger.error.assert_called()
         mock_logger.warning.assert_called()
 
@@ -640,8 +628,7 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_layer_group(self.workspace, group_name, layer_names, default_styles)
 
         # Validate endpoint calls
-        layer_group_url = '{endpoint}workspaces/{w}/layergroups.json'.format(
-            endpoint=self.endpoint,
+        layer_group_url = 'workspaces/{w}/layergroups.json'.format(
             w=self.workspace
         )
         expected_xml = self.get_file('test_create_layer_group.xml')
@@ -649,7 +636,7 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(layer_group_url, post_call_args[0][0][0])
+        self.assertIn(layer_group_url, post_call_args[0][0][0])
         self.assertEqual(expected_xml, str(post_call_args[0][1]['data']))
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -663,15 +650,14 @@ class GeoServerAPITests(unittest.TestCase):
                           layer_names, default_styles)
 
         # Validate endpoint calls
-        layer_group_url = '{endpoint}workspaces/{w}/layergroups.json'.format(
-            endpoint=self.endpoint,
+        layer_group_url = 'workspaces/{w}/layergroups.json'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(layer_group_url, post_call_args[0][0][0])
+        self.assertIn(layer_group_url, post_call_args[0][0][0])
         mock_logger.error.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -684,15 +670,14 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_style(self.workspace, style_name, sld_template, sld_context)
 
         # Validate endpoint calls
-        style_url = '{endpoint}workspaces/{w}/styles'.format(
-            endpoint=self.endpoint,
+        style_url = 'workspaces/{w}/styles'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(style_url, post_call_args[0][0][0])
+        self.assertIn(style_url, post_call_args[0][0][0])
         mock_logger.info.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -705,15 +690,14 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_style(self.workspace, style_name, sld_template, sld_context)
 
         # Validate endpoint calls
-        style_url = '{endpoint}workspaces/{w}/styles'.format(
-            endpoint=self.endpoint,
+        style_url = 'workspaces/{w}/styles'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(style_url, post_call_args[0][0][0])
+        self.assertIn(style_url, post_call_args[0][0][0])
         mock_logger.warning.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -726,15 +710,14 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_style(self.workspace, style_name, sld_template, sld_context)
 
         # Validate endpoint calls
-        style_url = '{endpoint}workspaces/{w}/styles'.format(
-            endpoint=self.endpoint,
+        style_url = 'workspaces/{w}/styles'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(style_url, post_call_args[0][0][0])
+        self.assertIn(style_url, post_call_args[0][0][0])
         mock_logger.warning.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -748,15 +731,14 @@ class GeoServerAPITests(unittest.TestCase):
                           sld_template, sld_context)
 
         # Validate endpoint calls
-        style_url = '{endpoint}workspaces/{w}/styles'.format(
-            endpoint=self.endpoint,
+        style_url = 'workspaces/{w}/styles'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(style_url, post_call_args[0][0][0])
+        self.assertIn(style_url, post_call_args[0][0][0])
         mock_logger.error.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -770,15 +752,14 @@ class GeoServerAPITests(unittest.TestCase):
                           sld_template, sld_context)
 
         # Validate endpoint calls
-        style_url = '{endpoint}workspaces/{w}/styles'.format(
-            endpoint=self.endpoint,
+        style_url = 'workspaces/{w}/styles'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(style_url, post_call_args[0][0][0])
+        self.assertIn(style_url, post_call_args[0][0][0])
         mock_logger.error.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -793,15 +774,14 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_style(self.workspace, style_name, sld_template, sld_context, overwrite=True)
 
         # Validate endpoint calls
-        style_url = '{endpoint}workspaces/{w}/styles'.format(
-            endpoint=self.endpoint,
+        style_url = 'workspaces/{w}/styles'.format(
             w=self.workspace
         )
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(style_url, post_call_args[0][0][0])
+        self.assertIn(style_url, post_call_args[0][0][0])
         mock_logger.info.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -1032,12 +1012,12 @@ class GeoServerAPITests(unittest.TestCase):
         operation = self.gs_api.GWC_OP_MASS_TRUNCATE
         self.gs_api.modify_tile_cache(self.workspace, name, operation)
 
-        url = '{endpoint}masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
+        url = 'masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(url, post_call_args[0][0][0])
+        self.assertIn(url, post_call_args[0][0][0])
         mock_logger.info.assert_called()
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
@@ -1048,8 +1028,7 @@ class GeoServerAPITests(unittest.TestCase):
         operation = self.gs_api.GWC_OP_SEED
         self.gs_api.modify_tile_cache(self.workspace, name, operation)
 
-        url = '{endpoint}seed/{workspace}:{name}.xml'.format(
-            endpoint=self.gs_api.get_gwc_endpoint(),
+        url = 'seed/{workspace}:{name}.xml'.format(
             workspace=self.workspace,
             name=name
         )
@@ -1057,7 +1036,7 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(url, post_call_args[0][0][0])
+        self.assertIn(url, post_call_args[0][0][0])
         self.assertIn(operation, post_call_args[0][1]['data'])
         mock_logger.info.assert_called()
 
@@ -1069,8 +1048,7 @@ class GeoServerAPITests(unittest.TestCase):
         operation = self.gs_api.GWC_OP_RESEED
         self.gs_api.modify_tile_cache(self.workspace, name, operation)
 
-        url = '{endpoint}seed/{workspace}:{name}.xml'.format(
-            endpoint=self.gs_api.get_gwc_endpoint(),
+        url = 'seed/{workspace}:{name}.xml'.format(
             workspace=self.workspace,
             name=name
         )
@@ -1078,7 +1056,7 @@ class GeoServerAPITests(unittest.TestCase):
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(url, post_call_args[0][0][0])
+        self.assertIn(url, post_call_args[0][0][0])
         self.assertIn(operation, post_call_args[0][1]['data'])
         mock_logger.info.assert_called()
 
@@ -1090,12 +1068,12 @@ class GeoServerAPITests(unittest.TestCase):
         operation = self.gs_api.GWC_OP_MASS_TRUNCATE
         self.assertRaises(requests.RequestException, self.gs_api.modify_tile_cache, self.workspace, name, operation)
 
-        url = '{endpoint}masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
+        url = 'masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
         # call_args[call_num][0=args|1=kwargs][arg_index|kwarg_key]
-        self.assertEqual(url, post_call_args[0][0][0])
+        self.assertIn(url, post_call_args[0][0][0])
         mock_logger.error.assert_called()
 
     def test_terminate_tile_cache_tasks_invalid_operation(self):
@@ -1178,11 +1156,10 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_coverage_store(self.workspace, coverage_name, coverage_type)
         mock_post.assert_called()
         post_call_args = mock_post.call_args_list
-        url = '{endpoint}workspaces/{workspace}/coveragestores'.format(
-            endpoint=self.gs_api.get_gwc_endpoint(),
+        url = 'workspaces/{workspace}/coveragestores'.format(
             workspace=self.workspace
         )
-        self.assertEqual(url, post_call_args[0][1]['url'])
+        self.assertIn(url, post_call_args[0][1]['url'])
         self.assertIn(coverage_name, post_call_args[0][1]['data'])
         self.assertIn(coverage_type, post_call_args[0][1]['data'])
 
@@ -1195,11 +1172,10 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_api.create_coverage_store(self.workspace, coverage_name, coverage_type)
         mock_post.assert_called()
         post_call_args = mock_post.call_args_list
-        url = '{endpoint}workspaces/{workspace}/coveragestores'.format(
-            endpoint=self.gs_api.get_gwc_endpoint(),
+        url = 'workspaces/{workspace}/coveragestores'.format(
             workspace=self.workspace
         )
-        self.assertEqual(url, post_call_args[0][1]['url'])
+        self.assertIn(url, post_call_args[0][1]['url'])
         self.assertIn(coverage_name, post_call_args[0][1]['data'])
         self.assertIn(GeoServerAPI.CT_ARC_GRID, post_call_args[0][1]['data'])
         self.assertNotIn(GeoServerAPI.CT_GRASS_GRID, post_call_args[0][1]['data'])
@@ -1219,4 +1195,210 @@ class GeoServerAPITests(unittest.TestCase):
         self.assertRaises(ValueError, self.gs_api.create_coverage_store, self.workspace,
                           coverage_name, coverage_type)
 
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        coverage_file = os.path.join(self.test_files_path, 'arc_grid', 'precip30min.asc')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=coverage_type.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertIn('coverageName', put_call_args[0][1]['params'])
+        self.assertEqual(coverage_name, put_call_args[0][1]['params']['coverageName'])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.info.assert_called()
 
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_already_exists(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=500, text='already exists')
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        coverage_file = os.path.join(self.test_files_path, 'arc_grid', 'precip30min.asc')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=coverage_type.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertIn('coverageName', put_call_args[0][1]['params'])
+        self.assertEqual(coverage_name, put_call_args[0][1]['params']['coverageName'])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.warning.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_error_unzipping(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=500, text='Error occured unzipping file')
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        coverage_file = os.path.join(self.test_files_path, 'arc_grid', 'precip30min.asc')
+        self.assertRaises(requests.RequestException, self.gs_api.create_coverage_layer, workspace=self.workspace,
+                          coverage_name=coverage_name, coverage_type=coverage_type, coverage_file=coverage_file)
+        num_put_calls = len(mock_put.call_args_list)
+        self.assertEqual(5, num_put_calls)
+        mock_log.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_error(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=500)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        coverage_file = os.path.join(self.test_files_path, 'arc_grid', 'precip30min.asc')
+        self.assertRaises(requests.RequestException, self.gs_api.create_coverage_layer, workspace=self.workspace,
+                          coverage_name=coverage_name, coverage_type=coverage_type, coverage_file=coverage_file)
+        num_put_calls = len(mock_put.call_args_list)
+        self.assertEqual(3, num_put_calls)
+        mock_log.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_zip(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        coverage_file = os.path.join(self.test_files_path, 'arc_grid', 'precip30min.zip')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=coverage_type.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertIn('coverageName', put_call_args[0][1]['params'])
+        self.assertEqual(coverage_name, put_call_args[0][1]['params']['coverageName'])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_grass_grid(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_GRASS_GRID
+        coverage_file = os.path.join(self.test_files_path, 'grass_grid', 'provo.ele')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=GeoServerAPI.CT_ARC_GRID.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertIn('coverageName', put_call_args[0][1]['params'])
+        self.assertEqual(coverage_name, put_call_args[0][1]['params']['coverageName'])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_grass_grid_zip(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_GRASS_GRID
+        coverage_file = os.path.join(self.test_files_path, 'grass_grid', 'provo.zip')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=GeoServerAPI.CT_ARC_GRID.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertIn('coverageName', put_call_args[0][1]['params'])
+        self.assertEqual(coverage_name, put_call_args[0][1]['params']['coverageName'])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_grass_grid_zip_with_dir(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_GRASS_GRID
+        coverage_file = os.path.join(self.test_files_path, 'grass_grid', 'provo_with_dir.zip')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=GeoServerAPI.CT_ARC_GRID.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertIn('coverageName', put_call_args[0][1]['params'])
+        self.assertEqual(coverage_name, put_call_args[0][1]['params']['coverageName'])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    def test_create_coverage_layer_grass_grid_corrupt_file(self, mock_log):
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_GRASS_GRID
+        coverage_file = os.path.join(self.test_files_path, 'grass_grid', 'provo_corrupt.ele')
+        self.assertRaises(IOError, self.gs_api.create_coverage_layer, workspace=self.workspace,
+                          coverage_name=coverage_name, coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_log.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    def test_create_coverage_layer_grass_grid_invalid_zip(self, mock_log):
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_GRASS_GRID
+        coverage_file = os.path.join(self.test_files_path, 'grass_grid', 'provo_invalid.zip')
+        self.assertRaises(ValueError, self.gs_api.create_coverage_layer, workspace=self.workspace,
+                          coverage_name=coverage_name, coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_log.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    def test_create_coverage_layer_invalid_coverage_type(self, mock_log):
+        coverage_name = 'foo'
+        coverage_type = 'INVALID_COVERAGE_TYPE'
+        coverage_file = os.path.join(self.test_files_path, 'grass_grid', 'provo_invalid.zip')
+        self.assertRaises(ValueError, self.gs_api.create_coverage_layer, workspace=self.workspace,
+                          coverage_name=coverage_name, coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_log.error.assert_called()
