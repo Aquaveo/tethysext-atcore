@@ -806,10 +806,10 @@ class GeoServerAPI(object):
         """
         Delete the specified coverage store.
         Args:
-            workspace:
-            name:
-            recurse:
-            purge:
+            workspace (str): the name of the workspace to add the style to
+            name(str):name of the coverage
+            recurse (bool): recursively delete any dependent objects if True.
+            purge (bool): delete configuration files from filesystem if True. remove file from disk of geoserver.
 
         Returns:
 

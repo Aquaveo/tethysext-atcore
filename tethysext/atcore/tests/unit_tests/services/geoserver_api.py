@@ -1402,3 +1402,71 @@ class GeoServerAPITests(unittest.TestCase):
         self.assertRaises(ValueError, self.gs_api.create_coverage_layer, workspace=self.workspace,
                           coverage_name=coverage_name, coverage_type=coverage_type, coverage_file=coverage_file)
         mock_log.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_coverage_store(self, mock_delete):
+        mock_response = mock.MagicMock(status_code=200)
+        mock_delete.return_value = mock_response
+
+        coverage_name = 'foo'
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+        )
+
+        json = {'recurse': True,
+                'purge': True}
+
+        self.gs_api.delete_coverage_store(workspace=self.workspace, name=coverage_name)
+        put_call_args = mock_delete.call_args_list
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertEqual(json, put_call_args[0][1]['params'])
+        self.assertEqual({"Content-type": "application/json"}, put_call_args[0][1]['headers'])
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_coverage_store_with_warning(self, mock_delete, mock_log):
+        mock_response = mock.MagicMock(status_code=403)
+        mock_delete.return_value = mock_response
+
+        coverage_name = 'foo'
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+        )
+
+        json = {'recurse': True,
+                'purge': True}
+
+        self.gs_api.delete_coverage_store(workspace=self.workspace, name=coverage_name)
+
+        put_call_args = mock_delete.call_args_list
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertEqual(json, put_call_args[0][1]['params'])
+        self.assertEqual({"Content-type": "application/json"}, put_call_args[0][1]['headers'])
+        mock_log.warning.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.delete')
+    def test_delete_coverage_store_with_error(self, mock_delete, mock_log):
+        mock_response = mock.MagicMock(status_code=500)
+        mock_delete.return_value = mock_response
+
+        coverage_name = 'foo'
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+        )
+
+        json = {'recurse': True,
+                'purge': True}
+
+        self.assertRaises(requests.RequestException, self.gs_api.delete_coverage_store, workspace=self.workspace,
+                          name=coverage_name)
+
+        put_call_args = mock_delete.call_args_list
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertEqual(json, put_call_args[0][1]['params'])
+        self.assertEqual({"Content-type": "application/json"}, put_call_args[0][1]['headers'])
+
+        mock_log.error.assert_called()
