@@ -317,7 +317,7 @@ class GeoServerAPI(object):
             log.error(exception)
             raise exception
 
-    def create_coverage_store(self, workspace, name, coverage_type, overwrite=False):
+    def create_coverage_store(self, workspace, name, coverage_type):
         """
         Create a new coverage store.
 
@@ -325,7 +325,6 @@ class GeoServerAPI(object):
             workspace (str): Workspace in which the store will be created. Note that the workspace must be an existing workspace. If no workspace is given, the default workspace will be assigned.
             name (str): Name of the coverage store create.
             coverage_type (str): Type of coverage store to create (e.g.: GeoServerAPI.CT_ARC_GRID, GeoServerAPI.CT_GEOTIFF, GeoServerAPI.CT_GRASS_GRID).
-            overwrite:
         """  # noqa: E501
         # Validate coverage type
         if coverage_type not in self.VALID_COVERAGE_TYPES:
@@ -334,7 +333,7 @@ class GeoServerAPI(object):
 
         # Black magic for grass grid support
         if coverage_type == self.CT_GRASS_GRID:
-            coverage_type = self.CT_GRASS_GRID
+            coverage_type = self.CT_ARC_GRID
 
         xml = """
               <coverageStore>

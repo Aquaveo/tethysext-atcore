@@ -1168,3 +1168,55 @@ class GeoServerAPITests(unittest.TestCase):
         mock_get.return_value = mock_response
         name = 'gwc_layer_name'
         self.assertRaises(requests.RequestException, self.gs_api.query_tile_cache_tasks, self.workspace, name)
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_coverage_store(self, mock_post):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_post.return_value = mock_response
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        self.gs_api.create_coverage_store(self.workspace, coverage_name, coverage_type)
+        mock_post.assert_called()
+        post_call_args = mock_post.call_args_list
+        url = '{endpoint}workspaces/{workspace}/coveragestores'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace
+        )
+        self.assertEqual(url, post_call_args[0][1]['url'])
+        self.assertIn(coverage_name, post_call_args[0][1]['data'])
+        self.assertIn(coverage_type, post_call_args[0][1]['data'])
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_coverage_store_grass_grid(self, mock_post):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_post.return_value = mock_response
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_GRASS_GRID
+        self.gs_api.create_coverage_store(self.workspace, coverage_name, coverage_type)
+        mock_post.assert_called()
+        post_call_args = mock_post.call_args_list
+        url = '{endpoint}workspaces/{workspace}/coveragestores'.format(
+            endpoint=self.gs_api.get_gwc_endpoint(),
+            workspace=self.workspace
+        )
+        self.assertEqual(url, post_call_args[0][1]['url'])
+        self.assertIn(coverage_name, post_call_args[0][1]['data'])
+        self.assertIn(GeoServerAPI.CT_ARC_GRID, post_call_args[0][1]['data'])
+        self.assertNotIn(GeoServerAPI.CT_GRASS_GRID, post_call_args[0][1]['data'])
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
+    def test_create_coverage_store_exception(self, mock_post):
+        mock_response = mock.MagicMock(status_code=500)
+        mock_post.return_value = mock_response
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_ARC_GRID
+        self.assertRaises(requests.RequestException, self.gs_api.create_coverage_store, self.workspace,
+                          coverage_name, coverage_type)
+
+    def test_create_coverage_store_invalid_type(self):
+        coverage_name = 'foo'
+        coverage_type = 'INVALID_COVERAGE_TYPE'
+        self.assertRaises(ValueError, self.gs_api.create_coverage_store, self.workspace,
+                          coverage_name, coverage_type)
+
+
