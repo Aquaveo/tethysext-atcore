@@ -9,6 +9,10 @@
 """
 import logging
 import os
+import shutil
+import tempfile
+from zipfile import is_zipfile, ZipFile
+
 import requests
 from jinja2 import Template
 
@@ -19,6 +23,7 @@ class GeoServerAPI(object):
     """
     Custom interface for GeoServer
     """
+    XML_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'xml_templates')
     WARNING_STATUS_CODES = [403, 404]
     GEOSERVER_CLUSTER_PORTS = (8082, 8083, 8084)
 
@@ -44,12 +49,35 @@ class GeoServerAPI(object):
         GWC_STATUS_DONE: 'Done'
     }
 
+    CT_AIG = 'AIG'
+    CT_ARC_GRID = 'ArcGrid'
+    CT_DTED = 'DTED'
+    CT_ECW = 'ECW'
+    CT_EHDR = 'EHdr'
+    CT_ENVIHDR = 'ENVIHdr'
+    CT_ERDASIMG = 'ERDASImg'
+    CT_GEOTIFF = 'GeoTIFF'
+    CT_GRASS_GRID = 'GrassGrid'
+    CT_GTOPO30 = 'Gtopo30'
+    CT_IMAGE_MOSAIC = 'ImageMosaic'
+    CT_IMAGE_PYRAMID = 'ImagePyramid'
+    CT_JP2MRSID = 'JP2MrSID'
+    CT_MRSID = 'MrSID'
+    CT_NETCDF = 'NetCDF'
+    CT_NITF = 'NITF'
+    CT_RPFTOC = 'RPFTOC'
+    CT_RST = 'RST'
+    CT_WORLD_IMAGE = 'WorldImage'
+
+    VALID_COVERAGE_TYPES = (CT_AIG, CT_ARC_GRID, CT_DTED, CT_ECW, CT_EHDR, CT_ENVIHDR, CT_ERDASIMG, CT_GEOTIFF,
+                            CT_GRASS_GRID , CT_GTOPO30, CT_IMAGE_MOSAIC, CT_IMAGE_PYRAMID, CT_JP2MRSID, CT_MRSID,
+                            CT_NETCDF, CT_NITF, CT_RPFTOC, CT_RST, CT_WORLD_IMAGE)
+
     def __init__(self, gs_engine):
         """
         Constructor
         """
         self.gs_engine = gs_engine
-        self.xml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'xml_templates')
 
     def get_ows_endpoint(self, workspace, public_endpoint=True):
         """
@@ -289,6 +317,109 @@ class GeoServerAPI(object):
             log.error(exception)
             raise exception
 
+    def create_coverage_store(self, workspace, name, coverage_type, overwrite=False):
+        """
+        Create a new coverage store.
+
+        Args:
+            workspace (str): Workspace in which the store will be created. Note that the workspace must be an existing workspace. If no workspace is given, the default workspace will be assigned.
+            name (str): Name of the coverage store create.
+            coverage_type (str): Type of coverage store to create (e.g.: GeoServerAPI.CT_ARC_GRID, GeoServerAPI.CT_GEOTIFF, GeoServerAPI.CT_GRASS_GRID).
+            overwrite:
+        """  # noqa: E501
+        # Validate coverage type
+        if coverage_type not in self.VALID_COVERAGE_TYPES:
+            raise ValueError('"{0}" is not a valid coverage_type. Use either {1}'.format(
+                coverage_type, ', '.join(self.VALID_COVERAGE_TYPES)))
+
+        # Black magic for grass grid support
+        if coverage_type == self.CT_GRASS_GRID:
+            coverage_type = self.CT_GRASS_GRID
+
+        xml = """
+              <coverageStore>
+                  <name>{name}</name>
+                  <type>{type}</type>
+                  <enabled>true</enabled>
+                  <workspace>
+                      <name>{workspace}</name>
+                  </workspace>
+              </coverageStore>  
+              """.format(name=name, type=coverage_type, workspace=workspace)
+
+        # Prepare headers
+        headers = {
+            "Content-type": "text/xml",
+            "Accept": "application/xml"
+        }
+
+        # Prepare URL to create store
+        url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/coveragestores'
+
+        # Execute: POST /workspaces/<ws>/coveragestores
+        response = requests.post(
+            url=url,
+            data=xml,
+            headers=headers,
+            auth=(self.gs_engine.username, self.gs_engine.password)
+        )
+
+        # Return with error if this doesn't work
+        if response.status_code != 201:
+            msg = "Create Coverage Store Status Code {0}: {1}".format(response.status_code, response.text)
+            exception = requests.RequestException(msg, response=response)
+            log.error(exception)
+            raise exception
+
+    def update_layer_styles(self, workspace, layer_name, default_style, other_styles=None):
+        """
+        Update/add styles to existing layer.
+
+        Args:
+            layer_name (str): Name of the layer.
+            default_style (str): Name of default style.
+            other_styles (list<str>): Additional styles to add to layer.
+        """
+        context = {
+            'workspace': workspace,
+            'default_style': default_style,
+            'other_styles': other_styles or [],
+            'geoserver_rest_endpoint': self.gs_engine.endpoint
+        }
+
+        # Open layer template
+        layer_path = os.path.join(self.XML_PATH, 'layer_template.xml')
+        url = self.gs_engine.endpoint + 'layers/' + layer_name + '.xml'
+        headers = {
+            "Content-type": "text/xml"
+        }
+
+        with open(layer_path, 'r') as layer_file:
+            text = layer_file.read()
+            template = Template(text)
+            xml = template.render(context)
+
+        retries_remaining = 3
+        while retries_remaining > 0:
+            response = requests.put(
+                url,
+                headers=headers,
+                auth=(self.gs_engine.username, self.gs_engine.password),
+                data=xml,
+            )
+
+            # Raise an exception if status code is not what we expect
+            if response.status_code == 200:
+                log.info('Successfully created layer {}'.format(layer_name))
+                break
+            else:
+                retries_remaining -= 1
+                if retries_remaining == 0:
+                    msg = "Create Layer Status Code {0}: {1}".format(response.status_code, response.text)
+                    exception = requests.RequestException(msg, response=response)
+                    log.error(exception)
+                    raise exception
+
     def create_layer(self, workspace, datastore_name, feature_name, geometry_type, srid, sql, default_style,
                      geometry_name='geometry', other_styles=None, parameters=None):
         """
@@ -322,7 +453,7 @@ class GeoServerAPI(object):
         }
 
         # Open sql view template
-        sql_view_path = os.path.join(self.xml_path, 'sql_view_template.xml')
+        sql_view_path = os.path.join(self.XML_PATH, 'sql_view_template.xml')
         url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/datastores/' + datastore_name + '/featuretypes'
         headers = {
             "Content-type": "text/xml"
@@ -355,41 +486,16 @@ class GeoServerAPI(object):
                     log.error(exception)
                     raise exception
 
-        # Open layer template
-        layer_path = os.path.join(self.xml_path, 'layer_template.xml')
-        url = self.gs_engine.endpoint + 'layers/' + feature_name + '.xml'
-        headers = {
-            "Content-type": "text/xml"
-        }
-
-        with open(layer_path, 'r') as layer_file:
-            text = layer_file.read()
-            template = Template(text)
-            xml = template.render(context)
-
-        retries_remaining = 3
-        while retries_remaining > 0:
-            response = requests.put(
-                url,
-                headers=headers,
-                auth=(self.gs_engine.username, self.gs_engine.password),
-                data=xml,
-            )
-
-            # Raise an exception if status code is not what we expect
-            if response.status_code == 200:
-                log.info('Successfully created layer {}'.format(feature_name))
-                break
-            else:
-                retries_remaining -= 1
-                if retries_remaining == 0:
-                    msg = "Create Layer Status Code {0}: {1}".format(response.status_code, response.text)
-                    exception = requests.RequestException(msg, response=response)
-                    log.error(exception)
-                    raise exception
+        # Add styles to new layer
+        self.update_layer_styles(
+            workspace=workspace,
+            layer_name=feature_name,
+            default_style=default_style,
+            other_styles=other_styles
+        )
 
         # GeoWebCache Settings
-        gwc_layer_path = os.path.join(self.xml_path, 'gwc_layer_template.xml')
+        gwc_layer_path = os.path.join(self.XML_PATH, 'gwc_layer_template.xml')
         url = self.get_gwc_endpoint(public_endpoint=False) + 'layers/' + workspace + ':' + feature_name + '.xml'
         headers = {
             "Content-type": "text/xml"
@@ -420,6 +526,192 @@ class GeoServerAPI(object):
                     log.error(exception)
                     raise exception
 
+    def create_coverage_layer(self, workspace, coverage_name, coverage_type, coverage_file, srid, default_style,
+                              other_styles=None):
+        """
+        Create a coverage store, coverage resource, and layer in the given workspace.
+
+        Args:
+            workspace (str): Name of the workspace to which all of the styles and layers belong or will belong to.
+            coverage_name (str): Name of the coverage and coverage store that will be created.
+            coverage_type (str): Type of coverage store to create (e.g.: GeoServerAPI.CT_ARC_GRID, GeoServerAPI.CT_GEOTIFF, GeoServerAPI.CT_GRASS_GRID).
+            coverage_file (str): Path to coverage file or zip archive containing coverage file.
+            srid (int): EPSG spatial reference id. EPSG spatial reference ID.
+            default_style (str): The name of the default style (note: it is assumed this style belongs to the workspace).
+            other_styles (list): A list of other default style names (assumption: these styles belong to the workspace).
+        """
+        # Validate coverage type
+        if coverage_type not in self.VALID_COVERAGE_TYPES:
+            raise ValueError('"{0}" is not a valid coverage_type. Use either {1}'.format(
+                coverage_type, ', '.join(self.VALID_COVERAGE_TYPES)))
+
+        # Only one coverage per coverage store, so we name coverage store the same as the coverage
+        coverage_store_name = coverage_name
+
+        # Prepare files
+        working_dir = tempfile.mkdtemp()
+
+        # Unzip to working directory if zip file
+        if is_zipfile(coverage_file):
+            zip_file = ZipFile(coverage_file)
+            zip_file.extractall(working_dir)
+        # Otherwise, copy to working directory
+        else:
+            shutil.copy2(coverage_file, working_dir)
+
+        # Convert GrassGrids to ArcGrids
+        if coverage_type == self.CT_GRASS_GRID:
+            working_dir_contents = os.listdir(working_dir)
+            num_working_dir_items = len(working_dir_contents)
+            if num_working_dir_items > 2:
+                raise ValueError('Expected 1 or 2 files for coverage type "{}" but got {} instead: "{}"'.format(
+                    self.CT_GRASS_GRID,
+                    num_working_dir_items,
+                    '", "'.join(working_dir_contents)
+                ))
+
+            for item in working_dir_contents:
+                # Skip directories
+                if os.path.isdir(os.path.join(working_dir, item)):
+                    continue
+
+                # Skip the projection file
+                if 'prj' in item:
+                    continue
+
+                # Assume other file is the raster
+                north = 90.0
+                south = -90.0
+                east = -180.0
+                rows = 360
+                cols = 720
+                corrupt_file = False
+                tmp_coverage_path = os.path.join(working_dir, item)
+
+                with open(tmp_coverage_path, 'r') as item:
+                    contents = item.readlines()
+
+                for line in contents[0:6]:
+                    if 'north' in line:
+                        north = float(line.split(':')[1].strip())
+                    elif 'south' in line:
+                        south = float(line.split(':')[1].strip())
+                    elif 'east' in line:
+                        east = float(line.split(':')[1].strip())
+                    elif 'west' in line:
+                        pass
+                    elif 'rows' in line:
+                        rows = int(line.split(':')[1].strip())
+                    elif 'cols' in line:
+                        cols = int(line.split(':')[1].strip())
+                    else:
+                        corrupt_file = True
+
+                if corrupt_file:
+                    raise IOError('GRASS file could not be processed, check to ensure the GRASS grid is correctly '
+                                  'formatted or included.')
+
+                # Calcuate new header
+                xllcorner = east
+                yllcorner = south
+                cellsize = (north - south) / rows
+
+                header = ['ncols         {0}\n'.format(cols),
+                          'nrows         {0}\n'.format(rows),
+                          'xllcorner     {0}\n'.format(xllcorner),
+                          'yllcorner     {0}\n'.format(yllcorner),
+                          'cellsize      {0}\n'.format(cellsize)]
+
+                # Strip off old header and add new one
+                for _ in range(0, 6):
+                    contents.pop(0)
+                contents = header + contents
+
+                with open(tmp_coverage_path, 'w') as o:
+                    for line in contents:
+                        o.write(line)
+
+        # Prepare Files
+        coverage_archive_name = coverage_name + '.zip'
+        coverage_archive = os.path.join(working_dir, coverage_archive_name)
+        with ZipFile(coverage_archive, 'w') as zf:
+            for item in os.listdir(working_dir):
+                if item != coverage_archive_name:
+                    zf.write(os.path.join(working_dir, item), item)
+
+        files = {'file': open(coverage_archive, 'rb')}
+        content_type = 'application/zip'
+
+        # Prepare headers
+        headers = {
+            "Content-type": content_type,
+            "Accept": "application/xml"
+        }
+
+        # Prepare URL
+        extension = coverage_type.lower()
+
+        if coverage_type == self.CT_GRASS_GRID:
+            extension = self.CT_ARC_GRID.lower()
+
+        url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/coveragestores/' + \
+              coverage_store_name + '/file.' + extension
+
+        # Set params
+        params = {'coverageName': coverage_name}
+
+        retries_remaining = 3
+        zip_error_retries = 5
+        raise_error = False
+
+        while True:
+            response = requests.put(
+                url=url,
+                files=files,
+                headers=headers,
+                params=params,
+                auth=(self.gs_engine.username, self.gs_engine.password)
+            )
+
+            # Raise an exception if status code is not what we expect
+            if response.status_code == 201:
+                log.info('Successfully created coverage {}'.format(coverage_name))
+                break
+            if response.status_code == 500 and 'already exists' in response.text:
+                break
+            if response.status_code == 500 and 'Error occured unzipping file' in response.text:
+                zip_error_retries -= 1
+                if zip_error_retries == 0:
+                    import pdb
+                    pdb.set_trace()
+                    raise_error = True
+            else:
+                retries_remaining -= 1
+                if retries_remaining == 0:
+                    raise_error = True
+
+            if raise_error:
+                msg = "Create Coverage Status Code {0}: {1}".format(response.status_code, response.text)
+                exception = requests.RequestException(msg, response=response)
+                log.error(exception)
+                raise exception
+
+        # Clean up
+        files['file'].close()
+
+        if working_dir:
+            for item in os.listdir(working_dir):
+                os.remove(os.path.join(working_dir, item))
+            os.rmdir(working_dir)
+
+        # Add styles to new layer
+        self.update_layer_styles(
+            workspace=workspace,
+            layer_name=coverage_name,
+            default_style=default_style,
+            other_styles=other_styles
+        )
+
     def create_layer_group(self, workspace, group_name, layer_names, default_styles):
         context = {
             'name': group_name,
@@ -428,7 +720,7 @@ class GeoServerAPI(object):
         }
 
         # Open layer group template
-        template_path = os.path.join(self.xml_path, 'layer_group_template.xml')
+        template_path = os.path.join(self.XML_PATH, 'layer_group_template.xml')
         url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/layergroups.json'
         headers = {
             "Content-type": "text/xml"
@@ -508,6 +800,49 @@ class GeoServerAPI(object):
                 exception = requests.RequestException(msg, response=response)
                 log.error(msg)
                 raise exception
+
+    def delete_coverage_store(self, workspace, name, recurse=True, purge=True):
+        """
+        Delete the specified coverage store.
+        Args:
+            workspace:
+            name:
+            recurse:
+            purge:
+
+        Returns:
+
+        """
+        # Prepare headers
+        headers = {
+            "Content-type": "application/json"
+        }
+
+        # Prepare URL to create store
+        url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/coveragestores/' + name
+
+        json = {'recurse': recurse,
+                'purge': purge}
+
+        # Execute: POST /workspaces/<ws>/coveragestores/<cs>
+        response = requests.delete(
+            url=url,
+            headers=headers,
+            params=json,
+            auth=(self.gs_engine.username, self.gs_engine.password)
+        )
+
+        if response.status_code != 200:
+            if response.status_code in self.WARNING_STATUS_CODES:
+                msg = "Delete Coverage Store Status Code {0}: {1}".format(response.status_code, response.text)
+                exception = requests.RequestException(msg, response=response)
+                log.warning(exception)
+            else:
+                msg = "Delete Coverage Store Status Code {0}: {1}".format(response.status_code, response.text)
+                exception = requests.RequestException(msg, response=response)
+                log.error(exception)
+                raise exception
+
 
     def delete_layer(self, workspace, datastore, name, recurse=False):
         """
@@ -646,7 +981,7 @@ class GeoServerAPI(object):
 
         else:
             url = self.get_gwc_endpoint() + 'seed/' + workspace + ':' + name + '.xml'
-            xml = os.path.join(self.xml_path, 'gwc_tile_cache_operation_template.xml')
+            xml = os.path.join(self.XML_PATH, 'gwc_tile_cache_operation_template.xml')
 
             # Open XML file
             with open(xml, 'r') as sld_file:

@@ -65,6 +65,9 @@ class SpatialManager(object):
     U_METRIC = 'metric'
     U_IMPERIAL = 'imperial'
 
+    PRO_WKT = 'srtext'
+    PRO_PROJ4 = 'proj4text'
+
     def __init__(self, geoserver_engine):
         """
         Constructor
@@ -75,7 +78,8 @@ class SpatialManager(object):
         """
         self.gs_engine = geoserver_engine
         self.gs_api = GeoServerAPI(geoserver_engine)
-        self._projection_units = None
+        self._projection_units = {}
+        self._projection_string = {}
 
     def get_ows_endpoint(self, public_endpoint=True):
         """
@@ -106,18 +110,21 @@ class SpatialManager(object):
         Returns:
             str: SpatialManager.U_METRIC or SpatialManager.U_IMPERIAL
         """
-        if self._projection_units is None:
+        if srid not in self._projection_units:
             db_engine = model_db.get_engine()
-            sql = "SELECT srid, proj4text FROM spatial_ref_sys WHERE srid = {}".format(srid)
-            ret = db_engine.execute(sql)
+            try:
+                sql = "SELECT srid, proj4text FROM spatial_ref_sys WHERE srid = {}".format(srid)
+                ret = db_engine.execute(sql)
 
-            # Parse proj4text to get units
-            # e.g.: +proj=utm +zone=21 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
-            proj4text = ''
-            units = ''
+                # Parse proj4text to get units
+                # e.g.: +proj=utm +zone=21 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
+                proj4text = ''
+                units = ''
 
-            for row in ret:
-                proj4text = row.proj4text
+                for row in ret:
+                    proj4text = row.proj4text
+            finally:
+                db_engine.dispose()
 
             proj4parts = proj4text.split('+')
 
@@ -130,13 +137,49 @@ class SpatialManager(object):
                 raise UnitsNotFound('Unable to determine units of project with srid: {}'.format(srid))
 
             if 'ft' in units:
-                self._projection_units = self.U_IMPERIAL
+                self._projection_units[srid] = self.U_IMPERIAL
             elif 'm' in units:
-                self._projection_units = self.U_METRIC
+                self._projection_units[srid] = self.U_METRIC
             else:
                 raise UnknownUnits('"{}" is an unrecognized form of units. From srid: {}'.format(units, srid))
 
-        return self._projection_units
+        return self._projection_units[srid]
+
+    def get_projection_string(self, model_db, srid, format=PRO_WKT):
+        """
+        Get the projection string as either wkt or proj4 format.
+
+        Args:
+            model_db(ModelDatabase): the object representing the model database.:
+            srid(int): EPSG spatial reference identifier.
+            format(str): project string format (either SpatialManager.PRO_WKT or SpatialManager.PRO_PROJ4).
+
+        Returns:
+            str: projection string.
+        """
+        if format not in (self.PRO_WKT, self.PRO_PROJ4):
+            raise ValueError('Invalid projection format given: {}. Use either SpatialManager.PRO_WKT or '
+                             'SpatialManager.PRO_PROJ4.'.format(format))
+
+        if srid not in self._projection_string:
+            db_engine = model_db.get_engine()
+            try:
+                if format is self.PRO_WKT:
+                    sql = "SELECT srtext AS proj_string FROM spatial_ref_sys WHERE srid = {}".format(srid)
+                else:
+                    sql = "SELECT proj4text AS proj_string FROM spatial_ref_sys WHERE srid = {}".format(srid)
+
+                ret = db_engine.execute(sql)
+                projection_string = ''
+
+                for row in ret:
+                    projection_string = row.proj_string
+            finally:
+                db_engine.dispose()
+
+            self._projection_string[srid] = projection_string
+
+        return self._projection_string[srid]
 
     def link_geoserver_to_db(self, model_db, reload_config=True):
         """
