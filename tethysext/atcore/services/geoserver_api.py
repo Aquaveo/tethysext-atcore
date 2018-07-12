@@ -70,7 +70,7 @@ class GeoServerAPI(object):
     CT_WORLD_IMAGE = 'WorldImage'
 
     VALID_COVERAGE_TYPES = (CT_AIG, CT_ARC_GRID, CT_DTED, CT_ECW, CT_EHDR, CT_ENVIHDR, CT_ERDASIMG, CT_GEOTIFF,
-                            CT_GRASS_GRID , CT_GTOPO30, CT_IMAGE_MOSAIC, CT_IMAGE_PYRAMID, CT_JP2MRSID, CT_MRSID,
+                            CT_GRASS_GRID, CT_GTOPO30, CT_IMAGE_MOSAIC, CT_IMAGE_PYRAMID, CT_JP2MRSID, CT_MRSID,
                             CT_NETCDF, CT_NITF, CT_RPFTOC, CT_RST, CT_WORLD_IMAGE)
 
     def __init__(self, gs_engine):
@@ -344,7 +344,7 @@ class GeoServerAPI(object):
                   <workspace>
                       <name>{workspace}</name>
                   </workspace>
-              </coverageStore>  
+              </coverageStore>
               """.format(name=name, type=coverage_type, workspace=workspace)
 
         # Prepare headers
@@ -539,7 +539,7 @@ class GeoServerAPI(object):
             srid (int): EPSG spatial reference id. EPSG spatial reference ID.
             default_style (str): The name of the default style (note: it is assumed this style belongs to the workspace).
             other_styles (list): A list of other default style names (assumption: these styles belong to the workspace).
-        """
+        """  # noqa: E501
         # Validate coverage type
         if coverage_type not in self.VALID_COVERAGE_TYPES:
             raise ValueError('"{0}" is not a valid coverage_type. Use either {1}'.format(
@@ -655,7 +655,7 @@ class GeoServerAPI(object):
             extension = self.CT_ARC_GRID.lower()
 
         url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/coveragestores/' + \
-              coverage_store_name + '/file.' + extension
+            coverage_store_name + '/file.' + extension
 
         # Set params
         params = {'coverageName': coverage_name}
@@ -842,7 +842,6 @@ class GeoServerAPI(object):
                 exception = requests.RequestException(msg, response=response)
                 log.error(exception)
                 raise exception
-
 
     def delete_layer(self, workspace, datastore, name, recurse=False):
         """

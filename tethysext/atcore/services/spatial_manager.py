@@ -161,7 +161,7 @@ class SpatialManager(object):
             raise ValueError('Invalid projection format given: {}. Use either SpatialManager.PRO_WKT or '
                              'SpatialManager.PRO_PROJ4.'.format(format))
 
-        if srid not in self._projection_string:
+        if srid not in self._projection_string or format not in self._projection_string[srid]:
             db_engine = model_db.get_engine()
             try:
                 if format is self.PRO_WKT:
@@ -177,9 +177,12 @@ class SpatialManager(object):
             finally:
                 db_engine.dispose()
 
-            self._projection_string[srid] = projection_string
+            if srid not in self._projection_string:
+                self._projection_string[srid] = {}
 
-        return self._projection_string[srid]
+            self._projection_string[srid].update({format: projection_string})
+
+        return self._projection_string[srid][format]
 
     def link_geoserver_to_db(self, model_db, reload_config=True):
         """

@@ -86,6 +86,89 @@ class SpatialManagerTests(unittest.TestCase):
         self.assertRaises(UnknownUnits, spatial_manager.get_projection_units, mock_model_db, srid)
 
     @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_string(self, _):
+        srid = 2232
+        mock_project_string = 'FAKE PROJECTION STRING'
+        mock_row = mock.MagicMock(proj_string=mock_project_string)
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_string(mock_model_db, srid)
+        spatial_manager.get_projection_string(mock_model_db, srid)
+        execute_calls = mock_engine.execute.call_args_list
+        self.assertEqual(mock_project_string, ret)
+        self.assertEqual(1, len(execute_calls))
+        self.assertIn('srtext', execute_calls[0][0][0])
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_string_wkt(self, _):
+        srid = 2232
+        mock_project_string = 'FAKE PROJECTION STRING'
+        mock_row = mock.MagicMock(proj_string=mock_project_string)
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_WKT)
+        spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_WKT)
+        execute_calls = mock_engine.execute.call_args_list
+        self.assertEqual(mock_project_string, ret)
+        self.assertEqual(1, len(execute_calls))
+        self.assertIn('srtext', execute_calls[0][0][0])
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_string_proj4(self, _):
+        srid = 2232
+        mock_project_string = 'FAKE PROJECTION STRING'
+        mock_row = mock.MagicMock(proj_string=mock_project_string)
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_PROJ4)
+        spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_PROJ4)
+        execute_calls = mock_engine.execute.call_args_list
+        self.assertEqual(mock_project_string, ret)
+        self.assertEqual(1, len(execute_calls))
+        self.assertIn('proj4text', execute_calls[0][0][0])
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_string_invalid(self, _):
+        srid = 2232
+        mock_project_string = 'FAKE PROJECTION STRING'
+        mock_row = mock.MagicMock(proj_string=mock_project_string)
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        self.assertRaises(ValueError, spatial_manager.get_projection_string, mock_model_db, srid, 'BAD FORMAT')
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
+    def test_get_projection_string_same_srid_different_format(self, _):
+        srid = 2232
+        mock_project_string = 'FAKE PROJECTION STRING'
+        mock_row = mock.MagicMock(proj_string=mock_project_string)
+        mock_engine = mock.MagicMock()
+        mock_engine.execute.return_value = [mock_row]
+        mock_model_db = mock.MagicMock()
+        mock_model_db.get_engine.return_value = mock_engine
+        spatial_manager = SpatialManager(self.geoserver_engine)
+        ret = spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_WKT)
+        spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_PROJ4)
+        spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_PROJ4)
+        spatial_manager.get_projection_string(mock_model_db, srid, SpatialManager.PRO_WKT)
+        execute_calls = mock_engine.execute.call_args_list
+        self.assertEqual(mock_project_string, ret)
+        self.assertEqual(2, len(execute_calls))
+        self.assertIn('srtext', execute_calls[0][0][0])
+        self.assertIn('proj4text', execute_calls[1][0][0])
+
+    @mock.patch('tethysext.atcore.services.spatial_manager.GeoServerAPI')
     def test_reload_config_decorator(self, _):
         foo = Foo(self.geoserver_engine)
         ret = foo.test_decorator()
