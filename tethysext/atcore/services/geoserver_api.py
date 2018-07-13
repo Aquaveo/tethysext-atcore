@@ -599,9 +599,9 @@ class GeoServerAPI(object):
                     elif 'south' in line:
                         south = float(line.split(':')[1].strip())
                     elif 'east' in line:
-                        east = float(line.split(':')[1].strip())
+                        pass  # we don't use east in this algorithm so skip it.
                     elif 'west' in line:
-                        pass
+                        west = float(line.split(':')[1].strip())
                     elif 'rows' in line:
                         rows = int(line.split(':')[1].strip())
                     elif 'cols' in line:
@@ -616,7 +616,7 @@ class GeoServerAPI(object):
                     raise exception
 
                 # Calcuate new header
-                xllcorner = east
+                xllcorner = west
                 yllcorner = south
                 cellsize = (north - south) / rows
 
