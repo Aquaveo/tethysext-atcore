@@ -582,11 +582,6 @@ class GeoServerAPI(object):
                     continue
 
                 # Assume other file is the raster
-                north = 90.0
-                south = -90.0
-                east = -180.0
-                rows = 360
-                cols = 720
                 corrupt_file = False
                 tmp_coverage_path = os.path.join(working_dir, item)
 
@@ -615,7 +610,7 @@ class GeoServerAPI(object):
                     log.error(exception)
                     raise exception
 
-                # Calcuate new header
+                # Calculate new header
                 xllcorner = west
                 yllcorner = south
                 cellsize = (north - south) / rows
