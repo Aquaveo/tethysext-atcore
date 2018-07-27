@@ -17,6 +17,7 @@ class StatusMixin(object):
     STATUS_DIRTY = 'Dirty'
     STATUS_SUCCESS = 'Success'
     STATUS_COMPLETE = 'Complete'
+    STATUS_PROCESSING = 'Processing'
 
     # Default status dict
     status_template = dict()
@@ -29,7 +30,7 @@ class StatusMixin(object):
         return [cls.STATUS_AVAILABLE, cls.STATUS_PENDING, cls.STATUS_DELETING,
                 cls.STATUS_EMPTY, cls.STATUS_ERROR, cls.STATUS_FAILED,
                 cls.STATUS_RESET, cls.STATUS_NONE, cls.STATUS_SUCCESS,
-                cls.STATUS_COMPLETE]
+                cls.STATUS_COMPLETE, cls.STATUS_PROCESSING]
 
     def get_status(self, key, default=None):
         """
