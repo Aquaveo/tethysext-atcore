@@ -14,3 +14,4 @@ from services.geoserver_api import GeoServerAPITests  # noqa: F401
 from services.spatial_manager import SpatialManagerTests  # noqa: F401
 from gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
 from gizmos.slide_sheet import SlideSheetTests  # noqa: F401
+from utilities import UtilitiesTests  # noqa: F401
