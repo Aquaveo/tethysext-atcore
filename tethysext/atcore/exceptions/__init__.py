@@ -10,3 +10,11 @@
 
 class ATCoreException(Exception):
     pass
+
+
+class ModelDatabaseError(ATCoreException):
+    pass
+
+
+class ModelDatabaseInitializationError(ModelDatabaseError):
+    pass
