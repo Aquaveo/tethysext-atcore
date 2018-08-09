@@ -44,23 +44,56 @@ class ResourceDetails(TethysController, AppUsersControllerMixin):
         """
         Handle get requests.
         """
+        back_controller = self._get_back_controller(request)
+        resource = self._get_resource(request, resource_id, back_controller)
 
+        context = {
+            'resource': resource,
+            'back': back_controller
+        }
+
+        context = self.get_context(context)
+
+        return render(request, self.template_name, context)
+
+    def _get_back_controller(self, request):
+        """
+        Derive the back controller.
+
+        Args:
+            request: Django HttpRequest.
+
+        Returns:
+            str: name of the controller to return to when hitting back or on error.
+        """
+        # Process next
+        back_arg = request.GET.get('back', "")
+        active_app = get_active_app(request)
+        app_namespace = active_app.namespace
+        if back_arg == 'manage-organizations':
+            back_controller = '{}:app_users_manage_organizations'.format(app_namespace)
+        else:
+            back_controller = '{}:app_users_manage_resources'.format(app_namespace)
+        return back_controller
+
+    def _get_resource(self, request, resource_id, back_controller):
+        """
+        Get the resource an check permissions.
+
+        Args:
+            request: Django HttpRequest.
+            resource_id: ID of the resource.
+
+        Returns:
+            Resource: the resource.
+        """
         # Setup
         _AppUser = self.get_app_user_model()
         _Resource = self.get_resource_model()
         make_session = self.get_sessionmaker()
         session = make_session()
         request_app_user = _AppUser.get_app_user_from_request(request, session)
-
-        # Process next
-        back_arg = request.GET.get('back', "")
-        active_app = get_active_app(request)
-        app_namespace = active_app.namespace
-
-        if back_arg == 'manage-organizations':
-            back_controller = '{}:app_users_manage_organizations'.format(app_namespace)
-        else:
-            back_controller = '{}:app_users_manage_resources'.format(app_namespace)
+        resource = None
 
         try:
             resource = session.query(_Resource). \
@@ -84,14 +117,7 @@ class ResourceDetails(TethysController, AppUsersControllerMixin):
         finally:
             session.close()
 
-        context = {
-            'resource': resource,
-            'back': back_controller
-        }
-
-        context = self.get_context(context)
-
-        return render(request, self.template_name, context)
+        return resource
 
     def get_context(self, context):
         """
