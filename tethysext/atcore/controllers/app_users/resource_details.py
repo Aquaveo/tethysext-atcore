@@ -52,7 +52,7 @@ class ResourceDetails(TethysController, AppUsersControllerMixin):
             'back': back_controller
         }
 
-        context = self.get_context(context)
+        context = self.get_context(request, context)
 
         return render(request, self.template_name, context)
 
@@ -119,11 +119,12 @@ class ResourceDetails(TethysController, AppUsersControllerMixin):
 
         return resource
 
-    def get_context(self, context):
+    def get_context(self, request, context):
         """
         Hook for modifying context.
 
         Args:
+            request(HttpRequest): Django HttpRequest.
             context(dict): context object.
 
         Returns:

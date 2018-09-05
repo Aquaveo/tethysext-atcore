@@ -12,6 +12,7 @@ from services.model_database_connection import ModelDatabaseConnectionTests  # n
 from services.model_database import ModelDatabaseTests  # noqa: F401
 from services.geoserver_api import GeoServerAPITests  # noqa: F401
 from services.spatial_manager import SpatialManagerTests  # noqa: F401
+from services.map_manager import MapManagerBaseTests  # noqa: F401
 from gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
 from gizmos.slide_sheet import SlideSheetTests  # noqa: F401
 from utilities import UtilitiesTests  # noqa: F401

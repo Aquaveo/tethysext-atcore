@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+from abc import ABCMeta, abstractmethod
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.geoserver_api import GeoServerAPI
 
@@ -47,6 +48,8 @@ class SpatialManager(object):
     """
     Base class for SpatialManagers.
     """
+    __metaclass__ = ABCMeta
+
     SQL_PATH = ''
     SLD_PATH = ''
     WORKSPACE = 'my-app'
@@ -80,6 +83,16 @@ class SpatialManager(object):
         self.gs_api = GeoServerAPI(geoserver_engine)
         self._projection_units = {}
         self._projection_string = {}
+
+    @abstractmethod
+    def get_extent_for_project(self, model_db):
+        """
+        Return the extent / bounding box for a project/model.
+        Args:
+            model_db (ModelDatabase): the object representing the model database.
+        Returns:
+            4-list: Extent bounding box (e.g.: [minx, miny, maxx, maxy] ).
+        """
 
     def get_ows_endpoint(self, public_endpoint=True):
         """
