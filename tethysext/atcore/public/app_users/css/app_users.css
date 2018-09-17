@@ -33,9 +33,25 @@ td, th {
     min-width: 60px;
 }
 
-.btn-launch {
-    background-color: #42a7f4;
+.btn-action {
     min-width: 80px;
+    color: white;
+}
+
+.btn-resource-launch {
+    background-color: #42a7f4;
+}
+
+.btn-resource-processing {
+    background-color: #f0ad4e;
+}
+
+.btn-resource-error {
+    background-color: #d9534f;
+}
+
+.btn-resource-error:hover {
+    background-color: #c54846;
 }
 
 .btn:hover {

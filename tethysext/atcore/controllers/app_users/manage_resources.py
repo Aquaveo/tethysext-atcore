@@ -8,7 +8,7 @@
 """
 # Django
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, reverse
 
 # Tethys core
 from tethys_sdk.base import TethysController
@@ -28,8 +28,12 @@ class ManageResources(TethysController, AppUsersControllerMixin):
     """
     template_name = 'atcore/app_users/manage_resources.html'
     base_template = 'atcore/app_users/base.html'
-    launch_verb = 'Launch'
+    default_action_title = 'Launch'
     http_method_names = ['get', 'delete']
+
+    ACTION_LAUNCH = 'launch'
+    ACTION_PROCESSING = 'processing'
+    ACTION_ERROR = 'error'
 
     def get(self, request, *args, **kwargs):
         """
@@ -125,7 +129,6 @@ class ManageResources(TethysController, AppUsersControllerMixin):
         all_resources = self.get_resources(session, request, request_app_user)
 
         # Build cards
-
         resource_cards = []
         for resource in all_resources:
             resource_card = resource.__dict__
@@ -134,6 +137,19 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             resource_card['organizations'] = resource.organizations
             resource_card['debugging'] = resource.attributes
             resource_card['debugging']['id'] = str(resource.id)
+
+            # Get resource action parameters
+            action_dict = self.get_resource_action(
+                session=session,
+                request=request,
+                request_app_user=request_app_user,
+                resource=resource
+            )
+
+            resource_card['action'] = action_dict['action']
+            resource_card['action_title'] = action_dict['title']
+            resource_card['action_href'] = action_dict['href']
+
             resource_cards.append(resource_card)
 
         # Only attempt to sort if the sort field is a valid attribute of _Resource
@@ -160,7 +176,6 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
             'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
-            'launch_verb': self.launch_verb,
             'base_template': self.base_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
@@ -199,6 +214,41 @@ class ManageResources(TethysController, AppUsersControllerMixin):
 
         session.close()
         return JsonResponse(json_response)
+
+    def get_resource_action(self, session, request, request_app_user, resource):
+        """
+        Get the parameters that define the action button (i.e.: Launch button).
+
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            request_app_user(AppUser): app user that is making the request.
+
+        Returns:
+            dict<action, title, href>: action attributes.
+        """
+        status = resource.get_status(resource.ROOT_STATUS_KEY, resource.STATUS_EMPTY)
+
+        if status in resource.ERROR_STATUSES:
+            return {
+                'action': self.ACTION_ERROR,
+                'title': 'Error',
+                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+            }
+
+        elif status in resource.WORKING_STATUSES:
+            return {
+                'action': self.ACTION_PROCESSING,
+                'title': 'Processing',
+                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+            }
+
+        else:
+            return {
+                'action': self.ACTION_LAUNCH,
+                'title': self.default_action_title,
+                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace),  args=[resource.id])
+            }
 
     def get_resources(self, session, request, request_app_user):
         """

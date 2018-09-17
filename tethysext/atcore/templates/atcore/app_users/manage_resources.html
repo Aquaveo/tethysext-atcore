@@ -128,7 +128,13 @@
                     {% if resource.deletable %}
                       <a class="btn btn-default btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
                     {% endif %}
-                    <a class="btn btn-s btn-primary btn-flat btn-launch" href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}" data-toggle="tooltip" data-placement="top" title="{{ launch_verb }}"><span class="glyphicon glyphicon-chevron-right"></span></a>
+                    {% if resource.action == 'processing' %}
+                      <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-refresh"></span></a>
+                    {% elif resource.action == 'error' %}
+                      <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-remove"></span></a>
+                    {% else %}
+                      <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-chevron-right"></span></a>
+                    {% endif %}
                   </div>
                 </td>
               </tr>
