@@ -8,3 +8,4 @@ from manage_organization_members import ManageOrganizationMembers  # noqa: F401
 from manage_resources import ManageResources  # noqa: F401
 from modify_resource import ModifyResource  # noqa: F401
 from resource_details import ResourceDetails  # noqa: F401
+from resource_status import ResourceStatus  # noqa: F401

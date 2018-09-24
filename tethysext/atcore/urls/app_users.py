@@ -2,7 +2,8 @@ import inspect
 from django.utils.text import slugify
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
-    ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources, ModifyResource, ResourceDetails
+    ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources, ModifyResource, ResourceDetails, \
+    ResourceStatus
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 
 
@@ -39,6 +40,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         app_users_new_resource
         app_users_edit_resource <resource_id>
         app_users_resource_details <resource_id>
+        app_users_resource_status ?[r=<resource_id>]
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
@@ -61,6 +63,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     _ManageResources = ManageResources
     _ModifyResource = ModifyResource
     _ResourceDetails = ResourceDetails
+    _ResourceStatus = ResourceStatus
 
     # Default model classes
     _AppUser = AppUser
@@ -91,6 +94,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             _ModifyResource = custom_controller
         elif issubclass(custom_controller, ResourceDetails):
             _ResourceDetails = custom_controller
+        elif issubclass(custom_controller, ResourceStatus):
+            _ResourceStatus = custom_controller
 
     for custom_model in custom_models:
         if inspect.isclass(custom_model) and issubclass(custom_model, AppUser):
@@ -116,6 +121,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     new_resource_url =                  slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/new'  # noqa: E222
     edit_resource_url =                 slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/edit'  # noqa: E222, E501
     resource_details_url =              slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/details'  # noqa: E222, E501
+    resource_status_url =               slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/status'  # noqa: E222
 
     url_maps = (
         url_map_maker(
@@ -258,6 +264,18 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             name='app_users_resource_details',
             url='/'.join([base_url_path, resource_details_url]) if base_url_path else resource_details_url,
             controller=_ResourceDetails.as_controller(
+                _app=app,
+                _persistent_store_name=persistent_store_name,
+                _AppUser=_AppUser,
+                _Organization=_Organization,
+                _Resource=_Resource,
+                base_template=base_template
+            )
+        ),
+        url_map_maker(
+            name='app_users_resource_status',
+            url='/'.join([base_url_path, resource_status_url]) if base_url_path else resource_status_url,
+            controller=_ResourceStatus.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,

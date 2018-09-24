@@ -1,4 +1,7 @@
 from controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
+from controllers.app_users.mixins import AppUsersControllerMixinTests  # noqa: F401
+from controllers.app_users.mixins import AppUsersResourceControllerMixinTests  # noqa: F401
+from controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from models.app_user_tests import AppUserTests  # noqa: F401
 from models.organization_tests import OrganizationTests  # noqa: F401
 from models.initializer import AppUserInitializerTests  # noqa: F401

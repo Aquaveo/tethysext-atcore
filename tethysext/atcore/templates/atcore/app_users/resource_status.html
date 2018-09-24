@@ -1,0 +1,22 @@
+{% extends base_template %}
+
+{% load static tethys_gizmos %}
+
+{% block app_navigation_items %}
+<li class="title">App Navigation</li>
+<li><a href="{{ back_url }}">Back</a></li>
+{% endblock %}
+
+{% block app_content %}
+<h1>Processing Status</h1>
+<div id="jobs-table" class="table-responsive">
+    {% gizmo jobs_table jobs_table %}
+</div>
+{% endblock %}
+
+{% block app_actions %}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+{% endblock %}

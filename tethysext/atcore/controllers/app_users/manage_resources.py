@@ -237,10 +237,11 @@ class ManageResources(TethysController, AppUsersControllerMixin):
             }
 
         elif status in resource.WORKING_STATUSES:
+            processing_url = reverse('{}:app_users_resource_status'.format(self._app.namespace))
             return {
                 'action': self.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+                'href': processing_url + '?r={}'.format(resource.id)
             }
 
         else:

@@ -2,7 +2,8 @@ from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.models.app_users import AppUser, Resource, Organization
 from tethysext.atcore.urls import app_users
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, UserAccount, \
-    ModifyOrganization, ManageOrganizationMembers, ManageOrganizations, ManageResources, ModifyResource, ResourceDetails
+    ModifyOrganization, ManageOrganizationMembers, ManageOrganizations, ManageResources, ModifyResource, \
+    ResourceDetails, ResourceStatus
 from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
 
 
@@ -54,6 +55,10 @@ class CustomResourceDetails(ResourceDetails):
     pass
 
 
+class CustomResourceStatus(ResourceStatus):
+    pass
+
+
 class CustomUserAccount(UserAccount):
     pass
 
@@ -71,14 +76,15 @@ class AppUserUrlsTests(TethysTestCase):
                       'app_users_manage_organization_members', 'app_users_new_organization',
                       'app_users_edit_organization', 'app_users_user_account',
                       'app_users_manage_resources', 'app_users_new_resource', 'app_users_edit_resource',
-                      'app_users_resource_details']
+                      'app_users_resource_details', 'app_users_resource_status']
         self.urls = ['users', 'users/new', 'users/{user_id}/edit', 'users/add-existing', 'organizations',
                      'organizations/{organization_id}/members', 'organizations/new',
                      'organizations/{organization_id}/edit', 'users/me',
                      Resource.DISPLAY_TYPE_PLURAL.lower(), Resource.DISPLAY_TYPE_PLURAL.lower() + '/new',
                      Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/edit',
-                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/details']
-        self.num_urls = 13
+                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/details',
+                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/status']
+        self.num_urls = 14
 
     def tearDown(self):
         pass
@@ -185,6 +191,11 @@ class AppUserUrlsTests(TethysTestCase):
         url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceDetails])
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(url_maps, ['app_users_resource_details'], ResourceDetails, CustomResourceDetails)
+
+    def test_custom_resource_status_controller(self):
+        url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceStatus])
+        self.assertEqual(len(url_maps), self.num_urls)
+        self.controller_asserts(url_maps, ['app_users_resource_status'], ResourceStatus, CustomResourceStatus)
 
     def test_invalid_controller_arg_class(self):
         mockapp = object()
