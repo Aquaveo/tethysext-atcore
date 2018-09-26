@@ -26,7 +26,7 @@ class ResourceDetails(TethysController, AppUsersResourceControllerMixin):
     """
     template_name = 'atcore/app_users/resource_details.html'
     base_template = 'atcore/app_users/base.html'
-    http_method_names = ['get', 'delete']
+    http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
         """

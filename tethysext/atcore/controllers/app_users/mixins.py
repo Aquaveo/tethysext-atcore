@@ -47,7 +47,7 @@ class AppUsersControllerMixin:
 
 class AppUsersResourceControllerMixin(AppUsersControllerMixin):
 
-    def _get_resource(self, request, resource_id, back_controller):
+    def _get_resource(self, request, resource_id, back_controller, session=None):
         """
         Get the resource an check permissions.
 
@@ -61,8 +61,13 @@ class AppUsersResourceControllerMixin(AppUsersControllerMixin):
         # Setup
         _AppUser = self.get_app_user_model()
         _Resource = self.get_resource_model()
-        make_session = self.get_sessionmaker()
-        session = make_session()
+        manage_session = False
+
+        if not session:
+            manage_session = True
+            make_session = self.get_sessionmaker()
+            session = make_session()
+
         request_app_user = _AppUser.get_app_user_from_request(request, session)
         resource = None
 
@@ -88,6 +93,7 @@ class AppUsersResourceControllerMixin(AppUsersControllerMixin):
             return redirect(reverse(back_controller))
 
         finally:
-            session.close()
+            if manage_session:
+                session.close()
 
         return resource
