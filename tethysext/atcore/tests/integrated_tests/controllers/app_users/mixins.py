@@ -116,6 +116,26 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         self.assertEqual(mock_resource, ret)
         mock_session.close.assert_called()
 
+    def test_get_resource_has_permission_with_session(self):
+        self.farc.get_app_user_model = mock.MagicMock()
+        self.farc.get_resource_model = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_back_controller = 'myapp:mycontroller'
+        mock_session = mock.MagicMock()
+        mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
+        mock_requests_app_user.can_view.return_value = True
+        mock_resource = mock_session.query().filter().one()
+
+        ret = self.farc._get_resource(request=mock_request,
+                                      resource_id=mock_resource_id,
+                                      back_controller=mock_back_controller,
+                                      session=mock_session)
+
+        self.assertEqual(mock_resource, ret)
+        mock_session.close.assert_not_called()
+
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.messages')
