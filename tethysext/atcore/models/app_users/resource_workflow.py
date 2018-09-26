@@ -24,6 +24,8 @@ class ResourceWorkflow(AppUsersBase, StatusMixin, AttributesMixin):
     """
     __tablename__ = 'app_users_resource_workflows'
 
+    TYPE = 'generic_workflow'
+
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     resource_id = Column(GUID, ForeignKey('app_users_resources.id'))
     creator_id = Column(GUID, ForeignKey('app_users_app_users.id'))
@@ -39,5 +41,5 @@ class ResourceWorkflow(AppUsersBase, StatusMixin, AttributesMixin):
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
-        'polymorphic_identity': 'generic_workflow'
+        'polymorphic_identity': TYPE
     }
