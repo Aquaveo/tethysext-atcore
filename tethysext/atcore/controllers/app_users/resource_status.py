@@ -29,6 +29,7 @@ class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
     template_name = 'atcore/app_users/resource_status.html'
     base_template = 'atcore/app_users/base.html'
     http_method_names = ['get']
+    show_detailed_status = True
 
     def get(self, request, *args, **kwargs):
         """
@@ -84,6 +85,7 @@ class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
             striped=False,
             bordered=False,
             condensed=False,
+            show_detailed_status=self.show_detailed_status
         )
 
         context = {
