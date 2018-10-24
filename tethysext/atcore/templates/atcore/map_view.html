@@ -1,0 +1,228 @@
+{% extends "atcore/base.html" %}
+{% load tethys_gizmos staticfiles %}
+
+{% block import_gizmos %}
+  {% import_gizmo_dependency select_input %}
+{% endblock %}
+
+{% block app_navigation_items %}
+  {# MAP HEADER #}
+  <div id="map-header">
+    {# BACK BUTTON #}
+    <div id="back-button">
+      <a href="{{ back_url }}" title="Back">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+    </div>
+
+    {# TITLE #}
+    <div id="map-title">
+      <p class="title">{{ map_title }}</p>
+      {% if map_subtitle %}
+      <p class="subtitle">{{ map_subtitle }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# TABS #}
+  <div class="map-tabs">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      {# LAYERS TAB #}
+      <li role="presentation" class="active">
+        <a id="layers-tab-toggle"
+           href="#layers-tab-panel"
+           aria-controls="layers-tab-panel"
+           role="tab"
+           data-toggle="tab">Layers</a>
+      </li>
+      {# LEGEND TAB #}
+      <li role="presentation">
+        <a id="legend-tab-toggle"
+           href="#legend-tab-panel"
+           aria-controls="legend-tab-panel"
+           role="tab"
+           data-toggle="tab">Legend</a>
+      </li>
+    </ul>
+
+    {# TAB CONTENT #}
+    <div class="tab-content">
+
+      {# LAYERS TAB PANEL #}
+      <div role="tabpanel" class="tab-pane active" id="layers-tab-panel">
+        {% for layer_group in layer_groups %}
+        <li class="layer-group-item">
+
+          {# LAYER GROUP VISIBILITY CONTROL #}
+          <label class="flatmark"><span class="display-name">{{ layer_group.display_name }}</span>
+            <input type="checkbox"
+                   class="layer-group-visibility-control"
+                   {% if layer_group.visible %}checked="checked"{% endif %}
+                   data-layer-group-id="{{ layer_group.id }}">
+            <span class="checkmark checkbox"></span>
+          </label>
+
+          {# LAYER GROUP CONTEXT MENU #}
+          <div class="dropdown layers-context-menu pull-right">
+            <a id="{{ layer_group.id }}--context-menu"
+               class="btn btn-xs dropdown-toggle layers-btn"
+               data-toggle="dropdown" aria-haspopup="true"
+               aria-expanded="true">
+              <span class="glyphicon glyphicon-option-vertical"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
+              <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+              <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer-group"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+              {% comment %}
+              {# TODO: Implement add layer action #}
+              <li role="separator" class="divider"></li>
+              <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
+              {% endcomment %}
+            </ul>
+          </div>
+          <a id="{{ layer_group.id }}--collapse"
+             class="collapse-action btn btn-xs layers-btn pull-right"
+             data-collapsed="false">
+            <span class="glyphicon glyphicon-chevron-down"></span>
+          </a>
+        </li>
+
+        <ul class="layer-list" data-collapsed="false">
+          {% with mark=layer_group.control %}
+          {% for layer in layer_group.layers %}
+          <li class="layer-list-item">
+
+            {# LAYER VISIBILITY CONTROL #}
+            <label class="flatmark"><span class="display-name">{{ layer.display_name }}</span>
+              <input type="{{ mark }}"
+                     class="layer-visibility-control"
+                     {% if layer.visible %}checked="checked"{% endif %}
+                     {% if not layer_group.visible %}disabled{% endif %}
+                     data-layer-name="{{ layer.layer_name }}"
+                     data-layer-variable="{{ layer.variable }}"
+                     name="{{ layer_group.id }}">
+              <span class="checkmark {{ mark }}"></span>
+            </label>
+
+            {# LAYER CONTEXT MENU #}
+            <div class="dropdown layers-context-menu pull-right">
+              <a id="{{ layer.id }}--context-menu"
+                 class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
+                 data-toggle="dropdown"
+                 aria-haspopup="true"
+                 aria-expanded="true">
+                <span class="glyphicon glyphicon-option-vertical"></span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.id }}--context-menu">
+                <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                {% comment %}
+                {# TODO: Implement download layer action #}
+                <li role="separator" class="divider"></li>
+                <li><a class="download-layer" href="javascript:void(0);"><span class="glyphicon glyphicon-cloud-download"></span><span class="command-name">Download</span></a></li>
+                {% endcomment %}
+                <li role="separator" class="divider"></li>
+                <li>
+                  <div class="flat-slider-container">
+                    <label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
+                    <input type="range"
+                           class="flat-slider layer-opacity-control"
+                           min="0" max="100"
+                           value="100"
+                           data-layer-name="{{ layer.layer_name }}"
+                           data-layer-variable="{{ layer.variable }}">
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+          {% endfor %}
+          {% endwith %}
+        </ul>
+        {% endfor %}
+      </div>
+
+      {# LEGEND TAB PANEL #}
+      <div role="tabpanel" class="tab-pane" id="legend-tab-panel">
+        <li class="title">Legend</li>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block app_content %}
+  {# ADDRESS SEARCH/GEOCODE #}
+  {% if can_use_geocode %}
+  <div id="map-geocode-wrapper">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="input-group">
+          <select name="geocode_select" id="geocode_select" class="geocode-search" multiple></select>
+          <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# MAP #}
+  {% gizmo map_view %}
+
+  {# MAP ATTRIBUTES #}
+  <div id="atcore-map-attributes"
+       data-layer-groups="{{ layer_groups|jsonify }}"
+       data-map-extent="{{ map_extent|jsonify }}"
+       style="display: none;"
+  ></div>
+  <div id="atcore-map-permissions"
+       data-can-use-geocode="{{ can_use_geocode|jsonify }}"
+       style="display: none;"
+       ></div>
+  {% csrf_token %}
+{% endblock %}
+
+{% block after_app_content %}
+  <!-- Action Modal -->
+  <div class="modal fade" id="action-modal" tabindex="-1" role="dialog" aria-labelledby="action-modal-title">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="action-modal-title">Action</h4>
+        </div>
+        <div class="modal-body" id="action-modal-content">
+          Action content
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-action-button" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <a id="do-action-button" class="btn" href="javascript:void(0);">Action</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/map_view/flat_map.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/map_view/atcore_map_view.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/map_view/geocoder.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/messages.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/flatmark.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/flat-slider.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/js/utilities.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/js/collapse.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/js/csrf.js' %}" type="text/javascript"></script>
+  {% if is_in_debug %}
+  <script src="{% static 'atcore/map_view/atcore_map_view.js' %}" type="text/javascript"></script>
+  {% else %}
+  <script src="{% static 'atcore/map_view/atcore_map_view.min.js' %}" type="text/javascript"></script>
+  {% endif %}
+{% endblock %}

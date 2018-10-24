@@ -1,4 +1,4 @@
-{% extends "atcore/base.html" %}
+{% extends "tethys_apps/app_base.html" %}
 
 {% load staticfiles tethys_gizmos %}
 
@@ -17,9 +17,4 @@
 {% endblock %}
 
 {% block app_actions %}
-{% endblock %}
-
-{% block content_dependent_styles %}
-  {{ block.super }}
-  <link href="{% static 'atcore/css/flat_nav.css' %}" rel="stylesheet"/>
 {% endblock %}

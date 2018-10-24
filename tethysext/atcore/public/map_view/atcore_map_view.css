@@ -1,0 +1,221 @@
+/********************************************************************************
+ * Name: atcore_map_view.css
+ * Author: nswain
+ * Created On: October 18, 2018
+ * Copyright: (c) Aquaveo 2018
+ * License:
+ ********************************************************************************/
+/* Map Format */
+#app-content-wrapper #app-content {
+    height: 100%;
+}
+
+#inner-app-content {
+    height: 100%;
+    padding: 0;
+}
+
+/* Wider Nav */
+#app-content-wrapper #app-content #app-navigation {
+    left: -400px;
+    width: 400px;
+}
+
+#app-content-wrapper.show-nav #app-content {
+    padding-right: 400px;
+    webkit-transform: translateX(400px,0,0);
+    -moz-transform: translateX(400px,0,0);
+    -ms-transform: translateX(400px,0,0);
+    -o-transform: translateX(400px,0,0);
+    transform: translateX(400px,0,0);
+    webkit-transform: translate3d(400px,0,0);
+    -moz-transform: translate3d(400px,0,0);
+    -ms-transform: translate3d(400px,0,0);
+    -o-transform: translate3d(400px,0,0);
+    transform: translate3d(400px,0,0);
+}
+
+#app-content-wrapper.show-nav #app-content #app-actions {
+    padding-right: 415px;
+}
+
+/* Map Header */
+#map-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 60px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+#map-header #back-button {
+    display: block;
+    width: 25px;
+}
+
+#map-header a {
+    display: block;
+    height: 56px;
+    border-radius: 5px 0 0 5px;
+    color: #666666;
+    padding: 0 5px;
+}
+
+#map-header a .glyphicon {
+    line-height: 56px;
+}
+
+#map-header a:hover {
+    color: white;
+    background-color: #777777;
+}
+
+#map-header #map-title {
+    display: inline-block;
+    max-width: 320px;
+    margin-left: 15px;
+    overflow: hidden;
+}
+
+#map-header #map-title p {
+    margin: 0;
+}
+
+#map-header #map-title .title {
+    font-size: 18pt;
+}
+
+#map-header #map-title .subtitle {
+    font-size: 12pt;
+}
+
+/* Nav Tab */
+#app-content-wrapper #app-content #app-navigation .map-tabs ul.nav.nav-tabs {
+    padding-bottom: 0;
+    padding-top: 5px;
+}
+
+#app-content-wrapper #app-content #app-navigation .map-tabs .nav li a {
+    color: #666666!important;
+    background-color: transparent!important;
+}
+
+.nav-tabs {
+    overflow: visible!important;
+}
+
+.nav-tabs>li {
+    float: left;
+    margin-bottom: -1px;
+}
+
+.nav-tabs>li>a {
+    font-size: 11pt!important;
+    margin-right: 2px;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    padding: 5px 10px 5px 10px;
+}
+
+.nav-tabs>li.active>a,
+.nav-tabs>li.active>a:hover,
+.nav-tabs>li.active>a:focus {
+    margin-right: 2px;
+    border: 1px solid #ddd;
+    border-radius: 4px 4px 0 0;
+    padding: 5px 10px 5px 10px;
+    border-bottom-color: rgb(239, 239, 239)!important;
+}
+
+/* Layer Selector */
+.layer-group-item {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.layer-group-item .flatmark {
+    display: inline-block;
+    font-weight: 700;
+    max-width: 315px;
+    overflow: hidden;
+}
+
+.layer-list {
+    list-style: none;
+    padding-inline-start: 30px;
+    transition: height 0.2s ease-out;
+}
+
+.layer-list-item {
+    margin-bottom: 10px;
+}
+
+.layer-list-item .flatmark {
+    display: inline-block;
+    max-width: 310px;
+    overflow: hidden;
+}
+
+.layers-context-menu {
+    display: inline-block;
+}
+
+.layers-context-menu .dropdown-menu li .glyphicon  {
+    color: #666666;
+}
+
+.layers-context-menu .dropdown-menu li:hover .glyphicon  {
+    color: #ffffff;
+}
+
+.layers-btn {
+    color: #666666!important;
+    border: none;
+    outline: none;
+    margin-left: 5px;
+}
+
+.layers-context-menu.open .layers-btn,
+.layers-btn:hover,
+.layers-btn:active,
+.layers-btn:focus {
+    border: none;
+    outline: none;
+    background-color: #777777!important;
+    color: #ffffff!important;
+}
+
+.layers-context-menu .dropdown-menu {
+    min-width: 185px;
+}
+
+.layers-context-menu .dropdown-menu li:hover,
+.layers-context-menu .dropdown-menu li > a:hover {
+    background-color: #777777!important;
+    color: #ffffff;
+}
+
+.layers-context-menu .dropdown-menu li a:hover {
+    background-color: #777777!important;
+    color: #ffffff!important;
+}
+
+.layers-context-menu .dropdown-menu li a {
+    color: #666666!important;
+}
+
+.layers-context-menu .dropdown-menu li .flat-slider-container {
+    padding: 3px 20px;
+
+}
+
+.layers-context-menu .dropdown-menu li .flat-slider-container label {
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.layers-context-menu .dropdown-menu li .command-name {
+    padding-left: 10px;
+}
+

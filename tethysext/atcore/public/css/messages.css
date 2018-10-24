@@ -1,0 +1,13 @@
+#app-content-wrapper .flash-messages {
+  padding-right: 50px;
+  position: absolute;
+  display: inline-block;
+  top: 300px;
+  left: 25px;
+  z-index: 1000000000;
+  width: 100%;
+}
+
+#app-content-wrapper.show-nav .flash-messages {
+    padding-right: 450px;
+}
