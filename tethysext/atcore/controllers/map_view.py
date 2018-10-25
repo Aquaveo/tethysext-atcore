@@ -34,6 +34,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
     geoserver_name = ''
     geocode_api_key = '449ce48a52689190cb913b284efea8e9'
     geocode_endpoint = 'http://api.opencagedata.com/geocode/v1/geojson'
+    mutiselect = False
 
     _MapManager = None
     _ModelDatabase = ModelDatabase
@@ -91,6 +92,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
                 'extent': model_extent
             }}
         ]
+        map_view.feature_selection = {'multiselect': self.mutiselect, 'sensitivity': 4}
 
         # Initialize context
         context = {
@@ -108,7 +110,8 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             request=request,
             context=context,
             model_db=model_db,
-            map_manager=map_manager
+            map_manager=map_manager,
+            *args, **kwargs
         )
 
         # Default Permissions
@@ -121,7 +124,8 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             request=request,
             permissions=permissions,
             model_db=model_db,
-            map_manager=map_manager
+            map_manager=map_manager,
+            *args, **kwargs
         )
 
         context.update(permissions)
@@ -131,7 +135,8 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             request=request,
             resource=resource,
             model_db=model_db,
-            map_manager=map_manager
+            map_manager=map_manager,
+            *args, **kwargs
         )
 
         context.update({'back_url': back_url})
@@ -160,7 +165,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         """
         return self.default_disable_basemap
 
-    def get_context(self, request, context, model_db, map_manager):
+    def get_context(self, request, context, model_db, map_manager, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
         Args:
@@ -171,10 +176,10 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
 
         Returns:
             dict: modified context dictionary.
-        """
+        """  # noqa: E501
         return context
 
-    def get_permissions(self, request, permissions, model_db, map_manager):
+    def get_permissions(self, request, permissions, model_db, map_manager, *args, **kwargs):
         """
         Hook to modify permissions.
         Args:
@@ -188,7 +193,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         """
         return permissions
 
-    def get_back_url(self, request, resource, model_db, map_manager):
+    def get_back_url(self, request, resource, model_db, map_manager, *args, **kwargs):
         """
         Get the back url.
         Args:

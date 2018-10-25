@@ -129,9 +129,12 @@
 }
 
 /* Layer Selector */
-.layer-group-item {
+.layer-group-item:first-child {
     margin-top: 20px;
-    margin-bottom: 10px;
+}
+
+.layer-group-item {
+    margin-bottom: 5px;
 }
 
 .layer-group-item .flatmark {
@@ -219,3 +222,63 @@
     padding-left: 10px;
 }
 
+/* Open Layers Pop-up */
+.ol-popup {
+    position: absolute;
+    background-color: white;
+    -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    padding: 15px;
+    padding-top: 30px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 12px;
+    left: -50px;
+    min-width: 280px;
+    z-index: 10000;
+}
+
+.ol-popup:after, .ol-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.ol-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.ol-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+
+.ol-popup-close-btn {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #777777;
+}
+
+.ol-popup-close-btn:hover,
+.ol-popup-close-btn:focus {
+    text-decoration: none;
+    color: #555555;
+    font-weight: 700;
+}
+
+.ol-popup-content {
+    max-height: 250px;
+    overflow: auto;
+}

@@ -17,16 +17,26 @@ var ATCORE_MAP_VIEW = (function() {
 	/************************************************************************
  	*                      MODULE LEVEL / GLOBAL VARIABLES
  	*************************************************************************/
+ 	// Constants
+    var SELECTED_POINT_COLOR =           '#7300e5',
+ 	    SELECTED_LINE_COLOR =            '#7300e5',
+ 	    SELECTED_POLYGON_COLOR =         '#7300e5';
+
  	// Module variables
  	var m_public_interface;				// Object returned by the module
 
  	var m_map,                          // OpenLayers map object
- 	    m_layers,                   // OpenLayers layer objects mapped to by layer by layer_name
+ 	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
  	    m_extent;                       // Home extent for map
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
+        
+    var m_props_popup_overlay,          // OpenLayers overlay containing the properties popup
+        m_$props_popup_container,        // Properties popup container element
+        m_$props_popup_content,          // Properties popup content element
+        m_$props_popup_closer;           // Properties popup close button
 
     // Permissions
     var p_can_geocode;
@@ -45,6 +55,14 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_layers_tab, init_visibility_controls, init_opacity_controls, init_rename_controls, init_remove_controls,
  	    init_zoom_to_controls, init_collapse_controls, init_add_layer_controls, init_download_layer_controls;
 
+    // Properties pop-up
+    var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
+        reset_properties_pop_up, append_properties_pop_up_content, reset_ui,
+        generate_properties_table;
+
+ 	// Feature selection
+ 	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler;
+ 	
  	// Action modal
  	var init_action_modal, build_action_modal, show_action_modal, hide_action_modal;
 
@@ -101,6 +119,9 @@ var ATCORE_MAP_VIEW = (function() {
 	           m_layers[item.tethys_data.layer_name] = item;
 	        }
 	    });
+
+	    // Setup feature selection
+	    init_feature_selection();
     };
 
     // Map Management
@@ -212,6 +233,9 @@ var ATCORE_MAP_VIEW = (function() {
             let $layer_group_item = $target.closest('.layer-group-item');
             let $layer_list = $layer_group_item.next('.layer-list');
 
+            // Reset the ui
+            reset_ui();
+
             // For each layer visibilty control...
             let $layer_visiblity_controls = $layer_list.find('.layer-visibility-control');
 
@@ -247,6 +271,9 @@ var ATCORE_MAP_VIEW = (function() {
             let $target = $(e.target);
             let checked = $target.is(':checked');
             let layer_name = $target.data('layer-name');
+
+            // Reset the ui
+            reset_ui();
 
             // Set the visibility of layer
             m_layers[layer_name].setVisible(checked);
@@ -357,6 +384,9 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Handle Modal Action
             modal.action_button.on('click', function(e) {
+                // Reset the ui
+                reset_ui();
+
                 if (remove_type === 'layer') {
                     // Remove layer from map
                     let layer_name = $action_button.data('layer-name');
@@ -450,11 +480,209 @@ var ATCORE_MAP_VIEW = (function() {
     init_add_layer_controls = function() {
         // TODO: Implement
         // TODO: Save state to workflow - store in attributes?
+    };
 
-        // Build Modal
-        // Show Modal
+    // Properties pop-up
+    init_properties_pop_up = function() {
+        m_$props_popup_container = $('#properties-popup');
+        m_$props_popup_content = $('#properties-popup-content');
+        m_$props_popup_closer = $('#properties-popup-close-btn');
 
-        // Handle Modal Action
+        // Create the overlay
+        m_props_popup_overlay = new ol.Overlay({
+            element: m_$props_popup_container.get(0),
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250
+            }
+        });
+
+        m_map.addOverlay(m_props_popup_overlay);
+
+        // Handle closer click events
+        m_$props_popup_closer.on('click', function() {
+            hide_properties_pop_up();
+            TETHYS_MAP_VIEW.clearSelection();
+            return false;
+        });
+    };
+
+    show_properties_pop_up = function(coordinates) {
+        let c = coordinates;
+
+        if (coordinates instanceof ol.geom.Point) {
+            c = coordinates.getCoordinates();
+        }
+        m_props_popup_overlay.setPosition(c);
+    };
+
+    hide_properties_pop_up = function() {
+        m_props_popup_overlay.setPosition(undefined);
+        m_$props_popup_closer.blur();
+    };
+
+    reset_properties_pop_up = function() {
+        m_$props_popup_content.empty();
+        hide_properties_pop_up();
+    };
+
+    append_properties_pop_up_content = function(content) {
+        m_$props_popup_content.append(content);
+    };
+
+    display_properties = function(points_layer, lines_layer, polygons_layer) {
+        let center_points = [],
+            layers = [points_layer, lines_layer, polygons_layer];
+
+        // TODO: Add hook  to allow apps to customize properties table.
+
+        // Clear popup
+        reset_properties_pop_up();
+
+        for (var i = 0; i < layers.length; i++) {
+            let layer = layers[i];
+
+            if (layer && layer.getSource() && layer.getSource().getFeatures().length) {
+                let source = layer.getSource();
+                let features = source.getFeatures();
+                center_points.push(compute_center(features));
+
+
+
+                // Generate one table of properties for each node
+                for (var j = 0; j < features.length; j++) {
+                    let feature = features[j];
+                    let properties_table = generate_properties_table(feature);
+                    append_properties_pop_up_content(properties_table);
+
+                    // TODO: Add hook  to allow apps to customize properties table.
+                }
+            }
+        }
+
+        // Compute popup location
+        let popup_location = compute_center(center_points);
+
+        // Show the Popup
+        if (popup_location) {
+            show_properties_pop_up(popup_location);
+        }
+
+        // TODO: Add hook  to allow apps to customize properties table.
+    };
+
+    reset_ui = function() {
+        // Clear selection
+        TETHYS_MAP_VIEW.clearSelection();
+
+        // Reset popup
+        reset_properties_pop_up();
+    };
+    
+    generate_properties_table = function(feature) {
+        let properties = feature.getProperties();
+        let geometry = feature.getGeometry();
+        let geometry_type = geometry.getType().toLowerCase();
+        let feature_class = (('type' in properties) ? properties['type'] : geometry_type);
+
+        // Templates
+        let kv_row_template = '<tr><td>{{KEY}}</td><td>{{VALUE}}&nbsp;<span id="{{ELEMENT_CLASS}}-{{PROPERTY}}-units"></span></td></tr>';
+        kv_row_template = kv_row_template
+            .replace('{{ELEMENT_CLASS}}', feature_class);
+        let table_template = '<table class="table table-condensed table-striped {{CLASS}}">{{ROWS}}</table>';
+
+        // Initial rows
+        let rows = '';
+
+        // Append the type of feature
+        rows += kv_row_template
+                .replace('{{KEY}}', 'Type')
+                .replace('{{VALUE}}', geometry.getType())
+                .replace('{{PROPERTY}}', 'type');
+
+        // Assemble other rows
+        let excluded_properties = ['geometry', 'the_geom'];
+
+        for(var property in properties) {
+            // Skip excluded properties
+            if (in_array(property, excluded_properties)) {
+                continue;
+            }
+
+            // Build row
+            rows += kv_row_template
+                .replace('{{KEY}}', var_to_title_case(property))
+                .replace('{{VALUE}}', properties[property])
+                .replace('{{PROPERTY}}', property);
+        }
+
+        // Compose table
+        table_template = table_template.replace('{{CLASS}}', feature_class);
+        table_template = table_template.replace('{{ROWS}}', rows);
+        return table_template;
+    };
+    
+    // Feature Selection
+    init_feature_selection = function() {
+        init_properties_pop_up();
+        TETHYS_MAP_VIEW.overrideSelectionStyler('points', points_selection_styler);
+        TETHYS_MAP_VIEW.overrideSelectionStyler('lines', lines_selection_styler);
+        TETHYS_MAP_VIEW.overrideSelectionStyler('polygons', polygons_selection_styler);
+        TETHYS_MAP_VIEW.onSelectionChange(display_properties);
+    };
+
+    points_selection_styler = function(feature, resolution) {
+        return [new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({
+                    color: SELECTED_POINT_COLOR
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'white',
+                    width: 1
+                })
+            })
+        })];
+    };
+
+    lines_selection_styler = function(feature, resolution) {
+        return [
+            new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#ffffff',
+                    width: 6
+                })
+              }
+            ), new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: SELECTED_LINE_COLOR,
+                    width: 4
+                })
+              }
+            )
+        ];
+    };
+
+    polygons_selection_styler = function(feature, resolution) {
+        return [
+            new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#ffffff',
+                    width: 6
+                }),
+                fill: new ol.style.Fill({
+                    color: 'rgba(115, 0, 229, 0.1)'
+                })
+              }
+            ), new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: SELECTED_LINE_COLOR,
+                    width: 4
+                })
+              }
+            )
+        ];
     };
 
  	// Geocode Methods
@@ -588,7 +816,14 @@ var ATCORE_MAP_VIEW = (function() {
 	 * NOTE: The functions in the public interface have access to the private
 	 * functions of the library because of JavaScript function scope.
 	 */
-	m_public_interface = {};
+	m_public_interface = {
+	    /*
+	     * Override the default properties table generator
+	     */
+	    properties_table_generator: function(f) {
+	        generate_properties_table = f;
+	    },
+	};
 
 	/************************************************************************
  	*                  INITIALIZATION / CONSTRUCTOR
