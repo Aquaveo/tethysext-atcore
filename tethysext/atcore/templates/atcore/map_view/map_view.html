@@ -3,6 +3,7 @@
 
 {% block import_gizmos %}
   {% import_gizmo_dependency select_input %}
+  <script src="https://cdn.plot.ly/plotly-1.41.3.min.js"></script>
 {% endblock %}
 
 {% block app_navigation_items %}
@@ -37,6 +38,8 @@
            data-toggle="tab">Layers</a>
       </li>
       {# LEGEND TAB #}
+      {% comment %}
+      {# TODO: Implement Legend tab
       <li role="presentation">
         <a id="legend-tab-toggle"
            href="#legend-tab-panel"
@@ -44,6 +47,7 @@
            role="tab"
            data-toggle="tab">Legend</a>
       </li>
+      {% endcomment %}
     </ul>
 
     {# TAB CONTENT #}
@@ -179,9 +183,20 @@
   ></div>
   <div id="atcore-map-permissions"
        data-can-use-geocode="{{ can_use_geocode|jsonify }}"
+       data-can-use-plot="{{ can_use_plot|jsonify }}"
        style="display: none;"
        ></div>
+
+  {% if can_use_plot %}
+    {# PLOT SLIDE SHEET #}
+    {% gizmo plot_slide_sheet %}
+  {% endif %}
+
   {% csrf_token %}
+{% endblock %}
+
+{% block app_actions %}
+  <a class="btn btn-default" href="javascript:void(0);" role="button" onclick="SLIDE_SHEET.open('plot-slide-sheet');">For Testing Slide Sheet</a>
 {% endblock %}
 
 {% block after_app_content %}

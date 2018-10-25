@@ -32,7 +32,7 @@
 
 #app-content-wrapper #app-content.show-nav .slide-sheet .slide-sheet-content,
 #app-content-wrapper #app-content .slide-sheet .slide-sheet-content {
-  margin: 25px;
+  margin: 15px 0;
   position: relative;
 }
 
@@ -49,7 +49,7 @@
 
 #app-content-wrapper #app-content.show-nav .slide-sheet .slide-sheet-content .row,
 #app-content-wrapper #app-content .slide-sheet .slide-sheet-content .row {
-  margin-top: 10px;
+  margin: 0;
 }
 
 @media screen and (max-height: 500px) {

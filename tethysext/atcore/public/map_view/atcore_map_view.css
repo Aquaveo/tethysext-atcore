@@ -282,3 +282,16 @@
     max-height: 250px;
     overflow: auto;
 }
+
+/* Plot Slide Sheet */
+#app-content-wrapper.show-nav #app-content .slide-sheet {
+    padding-right: 400px;
+}
+
+.js-plotly-plot .plotly .modebar {
+    right: 80px;
+}
+
+.slide-sheet-title {
+    margin-left: 25px;
+}

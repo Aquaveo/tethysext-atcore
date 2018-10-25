@@ -34,22 +34,28 @@ var ATCORE_MAP_VIEW = (function() {
         m_geocode_layer;                // Layer used to store geocode location
         
     var m_props_popup_overlay,          // OpenLayers overlay containing the properties popup
-        m_$props_popup_container,        // Properties popup container element
-        m_$props_popup_content,          // Properties popup content element
-        m_$props_popup_closer;           // Properties popup close button
+        m_$props_popup_container,       // Properties popup container element
+        m_$props_popup_content,         // Properties popup content element
+        m_$props_popup_closer;          // Properties popup close button
+
+
+    var m_plot;                         // Plot object
 
     // Permissions
-    var p_can_geocode;
-
+    var p_can_geocode,                  // Can use geocode feature
+        p_can_plot;                     // Can use plotting feature
 
 	/************************************************************************
  	*                    PRIVATE FUNCTION DECLARATIONS
  	*************************************************************************/
- 	// Config methods
+ 	// Config
  	var parse_attributes, parse_permissions, setup_ajax, setup_map;
 
  	// Map management
  	var remove_layer_from_map;
+
+ 	// Plotting
+ 	var init_plot, fit_plot, update_plot, open_plot, close_plot;
 
  	// Layers tab
  	var init_layers_tab, init_visibility_controls, init_opacity_controls, init_rename_controls, init_remove_controls,
@@ -62,7 +68,7 @@ var ATCORE_MAP_VIEW = (function() {
 
  	// Feature selection
  	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler;
- 	
+
  	// Action modal
  	var init_action_modal, build_action_modal, show_action_modal, hide_action_modal;
 
@@ -72,7 +78,7 @@ var ATCORE_MAP_VIEW = (function() {
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
  	*************************************************************************/
-    // Conifg methods
+    // Conifg
     parse_attributes = function() {
         var $map_attributes = $('#atcore-map-attributes');
         m_layer_groups = $map_attributes.data('layer-groups');
@@ -82,6 +88,7 @@ var ATCORE_MAP_VIEW = (function() {
     parse_permissions = function() {
         var $map_permissions = $('#atcore-map-permissions');
         p_can_geocode = $map_permissions.data('can-use-geocode');
+        p_can_plot = $map_permissions.data('can-use-plot');
     };
 
     setup_ajax = function() {
@@ -131,6 +138,75 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Remove from layers list
         delete m_layers[layer_name];
+    };
+
+    // Plotting
+    init_plot = function() {
+        // Skip if no permission to use plot
+        if (!p_can_plot) {
+            return;
+        }
+
+        m_plot = 'map-plot';
+
+        let data = [];
+
+        let layout = {
+            autosize: true,
+            height: 415,
+            margin: {l: 80, r: 80, t: 20, b: 80},
+            xaxis:  {
+                title: 'X Axis Title',
+            },
+            yaxis: {
+                title: 'Y Axis Title',
+            }
+        };
+
+        // Create initial plot
+        Plotly.react(m_plot, data, layout, {scrollZoom: true}).then(function(p) {
+            // Resize plot to fit after rendering the first time
+            fit_plot();
+        });
+
+        // Setup plot resize when slide sheet changes size
+        $(window).resize(function() {
+            fit_plot();
+        });
+
+        // Resize plot when nav is opened or closed
+        $('.toggle-nav').on('tethys:toggle-nav', function(e) {
+            fit_plot();
+        });
+    };
+
+    fit_plot = function() {
+        let plot_container_width = $('#plot-slide-sheet').width();
+        Plotly.relayout(m_plot, {width: plot_container_width});
+    };
+
+    update_plot = function(title, data, layout) {
+        let out = Plotly.validate(data, layout);
+        if (out) {
+            $(out).each(function(index, item) {
+                console.error(item.msg);
+            });
+            return;
+        }
+
+        // Update plot
+        Plotly.update(m_plot, data, layout);
+
+        // Update slide sheet title
+        $('#plot-slide-sheet .slide-sheet-title').html(title);
+    };
+
+    open_plot = function() {
+        SLIDE_SHEET.open('plot-slide-sheet');
+    };
+
+    close_plot = function() {
+        SLIDE_SHEET.close('plot-slide-sheet');
     };
 
     // Action modal
@@ -843,6 +919,7 @@ var ATCORE_MAP_VIEW = (function() {
 		// Initialize
 		init_layers_tab();
         init_geocode();
+        init_plot();
 	});
 
 	return m_public_interface;

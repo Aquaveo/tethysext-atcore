@@ -3,7 +3,7 @@
       <div class="row">
         <div class="col-md-11">
           {% if title %}
-            <h3>{{ title }}</h3>
+            <h3 class="slide-sheet-title">{{ title }}</h3>
           {% endif %}
         </div>
         <div class="col-md-1">
@@ -11,7 +11,7 @@
         </div>
       </div>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12 slide-sheet-body">
               {% if content_template %}
                 {% include content_template %}
               {% endif %}

@@ -17,6 +17,7 @@ from tethys_sdk.permissions import has_permission, permission_required
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.controllers.app_users.mixins import AppUsersResourceControllerMixin
 from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.gizmos import SlideSheet
 
 
 class MapView(TethysController, AppUsersResourceControllerMixin):
@@ -27,7 +28,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
     """
     map_title = ''
     map_subtitle = ''
-    template_name = 'atcore/map_view.html'
+    template_name = 'atcore/map_view/map_view.html'
     http_method_names = ['get', 'post']
 
     default_disable_basemap = False
@@ -117,6 +118,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         # Default Permissions
         permissions = {
             'can_use_geocode': has_permission(request, 'use_map_geocode'),
+            'can_use_plot': has_permission(request, 'use_map_plot')
         }
 
         # Permissions hook
@@ -140,6 +142,15 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         )
 
         context.update({'back_url': back_url})
+
+        # Add plot slide sheet
+        plot_slidesheet = SlideSheet(
+            id='plot-slide-sheet',
+            title='Plot',
+            content_template='atcore/map_view/map_plot.html'
+        )
+
+        context.update({'plot_slide_sheet': plot_slidesheet})
 
         return render(request, self.template_name, context)
 
