@@ -58,7 +58,7 @@ class ModelDatabase(object):
         else:
             selection = 'pg_size_pretty(SUM(pg_total_relation_size(C.oid)))'
 
-        query = '''
+        query = r'''
           SELECT {selection} AS "size"
           FROM pg_class C
           LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)

@@ -946,7 +946,7 @@ class GeoServerAPI(object):
             zoom_start (int, optional): beginning of zoom range on which to perform tile cache operation. Minimum is 0. Defaults to 10.
             zoom_end (int, optional): end of zoom range on which to perform tile cache operation. It is not usually recommended to seed past zoom 20. Maximum is 30. Defaults to 15.
             grid_set_id (int, optional): ID of the grid set on which to perform the tile cache operation. Either 4326 for Geographic or 900913 for Web Mercator. Defaults to 900913.
-            image_format (str, optional): format of tiles on which to perform tile cache operation. Defaults to 'image\/png'.
+            image_format (str, optional): format of tiles on which to perform tile cache operation. Defaults to 'image/png'.
             thread_count (int, optional): number of threads to used to perform tile cache operation. Defaults to 1.
             bounds (list, optional): list with ordinates of bounding box of area on which to perform tile cache operation (e.g.: [minx, miny, maxx, maxy]).
             parameters (dict, optional): Key value pairs of parameters to use to filter tile cache operation.
