@@ -93,36 +93,34 @@
         </li>
 
         <ul class="layer-list" data-collapsed="false">
-          {% with mark=layer_group.control %}
           {% for layer in layer_group.layers %}
           <li class="layer-list-item">
-
             {# LAYER VISIBILITY CONTROL #}
-            <label class="flatmark"><span class="display-name">{{ layer.display_name }}</span>
-              <input type="{{ mark }}"
+            <label class="flatmark"><span class="display-name">{{ layer.legend_title }}</span>
+              <input type="{{ layer_group.control }}"
                      class="layer-visibility-control"
-                     {% if layer.visible %}checked="checked"{% endif %}
+                     {% if layer.layer_options.visible %}checked="checked"{% endif %}
                      {% if not layer_group.visible %}disabled{% endif %}
-                     data-layer-name="{{ layer.layer_name }}"
-                     data-layer-variable="{{ layer.variable }}"
+                     data-layer-name="{{ layer.data.layer_name }}"
+                     data-layer-variable="{{ layer.data.variable }}"
                      name="{{ layer_group.id }}">
-              <span class="checkmark {{ mark }}"></span>
+              <span class="checkmark {{ layer_group.control }}"></span>
             </label>
 
             {# LAYER CONTEXT MENU #}
             <div class="dropdown layers-context-menu pull-right">
-              <a id="{{ layer.id }}--context-menu"
+              <a id="{{ layer.data.layer_name }}--context-menu"
                  class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
                  data-toggle="dropdown"
                  aria-haspopup="true"
                  aria-expanded="true">
                 <span class="glyphicon glyphicon-option-vertical"></span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.id }}--context-menu">
+              <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_name }}--context-menu">
                 <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
-                <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                 <li role="separator" class="divider"></li>
-                <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
                 {% comment %}
                 {# TODO: Implement download layer action #}
                 <li role="separator" class="divider"></li>
@@ -136,15 +134,14 @@
                            class="flat-slider layer-opacity-control"
                            min="0" max="100"
                            value="100"
-                           data-layer-name="{{ layer.layer_name }}"
-                           data-layer-variable="{{ layer.variable }}">
+                           data-layer-name="{{ layer.data.layer_name }}"
+                           data-layer-variable="{{ layer.data.variable }}">
                   </div>
                 </li>
               </ul>
             </div>
           </li>
           {% endfor %}
-          {% endwith %}
         </ul>
         {% endfor %}
       </div>
@@ -179,6 +176,7 @@
   <div id="atcore-map-attributes"
        data-layer-groups="{{ layer_groups|jsonify }}"
        data-map-extent="{{ map_extent|jsonify }}"
+       data-workspace="{{ workspace }}"
        style="display: none;"
   ></div>
   <div id="atcore-map-permissions"
@@ -196,7 +194,6 @@
 {% endblock %}
 
 {% block app_actions %}
-  <a class="btn btn-default" href="javascript:void(0);" role="button" onclick="SLIDE_SHEET.open('plot-slide-sheet');">For Testing Slide Sheet</a>
 {% endblock %}
 
 {% block after_app_content %}

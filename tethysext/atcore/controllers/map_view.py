@@ -104,6 +104,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             'is_in_debug': settings.DEBUG,
             'map_title': self.map_title or resource.name,
             'map_subtitle': self.map_subtitle,
+            'workspace': self._SpatialManager.WORKSPACE
         }
 
         # Context hook
@@ -160,6 +161,10 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             return self.find_location_by_query(request)
         elif method == 'find-location-by-advanced-query':
             return self.find_location_by_advanced_query(request)
+        elif method == 'get-plot-data':
+            layer_name = request.POST.get('layer_name', '')
+            feature_id = request.POST.get('feature_id', '')
+            return self.get_plot_data(request, layer_name, feature_id)
         else:
             return HttpResponseNotFound()
 
@@ -236,6 +241,24 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         app_namespace = active_app.namespace
         back_controller = '{}:app_users_manage_resources'.format(app_namespace)
         return back_controller
+
+    def get_plot_data(self, request, layer_name, feature_id):
+        """
+        Load plot from given parameters.
+
+        Args:
+            request: Django HttpRequest.
+            layer_name(str): Name of the layer to which the feature belongs.
+            feature_id(str): Feature ID of the feature to plot.
+
+        Returns:
+            JsonResponse: title, data, and layout options for the plot.
+        """
+        json = {
+            'layer_name': layer_name,
+            'feature_id': feature_id
+        }
+        return JsonResponse(json)
 
     @permission_required('use_map_geocode', raise_exception=True)
     def find_location_by_query(self, request):

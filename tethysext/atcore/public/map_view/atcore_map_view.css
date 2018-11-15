@@ -295,3 +295,13 @@
 .slide-sheet-title {
     margin-left: 25px;
 }
+
+/* Properties Sheet */
+.plot-btn-wrapper {
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+.btn-plot {
+    display: block;
+}

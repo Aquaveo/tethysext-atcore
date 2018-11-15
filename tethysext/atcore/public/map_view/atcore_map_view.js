@@ -28,6 +28,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var m_map,                          // OpenLayers map object
  	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
+ 	    m_workspace,                    // Workspace from SpatialManager
  	    m_extent;                       // Home extent for map
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
@@ -39,7 +40,8 @@ var ATCORE_MAP_VIEW = (function() {
         m_$props_popup_closer;          // Properties popup close button
 
 
-    var m_plot;                         // Plot object
+    var m_plot,                         // Plot object
+        m_plot_config;                  // Configuration options for the plot
 
     // Permissions
     var p_can_geocode,                  // Can use geocode feature
@@ -52,10 +54,10 @@ var ATCORE_MAP_VIEW = (function() {
  	var parse_attributes, parse_permissions, setup_ajax, setup_map;
 
  	// Map management
- 	var remove_layer_from_map;
+ 	var remove_layer_from_map, get_layer_name_from_feature, get_feature_id_from_feature;
 
  	// Plotting
- 	var init_plot, fit_plot, update_plot, open_plot, close_plot;
+ 	var init_plot, generate_plot_button, bind_plot_buttons, load_plot, fit_plot, update_plot, show_plot, hide_plot;
 
  	// Layers tab
  	var init_layers_tab, init_visibility_controls, init_opacity_controls, init_rename_controls, init_remove_controls,
@@ -63,7 +65,7 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
-        reset_properties_pop_up, append_properties_pop_up_content, reset_ui,
+        reset_properties_pop_up, append_properties_pop_up_content, reset_ui, generate_properties_table_title,
         generate_properties_table;
 
  	// Feature selection
@@ -75,6 +77,9 @@ var ATCORE_MAP_VIEW = (function() {
  	// Geocode feature
  	var init_geocode, do_geocode, clear_geocode;
 
+ 	// Cache methods
+ 	var is_in_cache, add_to_cache, remove_from_cache, get_from_cache;
+
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
  	*************************************************************************/
@@ -83,6 +88,7 @@ var ATCORE_MAP_VIEW = (function() {
         var $map_attributes = $('#atcore-map-attributes');
         m_layer_groups = $map_attributes.data('layer-groups');
         m_extent = $map_attributes.data('map-extent');
+        m_workspace = $map_attributes.data('workspace');
     };
 
     parse_permissions = function() {
@@ -140,6 +146,18 @@ var ATCORE_MAP_VIEW = (function() {
         delete m_layers[layer_name];
     };
 
+    get_layer_name_from_feature = function(feature) {
+        let feature_id = feature.getId();
+        let layer_name = m_workspace + ':' + feature_id.split('.')[0];
+        return layer_name;
+    };
+
+    get_feature_id_from_feature = function(feature) {
+        let feature_id = feature.getId();
+        let fid = feature_id.split('.')[1];
+        return fid;
+    };
+
     // Plotting
     init_plot = function() {
         // Skip if no permission to use plot
@@ -148,6 +166,7 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         m_plot = 'map-plot';
+        m_plot_config = {scrollZoom: true};
 
         let data = [];
 
@@ -164,10 +183,7 @@ var ATCORE_MAP_VIEW = (function() {
         };
 
         // Create initial plot
-        Plotly.react(m_plot, data, layout, {scrollZoom: true}).then(function(p) {
-            // Resize plot to fit after rendering the first time
-            fit_plot();
-        });
+        update_plot('Plot Title', data, layout);
 
         // Setup plot resize when slide sheet changes size
         $(window).resize(function() {
@@ -180,11 +196,6 @@ var ATCORE_MAP_VIEW = (function() {
         });
     };
 
-    fit_plot = function() {
-        let plot_container_width = $('#plot-slide-sheet').width();
-        Plotly.relayout(m_plot, {width: plot_container_width});
-    };
-
     update_plot = function(title, data, layout) {
         let out = Plotly.validate(data, layout);
         if (out) {
@@ -195,17 +206,93 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         // Update plot
-        Plotly.update(m_plot, data, layout);
+        Plotly.react(m_plot, data, layout, m_plot_config).then(function(p) {
+            // Resize plot to fit after rendering the first time
+            fit_plot();
 
-        // Update slide sheet title
-        $('#plot-slide-sheet .slide-sheet-title').html(title);
+            // Update slide sheet title
+            $('#plot-slide-sheet .slide-sheet-title').html(title);
+        });
     };
 
-    open_plot = function() {
+    generate_plot_button = function(feature) {
+        // Skip if no permission to use plot
+        if (!p_can_plot) {
+            return;
+        }
+
+        let layer_name = get_layer_name_from_feature(feature);
+        let fid = get_feature_id_from_feature(feature);
+
+        // Check if layer is plottable
+        let layer = m_layers[layer_name];
+        if (!layer || !layer.tethys_data.plotable) {
+            return;
+        }
+
+        // Build Plot Button Markup
+        let plot_button =
+            '<div class="plot-btn-wrapper">' +
+                '<a class="btn btn-primary btn-plot" ' +
+                    'href="javascript:void(0);" ' +
+                    'role="button"' +
+                    'data-feature-id="' + fid +'"' +
+                    'data-layer-name="' + layer_name + '"' +
+                '>Plot</a>' +
+            '</div>';
+
+        return plot_button;
+    };
+
+    bind_plot_buttons = function() {
+        // Reset click events on plot buttons
+        $('.btn-plot').off('click');
+
+        // Call load_plot when buttons are clicked
+        $('.btn-plot').on('click', function(e) {
+            let layer_name = $(e.target).data('layer-name');
+            let feature_id = $(e.target).data('feature-id');
+
+            // Load the plot
+            load_plot(e.target, layer_name, feature_id);
+        });
+    };
+
+    load_plot = function(plot_button, layer_name, feature_id) {
+        // Disable plot button
+        $(plot_button).attr('disabled', 'disabled');
+
+        // Get plot data for feature
+        $.ajax({
+            url: '.',
+            type: 'POST',
+            data: {
+                'method': 'get-plot-data',
+                'layer_name': layer_name,
+                'feature_id': feature_id
+            },
+        }).done(function(data){
+            // Update plot
+            update_plot(data.title, data.data, data.layout);
+
+            // Show the plot slide sheet
+            show_plot();
+
+            // Enable plot button
+            $(plot_button).removeAttr('disabled');
+        });
+    };
+
+    fit_plot = function() {
+        let plot_container_width = $('#plot-slide-sheet').width();
+        Plotly.relayout(m_plot, {width: plot_container_width});
+    };
+
+    show_plot = function() {
         SLIDE_SHEET.open('plot-slide-sheet');
     };
 
-    close_plot = function() {
+    hide_plot = function() {
         SLIDE_SHEET.close('plot-slide-sheet');
     };
 
@@ -613,7 +700,7 @@ var ATCORE_MAP_VIEW = (function() {
         // TODO: Add hook  to allow apps to customize properties table.
 
         // Clear popup
-        reset_properties_pop_up();
+        reset_ui(false);
 
         for (var i = 0; i < layers.length; i++) {
             let layer = layers[i];
@@ -623,14 +710,22 @@ var ATCORE_MAP_VIEW = (function() {
                 let features = source.getFeatures();
                 center_points.push(compute_center(features));
 
-
-
                 // Generate one table of properties for each node
                 for (var j = 0; j < features.length; j++) {
                     let feature = features[j];
+
+                    // Generate Title
+                    let title_markup = generate_properties_table_title(feature);
+                    append_properties_pop_up_content(title_markup);
+
+                    // Generate properties table
                     let properties_table = generate_properties_table(feature);
                     append_properties_pop_up_content(properties_table);
 
+                    // Generate plot button
+                    let plot_button = generate_plot_button(feature);
+                    append_properties_pop_up_content(plot_button);
+                    bind_plot_buttons();
                     // TODO: Add hook  to allow apps to customize properties table.
                 }
             }
@@ -647,12 +742,24 @@ var ATCORE_MAP_VIEW = (function() {
         // TODO: Add hook  to allow apps to customize properties table.
     };
 
-    reset_ui = function() {
+    reset_ui = function(clear_selection=true) {
         // Clear selection
-        TETHYS_MAP_VIEW.clearSelection();
+        if (clear_selection) {
+            TETHYS_MAP_VIEW.clearSelection();
+        }
 
         // Reset popup
         reset_properties_pop_up();
+
+        // Hide plot slide sheet
+        hide_plot();
+    };
+
+    generate_properties_table_title = function(feature) {
+        let layer_name = get_layer_name_from_feature(feature);
+        let title = m_layers[layer_name].tethys_legend_title;
+        let title_markup = '<h6 class="properites-title">' + title + '</h6>';
+        return title_markup;
     };
     
     generate_properties_table = function(feature) {
@@ -879,6 +986,32 @@ var ATCORE_MAP_VIEW = (function() {
                 source.removeFeature(features[x]);
              }
           }
+        }
+    };
+
+    // Cache methods
+    add_to_cache = function(cache, key, obj) {
+        cache[key] = obj;
+    };
+
+    get_from_cache = function(cache, key) {
+        if (is_in_cache(cache, key)) {
+            return cache[key];
+        }
+    };
+
+    is_in_cache = function(cache, key) {
+        if (key in cache) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+
+    remove_from_cache = function(cache, key) {
+        if (is_in_cache(cache, key)) {
+            delete cache[key];
         }
     };
 
