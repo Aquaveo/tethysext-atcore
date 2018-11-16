@@ -72,8 +72,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         map_view, model_extent, layer_groups = map_manager.compose_map(
             request=request,
             scenario_id=1,
-            *args,
-            **kwargs
+            *args, **kwargs
         )
 
         # Tweak map settings
