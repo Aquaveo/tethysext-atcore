@@ -44,7 +44,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
     @active_user_required()
     def get(self, request, resource_id, *args, **kwargs):
         """
-        Route post requests.
+        Handle GET requests.
         """
         from django.conf import settings
 
@@ -70,7 +70,6 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         # Render the Map
         # TODO: Figure out what to do with the scenario_id. Workflow id?
         map_view, model_extent, layer_groups = map_manager.compose_map(
-            request=request,
             scenario_id=1,
             *args, **kwargs
         )
@@ -154,7 +153,11 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
 
         return render(request, self.template_name, context)
 
+    @active_user_required()
     def post(self, request, resource_id, *args, **kwargs):
+        """
+        Route POST requests.
+        """
         method = request.POST.get('method', None)
         if method == 'find-location-by-query':
             return self.find_location_by_query(request)
@@ -163,13 +166,14 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         elif method == 'get-plot-data':
             layer_name = request.POST.get('layer_name', '')
             feature_id = request.POST.get('feature_id', '')
-            return self.get_plot_data(request, layer_name, feature_id)
+            return self.get_plot_data(request, resource_id, layer_name, feature_id)
         else:
             return HttpResponseNotFound()
 
     def should_disable_basemap(self, request, model_db, map_manager):
         """
         Hook to override disabling the basemap.
+
         Args:
             request (HttpRequest): The request.
             model_db (ModelDatabase): ModelDatabase instance associated with this request.
@@ -183,6 +187,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
     def get_context(self, request, context, model_db, map_manager, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
         Args:
             request (HttpRequest): The request.
             context (dict): The context dictionary.
@@ -197,6 +202,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
     def get_permissions(self, request, permissions, model_db, map_manager, *args, **kwargs):
         """
         Hook to modify permissions.
+
         Args:
             request (HttpRequest): The request.
             permissions (dict): The permissions dictionary with boolean values.
@@ -210,7 +216,8 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
 
     def get_back_url(self, request, resource, model_db, map_manager, *args, **kwargs):
         """
-        Get the back url.
+        Get the back button url.
+
         Args:
             request (HttpRequest): The request.
             resource (Resource): Resource instance associated with this request.
@@ -241,23 +248,41 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         back_controller = '{}:app_users_manage_resources'.format(app_namespace)
         return back_controller
 
-    def get_plot_data(self, request, layer_name, feature_id):
+    def get_plot_data(self, request, resource_id, layer_name, feature_id):
         """
         Load plot from given parameters.
 
         Args:
             request: Django HttpRequest.
+            resource_id(str): UUID of the resource being mapped.
             layer_name(str): Name of the layer to which the feature belongs.
             feature_id(str): Feature ID of the feature to plot.
 
         Returns:
             JsonResponse: title, data, and layout options for the plot.
         """
-        json = {
-            'layer_name': layer_name,
-            'feature_id': feature_id
-        }
-        return JsonResponse(json)
+        # Get Resource
+        back_controller = self._get_back_controller(request=request)
+        resource = self._get_resource(request, resource_id, back_controller)
+
+        # TODO: Move permissions check into decorator
+        if isinstance(resource, HttpResponse):
+            return resource
+
+        database_id = resource.get_attribute('database_id')
+        if not database_id:
+            messages.error(request, 'An unexpected error occurred. Please try again.')
+            return redirect(back_controller)
+
+        # Initialize MapManager
+        model_db = self._ModelDatabase(app=self._app, database_id=database_id)
+        gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
+        spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
+        map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
+
+        title, data, layout = map_manager.get_plot_for_layer_feature(layer_name, feature_id)
+
+        return JsonResponse({'title': title, 'data': data, 'layout': layout})
 
     @permission_required('use_map_geocode', raise_exception=True)
     def find_location_by_query(self, request):

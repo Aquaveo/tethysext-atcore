@@ -75,7 +75,7 @@ class MapViewTests(TethysTestCase):
 
     def test_get_no_resource_permissions(self):
         pass
-        # TODO: GAGE
+        # TODO: GAGE FINISH TESTS
 
     def test_no_database_id(self):
         pass

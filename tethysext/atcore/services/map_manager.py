@@ -8,7 +8,7 @@
 """
 from math import ceil
 from abc import ABCMeta, abstractmethod
-from tethys_gizmos.gizmo_options import MVView
+from tethys_gizmos.gizmo_options import MVView, MVLayer
 
 
 class MapManagerBase(object):
@@ -97,6 +97,121 @@ class MapManagerBase(object):
             MapView, 4-list<float>: The MapView and extent objects.
         """
 
+    def build_param_string(self, **kwargs):
+        """
+        Build a VIEWPARAMS or ENV string with given kwargs (e.g.: 'foo:1;bar:baz')
+
+        Args:
+            **kwargs: key-value pairs of paramaters.
+
+        Returns:
+            str: parameter string.
+        """
+        if not kwargs:
+            return ''
+
+        joined_pairs = []
+        for k, v in kwargs.items():
+            joined_pairs.append(':'.join([k, str(v)]))
+
+        param_string = ';'.join(joined_pairs)
+        return param_string
+
+    def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
+                       visible=True, tiled=True, selectable=False, plottable=False):
+        """
+        Build an MVLayer object with supplied arguments.
+        Args:
+            endpoint (str): URL to GeoServer WMS interface.
+            layer_name (str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_title (str): Title of MVLayer (e.g.: Model Boundaries).
+            layer_variable (str): Variable type of the layer (e.g.: model_boundaries).
+            viewparams (str): VIEWPARAMS string.
+            env (str): ENV string.
+            visible (bool): Layer is visible when True. Defaults to True.
+            tiled (bool): Configure as tiled layer if True. Defaults to True.
+            selectable (bool): Enable feature selection. Defaults to False.
+            plottable (bool): Enable "Plot" button on pop-up properties. Defaults to False.
+
+        Returns:
+            MVLayer: the MVLayer object.
+        """  # noqa: E501
+        # TODO: GAGE FIX TESTS FOR THIS
+        # Build params
+        params = {}
+        params['LAYERS'] = layer_name
+
+        if tiled:
+            params.update({
+                'TILED': True,
+                'TILESORIGIN': '0.0,0.0'
+            })
+
+        if viewparams:
+            params['VIEWPARAMS'] = viewparams
+
+        if env:
+            params['ENV'] = env
+
+        # Build options
+        options = {
+            'url': endpoint,
+            'params': params,
+            'serverType': 'geoserver'
+        }
+
+        if tiled:
+            options['tileGrid'] = self.DEFAULT_TILE_GRID
+
+        data = {
+            'layer_name': layer_name,
+            'layer_variable': layer_variable
+        }
+
+        if plottable:
+            data.update({'plottable': plottable})
+
+        mv_layer = MVLayer(
+            source='TileWMS' if tiled else 'ImageWMS',
+            options=options,
+            layer_options={"visible": visible},
+            legend_title=layer_title,
+            legend_extent=self.map_extent,
+            legend_classes=[],
+            data=data,
+            geometry_attribute='geometry',
+            feature_selection=selectable
+        )
+
+        return mv_layer
+
+    def build_layer_group(self, id, display_name, layers, layer_control='checkbox', visible=True):
+        """
+        Build a layer group object.
+
+        Args:
+            id(str): Unique identifier for the layer group.
+            display_name(str): Name displayed in MapView layer selector/legend.
+            layers(list<MVLayer>): List of layers to include in the layer group.
+            layer_control(str): Type of control for layers. Either 'checkbox' or 'radio'. Defaults to checkbox.
+            visible(bool): Whether layer group is initially visible. Defaults to True.
+
+        Returns:
+            dict: Layer group definition.
+        """
+        # TODO: GAGE TEST THIS
+        if layer_control not in ['checkbox', 'radio']:
+            raise ValueError('Invalid layer_control. Must be on of "checkbox" or "radio".')
+
+        layer_group = {
+            'id': id,
+            'display_name': display_name,
+            'control': layer_control,
+            'layers': layers,
+            'visible': visible
+        }
+        return layer_group
+
     def get_wms_endpoint(self):
         """
         Get the public wms endpoint for GeoServer.
@@ -144,7 +259,7 @@ class MapManagerBase(object):
             first_division(int): first division number (defaults to 1).
             top_offset(number): offset from top of color ramp (defaults to 0).
             bottom_offset(number): offset from bottom of color ramp (defaults to 0).
-            prefix=(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
+            prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
 
         Returns:
             dict<name, value>: custom divisions
@@ -165,3 +280,32 @@ class MapManagerBase(object):
             divisions['{}{}'.format(prefix, i)] = ceil(m * i + b)
 
         return divisions
+
+    def get_plot_for_layer_feature(self, layer_name, feature_id):
+        """
+        Get plot data for given feature on given layer.
+
+        Args:
+            layer_name(str): Name/id of layer.
+            feature_id(str): PostGIS Feature ID of feature.
+
+        Returns:
+            str, list<dict>, dict: plot title, data series, and layout options, respectively.
+        """
+        # TODO: GAGE TEST THIS
+        layout = {
+            'xaxis': {
+                'title': layer_name
+            },
+            'yaxis': {
+                'title': 'Undefined'
+            }
+        }
+
+        data = [{
+            'name': feature_id,
+            'mode': 'lines',
+            'x': [1, 2, 3, 4],
+            'y': [10, 15, 13, 17],
+        }]
+        return 'Undefined', data, layout

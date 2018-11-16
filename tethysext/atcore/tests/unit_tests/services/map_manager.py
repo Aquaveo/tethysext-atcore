@@ -8,6 +8,9 @@
 """
 import mock
 import unittest
+from tethys_gizmos.gizmo_options import MVLayer
+from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.services.spatial_manager import SpatialManager
 from tethysext.atcore.services.map_manager import MapManagerBase
 
 
@@ -20,8 +23,8 @@ class _MapManager(MapManagerBase):
 class MapManagerBaseTests(unittest.TestCase):
 
     def setUp(self):
-        self.spatial_manager = mock.MagicMock()
-        self.model_db = mock.MagicMock()
+        self.spatial_manager = mock.MagicMock(spec=SpatialManager)
+        self.model_db = mock.MagicMock(spec=ModelDatabase)
         self.map_manager = _MapManager(self.spatial_manager, self.model_db)
 
     def tearDown(self):
@@ -222,3 +225,212 @@ class MapManagerBaseTests(unittest.TestCase):
             'val10': 1000.0
         }
         self.assertEqual(expected, val)
+
+    def test_build_param_string_multiple_kwargs(self):
+        ret = self.map_manager.build_param_string(foo='bar', baz='jar')
+        self.assertEqual('foo:bar;baz:jar', ret)
+
+    def test_build_param_string_single_kwargs(self):
+        ret = self.map_manager.build_param_string(foo='bar')
+        self.assertEqual('foo:bar', ret)
+
+    def test_build_param_string_no_kwargs(self):
+        ret = self.map_manager.build_param_string()
+        self.assertEqual('', ret)
+
+    def test_build_mv_layer(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        extent = [400, 300, 800, 100]
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title
+            )
+
+        opts = ret['options']
+        params = opts['params']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('TileWMS', ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertIn('tileGrid', opts)
+        self.assertEqual(map_manager.DEFAULT_TILE_GRID, opts['tileGrid'])
+        self.assertIn('TILED', params)
+        self.assertTrue(params['TILED'])
+        self.assertIn('TILESORIGIN', params)
+        self.assertEqual('0.0,0.0', params['TILESORIGIN'])
+
+    def test_build_mv_layer_not_tiled(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        extent = [400, 300, 800, 100]
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                tiled=False
+            )
+
+        opts = ret['options']
+        params = opts['params']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('ImageWMS', ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertNotIn('tileGrid', opts)
+        self.assertNotIn('TILED', params)
+        self.assertNotIn('TILESORIGIN', params)
+
+    def test_build_mv_layer_viewparams(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        extent = [400, 300, 800, 100]
+        viewparams = 'foo:bar;baz:jar'
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                viewparams=viewparams
+            )
+
+        opts = ret['options']
+        params = opts['params']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('TileWMS', ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertIn('tileGrid', opts)
+        self.assertEqual(map_manager.DEFAULT_TILE_GRID, opts['tileGrid'])
+        self.assertIn('TILED', params)
+        self.assertTrue(params['TILED'])
+        self.assertIn('TILESORIGIN', params)
+        self.assertEqual('0.0,0.0', params['TILESORIGIN'])
+        self.assertIn('VIEWPARAMS', params)
+        self.assertEqual(viewparams, params['VIEWPARAMS'])
+
+    def test_build_mv_layer_env(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        extent = [400, 300, 800, 100]
+        env = 'foo:bar;baz:jar'
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                env=env
+            )
+
+        opts = ret['options']
+        params = opts['params']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('TileWMS', ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertIn('tileGrid', opts)
+        self.assertEqual(map_manager.DEFAULT_TILE_GRID, opts['tileGrid'])
+        self.assertIn('TILED', params)
+        self.assertTrue(params['TILED'])
+        self.assertIn('TILESORIGIN', params)
+        self.assertEqual('0.0,0.0', params['TILESORIGIN'])
+        self.assertIn('ENV', params)
+        self.assertEqual(env, params['ENV'])
+
+    def test_build_mv_layer_not_visible(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        extent = [400, 300, 800, 100]
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                visible=False
+            )
+
+        opts = ret['options']
+        params = opts['params']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('TileWMS', ret['source'])
+        self.assertEqual({'visible': False}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertIn('tileGrid', opts)
+        self.assertEqual(map_manager.DEFAULT_TILE_GRID, opts['tileGrid'])
+        self.assertIn('TILED', params)
+        self.assertTrue(params['TILED'])
+        self.assertIn('TILESORIGIN', params)
+        self.assertEqual('0.0,0.0', params['TILESORIGIN'])

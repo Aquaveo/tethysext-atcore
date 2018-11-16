@@ -226,7 +226,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Check if layer is plottable
         let layer = m_layers[layer_name];
-        if (!layer || !layer.tethys_data.plotable) {
+        if (!layer || !layer.tethys_data.plottable) {
             return;
         }
 
