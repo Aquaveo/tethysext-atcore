@@ -9,7 +9,7 @@ from tethysext.atcore.tests.unit_tests.services.app_users.licenses import Licens
 from tethysext.atcore.tests.unit_tests.services.app_users.user_roles import AppUserRoleTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.paginate import PaginateTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.spatial_reference import SpatialReferenceServiceTests  # noqa: F401
-from tethysext.atcore.tests.unit_tests.services.model_database_connection import ModelDatabaseConnectionTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.services.model_database_connection import ModelDatabaseConnectionTests  # noqa: F401, E501
 from tethysext.atcore.tests.unit_tests.services.model_database import ModelDatabaseTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.geoserver_api import GeoServerAPITests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.spatial_manager import SpatialManagerTests  # noqa: F401
