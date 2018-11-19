@@ -52,7 +52,7 @@ class QuerySpatialReferenceControllerTests(TethysTestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(response.has_header('content-type'))
         self.assertEqual('application/json', response.get('content-type'))
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode('utf-8'))
         self.assertIn('results', content)
         self.assertGreater(len(content['results']), 0)
 
@@ -74,7 +74,7 @@ class QuerySpatialReferenceControllerTests(TethysTestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(response.has_header('content-type'))
         self.assertEqual('application/json', response.get('content-type'))
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode('utf-8'))
         self.assertIn('results', content)
         self.assertEqual(1, len(content['results']))
         self.assertEqual(self.srid, content['results'][0]['id'])
@@ -87,7 +87,7 @@ class QuerySpatialReferenceControllerTests(TethysTestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(response.has_header('content-type'))
         self.assertEqual('application/json', response.get('content-type'))
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode('utf-8'))
         self.assertIn('error', content)
         self.assertEqual('BadRequest: must pass either "id" or "q" parameters.', content['error'])
 

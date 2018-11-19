@@ -154,7 +154,7 @@ class ModelDatabaseTests(unittest.TestCase):
         mmdc.get_engine.return_value = MockEngine(CONN_6)
         md = ModelDatabase(self.mock_app)
         result = md.get_size()
-        self.assertEquals(75, result)
+        self.assertEqual(75, result)
 
     @mock.patch('tethysext.atcore.services.model_database.ModelDatabaseConnection')
     def test_get_size_pretty(self, mock_mdc):
@@ -162,7 +162,7 @@ class ModelDatabaseTests(unittest.TestCase):
         mmdc.get_engine.return_value = MockEngine(CONN_6)
         md = ModelDatabase(self.mock_app)
         result = md.get_size(True)
-        self.assertEquals(75, result)
+        self.assertEqual(75, result)
 
     def test_db_url(self):
         self.mock_app.list_persistent_store_connections = mock.MagicMock(
@@ -170,7 +170,7 @@ class ModelDatabaseTests(unittest.TestCase):
         )
         md = ModelDatabase(self.mock_app)
         result = md.db_url
-        self.assertEquals(md.db_url, result)
+        self.assertEqual(md.db_url, result)
 
     def test_db_url_obj(self):
         self.mock_app.list_persistent_store_connections = mock.MagicMock(
@@ -178,7 +178,7 @@ class ModelDatabaseTests(unittest.TestCase):
         )
         md = ModelDatabase(self.mock_app)
         result = md.db_url_obj
-        self.assertEquals(md.db_url_obj, result)
+        self.assertEqual(md.db_url_obj, result)
 
     def test_model_db_connection(self):
         fake_url = 'postgresql://name:pass@localhost:5435/foo_239407239480712394'
@@ -332,7 +332,7 @@ class ModelDatabaseTests(unittest.TestCase):
         md = ModelDatabase(self.mock_app)
         result = md.list()
         self.mock_app.list_persistent_store_databases.assert_called()
-        self.assertEquals(databases, result)
+        self.assertEqual(databases, result)
 
     def test_generate_id(self):
         self.mock_app.list_persistent_store_connections = mock.MagicMock(
