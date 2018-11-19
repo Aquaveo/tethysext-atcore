@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
-from base import AppUsersBase
-from app_user import AppUser
+from .base import AppUsersBase
+from .app_user import AppUser
 
 
 def initialize_app_users_db(engine, first_time=False, app_user_model=AppUser):
