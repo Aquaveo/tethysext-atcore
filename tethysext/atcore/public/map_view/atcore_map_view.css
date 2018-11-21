@@ -15,6 +15,10 @@
     padding: 0;
 }
 
+.map-form {
+    height: 100%;
+}
+
 /* Wider Nav */
 #app-content-wrapper #app-content #app-navigation {
     left: -400px;

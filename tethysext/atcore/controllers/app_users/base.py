@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: mixins.py
+* Name: base.py
 * Author: nswain
 * Created On: April 06, 2018
 * Copyright: (c) Aquaveo 2018
@@ -10,12 +10,14 @@ from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from django.shortcuts import reverse, redirect
 from django.contrib import messages
+from tethys_apps.utilities import get_active_app
+from tethys_sdk.base import TethysController
 from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
 
-class AppUsersControllerMixin:
+class AppUsersController(TethysController):
     _AppUser = AppUser
     _Organization = Organization
     _Resource = Resource
@@ -45,11 +47,41 @@ class AppUsersControllerMixin:
         return self._app.get_persistent_store_database(self._persistent_store_name, as_sessionmaker=True)
 
 
-class AppUsersResourceControllerMixin(AppUsersControllerMixin):
+class AppUsersResourceController(AppUsersController):
 
-    def _get_resource(self, request, resource_id, back_controller, session=None):
+    back_url = ''
+
+    def dispatch(self, request, *args, **kwargs):
         """
-        Get the resource an check permissions.
+        Intercept kwargs before calling handler method.
+        """
+        # Handle back_url
+        self.back_url = kwargs.get('back_url', '')
+
+        # Default to the resource details page
+        if not self.back_url:
+            self.back_url = self.default_back_url(
+                request=request,
+                *args, **kwargs
+            )
+        return super(AppUsersResourceController, self).dispatch(request, *args, **kwargs)
+
+    def default_back_url(self, request, *args, **kwargs):
+        """
+        Hook for custom back url. Defaults to the resource details page.
+
+        Returns:
+            str: back url.
+        """
+        resource_id = kwargs.get('resource_id', '') or args[0]
+        active_app = get_active_app(request)
+        app_namespace = active_app.namespace
+        back_controller = '{}:app_users_resource_details'.format(app_namespace)
+        return reverse(back_controller, args=(str(resource_id),))
+
+    def get_resource(self, request, resource_id, session=None):
+        """
+        Get the resource and check permissions.
 
         Args:
             request: Django HttpRequest.
@@ -69,7 +101,6 @@ class AppUsersResourceControllerMixin(AppUsersControllerMixin):
             session = make_session()
 
         request_app_user = _AppUser.get_app_user_from_request(request, session)
-        resource = None
 
         try:
             resource = session.query(_Resource). \
@@ -86,11 +117,11 @@ class AppUsersResourceControllerMixin(AppUsersControllerMixin):
             messages.warning(request, 'The {} could not be found.'.format(
                 _Resource.DISPLAY_TYPE_SINGULAR.lower()
             ))
-            return redirect(reverse(back_controller))
+            return redirect(self.back_url)
         except ATCoreException as e:
             error_message = str(e)
             messages.warning(request, error_message)
-            return redirect(reverse(back_controller))
+            return redirect(self.back_url)
 
         finally:
             if manage_session:

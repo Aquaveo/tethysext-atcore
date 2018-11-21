@@ -13,19 +13,18 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 # Tethys core
-from tethys_apps.base.controller import TethysController
 from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, SelectInput
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.gizmos import SpatialReferenceSelect
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
 
-class ModifyResource(TethysController, AppUsersControllerMixin):
+class ModifyResource(AppUsersController):
     """
     Controller for modify_resource page.
 

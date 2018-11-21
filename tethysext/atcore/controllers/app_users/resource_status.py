@@ -11,16 +11,15 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponse
 # Tethys core
-from tethys_sdk.base import TethysController
 from tethys_sdk.gizmos import JobsTable
 from tethys_sdk.permissions import permission_required
 from tethys_apps.utilities import get_active_app
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersResourceControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
+class ResourceStatus(AppUsersResourceController):
     """
     Controller for resource_status page.
 
@@ -48,7 +47,6 @@ class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
         resource_id = params.get('r', None)
 
         resource = None
-        back_url = self._get_back_url(request, resource_id)
         app = self.get_app()
         job_manager = app.get_job_manager()
         jobs = job_manager.list_jobs()
@@ -58,7 +56,7 @@ class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
 
         if resource_id:
             # This checks for existence of the resource and access permissions
-            resource = self._get_resource(request, resource_id, back_url)
+            resource = self.get_resource(request, resource_id)
 
             # TODO: Move permissions check into decorator
             if isinstance(resource, HttpResponse):
@@ -93,14 +91,14 @@ class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
             'resource_id': resource_id,
             'resource': resource,
             'base_template': self.base_template,
-            'back_url': back_url
+            'back_url': self.back_url
         }
 
         context = self.get_context(request, context)
 
         return render(request, self.template_name, context)
 
-    def _get_back_url(self, request, resource_id=None):
+    def default_back_url(self, request, *args, **kwargs):
         """
         Derive the back controller.
 
@@ -111,6 +109,7 @@ class ResourceStatus(TethysController, AppUsersResourceControllerMixin):
             str: name of the controller to return to when hitting back or on error.
         """
         # Process next
+        resource_id = kwargs.get('resource_id', None)
         back_arg = request.GET.get('back', '')
         active_app = get_active_app(request)
         app_namespace = active_app.namespace

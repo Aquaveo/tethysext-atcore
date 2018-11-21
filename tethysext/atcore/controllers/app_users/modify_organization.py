@@ -13,16 +13,15 @@ from django.urls import reverse
 # Tethys core
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
-from tethys_apps.base.controller import TethysController
 from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class ModifyOrganization(TethysController, AppUsersControllerMixin):
+class ModifyOrganization(AppUsersController):
     """
     Controller for modify_organization page.
 

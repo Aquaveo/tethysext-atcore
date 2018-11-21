@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: mixins.py
+* Name: base.py
 * Author: nswain and ckrewson
 * Created On: September 24, 2018
 * Copyright: (c) Aquaveo 2018
@@ -11,15 +11,15 @@ from sqlalchemy.orm.exc import NoResultFound
 from django.test import RequestFactory
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin, AppUsersResourceControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController, AppUsersResourceController
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 
 
-class FakeAppUsersController(AppUsersControllerMixin):
+class FakeAppUsersController(AppUsersController):
     pass
 
 
-class FakeAppUsersResourceController(AppUsersResourceControllerMixin):
+class FakeAppUsersResourceController(AppUsersResourceController):
     pass
 
 
@@ -59,7 +59,7 @@ class AppUsersControllerMixinTests(TethysTestCase):
 
         self.assertEqual(Resource, ret)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppPermissionsManager')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppPermissionsManager')
     def test_get_permissions_manager(self, mock_apm):
         mock_app = mock.MagicMock()
         self.fauc._app = mock_app
@@ -103,15 +103,12 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
 
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
-        mock_back_controller = 'myapp:mycontroller'
         mock_session = self.farc.get_sessionmaker()()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
         mock_resource = mock_session.query().filter().one()
 
-        ret = self.farc._get_resource(request=mock_request,
-                                      resource_id=mock_resource_id,
-                                      back_controller=mock_back_controller)
+        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
 
         self.assertEqual(mock_resource, ret)
         mock_session.close.assert_called()
@@ -122,23 +119,19 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
 
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
-        mock_back_controller = 'myapp:mycontroller'
         mock_session = mock.MagicMock()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
         mock_resource = mock_session.query().filter().one()
 
-        ret = self.farc._get_resource(request=mock_request,
-                                      resource_id=mock_resource_id,
-                                      back_controller=mock_back_controller,
-                                      session=mock_session)
+        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
         self.assertEqual(mock_resource, ret)
         mock_session.close.assert_not_called()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.reverse')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.messages')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
     def test_get_resource_no_permission(self, mock_messages, _, mock_redirect):
         self.farc.get_app_user_model = mock.MagicMock()
         self.farc.get_resource_model = mock.MagicMock()
@@ -146,22 +139,19 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
 
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
-        mock_back_controller = 'myapp:mycontroller'
         mock_session = self.farc.get_sessionmaker()()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = False
 
-        ret = self.farc._get_resource(request=mock_request,
-                                      resource_id=mock_resource_id,
-                                      back_controller=mock_back_controller)
+        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
 
         self.assertEqual(mock_redirect(), ret)
         mock_messages.warning.assert_called()
         mock_session.close.assert_called()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.reverse')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.messages')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
     def test_get_resource_db_exception(self, mock_messages, _, mock_redirect):
         self.farc.get_app_user_model = mock.MagicMock()
         self.farc.get_resource_model = mock.MagicMock()
@@ -169,13 +159,10 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
 
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
-        mock_back_controller = 'myapp:mycontroller'
         mock_session = self.farc.get_sessionmaker()()
         mock_session.query.side_effect = NoResultFound
 
-        ret = self.farc._get_resource(request=mock_request,
-                                      resource_id=mock_resource_id,
-                                      back_controller=mock_back_controller)
+        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
 
         self.assertEqual(mock_redirect(), ret)
         mock_messages.warning.assert_called()

@@ -12,15 +12,14 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 # Tethys core
-from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.services.paginate import paginate
 
 
-class ManageUsers(TethysController, AppUsersControllerMixin):
+class ManageUsers(AppUsersController):
     """
     Controller for manage_users page.
 

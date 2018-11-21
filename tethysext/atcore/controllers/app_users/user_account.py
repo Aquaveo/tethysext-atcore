@@ -9,14 +9,13 @@
 # Django
 from django.shortcuts import render
 # Tethys core
-from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class UserAccount(TethysController, AppUsersControllerMixin):
+class UserAccount(AppUsersController):
     """
     Controller for user_account page.
 

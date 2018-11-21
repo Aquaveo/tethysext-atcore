@@ -11,16 +11,15 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.contrib import messages
 # Tethys core
-from tethys_apps.base.controller import TethysController
 from tethys_apps.decorators import permission_required
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
 # CityWater
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class ManageOrganizationMembers(TethysController, AppUsersControllerMixin):
+class ManageOrganizationMembers(AppUsersController):
     """
     Controller for manage_organization_members page.
 

@@ -7,18 +7,17 @@
 ********************************************************************************
 """
 # Django
-from django.shortcuts import render
+from django.shortcuts import render, reverse
 from django.http import HttpResponse
 # Tethys core
-from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import permission_required
 from tethys_apps.utilities import get_active_app
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersResourceControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class ResourceDetails(TethysController, AppUsersResourceControllerMixin):
+class ResourceDetails(AppUsersResourceController):
     """
     Controller for resource_details page.
 
@@ -40,8 +39,7 @@ class ResourceDetails(TethysController, AppUsersResourceControllerMixin):
         """
         Handle get requests.
         """
-        back_controller = self._get_back_controller(request)
-        resource = self._get_resource(request, resource_id, back_controller)
+        resource = self.get_resource(request, resource_id)
 
         # TODO: Move permissions check into decorator
         if isinstance(resource, HttpResponse):
@@ -49,7 +47,7 @@ class ResourceDetails(TethysController, AppUsersResourceControllerMixin):
 
         context = {
             'resource': resource,
-            'back': back_controller,
+            'back_url': self.back_url,
             'base_template': self.base_template
         }
 
@@ -57,7 +55,7 @@ class ResourceDetails(TethysController, AppUsersResourceControllerMixin):
 
         return render(request, self.template_name, context)
 
-    def _get_back_controller(self, request):
+    def default_back_url(self, request, *args, **kwargs):
         """
         Derive the back controller.
 
@@ -75,7 +73,7 @@ class ResourceDetails(TethysController, AppUsersResourceControllerMixin):
             back_controller = '{}:app_users_manage_organizations'.format(app_namespace)
         else:
             back_controller = '{}:app_users_manage_resources'.format(app_namespace)
-        return back_controller
+        return reverse(back_controller)
 
     def get_context(self, request, context):
         """

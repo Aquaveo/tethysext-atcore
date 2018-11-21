@@ -1,3 +1,11 @@
+"""
+********************************************************************************
+* Name: app_users.py
+* Author: nswain
+* Created On: November 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+"""
 import inspect
 from django.utils.text import slugify
 from tethys_sdk.base import TethysController

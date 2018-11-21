@@ -43,17 +43,15 @@ class MapViewTests(TethysTestCase):
     def tearDown(self):
         pass
 
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView._get_back_controller')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView._get_resource')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_back_url', return_value='/foo/')
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
     @mock.patch('tethysext.atcore.controllers.map_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    def test_get(self, mock_has_permission, mock_render, _, __, ___):
+    def test_get(self, mock_has_permission, mock_render, _):
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.user
 
-        response = self.controller(request=mock_request, resource_id=resource_id)
+        response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
 
         mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
         mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
@@ -96,12 +94,6 @@ class MapViewTests(TethysTestCase):
         pass
 
     def test_get_permissions(self):
-        pass
-
-    def test_get_back_url(self):
-        pass
-
-    def test__get_back_controller(self):
         pass
 
     def test_get_plot_data(self):

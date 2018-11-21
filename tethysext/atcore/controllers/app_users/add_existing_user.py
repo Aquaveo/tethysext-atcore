@@ -2,14 +2,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
-from tethys_apps.base.controller import TethysController
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
-from tethysext.atcore.controllers.app_users.mixins import AppUsersControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersController
 
 
-class AddExistingUser(TethysController, AppUsersControllerMixin):
+class AddExistingUser(AppUsersController):
     """
     Controller for add_existing_user page.
 

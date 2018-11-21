@@ -8,23 +8,19 @@
 """
 import uuid
 import requests
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from django.contrib import messages
-from tethys_apps.utilities import get_active_app
-from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission, permission_required
 from tethysext.atcore.services.app_users.decorators import active_user_required
-from tethysext.atcore.controllers.app_users.mixins import AppUsersResourceControllerMixin
+from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
 
 
-class MapView(TethysController, AppUsersResourceControllerMixin):
+class MapView(AppUsersResourceController):
     """
-    Controller for modify_resource page.
-
-    POST: Handle spatial reference queries.
+    Controller for a map view page.
     """
     map_title = ''
     map_subtitle = ''
@@ -49,8 +45,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         from django.conf import settings
 
         # Get Resource
-        back_controller = self._get_back_controller(request=request)
-        resource = self._get_resource(request, resource_id, back_controller)
+        resource = self.get_resource(request, resource_id)
 
         # TODO: Move permissions check into decorator
         if isinstance(resource, HttpResponse):
@@ -59,7 +54,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         database_id = resource.get_attribute('database_id')
         if not database_id:
             messages.error(request, 'An unexpected error occurred. Please try again.')
-            return redirect(back_controller)
+            return redirect(self.back_url)
 
         # Initialize MapManager
         model_db = self._ModelDatabase(app=self._app, database_id=database_id)
@@ -102,7 +97,8 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             'is_in_debug': settings.DEBUG,
             'map_title': self.map_title or resource.name,
             'map_subtitle': self.map_subtitle,
-            'workspace': self._SpatialManager.WORKSPACE
+            'workspace': self._SpatialManager.WORKSPACE,
+            'back_url': self.back_url
         }
 
         # Context hook
@@ -130,17 +126,6 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         )
 
         context.update(permissions)
-
-        # Compute back url
-        back_url = self.get_back_url(
-            request=request,
-            resource=resource,
-            model_db=model_db,
-            map_manager=map_manager,
-            *args, **kwargs
-        )
-
-        context.update({'back_url': back_url})
 
         # Add plot slide sheet
         plot_slidesheet = SlideSheet(
@@ -214,40 +199,6 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         """
         return permissions
 
-    def get_back_url(self, request, resource, model_db, map_manager, *args, **kwargs):
-        """
-        Get the back button url.
-
-        Args:
-            request (HttpRequest): The request.
-            resource (Resource): Resource instance associated with this request.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
-            map_manager (MapManager): MapManager instance associated with this request.
-
-        Returns:
-            str: url for back button.
-        """
-        active_app = get_active_app(request)
-        app_namespace = active_app.namespace
-        back_controller = '{}:app_users_resource_details'.format(app_namespace)
-        return reverse(back_controller, args=(str(resource.id),))
-
-    def _get_back_controller(self, request):
-        """
-        Derive the back controller.
-
-        Args:
-            request: Django HttpRequest.
-
-        Returns:
-            str: name of the controller to return to when hitting back or on error.
-        """
-        # Process next
-        active_app = get_active_app(request)
-        app_namespace = active_app.namespace
-        back_controller = '{}:app_users_manage_resources'.format(app_namespace)
-        return back_controller
-
     def get_plot_data(self, request, resource_id, layer_name, feature_id):
         """
         Load plot from given parameters.
@@ -262,8 +213,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
             JsonResponse: title, data, and layout options for the plot.
         """
         # Get Resource
-        back_controller = self._get_back_controller(request=request)
-        resource = self._get_resource(request, resource_id, back_controller)
+        resource = self.get_resource(request, resource_id)
 
         # TODO: Move permissions check into decorator
         if isinstance(resource, HttpResponse):
@@ -272,7 +222,7 @@ class MapView(TethysController, AppUsersResourceControllerMixin):
         database_id = resource.get_attribute('database_id')
         if not database_id:
             messages.error(request, 'An unexpected error occurred. Please try again.')
-            return redirect(back_controller)
+            return redirect(self.back_url)
 
         # Initialize MapManager
         model_db = self._ModelDatabase(app=self._app, database_id=database_id)
