@@ -28,129 +28,140 @@
   {# TABS #}
   <div class="map-tabs">
     <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      {# LAYERS TAB #}
-      <li role="presentation" class="active">
-        <a id="layers-tab-toggle"
-           href="#layers-tab-panel"
-           aria-controls="layers-tab-panel"
-           role="tab"
-           data-toggle="tab">Layers</a>
-      </li>
-      {# LEGEND TAB #}
-      {% comment %}
-      {# TODO: Implement Legend tab
-      <li role="presentation">
-        <a id="legend-tab-toggle"
-           href="#legend-tab-panel"
-           aria-controls="legend-tab-panel"
-           role="tab"
-           data-toggle="tab">Legend</a>
-      </li>
-      {% endcomment %}
-    </ul>
-
-    {# TAB CONTENT #}
-    <div class="tab-content">
-
-      {# LAYERS TAB PANEL #}
-      <div role="tabpanel" class="tab-pane active" id="layers-tab-panel">
-        {% for layer_group in layer_groups %}
-        <li class="layer-group-item">
-
-          {# LAYER GROUP VISIBILITY CONTROL #}
-          <label class="flatmark"><span class="display-name">{{ layer_group.display_name }}</span>
-            <input type="checkbox"
-                   class="layer-group-visibility-control"
-                   {% if layer_group.visible %}checked="checked"{% endif %}
-                   data-layer-group-id="{{ layer_group.id }}">
-            <span class="checkmark checkbox"></span>
-          </label>
-
-          {# LAYER GROUP CONTEXT MENU #}
-          <div class="dropdown layers-context-menu pull-right">
-            <a id="{{ layer_group.id }}--context-menu"
-               class="btn btn-xs dropdown-toggle layers-btn"
-               data-toggle="dropdown" aria-haspopup="true"
-               aria-expanded="true">
-              <span class="glyphicon glyphicon-option-vertical"></span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
-              <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
-              <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer-group"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
-              {% comment %}
-              {# TODO: Implement add layer action #}
-              <li role="separator" class="divider"></li>
-              <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
-              {% endcomment %}
-            </ul>
-          </div>
-          <a id="{{ layer_group.id }}--collapse"
-             class="collapse-action btn btn-xs layers-btn pull-right"
-             data-collapsed="false">
-            <span class="glyphicon glyphicon-chevron-down"></span>
-          </a>
+    {% block map_tabs %}
+      <ul class="nav nav-tabs" role="tablist">
+        {# LAYERS TAB #}
+        <li role="presentation" {% block disable_default_tab %}class="active"{% endblock %}>
+          <a id="layers-tab-toggle"
+             href="#layers-tab-panel"
+             aria-controls="layers-tab-panel"
+             role="tab"
+             data-toggle="tab">Layers</a>
         </li>
+        {# LEGEND TAB #}
+        {% comment %}
+        {# TODO: Implement Legend tab
+        <li role="presentation">
+          <a id="legend-tab-toggle"
+             href="#legend-tab-panel"
+             aria-controls="legend-tab-panel"
+             role="tab"
+             data-toggle="tab">Legend</a>
+        </li>
+        {% endcomment %}
 
-        <ul class="layer-list" data-collapsed="false">
-          {% for layer in layer_group.layers %}
-          <li class="layer-list-item">
-            {# LAYER VISIBILITY CONTROL #}
-            <label class="flatmark"><span class="display-name">{{ layer.legend_title }}</span>
-              <input type="{{ layer_group.control }}"
-                     class="layer-visibility-control"
-                     {% if layer.layer_options.visible %}checked="checked"{% endif %}
-                     {% if not layer_group.visible %}disabled{% endif %}
-                     data-layer-name="{{ layer.data.layer_name }}"
-                     data-layer-variable="{{ layer.data.variable }}"
-                     name="{{ layer_group.id }}">
-              <span class="checkmark {{ layer_group.control }}"></span>
+        {# CUSTOM TABS #}
+        {% block custom_map_tabs %}
+        {% endblock %}
+      </ul>
+    {% endblock %}
+
+    {# TAB PANELS #}
+    {% block map_tab_panels %}
+      <div class="tab-content">
+        {# LAYERS TAB PANEL #}
+        <div role="tabpanel" class="tab-pane{% block disable_default_tab_panel %} active{% endblock %}" id="layers-tab-panel">
+          {% for layer_group in layer_groups %}
+          <li class="layer-group-item">
+
+            {# LAYER GROUP VISIBILITY CONTROL #}
+            <label class="flatmark"><span class="display-name">{{ layer_group.display_name }}</span>
+              <input type="checkbox"
+                     class="layer-group-visibility-control"
+                     {% if layer_group.visible %}checked="checked"{% endif %}
+                     data-layer-group-id="{{ layer_group.id }}">
+              <span class="checkmark checkbox"></span>
             </label>
 
-            {# LAYER CONTEXT MENU #}
+            {# LAYER GROUP CONTEXT MENU #}
             <div class="dropdown layers-context-menu pull-right">
-              <a id="{{ layer.data.layer_name }}--context-menu"
-                 class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
-                 data-toggle="dropdown"
-                 aria-haspopup="true"
+              <a id="{{ layer_group.id }}--context-menu"
+                 class="btn btn-xs dropdown-toggle layers-btn"
+                 data-toggle="dropdown" aria-haspopup="true"
                  aria-expanded="true">
                 <span class="glyphicon glyphicon-option-vertical"></span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_name }}--context-menu">
+              <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
                 <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
-                <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
-                <li role="separator" class="divider"></li>
-                <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer-group"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                 {% comment %}
-                {# TODO: Implement download layer action #}
+                {# TODO: Implement add layer action #}
                 <li role="separator" class="divider"></li>
-                <li><a class="download-layer" href="javascript:void(0);"><span class="glyphicon glyphicon-cloud-download"></span><span class="command-name">Download</span></a></li>
+                <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
                 {% endcomment %}
-                <li role="separator" class="divider"></li>
-                <li>
-                  <div class="flat-slider-container">
-                    <label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
-                    <input type="range"
-                           class="flat-slider layer-opacity-control"
-                           min="0" max="100"
-                           value="100"
-                           data-layer-name="{{ layer.data.layer_name }}"
-                           data-layer-variable="{{ layer.data.variable }}">
-                  </div>
-                </li>
               </ul>
             </div>
+            <a id="{{ layer_group.id }}--collapse"
+               class="collapse-action btn btn-xs layers-btn pull-right"
+               data-collapsed="false">
+              <span class="glyphicon glyphicon-chevron-down"></span>
+            </a>
           </li>
-          {% endfor %}
-        </ul>
-        {% endfor %}
-      </div>
 
-      {# LEGEND TAB PANEL #}
-      <div role="tabpanel" class="tab-pane" id="legend-tab-panel">
-        <li class="title">Legend</li>
+          <ul class="layer-list" data-collapsed="false">
+            {% for layer in layer_group.layers %}
+            <li class="layer-list-item">
+              {# LAYER VISIBILITY CONTROL #}
+              <label class="flatmark"><span class="display-name">{{ layer.legend_title }}</span>
+                <input type="{{ layer_group.control }}"
+                       class="layer-visibility-control"
+                       {% if layer.layer_options.visible %}checked="checked"{% endif %}
+                       {% if not layer_group.visible %}disabled{% endif %}
+                       data-layer-name="{{ layer.data.layer_name }}"
+                       data-layer-variable="{{ layer.data.variable }}"
+                       name="{{ layer_group.id }}">
+                <span class="checkmark {{ layer_group.control }}"></span>
+              </label>
+
+              {# LAYER CONTEXT MENU #}
+              <div class="dropdown layers-context-menu pull-right">
+                <a id="{{ layer.data.layer_name }}--context-menu"
+                   class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
+                   data-toggle="dropdown"
+                   aria-haspopup="true"
+                   aria-expanded="true">
+                  <span class="glyphicon glyphicon-option-vertical"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_name }}--context-menu">
+                  <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                  <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                  {% comment %}
+                  {# TODO: Implement download layer action #}
+                  <li role="separator" class="divider"></li>
+                  <li><a class="download-layer" href="javascript:void(0);"><span class="glyphicon glyphicon-cloud-download"></span><span class="command-name">Download</span></a></li>
+                  {% endcomment %}
+                  <li role="separator" class="divider"></li>
+                  <li>
+                    <div class="flat-slider-container">
+                      <label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
+                      <input type="range"
+                             class="flat-slider layer-opacity-control"
+                             min="0" max="100"
+                             value="100"
+                             data-layer-name="{{ layer.data.layer_name }}"
+                             data-layer-variable="{{ layer.data.variable }}">
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endfor %}
+        </div>
+
+        {# LEGEND TAB PANEL #}
+        <div role="tabpanel" class="tab-pane" id="legend-tab-panel">
+          <li class="title">Legend</li>
+        </div>
+
+        {# CUSTOM TAB PANELS #}
+        {% block custom_map_tab_panels %}
+        {% endblock %}
       </div>
-    </div>
+    {% endblock %}
   </div>
 {% endblock %}
 
@@ -170,7 +181,9 @@
   {% endif %}
 
   {# MAP #}
-  {% gizmo map_view %}
+  {% block map %}
+    {% gizmo map_view %}
+  {% endblock %}
 
   {# MAP ATTRIBUTES #}
   <div id="atcore-map-attributes"

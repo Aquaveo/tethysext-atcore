@@ -1,0 +1,43 @@
+{% extends "atcore/map_view/map_view.html" %}
+{% load tethys_gizmos staticfiles %}
+
+{# OVERRIDE DEFAULT ACTIVE TAB #}
+{% block disable_default_tab %}{% endblock %}
+{% block disable_default_tab_panel %}{% endblock %}
+
+{% block custom_map_tabs %}
+  {# WORKFLOW TAB #}
+  <li role="presentation" class="active">
+    <a id="workflow-tab-toggle"
+       href="#workflow-tab-panel"
+       aria-controls="workflow-tab-panel"
+       role="tab"
+       data-toggle="tab">Workflow</a>
+  </li>
+{% endblock %}
+
+{% block custom_map_tab_panels %}
+  {# WORKFLOW TAB PANEL #}
+  <div role="tabpanel" class="tab-pane active" id="workflow-tab-panel">
+    <ul class="workflow-steps">
+      {% for step in steps %}
+      <li><a class="workflow-step"><span class="glyphicon glyphicon-ok-sign"></span><span class="workflow-step-title">{{ step.name }}</span></a></li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
+
+{% block map %}
+  <form id="map-workflow-form" class="map-form" method="post">
+    {{ block.super }}
+  </form>
+{% endblock %}
+
+{% block app_actions %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/resource_workflows/atcore_map_workflow.css' %}" rel="stylesheet"/>
+{% endblock %}
