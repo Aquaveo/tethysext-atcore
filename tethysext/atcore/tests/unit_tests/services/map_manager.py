@@ -228,7 +228,9 @@ class MapManagerBaseTests(unittest.TestCase):
 
     def test_build_param_string_multiple_kwargs(self):
         ret = self.map_manager.build_param_string(foo='bar', baz='jar')
-        self.assertEqual('foo:bar;baz:jar', ret)
+        parts = ret.split(';')
+        self.assertIn('baz:jar', parts)
+        self.assertIn('foo:bar', parts)
 
     def test_build_param_string_single_kwargs(self):
         ret = self.map_manager.build_param_string(foo='bar')
