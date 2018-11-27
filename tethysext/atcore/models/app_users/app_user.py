@@ -123,12 +123,12 @@ class AppUser(AppUsersBase):
 
     @staticmethod
     def get_organization_model():
-        from organization import Organization
+        from .organization import Organization
         return Organization
 
     @staticmethod
     def get_resource_model():
-        from resource import Resource
+        from .resource import Resource
         return Resource
 
     def is_staff(self):

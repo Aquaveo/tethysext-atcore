@@ -33,7 +33,7 @@ class GuidTests(unittest.TestCase):
     def test_load_dialect_impl_non_postgresql(self):
         return_val = self.guid.load_dialect_impl(self.mock_non_postgres_dialect)
         self.assertIsInstance(return_val, CHAR)
-        self.assertEquals(32, return_val.length)
+        self.assertEqual(32, return_val.length)
 
     def test_process_bind_param_none(self):
         return_val = self.guid.process_bind_param(None, None)
@@ -41,15 +41,15 @@ class GuidTests(unittest.TestCase):
 
     def test_process_bind_param_postgresql(self):
         return_val = self.guid.process_bind_param(self.non_uuid_value, self.mock_postgres_dialect)
-        self.assertEquals(str(self.non_uuid_value), return_val)
+        self.assertEqual(str(self.non_uuid_value), return_val)
 
     def test_process_bind_param_non_postgresql_non_uuid(self):
         return_val = self.guid.process_bind_param(self.non_uuid_value, self.mock_non_postgres_dialect)
-        self.assertEquals("%.32x" % uuid.UUID(self.non_uuid_value), return_val)
+        self.assertEqual("%.32x" % int(uuid.UUID(self.non_uuid_value)), return_val)
 
     def test_process_bind_param_non_postgresql_uuid(self):
         return_val = self.guid.process_bind_param(self.uuid_value, self.mock_non_postgres_dialect)
-        self.assertEquals("%.32x" % self.uuid_value, return_val)
+        self.assertEqual("%.32x" % int(self.uuid_value), return_val)
 
     def test_process_result_value_none(self):
         return_val = self.guid.process_result_value(None, None)
@@ -57,4 +57,4 @@ class GuidTests(unittest.TestCase):
 
     def test_process_result_value(self):
         return_val = self.guid.process_result_value(self.non_uuid_value, None)
-        self.assertEquals(uuid.UUID(self.non_uuid_value), return_val)
+        self.assertEqual(uuid.UUID(self.non_uuid_value), return_val)

@@ -65,15 +65,15 @@ class GeoServerAPITests(unittest.TestCase):
 
     def test_get_ows_endpoint_public(self):
         results = self.gs_api.get_ows_endpoint(self.workspace)
-        self.assertEquals("http://aquaveo.com/geoserver/foo/ows/", results)
+        self.assertEqual("http://aquaveo.com/geoserver/foo/ows/", results)
 
     def test_get_ows_endpoint_no_public(self):
         results = self.gs_api.get_ows_endpoint(self.workspace, False)
-        self.assertEquals('http://localhost:8181/geoserver/foo/ows/', results)
+        self.assertEqual('http://localhost:8181/geoserver/foo/ows/', results)
 
     def test_get_ows_endpoint_trailing_slash(self):
         results = self.gs_api.get_ows_endpoint(self.workspace, False)
-        self.assertEquals('http://localhost:8181/geoserver/foo/ows/', results)
+        self.assertEqual('http://localhost:8181/geoserver/foo/ows/', results)
 
     def test_get_ows_endpoint_no_trailing_slash(self):
         self.endpoint = "http://localhost:8181/geoserver/rest"
@@ -84,19 +84,19 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_engine = MockGeoServerEngine(self.endpoint, self.public_endpoint, self.username, self.password)
         self.gs_api = GeoServerAPI(gs_engine=self.gs_engine)
         results = self.gs_api.get_ows_endpoint(self.workspace, False)
-        self.assertEquals('http://localhost:8181/geoserver/foo/ows/', results)
+        self.assertEqual('http://localhost:8181/geoserver/foo/ows/', results)
 
     def test_get_wms_endpoint_public(self):
         results = self.gs_api.get_wms_endpoint()
-        self.assertEquals("http://aquaveo.com/geoserver/wms/", results)
+        self.assertEqual("http://aquaveo.com/geoserver/wms/", results)
 
     def test_get_wms_endpoint_no_public(self):
         results = self.gs_api.get_wms_endpoint(False)
-        self.assertEquals("http://localhost:8181/geoserver/wms/", results)
+        self.assertEqual("http://localhost:8181/geoserver/wms/", results)
 
     def test_get_wms_endpoint_trailing_slash(self):
         results = self.gs_api.get_wms_endpoint()
-        self.assertEquals("http://aquaveo.com/geoserver/wms/", results)
+        self.assertEqual("http://aquaveo.com/geoserver/wms/", results)
 
     def test_get_wms_endpoint_no_trailing_slash(self):
         self.endpoint = "http://localhost:8181/geoserver/rest"
@@ -107,19 +107,19 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_engine = MockGeoServerEngine(self.endpoint, self.public_endpoint, self.username, self.password)
         self.gs_api = GeoServerAPI(gs_engine=self.gs_engine)
         results = self.gs_api.get_wms_endpoint()
-        self.assertEquals("http://aquaveo.com/geoserver/wms/", results)
+        self.assertEqual("http://aquaveo.com/geoserver/wms/", results)
 
     def test_get_gwc_endpoint_public(self):
         results = self.gs_api.get_gwc_endpoint()
-        self.assertEquals(self.gwc_public_endpoint, results)
+        self.assertEqual(self.gwc_public_endpoint, results)
 
     def test_get_gwc_endpoint_no_public(self):
         results = self.gs_api.get_gwc_endpoint(False)
-        self.assertEquals(self.gwc_endpoint, results)
+        self.assertEqual(self.gwc_endpoint, results)
 
     def test_get_gwc_endpoint_trailing_slash(self):
         results = self.gs_api.get_gwc_endpoint()
-        self.assertEquals(self.gwc_public_endpoint, results)
+        self.assertEqual(self.gwc_public_endpoint, results)
 
     def test_get_gwc_endpoint_no_trailing_slash(self):
         self.endpoint = "http://localhost:8181/geoserver/rest"
@@ -130,7 +130,7 @@ class GeoServerAPITests(unittest.TestCase):
         self.gs_engine = MockGeoServerEngine(self.endpoint, self.public_endpoint, self.username, self.password)
         self.gs_api = GeoServerAPI(gs_engine=self.gs_engine)
         results = self.gs_api.get_gwc_endpoint()
-        self.assertEquals(self.gwc_public_endpoint, results)
+        self.assertEqual(self.gwc_public_endpoint, results)
 
     @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
     def test_reload_ports_none(self, mock_post):
@@ -219,7 +219,7 @@ class GeoServerAPITests(unittest.TestCase):
         )
         result = self.gs_api.get_layer_extent(self.workspace, self.datastore_name, self.feature_name, buffer_factor=1.0)
         mock_get.assert_called_with(rest_endpoint, auth=self.auth)
-        self.assertEquals(expected_bb, result)
+        self.assertEqual(expected_bb, result)
 
     @mock.patch('tethysext.atcore.services.geoserver_api.requests.get')
     def test_get_layer_extent_native(self, mock_get):
@@ -241,7 +241,7 @@ class GeoServerAPITests(unittest.TestCase):
         result = self.gs_api.get_layer_extent(self.workspace, self.datastore_name, self.feature_name, native=True,
                                               buffer_factor=1.0)
         mock_get.assert_called_with(rest_endpoint, auth=self.auth)
-        self.assertEquals(expected_bb, result)
+        self.assertEqual(expected_bb, result)
 
     @mock.patch('tethysext.atcore.services.geoserver_api.requests.get')
     def test_get_layer_extent_feature_bbox_none(self, mock_get):
@@ -256,7 +256,7 @@ class GeoServerAPITests(unittest.TestCase):
         )
         result = self.gs_api.get_layer_extent(self.workspace, self.datastore_name, self.feature_name, buffer_factor=1.0)
         mock_get.assert_called_with(rest_endpoint, auth=self.auth)
-        self.assertEquals(expected_bb, result)
+        self.assertEqual(expected_bb, result)
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
     @mock.patch('tethysext.atcore.services.geoserver_api.requests.get')

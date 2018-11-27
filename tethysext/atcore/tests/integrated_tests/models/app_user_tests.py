@@ -200,7 +200,7 @@ class AppUserTests(TethysTestCase):
 
     def test_get_django_user_existing(self):
         returned_django_user = self.user.get_django_user()
-        self.assertEquals(self.django_user, returned_django_user)
+        self.assertEqual(self.django_user, returned_django_user)
 
     def test_get_django_user_non_existing(self):
         user = User.objects.get(username=self.username)
