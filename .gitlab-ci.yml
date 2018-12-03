@@ -31,7 +31,7 @@ tests:
     # Build
     - docker build -t tethys_atcore .
     # Run Tethys Container
-    - docker run -d --name tethys_atcore -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
+    - docker run -d --name tethys_atcore  -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
     - echo "wait for container to start up..."
     - sleep 60s
     - docker logs tethys_atcore
