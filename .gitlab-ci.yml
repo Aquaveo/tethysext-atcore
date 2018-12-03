@@ -42,7 +42,7 @@ tests:
     # Intermediate Tests
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run -a --rcfile=coverage.ini /usr/lib/tethys/src/manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     # Coverage Report
-    - coverage report -m --rcfile=coverage.ini
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage report -m --rcfile=coverage.ini"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
