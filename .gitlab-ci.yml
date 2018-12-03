@@ -36,7 +36,7 @@ tests:
     - sleep 60s
     - docker logs tethys_atcore
     - echo "Settings"
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/src/tethys_portal; cat settings.py"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /usr/lib/tethys/src/tethys_portal; cat settings.py"
     # Unit Tests
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys; cd /var/www/tethys/exts/tethysext-atcore; coverage run -a --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
     # Intermediate Tests
