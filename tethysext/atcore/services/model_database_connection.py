@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: model_database.py
+* Name: model_database_connection.py
 * Author: nswain
 * Created On: June 05, 2018
 * Copyright: (c) Aquaveo 2018
@@ -10,8 +10,10 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
+from tethysext.atcore.services.model_database_connection_base import ModelDatabaseConnectionBase
 
-class ModelDatabaseConnection(object):
+
+class ModelDatabaseConnection(ModelDatabaseConnectionBase):
     """
     Represents a Model Database.
     """
@@ -36,18 +38,6 @@ class ModelDatabaseConnection(object):
                 self.db_id = '_'.join(name_parts[1:])
             else:
                 self.db_id = self.db_name
-
-    def get_id(self):
-        """
-        DB id getter.
-        """
-        return self.db_id
-
-    def get_name(self):
-        """
-        DB name getter.
-        """
-        return self.db_name
 
     def get_engine(self):
         """
