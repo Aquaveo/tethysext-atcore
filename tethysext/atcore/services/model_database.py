@@ -17,6 +17,18 @@ class ModelDatabase(ModelDatabaseBase):
     Manages the creation of databases for models and will load-balance between multiple database connections if defined by the app.  # noqa: E501
     """
 
+    def get_name(self):
+        """
+        DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
+        """
+        return self.model_db_connection.get_name()
+
+    def get_id(self):
+        """
+        DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
+        """
+        return self.model_db_connection.get_id()
+
     def get_size(self, pretty=False):
         """
         Get the size of the ModelDatabase
@@ -74,7 +86,7 @@ class ModelDatabase(ModelDatabaseBase):
         """
         return self._app.persistent_store_exists(self.database_id)
 
-    def model_list(self):
+    def list(self):
         """
         Returns a list names of all the model databases.
         """

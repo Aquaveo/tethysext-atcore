@@ -18,6 +18,18 @@ class ModelFileDatabase(ModelDatabaseBase):
     Manages the creation of file databases for models.  # noqa: E501
     """
 
+    def get_name(self):
+        """
+        DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
+        """
+        return self.model_db_connection.get_name()
+
+    def get_id(self):
+        """
+        DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
+        """
+        return self.model_db_connection.get_id()
+
     @property
     def model_db_connection(self):
         if self._model_db_connection is None:
@@ -29,7 +41,7 @@ class ModelFileDatabase(ModelDatabaseBase):
         """
         Returns path of resource directory
         """
-        if not getattr('_directory', None):
+        if not getattr(self, '_directory', None):
             self._directory = os.path.join(
                 self.database_root,
                 '{}_{}'.format(self._app.package, self.database_id)
@@ -49,7 +61,7 @@ class ModelFileDatabase(ModelDatabaseBase):
         new_db = ModelFileDatabase(self._app)
         dst_dir = new_db.directory
 
-        shutil.copy(src_dir, dst_dir)
+        shutil.copytree(src_dir, dst_dir)
 
         return new_db.database_id
 
@@ -65,7 +77,7 @@ class ModelFileDatabase(ModelDatabaseBase):
         Returns a list of all models in the model file databases.
         """
 
-        return os.listdir(self.directory)
+        return os.listdir(self.database_root)
 
     def delete(self):
         """
@@ -74,22 +86,18 @@ class ModelFileDatabase(ModelDatabaseBase):
 
         shutil.rmtree(self.directory)
 
-        return str(self.directory) + "succesfully deleted"
-
     def initialize(self, *args, **kwargs):
         """
         Creates a new file model database if it doesn't exist.
         """
 
-        model_file_directory = os.path.join(self.database_root, self.database_id)
-
-        self.pre_initialize(model_file_directory)
+        self.pre_initialize(self.directory)
 
         try:
-            os.mkdir(model_file_directory)
+            os.mkdir(self.directory)
         except OSError:
             return False
 
-        self.post_initialize(model_file_directory)
+        self.post_initialize(self.directory)
 
         return self.database_id

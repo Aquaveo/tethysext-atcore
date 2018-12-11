@@ -30,20 +30,16 @@ class ModelDatabaseBase(object):
         self._db_url_obj = None
         self._model_db_connection = None
 
+    @abc.abstractmethod
     def get_name(self):
-        """
-        DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
-        """
-        return self.model_db_connection.get_name()
-
-    def get_id(self):
-        """
-        DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
-        """
-        return self.model_db_connection.get_id()
+        pass
 
     @abc.abstractmethod
+    def get_id(self):
+        pass
+
     @property
+    @abc.abstractmethod
     def model_db_connection(self):
         pass
 
@@ -68,7 +64,7 @@ class ModelDatabaseBase(object):
         pass
 
     @abc.abstractmethod
-    def model_list(self):
+    def list(self):
         pass
 
     @classmethod
