@@ -52,38 +52,29 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         """
 
         path = os.path.join(self.db_url, filename)
-        try:
-            if os.path.isfile(path):
-                os.remove(path)
-                return
-            elif os.path.isdir(path):
-                shutil.rmtree(path)
-                return
 
-        except OSError:
+        if os.path.isfile(path):
+            os.remove(path)
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
             raise OSError("filename is not a directory or file. Check Name")
-
-        return False
 
     def add(self, filepath):
         """
         Adds a file or directory (from a filepath) to the model database.
         """
 
-        try:
-            if os.path.isfile(filepath):
-                dst = os.path.join(self.db_url, os.path.basename(filepath))
-                shutil.copy(filepath, dst)
-                return dst
-            elif os.path.isdir(filepath):
-                dst = os.path.join(self.db_url, os.path.basename(filepath))
-                shutil.copytree(filepath, dst)
-                return dst
-
-        except OSError:
+        if os.path.isfile(filepath):
+            dst = os.path.join(self.db_url, os.path.basename(filepath))
+            shutil.copy(filepath, dst)
+            return dst
+        elif os.path.isdir(filepath):
+            dst = os.path.join(self.db_url, os.path.basename(filepath))
+            shutil.copytree(filepath, dst)
+            return dst
+        else:
             raise OSError("filename is not a directory or file. Check Name")
-
-        return False
 
     def duplicate(self, ex_filename, new_filename):
         """
@@ -93,34 +84,25 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         src = os.path.join(self.db_url, ex_filename)
         dst = os.path.join(self.db_url, new_filename)
 
-        try:
-            if os.path.isfile(src):
-                shutil.copy(src, dst)
-                return new_filename
-            elif os.path.isdir(src):
-                shutil.copytree(src, dst)
-                return new_filename
-
-        except OSError:
-
+        if os.path.isfile(src):
+            shutil.copy(src, dst)
+            return new_filename
+        elif os.path.isdir(src):
+            shutil.copytree(src, dst)
+            return new_filename
+        else:
             raise OSError("filename is not a directory or file. Check Name")
-
-        return False
 
     def move(self, ex_filepath, new_filepath):
         """
         Adds a file or directory (from a filepath) to the model database.
         """
 
-        try:
-            if os.path.exists(ex_filepath):
-                shutil.move(ex_filepath, new_filepath)
-                return new_filepath
-
-        except OSError:
+        if os.path.exists(ex_filepath):
+            shutil.move(ex_filepath, new_filepath)
+            return new_filepath
+        else:
             raise OSError("filename is not a directory or file. Check Name")
-
-        return False
 
     def bulk_delete(self, filename_list):
         """

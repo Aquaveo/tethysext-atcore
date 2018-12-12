@@ -31,21 +31,27 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         os.makedirs(self.db_url)
         open(os.path.join(self.db_url, "test.txt"), "w+").close()
 
-    def test_get_id_without_namespace_with_underscores_in_id(self):
+    def test_init_without_namespace_with_underscores_in_id(self):
         mdc = ModelFileDatabaseConnection(self.db_url)
         result = mdc.get_id()
         self.assertEqual('{}_{}'.format(self.app_namespace, self.db_id), result)
 
-    def test_get_id_without_namespace_no_underscores_in_id(self):
+    def test_init_without_namespace_no_underscores_in_id(self):
         db_id = '80a78483-2db9-4729-a8fe-55fcbc8cc3ab'
         db_url = os.path.join(self.root, db_id)
         mdc = ModelFileDatabaseConnection(db_url)
         result = mdc.get_id()
         self.assertEqual(db_id, result)
 
-    def test_get_id_with_namespace(self):
+    def test_init_with_namespace(self):
         result = self.mdc.get_id()
         self.assertEqual(self.db_id, result)
+
+    def test_init_without_dir(self):
+        with self.assertRaises(ValueError) as context:
+            ModelFileDatabaseConnection(db_dir=None)
+
+        self.assertTrue('db_dir is required and must be a valid path' in str(context.exception))
 
     def test_list(self):
         modellist = ['test.txt']
@@ -62,9 +68,10 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertFalse(os.path.isdir(os.path.join(self.db_url, 'test_dir')))
 
     def test_delete_fail(self):
-        result = self.mdc.delete('test.dir')
-        self.assertRaises(OSError)
-        self.assertFalse(result)
+        with self.assertRaises(OSError) as context:
+            self.mdc.delete('testerror_dir')
+
+        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
 
     def test_add_file(self):
         test_add = os.path.join(self.root, "test.txt")
@@ -81,9 +88,10 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
 
     def test_add_fail(self):
         test_add = os.path.join(self.root, "test_dir")
-        result = self.mdc.add(test_add)
-        self.assertRaises(OSError)
-        self.assertFalse(result)
+        with self.assertRaises(OSError) as context:
+            self.mdc.add(test_add)
+
+        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
 
     def test_duplicate_file(self):
         self.mdc.duplicate('test.txt', 'newtest.txt')
@@ -96,9 +104,10 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(os.path.join(self.db_url, 'newtest_dir')))
 
     def test_duplicate_fail(self):
-        result = self.mdc.duplicate('test_dir', 'newtest_dir')
-        self.assertRaises(OSError)
-        self.assertFalse(result)
+        with self.assertRaises(OSError) as context:
+            self.mdc.duplicate('test_dir', 'newtest_dir')
+
+        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
 
     def test_move_file(self):
         test_src = os.path.join(self.db_url, "test.txt")
@@ -117,9 +126,10 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
 
     def test_move_fail(self):
         test_move = os.path.join(self.root, "test_dir")
-        result = self.mdc.move(test_move, self.db_url)
-        self.assertRaises(OSError)
-        self.assertFalse(result)
+        with self.assertRaises(OSError) as context:
+            self.mdc.move(test_move, self.db_url)
+
+        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
 
     def test_bulk_delete(self):
         test_add1 = os.path.join(self.db_url, "test1.txt")

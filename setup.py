@@ -23,7 +23,8 @@ dependencies = [
     'mock',
     'factory_boy',
     'jinja2',
-    'requests'
+    'requests',
+    'filelock'
 ]
 
 # -- Get Resource File -- #

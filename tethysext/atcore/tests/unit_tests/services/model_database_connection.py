@@ -38,11 +38,6 @@ class ModelDatabaseConnectionTests(unittest.TestCase):
         result = mdc.get_id()
         self.assertEqual(self.db_id, result)
 
-    def test_get_name(self):
-        mdc = ModelDatabaseConnection(self.db_url)
-        result = mdc.get_name()
-        self.assertEqual('{}_{}'.format(self.app_namespace, self.db_id), result)
-
     def test_get_engine(self):
         mdc = ModelDatabaseConnection(self.db_url, self.app_namespace)
         result = mdc.get_engine()
