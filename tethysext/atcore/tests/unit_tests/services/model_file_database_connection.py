@@ -9,6 +9,7 @@
 import unittest
 import os
 import shutil
+from filelock import FileLock
 from tethysext.atcore.services.model_file_database_connection import ModelFileDatabaseConnection
 
 
@@ -48,10 +49,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertEqual(self.db_id, result)
 
     def test_init_without_dir(self):
-        with self.assertRaises(ValueError) as context:
-            ModelFileDatabaseConnection(db_dir=None)
-
-        self.assertTrue('db_dir is required and must be a valid path' in str(context.exception))
+        self.assertRaises(ValueError, ModelFileDatabaseConnection, None)
 
     def test_list(self):
         modellist = ['test.txt']
@@ -68,10 +66,15 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertFalse(os.path.isdir(os.path.join(self.db_url, 'test_dir')))
 
     def test_delete_fail(self):
-        with self.assertRaises(OSError) as context:
-            self.mdc.delete('testerror_dir')
+        self.assertRaises(OSError, self.mdc.delete, 'testerror_dir')
 
-        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
+    def test_delete_locked(self):
+        path = os.path.join(self.db_url, 'test.txt')
+        lock_path = "{}.lock".format(path)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=15, poll_intervall=0.5):
+            self.assertRaises(OSError, self.mdc.delete, 'test.txt')
 
     def test_add_file(self):
         test_add = os.path.join(self.root, "test.txt")
@@ -88,10 +91,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
 
     def test_add_fail(self):
         test_add = os.path.join(self.root, "test_dir")
-        with self.assertRaises(OSError) as context:
-            self.mdc.add(test_add)
-
-        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
+        self.assertRaises(OSError, self.mdc.add, test_add)
 
     def test_duplicate_file(self):
         self.mdc.duplicate('test.txt', 'newtest.txt')
@@ -104,10 +104,16 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(os.path.join(self.db_url, 'newtest_dir')))
 
     def test_duplicate_fail(self):
-        with self.assertRaises(OSError) as context:
-            self.mdc.duplicate('test_dir', 'newtest_dir')
+        self.assertRaises(OSError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
 
-        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
+    def test_duplicate_locked(self):
+        src = os.path.join(self.db_url, 'test_dir')
+        os.mkdir(src)
+        lock_path = "{}.lock".format(src)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=15, poll_intervall=0.5):
+            self.assertRaises(OSError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
 
     def test_move_file(self):
         test_src = os.path.join(self.db_url, "test.txt")
@@ -126,10 +132,16 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
 
     def test_move_fail(self):
         test_move = os.path.join(self.root, "test_dir")
-        with self.assertRaises(OSError) as context:
-            self.mdc.move(test_move, self.db_url)
+        self.assertRaises(OSError, self.mdc.move, test_move, self.db_url)
 
-        self.assertTrue("filename is not a directory or file. Check Name" in str(context.exception))
+    def test_move_locked(self):
+        test_src = os.path.join(self.db_url, "test.txt")
+        test_dst = os.path.join(self.root, "test.txt")
+        lock_path = "{}.lock".format(test_src)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=15, poll_intervall=0.5):
+            self.assertRaises(OSError, self.mdc.move, test_src, test_dst)
 
     def test_bulk_delete(self):
         test_add1 = os.path.join(self.db_url, "test1.txt")

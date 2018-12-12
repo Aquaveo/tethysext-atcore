@@ -8,7 +8,7 @@
 """
 import os
 import shutil
-
+from filelock import FileLock
 
 from tethysext.atcore.services.model_database_connection_base import ModelDatabaseConnectionBase
 
@@ -52,13 +52,19 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         """
 
         path = os.path.join(self.db_url, filename)
+        lock_path = "{}.lock".format(path)
+        lock = FileLock(lock_path, timeout=1)
 
-        if os.path.isfile(path):
-            os.remove(path)
-        elif os.path.isdir(path):
-            shutil.rmtree(path)
-        else:
-            raise OSError("filename is not a directory or file. Check Name")
+        with lock.acquire(timeout=5, poll_intervall=0.05):
+            if os.path.isfile(path):
+                os.remove(path)
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(lock_path)
+                raise OSError("filename is not a directory or file. Check Name")
+
+        os.remove(lock_path)
 
     def add(self, filepath):
         """
@@ -83,26 +89,37 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
 
         src = os.path.join(self.db_url, ex_filename)
         dst = os.path.join(self.db_url, new_filename)
+        lock_path = "{}.lock".format(src)
+        lock = FileLock(lock_path, timeout=1)
 
-        if os.path.isfile(src):
-            shutil.copy(src, dst)
-            return new_filename
-        elif os.path.isdir(src):
-            shutil.copytree(src, dst)
-            return new_filename
-        else:
-            raise OSError("filename is not a directory or file. Check Name")
+        with lock.acquire(timeout=5, poll_intervall=0.05):
+            if os.path.isfile(src):
+                shutil.copy(src, dst)
+            elif os.path.isdir(src):
+                shutil.copytree(src, dst)
+            else:
+                os.remove(lock_path)
+                raise OSError("filename is not a directory or file. Check Name")
+
+        os.remove(lock_path)
+        return new_filename
 
     def move(self, ex_filepath, new_filepath):
         """
-        Adds a file or directory (from a filepath) to the model database.
+        Moves a file or directory (from a filepath) to the model database.
         """
 
-        if os.path.exists(ex_filepath):
-            shutil.move(ex_filepath, new_filepath)
-            return new_filepath
-        else:
-            raise OSError("filename is not a directory or file. Check Name")
+        lock_path = "{}.lock".format(ex_filepath)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=5, poll_intervall=0.05):
+            if os.path.exists(ex_filepath):
+                shutil.move(ex_filepath, new_filepath)
+            else:
+                raise OSError("filename is not a directory or file. Check Name")
+
+        os.remove(lock_path)
+        return new_filepath
 
     def bulk_delete(self, filename_list):
         """

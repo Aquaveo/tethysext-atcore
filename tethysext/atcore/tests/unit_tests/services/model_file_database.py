@@ -10,6 +10,7 @@ import unittest
 import mock
 import os
 import shutil
+from filelock import FileLock
 from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.services.model_file_database import ModelFileDatabase
 from tethysext.atcore.services.model_file_database_connection import ModelFileDatabaseConnection
@@ -60,6 +61,13 @@ class ModelFileDatabaseTests(unittest.TestCase):
         self.md.duplicate()
         self.assertEqual(2, len(os.listdir(self.test_dir)))
 
+    def test_duplicate_locked(self):
+        lock_path = "{}.lock".format(self.test_url)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=15, poll_intervall=0.5):
+                self.assertRaises(TimeoutError, self.md.duplicate)
+
     def test_initialize_fail(self):
         self.mock_app.get_app_workspace.return_value = mock.MagicMock(
             path='not/valid/path'
@@ -85,3 +93,10 @@ class ModelFileDatabaseTests(unittest.TestCase):
     def test_delete(self):
         self.md.delete()
         self.assertEqual(0, len(os.listdir(self.test_dir)))
+
+    def test_delete_locked(self):
+        lock_path = "{}.lock".format(self.test_url)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=15, poll_intervall=0.5):
+            self.assertRaises(TimeoutError, self.md.delete)

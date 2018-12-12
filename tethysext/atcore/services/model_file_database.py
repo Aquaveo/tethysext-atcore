@@ -8,6 +8,7 @@
 """
 import os
 import shutil
+from filelock import FileLock
 
 from tethysext.atcore.services.model_file_database_connection import ModelFileDatabaseConnection
 from tethysext.atcore.services.model_database_base import ModelDatabaseBase
@@ -56,12 +57,18 @@ class ModelFileDatabase(ModelDatabaseBase):
         """
         makes a copy of resource directory with new uuid
         """
+
         src_dir = self.directory
+        lock_path = "{}.lock".format(src_dir)
+        lock = FileLock(lock_path, timeout=1)
 
-        new_db = ModelFileDatabase(self._app)
-        dst_dir = new_db.directory
+        with lock.acquire(timeout=5, poll_intervall=0.5):
+            new_db = ModelFileDatabase(self._app)
+            dst_dir = new_db.directory
 
-        shutil.copytree(src_dir, dst_dir)
+            shutil.copytree(src_dir, dst_dir)
+
+        os.remove(lock_path)
 
         return new_db.database_id
 
@@ -84,7 +91,13 @@ class ModelFileDatabase(ModelDatabaseBase):
         deletes a models in the model file databases.
         """
 
-        shutil.rmtree(self.directory)
+        lock_path = "{}.lock".format(self.directory)
+        lock = FileLock(lock_path, timeout=1)
+
+        with lock.acquire(timeout=5, poll_intervall=0.5):
+            shutil.rmtree(self.directory)
+
+        os.remove(lock_path)
 
     def initialize(self, *args, **kwargs):
         """
