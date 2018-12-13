@@ -47,7 +47,7 @@ class ModelFileDatabaseTests(unittest.TestCase):
     def test_model_db_connection(self):
         result = self.md.model_db_connection
         self.assertIsInstance(result, ModelFileDatabaseConnection)
-        self.assertEqual(self.test_url, result.db_url)
+        self.assertEqual(self.test_url, result.db_dir)
 
     def test_directory(self):
         result = self.md.directory
@@ -62,11 +62,9 @@ class ModelFileDatabaseTests(unittest.TestCase):
         self.assertEqual(2, len(os.listdir(self.test_dir)))
 
     def test_duplicate_locked(self):
-        lock_path = "{}.lock".format(self.test_url)
-        lock = FileLock(lock_path, timeout=1)
-
+        lock = FileLock(self.md.model_db_connection.lock_path, timeout=1)
         with lock.acquire(timeout=15, poll_intervall=0.5):
-                self.assertRaises(TimeoutError, self.md.duplicate)
+            self.assertRaises(TimeoutError, self.md.duplicate)
 
     def test_initialize_fail(self):
         self.mock_app.get_app_workspace.return_value = mock.MagicMock(
@@ -86,8 +84,13 @@ class ModelFileDatabaseTests(unittest.TestCase):
         self.assertTrue(result)
 
     def test_list(self):
-        modellist = ['{}_{}'.format(self.mock_app.package, self.database_id)]
+        modellist = []
         result = self.md.list()
+        self.assertEqual(modellist, result)
+
+    def test_list_databases(self):
+        modellist = ['{}_{}'.format(self.mock_app.package, self.database_id)]
+        result = self.md.list_databases()
         self.assertEqual(modellist, result)
 
     def test_delete(self):
@@ -95,8 +98,6 @@ class ModelFileDatabaseTests(unittest.TestCase):
         self.assertEqual(0, len(os.listdir(self.test_dir)))
 
     def test_delete_locked(self):
-        lock_path = "{}.lock".format(self.test_url)
-        lock = FileLock(lock_path, timeout=1)
-
+        lock = FileLock(self.md.model_db_connection.lock_path, timeout=1)
         with lock.acquire(timeout=15, poll_intervall=0.5):
             self.assertRaises(TimeoutError, self.md.delete)

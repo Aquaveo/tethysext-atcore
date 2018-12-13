@@ -8,7 +8,6 @@
 """
 import os
 import shutil
-from filelock import FileLock
 
 from tethysext.atcore.services.model_file_database_connection import ModelFileDatabaseConnection
 from tethysext.atcore.services.model_database_base import ModelDatabaseBase
@@ -19,23 +18,9 @@ class ModelFileDatabase(ModelDatabaseBase):
     Manages the creation of file databases for models.  # noqa: E501
     """
 
-    def get_name(self):
-        """
-        DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
-        """
-        return self.model_db_connection.get_name()
-
-    def get_id(self):
-        """
-        DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
-        """
-        return self.model_db_connection.get_id()
-
     @property
-    def model_db_connection(self):
-        if self._model_db_connection is None:
-            self._model_db_connection = ModelFileDatabaseConnection(self.directory, self._app.package)
-        return self._model_db_connection
+    def database_root(self):
+        return self._app.get_app_workspace().path
 
     @property
     def directory(self):
@@ -50,27 +35,36 @@ class ModelFileDatabase(ModelDatabaseBase):
         return self._directory
 
     @property
-    def database_root(self):
-        return self._app.get_app_workspace().path
+    def model_db_connection(self):
+        if self._model_db_connection is None:
+            self._model_db_connection = ModelFileDatabaseConnection(self.directory, self._app.package)
+        return self._model_db_connection
+
+    def get_name(self):
+        """
+        DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
+        """
+        return self.model_db_connection.get_name()
+
+    def get_id(self):
+        """
+        DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
+        """
+        return self.model_db_connection.get_id()
 
     def duplicate(self):
         """
         makes a copy of resource directory with new uuid
         """
-
         src_dir = self.directory
-        lock_path = "{}.lock".format(src_dir)
-        lock = FileLock(lock_path, timeout=1)
 
-        with lock.acquire(timeout=5, poll_intervall=0.5):
+        with self.model_db_connection.lock.acquire(timeout=self.model_db_connection.lock_timeout, poll_intervall=0.05):
             new_db = ModelFileDatabase(self._app)
             dst_dir = new_db.directory
 
             shutil.copytree(src_dir, dst_dir)
 
-        os.remove(lock_path)
-
-        return new_db.database_id
+        return new_db
 
     def exists(self):
         """
@@ -79,25 +73,26 @@ class ModelFileDatabase(ModelDatabaseBase):
 
         return os.path.isdir(self.directory)
 
-    def list(self):
+    def list_databases(self):
         """
         Returns a list of all models in the model file databases.
         """
 
         return os.listdir(self.database_root)
 
+    def list(self):
+        """
+        Returns a list of all models in the model file databases connection.
+        """
+
+        return self.model_db_connection.list()
+
     def delete(self):
         """
         deletes a models in the model file databases.
         """
-
-        lock_path = "{}.lock".format(self.directory)
-        lock = FileLock(lock_path, timeout=1)
-
-        with lock.acquire(timeout=5, poll_intervall=0.5):
+        with self.model_db_connection.lock.acquire(timeout=self.model_db_connection.lock_timeout, poll_intervall=0.05):
             shutil.rmtree(self.directory)
-
-        os.remove(lock_path)
 
     def initialize(self, *args, **kwargs):
         """

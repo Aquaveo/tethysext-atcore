@@ -14,7 +14,7 @@ class ModelDatabaseConnectionBase(object):
     """
 
     db_name = None
-    db_url = None
+    db_dir = None
     db_id = None
 
     def get_id(self):

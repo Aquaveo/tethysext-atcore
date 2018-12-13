@@ -19,21 +19,21 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.db_id = '80a78483_2db9_4729_a8fe_55fcbc8cc3ab'
         self.app_namespace = 'test'
         self.root = '/home/ckrewson/tethys/extensions/tethysext-atcore/tethysext/atcore/tests/files/model_file_database'
-        self.db_url = os.path.join(self.root, '{}_{}'.format(self.app_namespace, self.db_id))
-        self.mdc = ModelFileDatabaseConnection(self.db_url, self.app_namespace)
+        self.db_dir = os.path.join(self.root, '{}_{}'.format(self.app_namespace, self.db_id))
+        self.mdc = ModelFileDatabaseConnection(self.db_dir, self.app_namespace, 0)
 
     def tearDown(self):
-        if os.path.isdir(self.db_url):
-            shutil.rmtree(self.db_url)
+        if os.path.isdir(self.db_dir):
+            shutil.rmtree(self.db_dir)
         if os.path.isfile(os.path.join(self.root, 'test.txt')):
             os.remove(os.path.join(self.root, 'test.txt'))
         if os.path.isdir(os.path.join(self.root, 'test_dir')):
             shutil.rmtree(os.path.join(self.root, 'test_dir'))
-        os.makedirs(self.db_url)
-        open(os.path.join(self.db_url, "test.txt"), "w+").close()
+        os.makedirs(self.db_dir)
+        open(os.path.join(self.db_dir, "test.txt"), "w+").close()
 
     def test_init_without_namespace_with_underscores_in_id(self):
-        mdc = ModelFileDatabaseConnection(self.db_url)
+        mdc = ModelFileDatabaseConnection(self.db_dir)
         result = mdc.get_id()
         self.assertEqual('{}_{}'.format(self.app_namespace, self.db_id), result)
 
@@ -58,113 +58,156 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
 
     def test_delete_file(self):
         self.mdc.delete('test.txt')
-        self.assertFalse(os.path.isfile(os.path.join(self.db_url, 'test.txt')))
+        self.assertFalse(os.path.isfile(os.path.join(self.db_dir, 'test.txt')))
 
     def test_delete_dir(self):
-        os.mkdir(os.path.join(self.db_url, 'test_dir'))
+        os.mkdir(os.path.join(self.db_dir, 'test_dir'))
         self.mdc.delete('test_dir')
-        self.assertFalse(os.path.isdir(os.path.join(self.db_url, 'test_dir')))
+        self.assertFalse(os.path.isdir(os.path.join(self.db_dir, 'test_dir')))
 
     def test_delete_fail(self):
-        self.assertRaises(OSError, self.mdc.delete, 'testerror_dir')
+        self.assertRaises(ValueError, self.mdc.delete, 'testerror_dir')
 
     def test_delete_locked(self):
-        path = os.path.join(self.db_url, 'test.txt')
-        lock_path = "{}.lock".format(path)
-        lock = FileLock(lock_path, timeout=1)
-
+        lock = FileLock(self.mdc.lock_path, timeout=1)
         with lock.acquire(timeout=15, poll_intervall=0.5):
-            self.assertRaises(OSError, self.mdc.delete, 'test.txt')
+            self.assertRaises(TimeoutError, self.mdc.delete, 'test.txt')
 
     def test_add_file(self):
         test_add = os.path.join(self.root, "test.txt")
         open(test_add, "w+").close()
+        os.remove(os.path.join(self.db_dir, "test.txt"))
         self.mdc.add(test_add)
-        self.assertTrue(os.path.isfile(os.path.join(self.db_url, 'test.txt')))
+        self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'test.txt')))
+
+    def test_add_file_exists(self):
+        test_add = os.path.join(self.root, "test.txt")
+        open(test_add, "w+").close()
+        self.mdc.add(test_add)
+        self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'test.txt')))
 
     def test_add_dir(self):
         test_add = os.path.join(self.root, "test_dir")
         os.mkdir(test_add)
-        print(os.path.isdir(test_add))
         self.mdc.add(test_add)
-        self.assertTrue(os.path.isdir(os.path.join(self.db_url, 'test_dir')))
+        self.assertTrue(os.path.isdir(os.path.join(self.db_dir, 'test_dir')))
 
     def test_add_fail(self):
         test_add = os.path.join(self.root, "test_dir")
-        self.assertRaises(OSError, self.mdc.add, test_add)
+        self.assertRaises(ValueError, self.mdc.add, test_add)
+
+    def test_add_locked(self):
+        test_add = os.path.join(self.root, "test.txt")
+        open(test_add, "w+").close()
+        lock = FileLock(self.mdc.lock_path, timeout=1)
+        with lock.acquire(timeout=15, poll_intervall=0.5):
+            self.assertRaises(TimeoutError, self.mdc.add, test_add)
 
     def test_duplicate_file(self):
         self.mdc.duplicate('test.txt', 'newtest.txt')
-        self.assertTrue(os.path.isfile(os.path.join(self.db_url, 'newtest.txt')))
+        self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'newtest.txt')))
 
     def test_duplicate_dir(self):
-        test_add = os.path.join(self.db_url, "test_dir")
+        test_add = os.path.join(self.db_dir, "test_dir")
         os.mkdir(test_add)
         self.mdc.duplicate('test_dir', 'newtest_dir')
-        self.assertTrue(os.path.isdir(os.path.join(self.db_url, 'newtest_dir')))
+        self.assertTrue(os.path.isdir(os.path.join(self.db_dir, 'newtest_dir')))
 
     def test_duplicate_fail(self):
-        self.assertRaises(OSError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
+        self.assertRaises(ValueError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
 
     def test_duplicate_locked(self):
-        src = os.path.join(self.db_url, 'test_dir')
+        src = os.path.join(self.db_dir, 'test_dir')
         os.mkdir(src)
-        lock_path = "{}.lock".format(src)
-        lock = FileLock(lock_path, timeout=1)
-
+        lock = FileLock(self.mdc.lock_path, timeout=1)
         with lock.acquire(timeout=15, poll_intervall=0.5):
-            self.assertRaises(OSError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
+            self.assertRaises(TimeoutError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
 
     def test_move_file(self):
-        test_src = os.path.join(self.db_url, "test.txt")
-        test_dst = os.path.join(self.root, "test.txt")
-        result = self.mdc.move(test_src, test_dst)
-        self.assertEqual(test_dst, result)
-        self.assertTrue(os.path.isfile(test_dst))
+        test_move_dst = os.path.join(self.db_dir, "test_dst")
+        test_file_dst = os.path.join(test_move_dst, 'test.txt')
+        os.mkdir(test_move_dst)
+        result = self.mdc.move("test.txt", os.path.join('test_dst', 'test.txt'))
+        self.assertEqual(test_file_dst, result)
+        self.assertTrue(os.path.isfile(test_file_dst))
 
     def test_move_dir(self):
-        test_src = os.path.join(self.root, "test_dir")
-        test_dst = os.path.join(self.db_url, "test_dir")
-        os.mkdir(test_src)
-        result = self.mdc.move(test_src, test_dst)
-        self.assertEqual(test_dst, result)
-        self.assertTrue(os.path.isdir(test_dst))
+        test_move_src = os.path.join(self.db_dir, "test_src")
+        test_move_dst = os.path.join(self.db_dir, "test_dst")
+        os.mkdir(test_move_src)
+        os.mkdir(test_move_dst)
+        test_dir_dst = os.path.join(test_move_dst, 'test_src')
+        result = self.mdc.move("test_src", os.path.join('test_dst', 'test_src'))
+        self.assertEqual(test_dir_dst, result)
+        self.assertTrue(os.path.isdir(test_dir_dst))
 
     def test_move_fail(self):
-        test_move = os.path.join(self.root, "test_dir")
-        self.assertRaises(OSError, self.mdc.move, test_move, self.db_url)
+        self.assertRaises(ValueError, self.mdc.move, "test_src", "test_dst")
+
+    def test_move_file_exists(self):
+        test_move_dst = os.path.join(self.db_dir, "test_dst")
+        test_file_dst = os.path.join(test_move_dst, 'test.txt')
+        os.mkdir(test_move_dst)
+        open(test_file_dst, "w+").close()
+        result = self.mdc.move("test.txt", os.path.join('test_dst', 'test.txt'))
+        self.assertEqual(test_file_dst, result)
+        self.assertTrue(os.path.isfile(test_file_dst))
 
     def test_move_locked(self):
-        test_src = os.path.join(self.db_url, "test.txt")
+        test_src = os.path.join(self.db_dir, "test.txt")
         test_dst = os.path.join(self.root, "test.txt")
-        lock_path = "{}.lock".format(test_src)
-        lock = FileLock(lock_path, timeout=1)
-
+        lock = FileLock(self.mdc.lock_path, timeout=1)
         with lock.acquire(timeout=15, poll_intervall=0.5):
-            self.assertRaises(OSError, self.mdc.move, test_src, test_dst)
+            self.assertRaises(TimeoutError, self.mdc.move, test_src, test_dst)
 
     def test_bulk_delete(self):
-        test_add1 = os.path.join(self.db_url, "test1.txt")
-        open(test_add1, "w+").close()
-        delete_list = [test_add1]
+        os.mkdir(os.path.join(self.db_dir, 'test_dir'))
+        delete_list = ['test.txt', 'test_dir']
         self.mdc.bulk_delete(delete_list)
-        self.assertFalse(os.path.isfile(os.path.join(self.db_url, 'test1.txt')))
+        self.assertFalse(os.path.isfile(os.path.join(self.db_dir, 'test1.txt')))
+
+    def test_bulk_delete_fail(self):
+        delete_list = ['test.txt', 'test_dir']
+        self.assertRaises(ValueError, self.mdc.bulk_delete, delete_list)
 
     def test_bulk_add(self):
-        test_add = os.path.join(self.root, "test.txt")
-        open(test_add, "w+").close()
-        add_list = [test_add]
+        test_exists = os.path.join(self.root, "test.txt")
+        test_file = os.path.join(self.root, "test1.txt")
+        open(test_file, "w+").close()
+        test_dir = os.path.join(self.root, "test_dir")
+        os.mkdir(test_dir)
+        add_list = [test_exists, test_file, test_dir]
         self.mdc.bulk_add(add_list)
-        self.assertTrue(os.path.isfile(os.path.join(self.db_url, 'test.txt')))
+        self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'test1.txt')))
+
+    def test_bulk_add_fail(self):
+        test_dir = os.path.join(self.root, "test_dir")
+        add_list = [test_dir]
+        self.assertRaises(ValueError, self.mdc.bulk_add, add_list)
 
     def test_bulk_duplicate(self):
-        duplicate_list = [('test.txt', 'newtest.txt')]
+        test_dir = os.path.join(self.db_dir, "test_dir")
+        os.mkdir(test_dir)
+        duplicate_list = [('test.txt', 'newtest.txt'), ('test_dir', 'newtest_dir')]
         self.mdc.bulk_duplicate(duplicate_list)
-        self.assertTrue(os.path.isfile(os.path.join(self.db_url, 'newtest.txt')))
+        self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'newtest.txt')))
+
+    def test_bulk_duplicate_fail(self):
+        duplicate_list = [('test_dir', 'newtest_dir')]
+        self.assertRaises(ValueError, self.mdc.bulk_duplicate, duplicate_list)
 
     def test_bulk_move(self):
-        test_src = os.path.join(self.db_url, "test.txt")
-        test_dst = os.path.join(self.root, "test.txt")
-        move_list = [(test_src, test_dst)]
+        test_move_dst = os.path.join(self.db_dir, "test_dst")
+        test_file_dst = os.path.join(test_move_dst, 'test.txt')
+        test_exist_dst = os.path.join(test_move_dst, 'test_ex.txt')
+        os.mkdir(test_move_dst)
+        open(test_exist_dst, "w+").close()
+        test_file_path = os.path.join('test_dst', 'test.txt')
+        test_ex_path = os.path.join('test_dst', 'test_ex.txt')
+        move_list = [("test.txt", test_file_path), ('', test_ex_path)]
         self.mdc.bulk_move(move_list)
-        self.assertTrue(os.path.isfile(test_dst))
+        self.assertTrue(os.path.isfile(test_file_dst))
+
+    def test_bulk_move_fail(self):
+        duplicate_list = [('test_dir', 'newtest_dir')]
+        self.assertRaises(ValueError, self.mdc.bulk_move, duplicate_list)
