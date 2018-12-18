@@ -20,6 +20,9 @@ class ModelFileDatabase(ModelDatabaseBase):
 
     @property
     def database_root(self):
+        """
+        Returns path of root path of resource directory
+        """
         return self._app.get_app_workspace().path
 
     @property
@@ -55,6 +58,9 @@ class ModelFileDatabase(ModelDatabaseBase):
     def duplicate(self):
         """
         makes a copy of resource directory with new uuid
+
+        Returns:
+            Instance of the duplicated model file database
         """
         src_dir = self.directory
 
@@ -68,21 +74,26 @@ class ModelFileDatabase(ModelDatabaseBase):
 
     def exists(self):
         """
-        Returns true if the model file database exists.
+        Check if the model file database exists.
+
+        Returns:
+            True if the model file database exists
         """
 
         return os.path.isdir(self.directory)
 
     def list_databases(self):
         """
-        Returns a list of all models in the model file databases.
+        Returns:
+             List of all models in the model file databases.
         """
 
         return os.listdir(self.database_root)
 
     def list(self):
         """
-        Returns a list of all models in the model file databases connection.
+        Returns:
+             List of all models in the model file databases connection.
         """
 
         return self.model_db_connection.list()

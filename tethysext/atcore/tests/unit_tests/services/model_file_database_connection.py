@@ -18,7 +18,8 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
     def setUp(self):
         self.db_id = '80a78483_2db9_4729_a8fe_55fcbc8cc3ab'
         self.app_namespace = 'test'
-        self.root = '/home/ckrewson/tethys/extensions/tethysext-atcore/tethysext/atcore/tests/files/model_file_database'
+        self.app_files = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        self.root = os.path.join(self.app_files, 'files', 'model_file_database')
         self.db_dir = os.path.join(self.root, '{}_{}'.format(self.app_namespace, self.db_id))
         self.mdc = ModelFileDatabaseConnection(self.db_dir, self.app_namespace, 0)
 
@@ -104,8 +105,9 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
             self.assertRaises(TimeoutError, self.mdc.add, test_add)
 
     def test_duplicate_file(self):
-        self.mdc.duplicate('test.txt', 'newtest.txt')
+        res = self.mdc.duplicate('test.txt', 'newtest.txt')
         self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'newtest.txt')))
+        self.assertEqual(res, os.path.join(self.db_dir, 'newtest.txt'))
 
     def test_duplicate_dir(self):
         test_add = os.path.join(self.db_dir, "test_dir")

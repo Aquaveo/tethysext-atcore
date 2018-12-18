@@ -117,6 +117,9 @@ class ModelDatabase(ModelDatabaseBase):
         Args:
             declarative_bases(tuple): one or more SQLAlchemy declarative base classes used to initialize tables.
             spatial(bool): enable postgis extension on model database if True.
+
+        Returns:
+            database_id of the model database
         """
         # Get database cluster name to create new database on.
         cluster_connection_name = self._get_cluster_connection_name_for_new_database()

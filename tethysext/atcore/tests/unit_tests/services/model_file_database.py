@@ -20,7 +20,8 @@ class ModelFileDatabaseTests(unittest.TestCase):
 
     def setUp(self):
         self.database_id = '80a78483_2db9_4729_a8fe_55fcbc8cc3ab'
-        self.test_dir = '/home/ckrewson/tethys/extensions/tethysext-atcore/tethysext/atcore/tests/files/model_file_database'  # noqa
+        self.app_files = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        self.test_dir = os.path.join(self.app_files, 'files', 'model_file_database')
         self.app_namespace = 'foo'
         self.mock_app = TethysAppBase()
         self.mock_app.package = 'test'

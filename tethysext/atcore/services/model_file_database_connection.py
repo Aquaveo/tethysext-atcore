@@ -24,8 +24,10 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         Constructor
 
         Args:
-            db_dir(str): URL to model file database.
+            db_dir(str): Directory path to model file database.
             db_app_namespace(str): App Namespace
+            lock_timeout(int): Time limit (seconds) for trying to acquire file lock before a TimeoutError
+            poll_interval(float): Time interval (seconds) between attempts to acquire file lock
         """
         if not db_dir:
             raise ValueError("db_dir is required and must be a valid path")
@@ -56,7 +58,8 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
 
     def list(self):
         """
-        Returns a list of files and directories in the model database.
+        Returns:
+            List of files and directories in the model database.
         """
         return os.listdir(self.db_dir)
 
@@ -64,7 +67,8 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         """
         Deletes a file from the model database. filename can be directory or file
 
-
+        Args:
+            filename(str): File name or relative path to file that will be deleted.
         """
         path = os.path.join(self.db_dir, filename)
 
@@ -79,6 +83,9 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
     def add(self, filepath):
         """
         Adds a file or directory (from a filepath) to the model database.
+
+        Args:
+            filepath(str): Absolute path to file that will be added to the model file database.
 
         Returns:
             str: Path to location of file within model db.
@@ -100,6 +107,13 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
     def duplicate(self, ex_filename, new_filename):
         """
         Copies a file or directory to the model database.
+
+        Args:
+            ex_filename(str): File name or relative path to file that will be duplicated.
+            new_filename(str): File name or relative path to file that will be created.
+
+        Returns:
+            str: Path to location of file within model db.
         """
         src = os.path.join(self.db_dir, ex_filename)
         dst = os.path.join(self.db_dir, new_filename)
@@ -112,11 +126,18 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
             else:
                 raise ValueError("filename is not a directory or file. Check Name")
 
-        return new_filename
+        return dst
 
     def move(self, ex_filename, new_filename):
         """
         Moves a file or directory to the model database.
+
+        Args:
+            ex_filename(str): File name or relative path to file that will be moved.
+            new_filename(str): File name or relative path to new file.
+
+        Returns:
+            str: Path to location of file within model db.
         """
         src = os.path.join(self.db_dir, ex_filename)
         dst = os.path.join(self.db_dir, new_filename)
@@ -133,7 +154,10 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
 
     def bulk_delete(self, filename_list):
         """
-        Bulk Deletes list of file or directories from the model database. filename can be directory or file
+        Bulk Deletes list of file or directories from the model database.
+
+        Args:
+            filename_list(list): List of filenames or directories that will be deleted.
         """
         with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
             for filename in filename_list:
@@ -148,6 +172,9 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
     def bulk_add(self, filepath_list):
         """
         Bulk Adds list of files or directories (from a filepath) to the model database.
+
+        Args:
+            filepath_list(list): List of filepath for files that will be deleted to the database.
         """
         with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
             for filepath in filepath_list:
@@ -164,7 +191,10 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
     def bulk_duplicate(self, filename_list):
         """
         Bulk Copies list of files or directories to the model database.
-        i.e. filename_list = [(ex_filename1, new_filename1),(ex_filename2, new_filename2)]
+
+        Args:
+            filename_list(str): List of tuples with existing file and new filename,
+                i.e [(ex_filename1, new_filename1),(ex_filename2, new_filename2)]
         """
         with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
             for ex_filename, new_filename in filename_list:
@@ -179,8 +209,11 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
 
     def bulk_move(self, filename_list):
         """
-        Adds a file or directory to the model database.
-        i.e. filename_list = [(ex_filename1, new_filename1),(ex_filename2, new_filename2)]
+        Moves a file or directory in the model database.
+
+        Args:
+            filename_list(str): List of tuples with existing file and new filename,
+                i.e [(ex_filename1, new_filename1),(ex_filename2, new_filename2)]
         """
         with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
             for ex_filename, new_filename in filename_list:
