@@ -97,3 +97,44 @@ class ResourceStatusControllerTests(TethysTestCase):
         ret = controller(mock_request, back_url='/foo/bar')
 
         self.assertEqual(redirect_response, ret)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.reverse')
+    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.get_active_app')
+    def test_default_back_url(self, mock_ga, mock_reverse):
+        resource_id = self.resource_id
+        mock_request = self.request_factory.get('/foo/bar/status/?r={}'.format(self.resource_id))
+
+        mock_app = mock.MagicMock()
+        mock_ga().namespace = 'test_namespace'
+        mock_reverse.return_value = 'test1'
+        rs = ResourceStatus(_app=mock_app, back_url='/foo/bar')
+
+        # call the method
+        ret = rs.default_back_url(mock_request, resource_id=resource_id)
+
+        # test the results
+        self.assertEqual('test1', ret)
+        ss = mock_reverse.call_args_list
+        self.assertEqual('test_namespace:app_users_manage_resources', ss[0][0][0])
+
+    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.reverse')
+    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.get_active_app')
+    def test_default_back_url_with_back_args(self, mock_ga, mock_reverse):
+        resource_id = self.resource_id
+        mock_request = mock.MagicMock()
+        mock_request.GET.get.return_value = 'resource-details'
+
+        mock_app = mock.MagicMock()
+        mock_ga().namespace = 'test_namespace'
+        mock_reverse.return_value = 'test1'
+        rs = ResourceStatus(_app=mock_app, back_url='/foo/bar')
+
+        # call the method
+        ret = rs.default_back_url(mock_request, resource_id=resource_id)
+
+        # test the results
+        self.assertEqual('test1', ret)
+        ss = mock_reverse.call_args_list
+        self.assertEqual('test_namespace:app_users_resource_details', ss[0][0][0])
+        self.assertEqual(resource_id, ss[0][1]['args'][0])
+
