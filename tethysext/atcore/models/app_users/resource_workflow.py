@@ -55,12 +55,15 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
 
     resource = relationship('Resource', backref='workflows')
     creator = relationship('AppUser', backref='workflows')
-    steps = relationship('ResourceWorkflowStep', backref='workflow')
+    steps = relationship('ResourceWorkflowStep', order_by="ResourceWorkflowStep.order", backref='workflow')
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
         'polymorphic_identity': TYPE
     }
+
+    def __str__(self):
+        return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
 
     def get_next_step(self):
         """
@@ -69,16 +72,17 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
         Returns:
             int, ResourceWorkflowStep: the index of the next step and the next step.
         """
+        idx = 0
+        step = None
+
         for idx, step in enumerate(self.steps):
-            step_status = step.get_status(
-                ResourceWorkflowStep.ROOT_STATUS_KEY,
-                ResourceWorkflowStep.STATUS_PENDING
-            )
+            step_status = step.get_status(step.ROOT_STATUS_KEY, step.STATUS_PENDING)
+
             if step_status != ResourceWorkflowStep.STATUS_COMPLETE:
                 return idx, step
 
-        # TODO: ALL STATUS COMPLETE OR NON READY - RETURN RESULTS OBJECT?
-        return len(self.steps), self.steps[-1]
+        # Return last step and index if none complete
+        return idx, step
 
     def get_status(self):
         """
@@ -96,3 +100,24 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
             return self.STATUS_CONTINUE
 
         return status
+
+    def get_adjacent_steps(self, step):
+        """
+        Get the adjacent steps to the given step.
+
+        Args:
+            step(ResourceWorkflowStep): A step belonging to this workflow.
+
+        Returns:
+            ResourceWorkflowStep, ResourceWorkflowStep: previous and next steps, respectively.
+        """
+        if step not in self.steps:
+            raise ValueError('Step {} does not belong to this workflow.'.format(step))
+
+        index = self.steps.index(step)
+        previous_index = index - 1
+        next_index = index + 1
+        previous_step = self.steps[previous_index] if previous_index >= 0 else None
+        next_step = self.steps[next_index] if next_index < len(self.steps) else None
+
+        return previous_step, next_step

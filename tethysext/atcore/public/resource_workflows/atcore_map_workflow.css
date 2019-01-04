@@ -14,6 +14,10 @@
     border-bottom: 1px #dddddd solid;
 }
 
+.workflow-step:focus, .workflow-step:focus-within, .workflow-step:hover {
+    text-decoration: none!important;
+}
+
 .workflow-step .glyphicon {
     display: inline-block;
     font-size: 20px!important;
@@ -25,12 +29,58 @@
 }
 
 .workflow-step:hover {
-
+    background-color: #dddddd!important;
 }
 
 .workflow-step.active {
     color: #ffffff!important;
-    background-color: #42A7F4;
-    font-weight: 600;
+    background-color: #42A7F4!important;
 }
+
+.workflow-step.active:hover {
+    color: #ffffff!important;
+    background-color: #0075CE!important;
+}
+
+/* Complete Status */
+.workflow-step.workflow-step-complete {
+    color: #17A917!important;
+}
+
+.workflow-step.active.workflow-step-complete {
+    color: #ffffff!important;
+    background-color: #17A917!important;
+}
+
+.workflow-step.active.workflow-step-complete:hover {
+    background-color: #179917!important;
+}
+
+.workflow-step.workflow-step-complete i {
+    color: #17A917;
+}
+
+/* Error Status */
+.workflow-step.workflow-step-error {
+    color: #EF3737!important;
+}
+
+.workflow-step.active.workflow-step-error {
+    color: #ffffff!important;
+    background-color: #EF3737!important;
+}
+
+.workflow-step.active.workflow-step-error:hover {
+    background-color: #E23737!important;
+}
+
+.workflow-step.workflow-step-error i {
+    color: #EF3737;
+}
+
+/* Status Symbol Active */
+.workflow-step.active i {
+    color: #ffffff!important;
+}
+
 

@@ -24,6 +24,9 @@ dependencies = [
     'factory_boy',
     'jinja2',
     'requests',
+    'param',
+    'geojson',
+    'pyshp'
     'filelock'
 ]
 

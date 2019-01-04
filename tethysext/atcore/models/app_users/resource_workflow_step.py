@@ -8,8 +8,10 @@
 """
 import inspect
 import uuid
+from abc import abstractmethod
+from copy import deepcopy
 
-from sqlalchemy import Column, ForeignKey, String, PickleType
+from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
 from tethys_sdk.base import TethysController
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin
@@ -40,11 +42,14 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
 
     name = Column(String)
     help = Column(String)
+    order = Column(Integer)
+    options = Column(PickleType, default={})
     http_methods = Column(PickleType, default=['get', 'post', 'delete'])
     controller_path = Column(String)
     controller_kwargs = Column(PickleType, default={})
     status = Column(String)
     _attributes = Column(String)
+    _parameters = Column(PickleType, default={})
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
@@ -56,6 +61,80 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
 
         # Set initial status
         self.set_status(self.ROOT_STATUS_KEY, self.STATUS_PENDING)
+
+        # Initialize parameters
+        self._parameters = self.init_parameters(*args, **kwargs)
+
+    def __str__(self):
+        return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
+
+    @abstractmethod
+    def init_parameters(self, *args, **kwargs):
+        """
+        Initialize the parameters for this step.
+        Returns:
+            dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+        """
+
+    def validate(self):
+        """
+        Validates parameter values of this this step.
+        Returns:
+            bool: True if data is valid, else False.
+        """
+        params = self._parameters
+
+        # Check Required
+        for name, param in params.items():
+            if param['required'] and not param['value']:
+                raise ValueError('Parameter "{}" is required.'.format(name))
+
+    def parse_parameters(self, parameters):
+        """
+        Parse parameters from a dictionary.
+
+        Args:
+            parameters(dict<name,value>): Dictionary of parameters.
+        """
+        for name, value in parameters.items():
+            try:
+                self.set_parameter(name, value)
+            except ValueError:
+                pass  # Ignore parameters that don't exist when parsing.
+
+    def set_parameter(self, name, value):
+        """
+        Sets the value of the named parameter.
+        Args:
+            name(str): Name of the parameter to set.
+            value(varies): Value of the parameter.
+        """
+        if name not in self._parameters:
+            raise ValueError('No parameter named "{}" in this step.'.format(name))
+
+        self._parameters[name]['value'] = value
+
+    def get_parameter(self, name):
+        """
+        Get value of the named parameter.
+        Args:
+            name(str): name of parameter.
+
+        Returns:
+            varies: Value of the named parameter.
+        """
+        try:
+            return self._parameters[name]['value']
+        except KeyError:
+            raise ValueError('No parameter named "{}" in this step.'.format(name))
+
+    def get_parameters(self):
+        """
+        Get all parameter objects.
+        Returns:
+            dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+        """
+        return deepcopy(self._parameters)
 
     def get_controller(self, **kwargs):
         """
