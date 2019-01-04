@@ -21,23 +21,60 @@
   <div role="tabpanel" class="tab-pane active" id="workflow-tab-panel">
     <ul class="workflow-steps">
       {% for step in steps %}
-      <li><a class="workflow-step"><span class="glyphicon glyphicon-ok-sign"></span><span class="workflow-step-title">{{ step.name }}</span></a></li>
+      <li>
+        <a class="workflow-step {% if step.id == current_step.id %}active {% endif %}workflow-step-{{ step.status }}"
+           title="{{ step.help }}"
+           {% if step.link %}href="{% url url_map_name resource.id workflow.id step.id %}"{% endif %}>
+          {% if step.status == 'pending' %}
+          <i class="far fa-circle"></i>
+          {% elif step.status == 'complete' %}
+          <i class="fas fa-check-circle"></i>
+          {% elif step.status == 'error' %}
+          <i class="fas fa-times-circle"></i>
+          {% else %}
+          <i class="fas fa-question-circle"></i>
+          {% endif %}
+          <span class="workflow-step-title">{{ step.name }}</span>
+        </a>
+      </li>
       {% endfor %}
     </ul>
   </div>
 {% endblock %}
 
 {% block map %}
-  <form id="map-workflow-form" class="map-form" method="post">
+  <form id="map-workflow-form" class="map-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input name="method" value="save-step-data" hidden>
     {{ block.super }}
   </form>
 {% endblock %}
 
 {% block app_actions %}
+  {% if allow_shapefile %}
+  <div class="input-file-wrapper">
+    <input id="shapefile-upload" name="shapefile" class="file-input" type="file" accept=".zip" form="map-workflow-form">
+    <label for="shapefile-upload" class="btn btn-default btn-file-input">Upload Shapefile</label>
+  </div>
+  {% endif %}
+
+  {% if previous_step %}
+  <a class="btn btn-default btn-previous" href="{% url url_map_name resource.id workflow.id previous_step.id %}">Previous</a>
+  {% endif %}
+
+  {% if next_step %}
+  <button class="btn btn-default btn-next" type='submit' form="map-workflow-form">Next</button>
+  {% endif %}
   {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/file_input/js/file_input.js' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content_dependent_styles %}
   {{ block.super }}
   <link href="{% static 'atcore/resource_workflows/atcore_map_workflow.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/file_input/css/file_input.css' %}" rel="stylesheet"/>
 {% endblock %}

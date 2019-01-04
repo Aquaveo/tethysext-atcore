@@ -31,6 +31,15 @@
     outline-color: transparent;
 }
 
+.tethys-map-view-draw-control {
+    top: auto;
+    bottom: 7px!important;
+}
+
+div.tethys-map-view-draw-control:nth-of-type(1) {
+    top: 500px!important;
+}
+
 /* Control Positions */
 .ol-attribution {
     bottom: 0.5em;

@@ -2,10 +2,10 @@
   padding-right: 50px;
   position: absolute;
   display: inline-block;
-  top: 300px;
-  left: 25px;
+  top: 57px;
+  left: 10%;
   z-index: 1000000000;
-  width: 100%;
+  width: 80%;
 }
 
 #app-content-wrapper.show-nav .flash-messages {

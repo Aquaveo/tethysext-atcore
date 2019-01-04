@@ -23,7 +23,10 @@ dependencies = [
     'mock',
     'factory_boy',
     'jinja2',
-    'requests'
+    'requests',
+    'param',
+    'geojson',
+    'pyshp'
 ]
 
 # -- Get Resource File -- #

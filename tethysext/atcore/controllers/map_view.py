@@ -73,7 +73,7 @@ class MapView(AppUsersResourceController):
         map_view.legend = False  # Ensure the built-in legend is not turned on.
         map_view.height = '100%'  # Ensure 100% height
         map_view.width = '100%'  # Ensure 100% width
-        map_view.should_disable_basemap = self.should_disable_basemap(
+        map_view.disable_basemap = self.should_disable_basemap(
             request=request,
             model_db=model_db,
             map_manager=map_manager
@@ -144,16 +144,14 @@ class MapView(AppUsersResourceController):
         Route POST requests.
         """
         method = request.POST.get('method', None)
-        if method == 'find-location-by-query':
-            return self.find_location_by_query(request)
-        elif method == 'find-location-by-advanced-query':
-            return self.find_location_by_advanced_query(request)
-        elif method == 'get-plot-data':
-            layer_name = request.POST.get('layer_name', '')
-            feature_id = request.POST.get('feature_id', '')
-            return self.get_plot_data(request, resource_id, layer_name, feature_id)
-        else:
+        python_method = method.replace('-', '_')
+
+        the_method = getattr(self, python_method, None)
+
+        if the_method is None:
             return HttpResponseNotFound()
+
+        return the_method(request, resource_id, *args, **kwargs)
 
     def should_disable_basemap(self, request, model_db, map_manager):
         """
@@ -199,7 +197,7 @@ class MapView(AppUsersResourceController):
         """
         return permissions
 
-    def get_plot_data(self, request, resource_id, layer_name, feature_id):
+    def get_plot_data(self, request, resource_id, *args, **kwargs):
         """
         Load plot from given parameters.
 
@@ -213,6 +211,8 @@ class MapView(AppUsersResourceController):
             JsonResponse: title, data, and layout options for the plot.
         """
         # Get Resource
+        layer_name = request.POST.get('layer_name', '')
+        feature_id = request.POST.get('feature_id', '')
         resource = self.get_resource(request, resource_id)
 
         # TODO: Move permissions check into decorator
@@ -235,7 +235,7 @@ class MapView(AppUsersResourceController):
         return JsonResponse({'title': title, 'data': data, 'layout': layout})
 
     @permission_required('use_map_geocode', raise_exception=True)
-    def find_location_by_query(self, request):
+    def find_location_by_query(self, request, _, *args, **kwargs):
         """"
         This controller is used in default geocode feature.
         """
@@ -312,7 +312,7 @@ class MapView(AppUsersResourceController):
         return JsonResponse(json)
 
     @permission_required('use_map_geocode', raise_exception=True)
-    def find_location_by_advanced_query(self, request):
+    def find_location_by_advanced_query(self, request, _, *args, **kwargs):
         """"
         This controller called by the advanced geocode search feature.
         """
