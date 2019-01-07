@@ -97,7 +97,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                 controls=enabled_controls,
                 initial='Pan',
                 initial_features=current_geometry,
-                output_format='WKT'
+                output_format='GeoJSON'
             )
 
             if draw_options is not None and 'map_view' in context:
@@ -175,14 +175,16 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             geometry = request.POST.get('geometry', None)
             shapefile = request.FILES.get('shapefile', None)
 
-            if not geometry and not shapefile:
-                raise ValueError('You must either draw at least one shape or upload a shapefile.')
-
             make_session = self.get_sessionmaker()
             session = make_session()
             workflow = self.get_workflow(request, workflow_id, session=session)
             current_step = self.get_step(request, step_id=step_id, session=session)
             _, next_step = workflow.get_adjacent_steps(current_step)
+
+            if not geometry and not shapefile:
+                current_step.set_parameter('geometry', None)
+                session.commit()
+                raise ValueError('You must either draw at least one shape or upload a shapefile.')
 
             # Handle File parameter
             shapefile_geojson = self.parse_shapefile(request, shapefile)
@@ -201,8 +203,15 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
 
             # Go to next step
             active_app = get_active_app(request)
-            next_step_url = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
-            response = redirect(reverse(next_step_url, args=(resource_id, workflow_id, str(next_step.id))))
+            step_url = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
+
+            # If shapefile is given, reload current step to show user the features loaded from the shapefile
+            if shapefile:
+                response = redirect(reverse(step_url, args=(resource_id, workflow_id, str(current_step.id))))
+
+            # Otherwise, go to the next step
+            else:
+                response = redirect(reverse(step_url, args=(resource_id, workflow_id, str(next_step.id))))
 
         except (StatementError, NoResultFound):
             messages.warning(request, 'The {} could not be found.'.format(
