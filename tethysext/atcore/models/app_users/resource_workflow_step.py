@@ -63,7 +63,8 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         self.set_status(self.ROOT_STATUS_KEY, self.STATUS_PENDING)
 
         # Initialize parameters
-        self._parameters = self.init_parameters(*args, **kwargs)
+        if not self._parameters:
+            self._parameters = self.init_parameters(*args, **kwargs)
 
     def __str__(self):
         return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
@@ -112,7 +113,12 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         if name not in self._parameters:
             raise ValueError('No parameter named "{}" in this step.'.format(name))
 
-        self._parameters[name]['value'] = value
+        # Must copy the entire parameters dict, make changes to the copy,
+        # and overwrite to get sqlalchemy to recognize a change has occurred,
+        # and propagate the changes to the database.
+        old_parameters = deepcopy(self._parameters)
+        old_parameters[name]['value'] = value
+        self._parameters = old_parameters
 
     def get_parameter(self, name):
         """
