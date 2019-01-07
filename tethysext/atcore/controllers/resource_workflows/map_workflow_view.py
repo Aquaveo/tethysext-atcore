@@ -64,36 +64,47 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                     type(current_step))
                 )
 
-            step_options = current_step.options
-            enabled_controls = ['Modify', 'Delete', 'Move']
-            initial_tool = 2
-            if step_options['allow_drawing']:
-                for elem in step_options['shapes']:
+            # Get Map View
+            map_view = context['map_view']
+
+            # Disable feature selection on all layers so it doesn't interfere with drawing
+            for layer in map_view.layers:
+                layer.feature_selection = False
+                layer.editable = False
+
+            # Add layer for current geometry
+            enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
+
+            if current_step.options['allow_drawing']:
+                for elem in current_step.options['shapes']:
                     if elem == 'points':
                         enabled_controls.append('Point')
-                        initial_tool += 1
                     elif elem == 'lines':
                         enabled_controls.append('LineString')
-                        initial_tool += 1
                     elif elem == 'polygons':
                         enabled_controls.append('Polygon')
-                        initial_tool += 1
                     elif elem == 'extents':
                         enabled_controls.append('Box')
-                        initial_tool += 1
                     else:
                         raise ValueError('Invalid shapes defined: {}.'.format(elem))
 
-                draw_options = MVDraw(
-                    controls=enabled_controls,
-                    initial=enabled_controls[initial_tool],
-                    output_format='GeoJSON'
-                )
 
-                if draw_options is not None and 'map_view' in context:
-                    map_view = context['map_view']
-                    map_view.draw = draw_options
-                    context.update({'map_view': map_view})
+            # Load the currently saved geometry, if any.
+            current_geometry = current_step.get_parameter('geometry')
+
+            # Configure drawing
+            draw_options = MVDraw(
+                controls=enabled_controls,
+                initial='Pan',
+                initial_features=current_geometry,
+                output_format='WKT'
+            )
+
+            if draw_options is not None and 'map_view' in context:
+                map_view.draw = draw_options
+
+            # Save changes to map view
+            context.update({'map_view': map_view})
 
             # Build step cards
             previous_status = None
@@ -125,7 +136,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                 'url_map_name': '{}:{}_workflow_step'.format(active_app.namespace, workflow.type),
                 'map_title': workflow.name,
                 'map_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
-                'allow_shapefile': step_options['allow_shapefile']
+                'allow_shapefile': current_step.options['allow_shapefile']
             })
 
         except (StatementError, NoResultFound):
@@ -145,7 +156,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
 
     def save_step_data(self, request, resource_id, workflow_id, step_id, back_url, *args, **kwargs):
         """
-        Route POST requests.
+        Handle POST requests with method save-step-data.
         Args:
             request(HttpRequest): The request.
             resource_id(str): ID of the resource this workflow applies to.
