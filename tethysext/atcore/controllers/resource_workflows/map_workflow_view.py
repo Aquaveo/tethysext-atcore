@@ -88,7 +88,6 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                     else:
                         raise ValueError('Invalid shapes defined: {}.'.format(elem))
 
-
             # Load the currently saved geometry, if any.
             current_geometry = current_step.get_parameter('geometry')
 
@@ -152,7 +151,6 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             session and session.close()
 
         return context
-
 
     def save_step_data(self, request, resource_id, workflow_id, step_id, back_url, *args, **kwargs):
         """
@@ -304,7 +302,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             if not geojson_objs.is_valid:
                 raise RuntimeError('Invalid geojson from "shapefile" parameter: {}'.format(geojson_dicts))
 
-        except shp.ShapefileException as e:
+        except shp.ShapefileException:
             raise ValueError('Invalid shapefile provided.')
         except Exception as e:
             raise RuntimeError('An error has occured while parsing the shapefile: {}'.format(e))
@@ -346,8 +344,16 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
         return geojson_objs
 
     def combine_geojson_objects(self, shapefile_geojson, geometry_geojson):
+        """
+        Merge two geojson objects.
+        Args:
+            shapefile_geojson: geojson object derived from shapefile.
+            geometry_geojson: geojson object derived from drawing.
 
-        if shapefile_geojson is  not None and geometry_geojson is None:
+        Returns:
+            object: geojson object.
+        """
+        if shapefile_geojson is not None and geometry_geojson is None:
             return shapefile_geojson
 
         if shapefile_geojson is None and geometry_geojson is not None:
@@ -355,9 +361,3 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
 
         shapefile_geojson['features'] += geometry_geojson['features']
         return shapefile_geojson
-
-
-
-
-
-
