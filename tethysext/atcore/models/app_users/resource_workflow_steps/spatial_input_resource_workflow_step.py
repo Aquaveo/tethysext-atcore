@@ -6,7 +6,6 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from sqlalchemy import Column, PickleType
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
