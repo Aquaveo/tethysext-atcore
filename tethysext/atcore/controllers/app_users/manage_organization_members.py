@@ -64,13 +64,15 @@ class ManageOrganizationMembers(AppUsersController):
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
 
         session = make_session()
+
         request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Defaults
         organization = session.query(_Organization).get(organization_id)
         selected_members = [str(u.id) for u in organization.members]
         members_select_errors = ""
-        is_client = organization.consultant and organization.consultant.is_member(request_app_user)
+        # is_client = organization.consultant and organization.consultant.is_member(request_app_user)
+        is_client = organization.clients[0].consultant and organization.clients[0].is_member(request_app_user)
 
         # Process form submission
         if request.POST and 'modify-members-submit' in request.POST:
@@ -79,7 +81,6 @@ class ManageOrganizationMembers(AppUsersController):
 
             # Cannot remove self
             valid = True
-
             no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
             if not request_app_user.is_staff() and request_app_user.role not in no_organization_roles:
                 if not is_client and str(request_app_user.id) not in selected_members:

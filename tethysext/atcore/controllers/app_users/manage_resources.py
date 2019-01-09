@@ -65,6 +65,7 @@ class ManageResources(AppUsersController):
 
         # Setup
         _AppUser = self.get_app_user_model()
+
         _Resource = self.get_resource_model()
         make_session = self.get_sessionmaker()
         session = make_session()

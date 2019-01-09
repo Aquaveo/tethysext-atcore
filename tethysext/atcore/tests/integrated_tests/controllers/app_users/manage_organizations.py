@@ -71,8 +71,6 @@ class ManageOrganizationsTests(TethysTestCase):
             consultant=mock.MagicMock()
         )
 
-        # TODO: check the resource from Organization
-
     def tearDown(self):
         self.session.close()
         self.transaction.rollback()
@@ -228,7 +226,7 @@ class ManageOrganizationsTests(TethysTestCase):
         organization_id = 'O001'
         manage_organizations = ManageOrganizations()
 
-        ret = manage_organizations._handle_delete(mock_request, organization_id)
+        manage_organizations._handle_delete(mock_request, organization_id)
 
         # test the results
         mock_perform_delete.assert_called_with(mock_request, self.organization)

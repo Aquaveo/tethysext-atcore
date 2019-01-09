@@ -101,7 +101,7 @@ class ManageResourcesTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.can_edit_resource')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.get_resources')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model' )
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,

@@ -116,6 +116,7 @@ class ModifyUser(AppUsersController):
 
         # Process form submission
         if request.POST and 'modify-user-submit' in request.POST:
+
             # Validate the form
             first_name = request.POST.get('first-name', '')
             last_name = request.POST.get('last-name', '')
@@ -139,7 +140,6 @@ class ModifyUser(AppUsersController):
             # Reset selected organization (if any) when role requires no organization
             if selected_organizations and selected_role in no_organization_roles:
                 selected_organizations = []
-
             # Only get and validate username if creating a new user, not when editing
             if not editing:
                 username = request.POST.get('username', '')

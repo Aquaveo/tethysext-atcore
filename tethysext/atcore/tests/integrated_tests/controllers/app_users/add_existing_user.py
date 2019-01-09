@@ -1,0 +1,188 @@
+"""
+********************************************************************************
+* Name: modify_user.py
+* Author: Teva, Tanner
+* Created On: December 21, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+"""
+import mock
+from tethys_sdk.testing import TethysTestCase
+from django.test import RequestFactory
+from sqlalchemy.engine import create_engine
+from sqlalchemy.orm.session import Session
+from tethysext.atcore.tests import TEST_DB_URL
+from tethysext.atcore.services.app_users.roles import Roles
+from tethysext.atcore.models.app_users import AppUser, AppUsersBase
+from tethysext.atcore.tests.factories.django_user import UserFactory
+from tethysext.atcore.controllers.app_users.add_existing_user import AddExistingUser
+
+
+def setUpModule():
+    global transaction, connection, engine
+
+    # Connect to the database and create the schema within a transaction
+    engine = create_engine(TEST_DB_URL)
+    connection = engine.connect()
+    transaction = connection.begin()
+    AppUsersBase.metadata.create_all(connection)
+
+
+def tearDownModule():
+    # Roll back the top level transaction and disconnect from the database
+    transaction.rollback()
+    connection.close()
+    engine.dispose()
+
+
+class AddExistingUserTests(TethysTestCase):
+
+    def setUp(self):
+        global connection, engine
+        self.request_factory = RequestFactory()
+        self.transaction = connection.begin_nested()
+        self.session = Session(connection)
+
+        self.django_user = UserFactory()
+        self.django_user.is_staff = True
+        self.django_user.is_superuser = True
+        self.django_user.save()
+
+        self.app_user = AppUser(
+            username=self.django_user.username,
+            role=Roles.ORG_ADMIN,
+            is_active=True,
+        )
+        self.session.add(self.app_user)
+        self.session.commit()
+
+    def tearDown(self):
+        self.session.close()
+        self.transaction.rollback()
+
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.AddExistingUser._handle_modify_user_requests')
+    def test_get(self, mock_handle_modify_user):
+        mock_request = mock.MagicMock()
+        add_existing_user = AddExistingUser()
+        add_existing_user.get(mock_request)
+
+        # test the results
+        mock_handle_modify_user.assert_called_with(mock_request)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.AddExistingUser._handle_modify_user_requests')
+    def test_post(self, mock_handle_modify_user):
+        mock_request = mock.MagicMock()
+
+        add_existing_user = AddExistingUser()
+        add_existing_user.post(mock_request)
+
+        # test the results
+        mock_handle_modify_user.assert_called_with(mock_request)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.reverse')
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.redirect')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    def test__handle_modify_user_requests(self, mock_get_app_usermodel, mock_get_organization_model,
+                                          mock_get_session_maker, mock_get_active_app,
+                                          mock_get_permission_manager, _, mock_reverse):
+        session = mock_get_session_maker()()
+
+        mock_dict = {'add-existing-user-submit': 'add-existing-user-submit', 'assign-role': True,
+                     'portal-users': 'portal_user1', 'assign-organizations': 'org1'}
+
+        mock_request = self.request_factory.post('/foo/bar/map-view/', data=mock_dict)
+
+        mock_request.user = self.django_user
+
+        mock_app_user = mock.MagicMock()
+        mock_get_app_usermodel().get_app_user_from_request.return_value = mock_app_user
+
+        mock_org = mock.MagicMock()
+        mock_app_user.get_organizations.return_value = mock_org
+
+        mock_role = mock.MagicMock()
+        mock_app_user.get_assignable_roles.return_value = mock_role
+
+        mock_no_of_orgs = mock.MagicMock()
+        mock_get_app_usermodel().ROLES.get_no_organization_roles.return_value = mock_no_of_orgs
+
+        mock_get_active_app().namespace = 'NameSpace'
+
+        add_existing_user = AddExistingUser()
+        add_existing_user._handle_modify_user_requests(mock_request)
+
+        # testing the results
+        session.close.assert_called()
+        mock_get_app_usermodel().get_app_user_from_request.assert_called_with(mock_request, session)
+        mock_app_user.get_organizations.assert_called_with(session, mock_request, as_options=True, cascade=True)
+        mock_app_user.get_assignable_roles.assert_called_with(mock_request,  as_options=True)
+
+        mock_get_active_app.assert_called_with(mock_request)
+
+        mock_get_permission_manager.assert_called()
+
+        mock_get_permission_manager().remove_all_permissions_groups.assert_called()
+
+        self.assertEqual('NameSpace:app_users_manage_users', mock_reverse.call_args_list[0][0][0])
+
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    def test__handle_modify_user_requests_with_invalid_post_data(self, mock_get_app_usermodel, _,
+                                                                 mock_get_session_maker, mock_get_active_app,
+                                                                 mock_render):
+        session = mock_get_session_maker()()
+
+        mock_dict = {'add-existing-user-submit': 'add-existing-user-submit', 'assign-role': '',
+                     'portal-users': [], 'assign-organizations': []}
+
+        mock_request = self.request_factory.post('/foo/bar/map-view/', data=mock_dict)
+
+        mock_request.user = self.django_user
+
+        mock_app_user = mock.MagicMock()
+        mock_get_app_usermodel().get_app_user_from_request.return_value = mock_app_user
+
+        mock_org = mock.MagicMock()
+        mock_app_user.get_organizations.return_value = mock_org
+
+        mock_role = mock.MagicMock()
+        mock_app_user.get_assignable_roles.return_value = mock_role
+
+        mock_no_of_orgs = mock.MagicMock()
+        mock_get_app_usermodel().ROLES.get_no_organization_roles.return_value = [mock_no_of_orgs]
+
+        mock_get_active_app().namespace = 'NameSpace'
+
+        # call the method
+        add_existing_user = AddExistingUser()
+        add_existing_user._handle_modify_user_requests(mock_request)
+
+        # testing the results
+        mock_get_app_usermodel().get_app_user_from_request.assert_called_with(mock_request, session)
+        mock_app_user.get_organizations.assert_called_with(session, mock_request, as_options=True, cascade=True)
+        mock_app_user.get_assignable_roles.assert_called_with(mock_request, as_options=True)
+
+        session.close.assert_called()
+        mock_get_active_app.assert_called_with(mock_request)
+
+        self.assertEqual(mock_request, mock_render.call_args_list[0][0][0])
+        self.assertEqual('atcore/app_users/add_existing_user.html', mock_render.call_args_list[0][0][1])
+
+        # self.assertIn(self.django_user, mock_render.call_args_list[0][0][2]['portal_users_select']['options'][1]) # TODO: Talk with Nathan about it
+        self.assertEqual('Must select at least one user.', mock_render.call_args_list[0][0][2]['portal_users_select']['error'])
+
+        self.assertEqual('', mock_render.call_args_list[0][0][2]['role_select']['initial'])
+        self.assertEqual(mock_role, mock_render.call_args_list[0][0][2]['role_select']['options'])
+        self.assertEqual('A role must be assigned to user.',
+                         mock_render.call_args_list[0][0][2]['role_select']['error'])
+
+        self.assertEqual([], mock_render.call_args_list[0][0][2]['organization_select']['initial'])
+        self.assertEqual(mock_org, mock_render.call_args_list[0][0][2]['organization_select']['options'])
+        self.assertEqual('', mock_render.call_args_list[0][0][2]['organization_select']['error']) # TODO: Need to get the error message

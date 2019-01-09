@@ -3,6 +3,8 @@ from .controllers.app_users.base import AppUsersControllerMixinTests  # noqa: F4
 from .controllers.app_users.base import AppUsersResourceControllerMixinTests  # noqa: F401
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from .controllers.map_view import MapViewTests  # noqa: F401
+from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
+
 from .models.app_user_tests import AppUserTests  # noqa: F401
 from .models.organization_tests import OrganizationTests  # noqa: F401
 from .models.initializer import AppUserInitializerTests  # noqa: F401
