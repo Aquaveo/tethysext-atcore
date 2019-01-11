@@ -90,18 +90,14 @@
         </div>
         <div class="modal-body">
           <p>Select all of the files for the shapefile you'd like to upload and create a zip archive. Then use the <b>Browse</b> button below to select the zip archive.</p>
-          <form id="shapefile-upload-form" method="post" enctype="multipart/form-data">
-            <div class="input-file-wrapper">
-              {% csrf_token %}
-              <input name="method" value="save-step-data" hidden>
-              <input id="shapefile-upload" name="shapefile" class="file-input" type="file" accept=".zip">
-              <label for="shapefile-upload" class="btn btn-default btn-file-input">Browse</label>
-            </div>
-          </form>
+          <div class="input-file-wrapper">
+            <input id="shapefile-upload" name="shapefile" class="file-input" type="file" accept=".zip" form="map-workflow-form">
+            <label for="shapefile-upload" class="btn btn-default btn-file-input">Browse</label>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success" form="shapefile-upload-form">Upload Shapefile</button>
+          <button type="submit" class="btn btn-success" form="map-workflow-form">Upload Shapefile</button>
         </div>
       </div>
     </div>
