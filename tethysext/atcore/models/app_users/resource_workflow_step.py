@@ -35,6 +35,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     __tablename__ = 'app_users_resource_workflow_steps'
 
     TYPE = 'generic_workflow_step'
+    ATTR_STATUS_MESSAGE = 'status_message'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))

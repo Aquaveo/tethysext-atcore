@@ -46,6 +46,7 @@ class StatusMixin(object):
                 cls.STATUS_OK, cls.STATUS_WORKING, cls.STATUS_UNKNOWN,
                 cls.STATUS_CONTINUE]
 
+    # TODO: MAKE KEY OPTIONAL AND DEFAULT TO ROOT_STATUS_KEY
     def get_status(self, key, default=None):
         """
         Get status for a given value.
@@ -63,6 +64,7 @@ class StatusMixin(object):
 
         return status_result
 
+    # TODO: MAKE KEY OPTIONAL AND DEFAULT TO ROOT_STATUS_KEY
     def set_status(self, key, status):
         """
         Set status for given key.

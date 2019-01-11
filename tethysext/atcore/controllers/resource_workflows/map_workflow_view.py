@@ -64,6 +64,16 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                     type(current_step))
                 )
 
+            status_message = current_step.get_attribute(current_step.ATTR_STATUS_MESSAGE)
+            if status_message:
+                step_status = current_step.get_status(current_step.ROOT_STATUS_KEY)
+                if step_status in (current_step.STATUS_ERROR, current_step.STATUS_FAILED):
+                    messages.error(request, status_message)
+                elif step_status in (current_step.STATUS_COMPLETE,):
+                    messages.success(request, status_message)
+                else:
+                    messages.info(request, status_message)
+
             # Get Map View
             map_view = context['map_view']
 
@@ -110,18 +120,23 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             steps = []
 
             for workflow_step in workflow.steps:
-                status = workflow_step.get_status(workflow_step.ROOT_STATUS_KEY).lower()
+                step_status = workflow_step.get_status(workflow_step.ROOT_STATUS_KEY)
+                step_in_progress = step_status != workflow_step.STATUS_PENDING and step_status is not None
+                create_link = previous_status == workflow_step.STATUS_COMPLETE \
+                    or previous_status is None \
+                    or step_in_progress
+
                 steps.append({
                     'id': workflow_step.id,
                     'help': workflow_step.help,
                     'name': workflow_step.name,
                     'type': workflow_step.type,
-                    'status': status,
-                    'link': previous_status == current_step.STATUS_COMPLETE or previous_status is None,
+                    'status': step_status.lower(),
+                    'link': create_link,
 
                 })
 
-                previous_status = status
+                previous_status = step_status
 
             # Get the current app
             active_app = get_active_app(request)
@@ -152,6 +167,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
 
         return context
 
+    # TODO: Rename to handle_next?
     def save_step_data(self, request, resource_id, workflow_id, step_id, back_url, *args, **kwargs):
         """
         Handle POST requests with method save-step-data.
@@ -167,6 +183,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
         """
         _ResourceWorkflow = self.get_resource_workflow_model()
         session = None
+        current_step = None
 
         try:
             # Prepare POST parameters
@@ -197,6 +214,9 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             # Validate the Parameters
             current_step.validate()
 
+            # Update the status of the step
+            current_step.set_status(current_step.ROOT_STATUS_KEY, current_step.STATUS_COMPLETE)
+            current_step.set_attribute(current_step.ATTR_STATUS_MESSAGE, None)
             session.commit()
 
             # Go to next step
@@ -222,11 +242,21 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             response = redirect(self.back_url)
 
         except ValueError as e:
-            session and session.rollback()
-            messages.error(request, e)
+            if session:
+                session.rollback()
+                if current_step:
+                    current_step.set_attribute(current_step.ATTR_STATUS_MESSAGE, str(e))
+                    current_step.set_status(current_step.ROOT_STATUS_KEY, current_step.STATUS_ERROR)
+                    session.commit()
+
             return self.get(request, resource_id=resource_id, workflow_id=workflow_id, step_id=step_id)
         except RuntimeError as e:
-            session and session.rollback()
+            if session:
+                session.rollback()
+                if current_step:
+                    current_step.set_status(current_step.ROOT_STATUS_KEY, current_step.STATUS_ERROR)
+                    session.commit()
+
             messages.error(request, "We're sorry, an unexpected error has occurred.")
             log.exception(e)
             return self.get(request, resource_id=resource_id, workflow_id=workflow_id, step_id=step_id)

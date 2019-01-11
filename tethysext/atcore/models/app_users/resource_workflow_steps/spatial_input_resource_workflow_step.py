@@ -26,13 +26,7 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
 
     def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
         """
-
-        Args:
-            geoserver_name:
-            map_manager:
-            spatial_manager:
-            *args:
-            **kwargs:
+        Constructor.
         """
         # Defaults
         self.options = {
