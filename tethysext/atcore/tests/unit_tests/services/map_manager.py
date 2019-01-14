@@ -10,7 +10,7 @@ import mock
 import unittest
 from tethys_gizmos.gizmo_options import MVLayer
 from tethysext.atcore.services.model_database import ModelDatabase
-from tethysext.atcore.services.spatial_manager import SpatialManager
+from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.map_manager import MapManagerBase
 
 
@@ -23,7 +23,7 @@ class _MapManager(MapManagerBase):
 class MapManagerBaseTests(unittest.TestCase):
 
     def setUp(self):
-        self.spatial_manager = mock.MagicMock(spec=SpatialManager)
+        self.spatial_manager = mock.MagicMock(spec=ModelDBSpatialManager)
         self.model_db = mock.MagicMock(spec=ModelDatabase)
         self.map_manager = _MapManager(self.spatial_manager, self.model_db)
 

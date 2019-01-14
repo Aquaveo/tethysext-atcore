@@ -16,7 +16,9 @@ from tethysext.atcore.tests.unit_tests.services.model_database_base import Model
 from tethysext.atcore.tests.unit_tests.services.model_database import ModelDatabaseTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.model_file_database import ModelFileDatabaseTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.geoserver_api import GeoServerAPITests  # noqa: F401
-from tethysext.atcore.tests.unit_tests.services.spatial_manager import SpatialManagerTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.services.base_spatial_manager import BaseSpatialManagerTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.services.model_db_spatial_manager import ModelDBSpatialManagerTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.services.model_file_db_spatial_manager import ModelFileDBSpatialManagerTests  # noqa: F401, E501
 from tethysext.atcore.tests.unit_tests.services.map_manager import MapManagerBaseTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.gizmos.slide_sheet import SlideSheetTests  # noqa: F401

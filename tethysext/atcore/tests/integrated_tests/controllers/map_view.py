@@ -14,7 +14,7 @@ from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.services.spatial_manager import SpatialManager
+from tethysext.atcore.services.model_db_spatial_manager import SpatialManager
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 

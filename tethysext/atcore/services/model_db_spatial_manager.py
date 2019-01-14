@@ -1,88 +1,21 @@
 """
 ********************************************************************************
-* Name: spatial_manager
+* Name: model_db_spatial_manager
 * Author: nswain
 * Created On: July 06, 2018
+* Updated on: December 19, 2018
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
-from tethysext.atcore.services.geoserver_api import GeoServerAPI
+from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 
 
-def reload_config(public_endpoint=False, reload_config_default=True):
+class ModelDBSpatialManager(BaseSpatialManager):
     """
-    Decorator that handles config reload for methods of the GsshaSpatialManager class.
-
-    Args:
-        public_endpoint(bool): Use public GeoServer endpoint for the reload call.
-        reload_config_default(bool): Default to use if the "reload_config" parameter is not specified.
+    Class for Spatial Managers using a postgres database.
     """
-    def reload_decorator(method):
-        def wrapper(*args, **kwargs):
-            if not isinstance(args[0], SpatialManager):
-                raise ValueError('The "reload_config" decorator can only be used on methods of SpatialManager '
-                                 'dervied classes.')
-
-            # Call the method
-            return_value = method(*args, **kwargs)
-
-            # Call handle reload_config parameter
-            if 'reload_config' in kwargs:
-                should_reload = kwargs['reload_config']
-            else:
-                should_reload = reload_config_default
-
-            if should_reload:
-                self = args[0]
-                self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
-            return return_value
-
-        return wrapper
-
-    return reload_decorator
-
-
-class SpatialManager(object):
-    """
-    Base class for SpatialManagers.
-    """
-    __metaclass__ = ABCMeta
-
-    SQL_PATH = ''
-    SLD_PATH = ''
-    WORKSPACE = 'my-app'
-    URI = 'http://app.aquaveo.com/my-app'
-
-    # Suffixes
-    LEGEND_SUFFIX = 'legend'
-    LABELS_SUFFIX = 'labels'
-    GLOBAL_SUFFIX = 'global'
-
-    GT_POLYGON = 'Polygon'
-    GT_LINE = 'LineString'
-    GT_POINT = 'Point'
-    GT_RASTER = 'Raster'
-
-    U_METRIC = 'metric'
-    U_IMPERIAL = 'imperial'
-
-    PRO_WKT = 'srtext'
-    PRO_PROJ4 = 'proj4text'
-
-    def __init__(self, geoserver_engine):
-        """
-        Constructor
-
-        Args:
-            workspace(str): The workspace to use when creating layers and styles.
-            geoserver_engine(tethys_dataset_services.GeoServerEngine): Tethys geoserver engine.
-        """
-        self.gs_engine = geoserver_engine
-        self.gs_api = GeoServerAPI(geoserver_engine)
-        self._projection_units = {}
-        self._projection_string = {}
 
     @abstractmethod
     def get_extent_for_project(self, model_db):
@@ -93,24 +26,6 @@ class SpatialManager(object):
         Returns:
             4-list: Extent bounding box (e.g.: [minx, miny, maxx, maxy] ).
         """
-
-    def get_ows_endpoint(self, public_endpoint=True):
-        """
-        Returns the GeoServer endpoint for OWS services (with trailing slash).
-
-        Args:
-            public_endpoint(bool): return with the public endpoint if True.
-        """
-        return self.gs_api.get_ows_endpoint(self.WORKSPACE, public_endpoint)
-
-    def get_wms_endpoint(self, public=True):
-        """
-        Returns the GeoServer endpoint for WMS services (with trailing slash).
-
-        Args:
-            public(bool): return with the public endpoint if True.
-        """
-        return self.gs_api.get_wms_endpoint(public)
 
     def get_projection_units(self, model_db, srid):
         """
@@ -158,26 +73,29 @@ class SpatialManager(object):
 
         return self._projection_units[srid]
 
-    def get_projection_string(self, model_db, srid, format=PRO_WKT):
+    def get_projection_string(self, model_db, srid, proj_format=''):
         """
         Get the projection string as either wkt or proj4 format.
 
         Args:
             model_db(ModelDatabase): the object representing the model database.:
             srid(int): EPSG spatial reference identifier.
-            format(str): project string format (either SpatialManager.PRO_WKT or SpatialManager.PRO_PROJ4).
+            proj_format(str): project string format (either SpatialManager.PRO_WKT or SpatialManager.PRO_PROJ4).
 
         Returns:
             str: projection string.
         """
-        if format not in (self.PRO_WKT, self.PRO_PROJ4):
-            raise ValueError('Invalid projection format given: {}. Use either SpatialManager.PRO_WKT or '
-                             'SpatialManager.PRO_PROJ4.'.format(format))
+        if not proj_format:
+            proj_format = self.PRO_WKT
 
-        if srid not in self._projection_string or format not in self._projection_string[srid]:
+        if proj_format not in (self.PRO_WKT, self.PRO_PROJ4):
+            raise ValueError('Invalid projection format given: {}. Use either SpatialManager.PRO_WKT or '
+                             'SpatialManager.PRO_PROJ4.'.format(proj_format))
+
+        if srid not in self._projection_string or proj_format not in self._projection_string[srid]:
             db_engine = model_db.get_engine()
             try:
-                if format is self.PRO_WKT:
+                if proj_format is self.PRO_WKT:
                     sql = "SELECT srtext AS proj_string FROM spatial_ref_sys WHERE srid = {}".format(srid)
                 else:
                     sql = "SELECT proj4text AS proj_string FROM spatial_ref_sys WHERE srid = {}".format(srid)
@@ -193,9 +111,9 @@ class SpatialManager(object):
             if srid not in self._projection_string:
                 self._projection_string[srid] = {}
 
-            self._projection_string[srid].update({format: projection_string})
+            self._projection_string[srid].update({proj_format: projection_string})
 
-        return self._projection_string[srid][format]
+        return self._projection_string[srid][proj_format]
 
     def link_geoserver_to_db(self, model_db, reload_config=True):
         """
@@ -236,29 +154,3 @@ class SpatialManager(object):
             recurse=recurse,
         )
         return response
-
-    def create_workspace(self):
-        """
-        Create workspace.
-        """
-        self.gs_engine.create_workspace(self.WORKSPACE, self.URI)
-
-        # Reload configuration on all slave nodes to perpetuate styles
-        self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
-
-        return True
-
-    def get_db_specific_store_id(self, model_db):
-        """
-        Construct the model database specific store id.
-
-        Args:
-            model_db(ModelDatabase): the object representing the model database.
-        """
-        return '{0}:{1}'.format(self.WORKSPACE, model_db.get_id())
-
-    def reload(self, ports=None, public_endpoint=True):
-        """
-        Reload the in memory catalog of each member of the geoserver cluster.
-        """
-        self.gs_api.reload(ports, public_endpoint)
