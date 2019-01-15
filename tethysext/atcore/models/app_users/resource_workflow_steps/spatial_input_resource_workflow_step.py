@@ -28,12 +28,6 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
         """
         Constructor.
         """
-        # Defaults
-        self.options = {
-            'shapes': ['points', 'lines', 'polygons', 'extents'],
-            'allow_shapefile': True,
-            'allow_drawing': True
-        }
         self.controller_path = 'tethysext.atcore.controllers.resource_workflows.MapWorkflowView'
         self.controller_kwargs = {
             'geoserver_name': geoserver_name,
@@ -42,6 +36,17 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
         }
 
         super().__init__(*args, **kwargs)
+
+    @property
+    def default_options(self):
+        return {
+            'shapes': ['points', 'lines', 'polygons', 'extents'],
+            'allow_shapefile': True,
+            'allow_drawing': True,
+            'snapping_enabled': True,
+            'snapping_layer': {},
+            'snapping_options': {}
+        }
 
     def init_parameters(self, *args, **kwargs):
         """

@@ -44,11 +44,11 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     name = Column(String)
     help = Column(String)
     order = Column(Integer)
-    options = Column(PickleType, default={})
     http_methods = Column(PickleType, default=['get', 'post', 'delete'])
     controller_path = Column(String)
     controller_kwargs = Column(PickleType, default={})
     status = Column(String)
+    _options = Column(PickleType, default={})
     _attributes = Column(String)
     _parameters = Column(PickleType, default={})
 
@@ -67,8 +67,32 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         if not self._parameters:
             self._parameters = self.init_parameters(*args, **kwargs)
 
+        if 'options' in kwargs:
+            self.options = kwargs['options']
+        else:
+            self._options = self.default_options
+
     def __str__(self):
         return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
+
+    @property
+    def default_options(self):
+        """
+        Returns default options dictionary for the step.
+        """
+        return {}
+
+    @property
+    def options(self):
+        return self._options
+
+    @options.setter
+    def options(self, value):
+        if not isinstance(value, dict):
+            raise ValueError('The options must be a dictionary: {}'.format(value))
+        opts = self.default_options
+        opts.update(value)
+        self._options = opts
 
     @abstractmethod
     def init_parameters(self, *args, **kwargs):

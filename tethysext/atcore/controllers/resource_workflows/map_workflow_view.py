@@ -106,7 +106,10 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                 controls=enabled_controls,
                 initial='Pan',
                 initial_features=current_geometry,
-                output_format='GeoJSON'
+                output_format='GeoJSON',
+                snapping_enabled=current_step.options['snapping_enabled'],
+                snapping_layer=current_step.options['snapping_layer'],
+                snapping_options=current_step.options['snapping_options']
             )
 
             if draw_options is not None and 'map_view' in context:
@@ -133,7 +136,6 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
                     'type': workflow_step.type,
                     'status': step_status.lower(),
                     'link': create_link,
-
                 })
 
                 previous_status = step_status
@@ -167,7 +169,6 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
 
         return context
 
-    # TODO: Rename to handle_next?
     def save_step_data(self, request, resource_id, workflow_id, step_id, back_url, *args, **kwargs):
         """
         Handle POST requests with method save-step-data.
@@ -194,12 +195,32 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             session = make_session()
             workflow = self.get_workflow(request, workflow_id, session=session)
             current_step = self.get_step(request, step_id=step_id, session=session)
-            _, next_step = workflow.get_adjacent_steps(current_step)
+            previous_step, next_step = workflow.get_adjacent_steps(current_step)
 
+            # Create for previous, next, and current steps
+            previous_url = None
+            next_url = None
+            active_app = get_active_app(request)
+            step_url_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
+            current_url = reverse(step_url_name, args=(resource_id, workflow_id, str(current_step.id)))
+
+            if next_step:
+                next_url = reverse(step_url_name, args=(resource_id, workflow_id, str(next_step.id)))
+
+            if previous_step:
+                previous_url = reverse(step_url_name, args=(resource_id, workflow_id, str(previous_step.id)))
+
+            # Validate input (need at least geometry or shapefile)
             if not geometry and not shapefile:
-                current_step.set_parameter('geometry', None)
-                session.commit()
-                raise ValueError('You must either draw at least one shape or upload a shapefile.')
+                # Don't require input to go back
+                if 'previous-submit' in request.POST:
+                    return redirect(previous_url)
+
+                # Raise error if going forward
+                else:
+                    current_step.set_parameter('geometry', None)
+                    session.commit()
+                    raise ValueError('You must either draw at least one shape or upload a shapefile.')
 
             # Handle File parameter
             shapefile_geojson = self.parse_shapefile(request, shapefile)
@@ -219,17 +240,16 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController):
             current_step.set_attribute(current_step.ATTR_STATUS_MESSAGE, None)
             session.commit()
 
-            # Go to next step
-            active_app = get_active_app(request)
-            step_url = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
-
             # If shapefile is given, reload current step to show user the features loaded from the shapefile
             if shapefile:
-                response = redirect(reverse(step_url, args=(resource_id, workflow_id, str(current_step.id))))
+                response = redirect(current_url)
 
             # Otherwise, go to the next step
             else:
-                response = redirect(reverse(step_url, args=(resource_id, workflow_id, str(next_step.id))))
+                if 'next-submit' in request.POST:
+                    response = redirect(next_url)
+                else:
+                    response = redirect(previous_url)
 
         except (StatementError, NoResultFound):
             messages.warning(request, 'The {} could not be found.'.format(
