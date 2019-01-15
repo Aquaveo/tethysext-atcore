@@ -58,11 +58,11 @@
   {% endif %}
 
   {% if previous_step %}
-  <a class="btn btn-default btn-previous" href="{% url url_map_name resource.id workflow.id previous_step.id %}">Previous</a>
+  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="map-workflow-form">Previous</button>
   {% endif %}
 
   {% if next_step %}
-  <button class="btn btn-default btn-next" type='submit' form="map-workflow-form">Next</button>
+  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Next</button>
   {% endif %}
   {{ block.super }}
 {% endblock %}
