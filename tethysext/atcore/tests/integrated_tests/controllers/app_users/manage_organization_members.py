@@ -147,6 +147,7 @@ class ManageOrganizationMembersTest(TethysTestCase):
         app_user.get_app_user_from_request.return_value = mock_request_app_user
 
         mock_peer_user = mock.MagicMock()
+        mock_peer_user.id = 1
         mock_peer_user.user_name = 'user1'
         mock_peer_user.get_display_name.return_value = 'User1'
         mock_request_app_user.get_peers.return_value = [mock_peer_user]
@@ -162,9 +163,11 @@ class ManageOrganizationMembersTest(TethysTestCase):
         self.assertEqual(mock_request, call_args[0][0][0])
         self.assertEqual('atcore/app_users/manage_organization_members.html', call_args[0][0][1])
         self.assertEqual('test_organization', call_args[0][0][2]['user_group_name'])
-
         self.assertEqual(str(self.organization.members[0].id), call_args[0][0][2]['members_select']['initial'][0])
-        # TODO: Need to check the mockpeers call_args[0][0][2]['members_select']['options']
+
+        self.assertEqual(1, len(call_args[0][0][2]['members_select']['options']))
+        self.assertEqual(mock_peer_user.get_display_name(), next(iter(call_args[0][0][2]['members_select']['options']))[0])
+        self.assertEqual(str(mock_peer_user.id), next(iter(call_args[0][0][2]['members_select']['options']))[1])
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.messages')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.reverse')

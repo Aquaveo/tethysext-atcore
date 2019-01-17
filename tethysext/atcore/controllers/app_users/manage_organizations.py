@@ -194,7 +194,6 @@ class ManageOrganizations(AppUsersController):
         Returns:
             dict: customized organization card.
         """
-        # TODO ask nathan what the purpose of this function is.
         return organization_card
 
     def perform_custom_delete_operations(self, request, organization):

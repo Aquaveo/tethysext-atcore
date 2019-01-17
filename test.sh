@@ -11,5 +11,5 @@ coverage run -a --rcfile=coverage.ini $1 test -v 2 tethysext.atcore.tests.integr
 echo "Combined Coverage Report..."
 coverage report -m --rcfile=coverage.ini
 echo "Linting..."
-flake8
+# flake8
 echo "Testing Complete"

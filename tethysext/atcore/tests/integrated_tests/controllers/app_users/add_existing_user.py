@@ -112,6 +112,7 @@ class AddExistingUserTests(TethysTestCase):
 
         mock_get_active_app().namespace = 'NameSpace'
 
+        # call the method
         add_existing_user = AddExistingUser()
         add_existing_user._handle_modify_user_requests(mock_request)
 
