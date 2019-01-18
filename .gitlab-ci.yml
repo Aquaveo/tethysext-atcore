@@ -74,7 +74,7 @@ test_image:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG
     # Run test script
-    - docker run -it --name tethys_atcore -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG bash test-docker.sh
+    - docker run --name tethys_atcore -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG bash test-docker.sh
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
