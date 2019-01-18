@@ -21,6 +21,16 @@ $ python setup.py develop
 $ python setup.py install
 ```
 
+### settings.py
+
+Add the following to `INSTALLED_APPS` in your `settings.py`:
+
+```python
+'datetimewidget',
+'django_select2',
+'taggit',
+```
+
 # Testing
 
 This extension has two types of tests: unit tests and integrated tests.
