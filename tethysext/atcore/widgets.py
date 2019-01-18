@@ -115,7 +115,8 @@ widget_map = {
                 'forceParse': 'true',
                 'keyboardNavigation': 'true',
                 },
-                bootstrap_version=3),
+                bootstrap_version=3
+            ),
         ),
     param.List:
         lambda p, initial: TagField(
