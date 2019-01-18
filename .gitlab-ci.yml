@@ -46,7 +46,7 @@ tests:
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report -m --rcfile=coverage.ini"
     # Intermediate Tests
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /usr/lib/tethys/src && coverage run -a --rcfile=coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /usr/lib/tethys/src && coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     - docker exec tethys_atcore /bin/bash -c "ls -al /usr/lib/tethys/src"
     # Coverage Report
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && coverage combine /var/www/tethys/exts/tethysext-atcore/.coverage /usr/lib/tethys/src/.coverage"
