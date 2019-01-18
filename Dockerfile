@@ -56,6 +56,7 @@ EXPOSE 80
 # COPY IN SALT #
 ################
 ADD docker/salt/ /srv/salt/
+ADD docker/test-docker.sh ${TETHYS_HOME}/
 
 #######
 # RUN #

@@ -3,6 +3,7 @@ image: docker:git
 stages:
   - test
   - build
+  - test_image
 
 variables:
   TETHYS_CORE_TAG: 'v3.0.0b-r2'
@@ -61,3 +62,13 @@ build:
   only:
     - tags
     - branches
+
+test_image:
+  stage: test_image
+  script:
+    - if [ -z "$CI_COMMIT_TAG" ]; then export LATEST_TAG="dev"; else export LATEST_TAG="latest"; fi
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG
+    - docker run $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG bash test-docker.sh
+  tags:
+    - docker
