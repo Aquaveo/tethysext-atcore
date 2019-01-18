@@ -7,3 +7,4 @@
 ********************************************************************************
 """
 from tethysext.atcore.models.app_users.resource_workflow_steps.spatial_input_resource_workflow_step import SpatialInputResourceWorkflowStep  # noqa: F401, E501
+from tethysext.atcore.models.app_users.resource_workflow_steps.spatial_attributes_step import SpatialAttributesStep  # noqa: F401, E501
