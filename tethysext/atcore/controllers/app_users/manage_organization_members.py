@@ -71,8 +71,7 @@ class ManageOrganizationMembers(AppUsersController):
         organization = session.query(_Organization).get(organization_id)
         selected_members = [str(u.id) for u in organization.members]
         members_select_errors = ""
-        # is_client = organization.consultant and organization.consultant.is_member(request_app_user)
-        is_client = organization.clients[0].consultant and organization.clients[0].is_member(request_app_user)
+        is_client = organization.consultant and organization.consultant.is_member(request_app_user)
 
         # Process form submission
         if request.POST and 'modify-members-submit' in request.POST:
