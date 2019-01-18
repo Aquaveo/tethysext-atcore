@@ -823,6 +823,9 @@ class ModifyUserTests(TethysTestCase):
 
         self.assertTrue(mock_render.call_args_list[0][0][2]['username_input']['disabled'])
 
+        self.assertEqual(mock_target_user.get_django_user().username,
+                         mock_render.call_args_list[0][0][2]['username_input']['initial'])
+
         self.assertEqual('user@aquaveo.com', mock_render.call_args_list[0][0][2]['email_input']['initial'])
 
         self.assertEqual('abc123', mock_render.call_args_list[0][0][2]['password_input']['initial'])
