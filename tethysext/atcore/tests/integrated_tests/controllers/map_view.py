@@ -14,7 +14,7 @@ from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.services.model_db_spatial_manager import SpatialManager
+from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
@@ -34,7 +34,7 @@ class MapViewTests(TethysTestCase):
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_map_manager,
             _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
-            _SpatialManager=mock.MagicMock(spec=SpatialManager),
+            _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
         self.resource_id = 'abc123'
         self.user = UserFactory()
