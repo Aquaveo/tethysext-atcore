@@ -39,7 +39,7 @@ tests:
     - echo "Settings"
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /usr/lib/tethys/src/tethys_portal && cat settings.py"
     # Clean coverage data
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm .coverage"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     # Unit Tests
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
