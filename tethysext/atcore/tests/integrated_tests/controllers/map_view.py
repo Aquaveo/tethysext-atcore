@@ -13,6 +13,7 @@ import mock
 from tethysext.atcore.tests.factories.django_user import UserFactory
 
 from django.test import RequestFactory
+from django.http import HttpResponse
 from sqlalchemy.orm.session import Session
 from tethys_sdk.testing import TethysTestCase
 from tethys_sdk.base import TethysAppBase
@@ -209,9 +210,8 @@ class MapViewTests(TethysTestCase):
 
     @mock.patch('django.http.response.HttpResponseNotFound')
     def test_post_httpresponsenotfound(self, _):
-        mock_request = mock.MagicMock()
+        mock_request = mock.MagicMock(POST={})
         resource_id = '12345'
-        mock_request.POST.get.return_value = ['foo']
 
         mv = MapView()
         mv.post(request=mock_request, resource_id=resource_id)
@@ -266,14 +266,15 @@ class MapViewTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.map_view.isinstance')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')
-    def test_post_get_plot_data_permissions(self, mock_get_resource, _):
-        mock_get_resource.return_value = 'Success'
+    def test_post_get_plot_data_permissions(self, mock_get_resource):
+        mock_response = mock.MagicMock(spec=HttpResponse)
+        mock_get_resource.return_value = mock_response
 
         # call the method
-        ret = self.mv.get_plot_data('', '', '', '')
+        ret = self.mv.get_plot_data(mock.MagicMock(), '')
 
         # test the results
-        self.assertEqual('Success', ret)
+        self.assertEqual(mock_response, ret)
 
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_find_location_by_query(self, _):
@@ -287,7 +288,7 @@ class MapViewTests(TethysTestCase):
 
         request.user = self.django_user
         mv = MapView()
-        res = mv.find_location_by_query(request)
+        res = mv.find_location_by_query(request, '')
 
         self.assertEqual(200, res.status_code)
 
@@ -307,7 +308,7 @@ class MapViewTests(TethysTestCase):
 
         mv = MapView()
 
-        res = mv.find_location_by_query(request)
+        res = mv.find_location_by_query(request, '')
 
         content = json.loads(res.content.decode('utf-8'))
 
@@ -325,7 +326,7 @@ class MapViewTests(TethysTestCase):
 
         request.user = self.django_user
         mv = MapView()
-        res = mv.find_location_by_query(request)
+        res = mv.find_location_by_query(request, '')
 
         self.assertEqual(200, res.status_code)
 
@@ -339,7 +340,7 @@ class MapViewTests(TethysTestCase):
 
         mv = MapView()
 
-        res = mv.find_location_by_advanced_query(request)
+        res = mv.find_location_by_advanced_query(request, '')
 
         self.assertEqual(200, res.status_code)
 
@@ -359,7 +360,7 @@ class MapViewTests(TethysTestCase):
 
         mv = MapView()
 
-        res = mv.find_location_by_advanced_query(request)
+        res = mv.find_location_by_advanced_query(request, '')
 
         content = json.loads(res.content.decode('utf-8'))
 

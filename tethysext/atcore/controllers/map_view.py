@@ -155,7 +155,7 @@ class MapView(AppUsersResourceController):
         """
         Route POST requests.
         """
-        method = request.POST.get('method', None)
+        method = request.POST.get('method', '')
         python_method = method.replace('-', '_')
 
         the_method = getattr(self, python_method, None)
@@ -234,10 +234,8 @@ class MapView(AppUsersResourceController):
         Load plot from given parameters.
 
         Args:
-            request: Django HttpRequest.
+            request (HttpRequest): The request.
             resource_id(str): UUID of the resource being mapped.
-            layer_name(str): Name of the layer to which the feature belongs.
-            feature_id(str): Feature ID of the feature to plot.
 
         Returns:
             JsonResponse: title, data, and layout options for the plot.
@@ -266,9 +264,13 @@ class MapView(AppUsersResourceController):
         return JsonResponse({'title': title, 'data': data, 'layout': layout})
 
     @permission_required('use_map_geocode', raise_exception=True)
-    def find_location_by_query(self, request, _, *args, **kwargs):
+    def find_location_by_query(self, request, resource_id, *args, **kwargs):
         """"
         This controller is used in default geocode feature.
+
+        Args:
+            request(HttpRequest): The request.
+            resource_id(str): UUID of the resource being mapped.
         """
         query = request.POST.get('q', None)
         extent = request.POST.get('extent', None)
@@ -343,9 +345,13 @@ class MapView(AppUsersResourceController):
         return JsonResponse(json)
 
     @permission_required('use_map_geocode', raise_exception=True)
-    def find_location_by_advanced_query(self, request, _, *args, **kwargs):
+    def find_location_by_advanced_query(self, request, resource_id, *args, **kwargs):
         """"
         This controller called by the advanced geocode search feature.
+
+        Args:
+            request(HttpRequest): The request.
+            resource_id(str): UUID of the resource being mapped.
         """
         query = request.POST.get('q', None)
         # location = request.POST.get('l', None)
