@@ -74,3 +74,16 @@ class ResourceWorkflowTests(unittest.TestCase):
             self.assertGreater(resource_workflow.date_created, self.pre_created_date)
             self.assertEqual(self.resource, resource_workflow.resource)
             self.assertEqual(self.user, resource_workflow.creator)
+
+    # TODO: Need to finish the following test
+    def test_next_step(self):
+        resource_workflow = ResourceWorkflow(
+            name=self.name,
+            creator=self.user,
+            resource=self.resource
+        )
+
+        self.session.add(resource_workflow)
+        self.session.commit()
+        # ret = resource_workflow.get_next_step()
+        pass

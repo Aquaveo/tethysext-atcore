@@ -64,6 +64,7 @@ class ManageOrganizationMembers(AppUsersController):
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
 
         session = make_session()
+
         request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Defaults
@@ -79,7 +80,6 @@ class ManageOrganizationMembers(AppUsersController):
 
             # Cannot remove self
             valid = True
-
             no_organization_roles = _AppUser.ROLES.get_no_organization_roles()
             if not request_app_user.is_staff() and request_app_user.role not in no_organization_roles:
                 if not is_client and str(request_app_user.id) not in selected_members:

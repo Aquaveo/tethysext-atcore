@@ -64,6 +64,18 @@ class MapManagerBaseTests(unittest.TestCase):
         self.map_manager.get_map_extent.assert_not_called()
         self.assertEqual('foo', ret)
 
+    def test_build_layer_group(self):
+        ret = self.map_manager.build_layer_group(id='ID001', display_name='Foo', layers='Layer1')
+        self.assertEqual('Foo', ret['display_name'])
+        self.assertEqual('ID001', ret['id'])
+        self.assertEqual('checkbox', ret['control'])
+        self.assertEqual('Layer1', ret['layers'])
+        self.assertTrue(ret['visible'])
+
+    def test_build_layer_group_value_error(self):
+        self.assertRaises(ValueError, self.map_manager.build_layer_group,
+                          id='ID001', display_name='Foo', layers='Layer1', layer_control='groupbox')
+
     def test_get_wms_endpoint(self):
         ret = self.map_manager.get_wms_endpoint()
         self.spatial_manager.get_wms_endpoint.assert_called_with(public=True)
@@ -451,3 +463,56 @@ class MapManagerBaseTests(unittest.TestCase):
         self.assertTrue(params['TILED'])
         self.assertIn('TILESORIGIN', params)
         self.assertEqual('0.0,0.0', params['TILESORIGIN'])
+
+    def test_build_mv_layer_plottable(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+        plottable = True
+        extent = [400, 300, 800, 100]
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                layer_variable=layer_variable,
+                plottable=plottable
+            )
+
+        opts = ret['options']
+        params = opts['params']
+        data = ret['data']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('TileWMS', ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertIn('tileGrid', opts)
+        self.assertEqual(map_manager.DEFAULT_TILE_GRID, opts['tileGrid'])
+        self.assertIn('TILED', params)
+        self.assertTrue(params['TILED'])
+        self.assertIn('TILESORIGIN', params)
+        self.assertEqual('0.0,0.0', params['TILESORIGIN'])
+        self.assertIn('layer_name', data)
+        self.assertEqual(layer_name, data['layer_name'])
+        self.assertIn('layer_variable', data)
+        self.assertEqual(layer_variable, data['layer_variable'])
+        self.assertTrue(plottable, data['plottable'])
+
+    def test_get_plot_for_layer_feature(self):
+        ret = self.map_manager.get_plot_for_layer_feature(layer_name='layer1', feature_id='F001')
+        self.assertEqual('F001', ret[1][0]['name'])
+        self.assertEqual('layer1', ret[2]['xaxis']['title'])

@@ -101,7 +101,6 @@ class AppUsersResourceController(AppUsersController):
             session = make_session()
 
         request_app_user = _AppUser.get_app_user_from_request(request, session)
-
         try:
             resource = session.query(_Resource). \
                 filter(_Resource.id == resource_id). \
