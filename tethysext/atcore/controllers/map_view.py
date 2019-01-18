@@ -257,7 +257,7 @@ class MapView(AppUsersResourceController):
         if response.status_code != 200:
             json = {'success': False,
                     'error': response.text}
-            return JsonResponse(json, status=response.status_code)
+            return JsonResponse(json)
 
         # Construct friendly name for address select
         r_json = response.json()

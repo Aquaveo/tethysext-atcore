@@ -27,6 +27,8 @@ from sqlalchemy.engine import create_engine
 from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.services.app_users.roles import Roles
 
+import json
+
 
 def setUpModule():
     global transaction, connection, engine
@@ -260,7 +262,10 @@ class MapViewTests(TethysTestCase):
 
         res = mv.find_location_by_query(request)
 
-        self.assertEqual(205, res.status_code)
+        content = json.loads(res.content.decode('utf-8'))
+
+        self.assertFalse(content['success'])
+        self.assertEqual('error in request', content['error'])
 
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_find_location_by_query_address_with_no_bounds(self, _):
