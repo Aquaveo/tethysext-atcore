@@ -164,7 +164,8 @@ class MapViewTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.find_location_by_advanced_query')
     def test_post_location_by_advanced_query(self, mock_flaq, _):
         resource_id = '12345'
-        mock_request = self.request_factory.post('/foo/bar/map-view/', data={'method': 'find-location-by-advanced-query'})
+        mock_request = self.request_factory.post('/foo/bar/map-view/',
+                                                 data={'method': 'find-location-by-advanced-query'})
         mock_request.user = self.django_user
         self.controller(mock_request, resource_id=resource_id)
         mock_flaq.called_assert_with(mock_request, resource_id=resource_id)
@@ -246,9 +247,8 @@ class MapViewTests(TethysTestCase):
     def test_find_location_by_query_non_200_response(self, mock_request, _):
         address = '3210 N Canyon Rd, Provo, UT 84604'
         extent = [51.2867, 51.6918741, -0.5103, 0.334]
-        request = self.request_factory.post('/foo/bar/map-view/',
-                                             data={'method': 'find-location-by-query',
-                                             'q': address, 'extent': extent},)
+        request = self.request_factory.post('/foo/bar/map-view/', data={'method': 'find-location-by-query',
+                                                                        'q': address, 'extent': extent},)
 
         request.user = self.django_user
 

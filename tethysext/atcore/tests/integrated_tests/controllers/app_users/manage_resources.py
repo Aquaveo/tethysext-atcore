@@ -20,6 +20,7 @@ from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.controllers.app_users.manage_resources import ManageResources
 from tethysext.atcore.mixins.status_mixin import StatusMixin
 
+
 def setUpModule():
     global transaction, connection, engine
 
@@ -76,7 +77,7 @@ class ManageResourcesTests(TethysTestCase):
 
         # Call the function
         manage_resources = ManageResources()
-        ret = manage_resources.get(mock_request)
+        manage_resources.get(mock_request)
 
         # Test the function
         mock_handle_get.assert_called_with(mock_request)
@@ -255,9 +256,9 @@ class ManageResourcesTests(TethysTestCase):
         self.assertTrue(render_args[0][0][2]['show_new_button'])
         self.assertTrue(render_args[0][0][2]['show_users_link'])
 
-
     @mock.patch('tethys_apps.utilities.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.perform_custom_delete_operations')
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.'
+                'ManageResources.perform_custom_delete_operations')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
     def test_handle_delete(self, _, mock_get_session, mock_custom_delete, __):

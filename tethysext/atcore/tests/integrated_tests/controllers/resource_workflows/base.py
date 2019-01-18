@@ -20,7 +20,6 @@ from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWor
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.spatial_manager import SpatialManager
 from tethysext.atcore.tests import TEST_DB_URL
-from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController, \
     AppUsersResourceController
 
@@ -90,7 +89,8 @@ class AppUsersResourceWorkflowControllerTests(TethysTestCase):
         step = ResourceWorkflowStep(
             name='Test_workflow_steps',
             help='Test workflow help.',
-            controller_path='tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.base.TestController',
+            controller_path='tethysext.atcore.tests.integrated_tests.controllers.'
+                            'resource_workflows.base.TestController',
             controller_kwargs={
                 'geoserver_name': self.geoserver_name,
                 '_MapManager': self.map_manager,
@@ -187,7 +187,8 @@ class AppUsersResourceControllerTests(TethysTestCase):
         step = ResourceWorkflowStep(
             name='Test_workflow_steps',
             help='Test workflow help.',
-            controller_path='tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.base.TestController',
+            controller_path='tethysext.atcore.tests.integrated_tests.controllers.'
+                            'resource_workflows.base.TestController',
             controller_kwargs={
                 'geoserver_name': self.geoserver_name,
                 '_MapManager': self.map_manager,
@@ -235,7 +236,8 @@ class AppUsersResourceControllerTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
-    def test_get_resource_can_view_atcore_exception(self, mock_resource, mock_app_user, mock_session, mock_redirect, mock_messages):
+    def test_get_resource_can_view_atcore_exception(self, mock_resource, mock_app_user, mock_session, mock_redirect,
+                                                    mock_messages):
         mock_request = mock.MagicMock()
 
         mock_request_app_user = mock_app_user().get_app_user_from_request()

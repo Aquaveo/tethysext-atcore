@@ -86,9 +86,9 @@ class AddExistingUserTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    def test__handle_modify_user_requests(self, mock_get_app_usermodel, mock_get_organization_model,
+    def test__handle_modify_user_requests(self, mock_get_app_usermodel, _,
                                           mock_get_session_maker, mock_get_active_app,
-                                          mock_get_permission_manager, _, mock_reverse):
+                                          mock_get_permission_manager, __, mock_reverse):
         session = mock_get_session_maker()()
 
         mock_dict = {'add-existing-user-submit': 'add-existing-user-submit', 'assign-role': 'Role1',
@@ -287,7 +287,8 @@ class AddExistingUserTests(TethysTestCase):
         self.assertEqual(mock_request, mock_render.call_args_list[0][0][0])
         self.assertEqual('atcore/app_users/add_existing_user.html', mock_render.call_args_list[0][0][1])
 
-        self.assertEqual('Must select at least one user.', mock_render.call_args_list[0][0][2]['portal_users_select']['error'])
+        self.assertEqual('Must select at least one user.',
+                         mock_render.call_args_list[0][0][2]['portal_users_select']['error'])
 
         self.assertEqual('', mock_render.call_args_list[0][0][2]['role_select']['initial'])
         self.assertEqual(mock_role, mock_render.call_args_list[0][0][2]['role_select']['options'])

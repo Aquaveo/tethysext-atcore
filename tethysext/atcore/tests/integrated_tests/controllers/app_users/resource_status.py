@@ -62,7 +62,7 @@ class ResourceStatusControllerTests(TethysTestCase):
                 return_value=mock.MagicMock())
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.JobsTable')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.render')
-    def test_handle_get_with_resource_id(self, mock_render, mock_JobsTable, _, __):
+    def test_handle_get_with_resource_id(self, mock_render, mock_jobs_table, _, __):
         mock_request = self.request_factory.get('/foo/bar/status/?r={}'.format(self.resource_id))
         mock_request.user = self.user
         mock_job1 = mock.MagicMock(extended_properties={})
@@ -75,11 +75,11 @@ class ResourceStatusControllerTests(TethysTestCase):
 
         ret = controller(mock_request, back_url='/foo/bar')
 
-        mjt_call_args = mock_JobsTable.call_args_list
+        mjt_call_args = mock_jobs_table.call_args_list
         self.assertEqual([mock_job3], mjt_call_args[0][1]['jobs'])
         mr_call_args = mock_render.call_args_list
         context = mr_call_args[0][0][2]
-        self.assertEqual(mock_JobsTable(), context['jobs_table'])
+        self.assertEqual(mock_jobs_table(), context['jobs_table'])
         self.assertEqual(self.resource_id, context['resource_id'])
         self.assertIsNotNone(context['resource'])
         self.assertEqual(mock_render(), ret)
@@ -137,4 +137,3 @@ class ResourceStatusControllerTests(TethysTestCase):
         ss = mock_reverse.call_args_list
         self.assertEqual('test_namespace:app_users_resource_details', ss[0][0][0])
         self.assertEqual(resource_id, ss[0][1]['args'][0])
-

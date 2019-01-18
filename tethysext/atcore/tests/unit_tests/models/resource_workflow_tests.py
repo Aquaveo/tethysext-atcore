@@ -8,7 +8,6 @@ from tethysext.atcore.models.app_users import AppUsersBase, ResourceWorkflow, Ap
 from tethysext.atcore.tests import TEST_DB_URL
 
 
-
 def setUpModule():
     global transaction, connection, engine
 
@@ -19,6 +18,7 @@ def setUpModule():
     AppUsersBase.metadata.create_all(connection)
 
     # If you want to insert fixtures to the DB, do it here
+
 
 def tearDownModule():
     # Roll back the top level transaction and disconnect from the database
@@ -87,6 +87,3 @@ class ResourceWorkflowTests(unittest.TestCase):
         self.session.commit()
         # ret = resource_workflow.get_next_step()
         pass
-
-
-

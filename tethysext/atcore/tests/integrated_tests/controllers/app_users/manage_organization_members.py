@@ -103,7 +103,8 @@ class ManageOrganizationMembersTest(TethysTestCase):
         self.session.close()
         self.transaction.rollback()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.ManageOrganizationMembers._handle_manage_member_request')
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.'
+                'ManageOrganizationMembers._handle_manage_member_request')
     def test_get(self, mock_handle_manage_memeber_request):
         manage_organization_members = ManageOrganizationMembers()
         mock_request = mock.MagicMock()
@@ -114,8 +115,8 @@ class ManageOrganizationMembersTest(TethysTestCase):
         # test results
         mock_handle_manage_memeber_request.assert_called_with(mock_request)
 
-    @mock.patch(
-        'tethysext.atcore.controllers.app_users.manage_organization_members.ManageOrganizationMembers._handle_manage_member_request')
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.'
+                'ManageOrganizationMembers._handle_manage_member_request')
     def test_post(self, mock_handle_manage_memeber_request):
         manage_organization_members = ManageOrganizationMembers()
         mock_request = mock.MagicMock()
@@ -132,7 +133,8 @@ class ManageOrganizationMembersTest(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
-    def test_handle_manage_member_request_get(self, _, mock_get_user_model, __, mock_get_sessionmaker, ___, mock_render):
+    def test_handle_manage_member_request_get(self, _, mock_get_user_model, __,
+                                              mock_get_sessionmaker, ___, mock_render):
         app_user = mock_get_user_model()
         make_session = mock_get_sessionmaker()
 
@@ -166,7 +168,8 @@ class ManageOrganizationMembersTest(TethysTestCase):
         self.assertEqual(str(self.organization.members[0].id), call_args[0][0][2]['members_select']['initial'][0])
 
         self.assertEqual(1, len(call_args[0][0][2]['members_select']['options']))
-        self.assertEqual(mock_peer_user.get_display_name(), next(iter(call_args[0][0][2]['members_select']['options']))[0])
+        self.assertEqual(mock_peer_user.get_display_name(),
+                         next(iter(call_args[0][0][2]['members_select']['options']))[0])
         self.assertEqual(str(mock_peer_user.id), next(iter(call_args[0][0][2]['members_select']['options']))[1])
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.messages')
@@ -215,7 +218,8 @@ class ManageOrganizationMembersTest(TethysTestCase):
 
         self.assertEqual(mock_request,  mock_messages.warning.call_args_list[0][0][0])
 
-        self.assertEqual('Member "{}" was not removed to prevent from being orphaned.'.format(self.user_org_member.username),
+        self.assertEqual('Member "{}" was not removed to prevent from being '
+                         'orphaned.'.format(self.user_org_member.username),
                          mock_messages.warning.call_args_list[0][0][1])
 
         self.assertIn('app_users_manage_users', mock_reverse.call_args_list[0][0][0])

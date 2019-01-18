@@ -156,8 +156,8 @@ class ModifyUserTests(TethysTestCase):
                                                                  mock_get_organization_model, mock_get_sessionmaker,
                                                                  mock_get_active_app, mock_get_permissions_manager, __,
                                                                  mock_reverse):
-        mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1', 'first-name': 'Foo', 'last-name': 'Bar',
-                     'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
+        mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1', 'first-name': 'Foo',
+                     'last-name': 'Bar', 'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
                      'password-confirm': 'abc123', 'assign-role': ['APP_ADMIN', 'DEVELOPER'],
                      'assign-organizations': ['Org1', 'Org2']}
 
@@ -166,7 +166,6 @@ class ModifyUserTests(TethysTestCase):
         mock_request.user = self.django_user
 
         app_user = mock_get_app_user_model()
-        organization = mock_get_organization_model()
         session = mock_get_sessionmaker()()
 
         mock_request_app_user = mock.MagicMock()
@@ -208,9 +207,8 @@ class ModifyUserTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_user_not_found_exception(self, _, mock_get_app_user_model,
-                                                                             __, mock_get_sessionmaker,
-                                                                             mock_get_active_app, ___, mock_reverse,
-                                                                             mock_messages):
+                                                                   __, mock_get_sessionmaker, mock_get_active_app, ___,
+                                                                   mock_reverse, mock_messages):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1', 'first-name': 'Foo',
                      'last-name': 'Bar',
                      'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
@@ -351,7 +349,6 @@ class ModifyUserTests(TethysTestCase):
         mock_request.user = self.django_user
 
         app_user = mock_get_app_user_model()
-        organization = mock_get_organization_model()
         session = mock_get_sessionmaker()()
 
         mock_request_app_user = mock.MagicMock()
@@ -463,8 +460,10 @@ class ModifyUserTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
-    def test__handle_modify_user_requests_post_password_confirm_password_user_space_error(self, _, mock_get_app_user_model,
-                                                                                          __, mock_get_sessionmaker, mock_get_active_app,
+    def test__handle_modify_user_requests_post_password_confirm_password_user_space_error(self, _,
+                                                                                          mock_get_app_user_model,
+                                                                                          __, mock_get_sessionmaker,
+                                                                                          mock_get_active_app,
                                                                                           mock_render):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'first-name': 'Foo',
                      'last-name': 'Bar', 'username': 'foo bar',
@@ -512,7 +511,8 @@ class ModifyUserTests(TethysTestCase):
         self.assertEqual('Bar', mock_render.call_args_list[0][0][2]['last_name_input']['initial'])
 
         self.assertEqual('foo bar', mock_render.call_args_list[0][0][2]['username_input']['initial'])
-        self.assertEqual('Username cannot contain a space.', mock_render.call_args_list[0][0][2]['username_input']['error'])
+        self.assertEqual('Username cannot contain a space.',
+                         mock_render.call_args_list[0][0][2]['username_input']['error'])
         self.assertFalse(mock_render.call_args_list[0][0][2]['username_input']['disabled'])
 
         self.assertEqual('user@aquaveo.com', mock_render.call_args_list[0][0][2]['email_input']['initial'])
@@ -542,8 +542,8 @@ class ModifyUserTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_duplicate_username(self, _, mock_get_app_user_model,
-                                                                      __, mock_get_sessionmaker, mock_get_active_app,
-                                                                      mock_render):
+                                                                  __, mock_get_sessionmaker, mock_get_active_app,
+                                                                  mock_render):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'first-name': 'Foo',
                      'last-name': 'Bar', 'username': self.app_user.username,
                      'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': '',
@@ -841,7 +841,8 @@ class ModifyUserTests(TethysTestCase):
 
         self.assertEqual(self.organization, mock_render.call_args_list[0][0][2]['organization_select']['options'])
 
-        self.assertEqual('Must assign user to at least one organization', mock_render.call_args_list[0][0][2]['organization_select']['error'])
+        self.assertEqual('Must assign user to at least one organization',
+                         mock_render.call_args_list[0][0][2]['organization_select']['error'])
 
         self.assertEqual(mock_request, mock_render.call_args_list[0][0][0])
 

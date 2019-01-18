@@ -143,7 +143,8 @@ class UserAccountTest(TethysTestCase):
     # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
     # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
     # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    # def test_handle_get_not_request_user(self, mock_app_user_model, mock_get_org, mock_get_session, mock_get_permission, _, mock_render):
+    # def test_handle_get_not_request_user(self, mock_app_user_model, mock_get_org, mock_get_session,
+    # mock_get_permission, _, mock_render):
     #     session = mock_get_session()()
     #
     #     mock_request = self.request_factory.get('/foo/bar/map-view/')

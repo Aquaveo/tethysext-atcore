@@ -258,7 +258,6 @@ class ManageResources(AppUsersController):
             session(sqlalchemy.session): open sqlalchemy session.
             request(django.request): the Django request.
             request_app_user(AppUser): app user that is making the request.
-
         Returns:
             list<Resources>: the list of resources to render on the manage_resources page.
         """
