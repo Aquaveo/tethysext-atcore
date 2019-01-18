@@ -59,4 +59,4 @@ class SpatialAttributesStep(SpatialInputResourceWorkflowStep):
             ValueError
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
-        super().validate()
+        super(SpatialInputResourceWorkflowStep, self).validate()

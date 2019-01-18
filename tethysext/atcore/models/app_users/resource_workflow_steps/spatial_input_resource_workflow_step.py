@@ -38,7 +38,7 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
             '_SpatialManager': spatial_manager
         }
 
-        super().__init__(*args, **kwargs)
+        super(SpatialInputResourceWorkflowStep, self).__init__(*args, **kwargs)
 
     @property
     def default_options(self):
@@ -80,7 +80,7 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
             ValueError
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
-        super().validate()
+        super(SpatialInputResourceWorkflowStep, self).validate()
         #
         # polygon = self._parameters['polygon']
         # value = polygon['value']
