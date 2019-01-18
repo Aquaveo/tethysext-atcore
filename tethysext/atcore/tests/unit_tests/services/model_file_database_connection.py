@@ -88,7 +88,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'test.txt')))
 
     def test_add_dir(self):
-        test_add = os.path.join(self.root, "test_dir")
+        test_add = os.path.join(self.db_dir, "test_dir")
         os.mkdir(test_add)
         self.mdc.add(test_add)
         self.assertTrue(os.path.isdir(os.path.join(self.db_dir, 'test_dir')))
