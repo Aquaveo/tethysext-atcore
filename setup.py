@@ -26,7 +26,10 @@ dependencies = [
     'requests',
     'param',
     'geojson',
-    'pyshp'
+    'pyshp',
+    'django-datetime-widget',
+    'django-select2',
+    'django-taggit',
     'filelock'
 ]
 
