@@ -42,7 +42,7 @@ class ResourceTests(unittest.TestCase):
         self.session.close()
         self.transaction.rollback()
 
-    def test_create_organization(self):
+    def test_create_resource(self):
         resource = Resource(
             name=self.name,
             description=self.description,

@@ -229,7 +229,6 @@ class MapView(AppUsersResourceController):
         gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
         spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
         map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
-
         title, data, layout = map_manager.get_plot_for_layer_feature(layer_name, feature_id)
 
         return JsonResponse({'title': title, 'data': data, 'layout': layout})

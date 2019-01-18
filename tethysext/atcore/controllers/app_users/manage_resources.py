@@ -65,6 +65,7 @@ class ManageResources(AppUsersController):
 
         # Setup
         _AppUser = self.get_app_user_model()
+
         _Resource = self.get_resource_model()
         make_session = self.get_sessionmaker()
         session = make_session()
@@ -257,7 +258,6 @@ class ManageResources(AppUsersController):
             session(sqlalchemy.session): open sqlalchemy session.
             request(django.request): the Django request.
             request_app_user(AppUser): app user that is making the request.
-
         Returns:
             list<Resources>: the list of resources to render on the manage_resources page.
         """
