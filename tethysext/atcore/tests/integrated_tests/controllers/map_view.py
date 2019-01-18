@@ -314,7 +314,10 @@ class MapViewTests(TethysTestCase):
 
         res = mv.find_location_by_advanced_query(request)
 
-        self.assertEqual(205, res.status_code)
+        content = json.loads(res.content.decode('utf-8'))
+
+        self.assertFalse(content['success'])
+        self.assertEqual('error in request', content['error'])
 
     def test_find_location_by_advanced_query_no_address_in_bounds(self):
         # TODO No bound case needed
