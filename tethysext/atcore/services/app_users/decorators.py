@@ -11,15 +11,20 @@ from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils.functional import wraps
+from django.conf import settings
 
 
 def active_user_required():
     def decorator(controller_func):
         def _wrapped_controller(self, request, *args, **kwargs):
             # Require logged in user (aka: not AnonymousUser)
-            if not request.user or isinstance(request.user, AnonymousUser):
+            if (not request.user and not getattr(settings, 'ENABLE_OPEN_PORTAL', False)) or \
+                    (not getattr(settings, 'ENABLE_OPEN_PORTAL', False) and isinstance(request.user, AnonymousUser)):
                 # prompt login
                 return redirect(reverse('accounts:login') + '?next=' + request.path)
+
+            if getattr(settings, 'ENABLE_OPEN_PORTAL', False):
+                return controller_func(self, request, *args, **kwargs)
 
             # Validate that the user is active.
             if not request.user.is_staff:

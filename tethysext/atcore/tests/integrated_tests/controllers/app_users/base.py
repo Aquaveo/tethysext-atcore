@@ -96,6 +96,22 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
     def tearDown(self):
         pass
 
+    @mock.patch('tethysext.atcore.controllers.app_users.base.get_active_app')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
+    def test_default_back_url(self, mock_reverse, mock_aa):
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_aa.return_value = mock.MagicMock(namespace='test1')
+
+        # Execute the method
+        self.farc.default_back_url(mock_request, resource_id=mock_resource_id)
+
+        # test results
+        mock_aa.assert_called_with(mock_request)
+        call_args = mock_reverse.call_args_list
+        self.assertEqual('test1:app_users_resource_details', call_args[0][0][0])
+        self.assertEqual('abc123', call_args[0][1]['args'][0])
+
     def test_get_resource_has_permission(self):
         self.farc.get_app_user_model = mock.MagicMock()
         self.farc.get_resource_model = mock.MagicMock()

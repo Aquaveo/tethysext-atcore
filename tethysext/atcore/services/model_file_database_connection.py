@@ -10,7 +10,6 @@ import os
 import shutil
 import tempfile
 from filelock import FileLock
-from zipfile import ZipFile
 
 from tethysext.atcore.services.model_database_connection_base import ModelDatabaseConnectionBase
 
@@ -104,22 +103,6 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
                 raise ValueError("filename is not a directory or file. Check Name")
 
         return dst
-
-    def add_zip_file(self, zip_file):
-        """
-        Adds a file or directory (from a filepath) to the model database.
-
-        Args:
-            zip_file(str): Absolute path to zipped file that will be added to the model file database.
-
-        Returns:
-            str: Path to location of file within model db.
-        """
-
-        # opening the zip file in READ mode
-        with ZipFile(zip_file, 'r') as zip:
-            # extracting all the files
-            zip.extractall(self.db_dir)
 
     def duplicate(self, ex_filename, new_filename):
         """
