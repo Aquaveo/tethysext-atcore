@@ -49,7 +49,7 @@ tests:
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini /usr/lib/tethys/src/manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     # Coverage Report
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report -m --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
