@@ -50,7 +50,8 @@ tests:
     - docker exec tethys_atcore /bin/bash -c "ls -al /usr/lib/tethys/src"
     # Coverage Report
     - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && coverage combine /var/www/tethys/exts/tethysext-atcore/.coverage /usr/lib/tethys/src/.coverage"
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && coverage report -m --rcfile=coverage.ini"
+    - docker exec tethys_atcore /bin/bash -c "ls -al"
+    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && coverage report -m --rcfile=/var/www/tethys/exts/tethysext-atcore/coverage.ini"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
