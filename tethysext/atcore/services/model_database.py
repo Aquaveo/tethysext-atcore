@@ -6,34 +6,16 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import uuid
 import operator
 
 from tethysext.atcore.services.model_database_connection import ModelDatabaseConnection
+from tethysext.atcore.services.model_database_base import ModelDatabaseBase
 
 
-class ModelDatabase(object):
+class ModelDatabase(ModelDatabaseBase):
     """
     Manages the creation of databases for models and will load-balance between multiple database connections if defined by the app.  # noqa: E501
     """
-
-    def __init__(self, app, database_id=None):
-        """
-        Constructor
-
-        Args:
-            app(TethysApp): TethysApp class or instance.
-            database_id(str): UUID to be assigned to the database.
-        """
-        if not database_id:
-            self.database_id = self.generate_id()
-        else:
-            self.database_id = database_id
-
-        self._app = app
-        self._db_url = None
-        self._db_url_obj = None
-        self._model_db_connection = None
 
     def get_name(self):
         """
@@ -98,6 +80,18 @@ class ModelDatabase(object):
             self._model_db_connection = ModelDatabaseConnection(self.db_url, self._app.package)
         return self._model_db_connection
 
+    def exists(self):
+        """
+        Returns true if the model database exists.
+        """
+        return self._app.persistent_store_exists(self.database_id)
+
+    def list(self):
+        """
+        Returns a list names of all the model databases.
+        """
+        return self._app.list_persistent_store_databases()
+
     def get_engine(self):
         """
         Returns an SQLAlchemy engine for the model database.
@@ -123,6 +117,9 @@ class ModelDatabase(object):
         Args:
             declarative_bases(tuple): one or more SQLAlchemy declarative base classes used to initialize tables.
             spatial(bool): enable postgis extension on model database if True.
+
+        Returns:
+            database_id of the model database
         """
         # Get database cluster name to create new database on.
         cluster_connection_name = self._get_cluster_connection_name_for_new_database()
@@ -198,35 +195,3 @@ class ModelDatabase(object):
         db_stats.sort(key=operator.itemgetter(1, 2))
 
         return db_stats[0][0]
-
-    def pre_initialize(self, engine):
-        """
-        Override to perform additional initialize steps before the database and tables have been initialized.
-        """
-        pass
-
-    def post_initialize(self, engine):
-        """
-        Override to perform additional initialize steps after the database and tables have been initialized.
-        """
-        pass
-
-    def exists(self):
-        """
-        Returns true if the model database exists.
-        """
-        return self._app.persistent_store_exists(self.database_id)
-
-    def list(self):
-        """
-        Returns a list names of all the model databases.
-        """
-        return self._app.list_persistent_store_databases()
-
-    @classmethod
-    def generate_id(cls):
-        """
-        Returns a UUID name for databases.
-        """
-        unique_name = uuid.uuid4()
-        return str(unique_name).replace('-', '_')

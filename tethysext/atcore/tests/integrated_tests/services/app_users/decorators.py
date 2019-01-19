@@ -18,6 +18,7 @@ from tethysext.atcore.models.app_users import initialize_app_users_db, AppUser
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests import TEST_DB_URL
+from django.test.utils import override_settings
 
 
 def setUpModule():
@@ -71,16 +72,19 @@ class ActiveUserRequiredDecoratorTests(TethysTestCase):
         self.session.close()
         self.transaction.rollback()
 
+    @override_settings(ENABLE_OPEN_PORTAL=False)
     def assertIsRedirect(self, response, to='/apps/'):
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual(302, response.status_code)
         self.assertEqual(to, response.url)
 
+    @override_settings(ENABLE_OPEN_PORTAL=False)
     def test_no_request_user(self):
         self.request.user = None
         response = self.mock_controller(self.request)
         self.assertIsRedirect(response, to='/accounts/login/?next=/foo/bar/')
 
+    @override_settings(ENABLE_OPEN_PORTAL=False)
     def test_anonymous_user(self):
         self.request.user = AnonymousUser()
         response = self.mock_controller(self.request)
@@ -96,6 +100,7 @@ class ActiveUserRequiredDecoratorTests(TethysTestCase):
         response = self.mock_controller(self.request)
         self.assertEqual('SUCCESS', response)
 
+    @override_settings(ENABLE_OPEN_PORTAL=False)
     @mock.patch('django.contrib.messages.warning')
     def test_app_user_is_none(self, _):
         user = UserFactory()
@@ -103,6 +108,7 @@ class ActiveUserRequiredDecoratorTests(TethysTestCase):
         response = self.mock_controller(self.request)
         self.assertIsRedirect(response)
 
+    @override_settings(ENABLE_OPEN_PORTAL=False)
     @mock.patch('django.contrib.messages.warning')
     def test_app_user_not_active(self, _):
         user = UserFactory()

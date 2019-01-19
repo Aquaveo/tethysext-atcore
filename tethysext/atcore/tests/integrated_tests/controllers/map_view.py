@@ -19,7 +19,7 @@ from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource, AppUsersBase
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.services.spatial_manager import SpatialManager
+from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
@@ -64,7 +64,7 @@ class MapViewTests(TethysTestCase):
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_map_manager,
             _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
-            _SpatialManager=mock.MagicMock(spec=SpatialManager),
+            _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
         self.mock_mm = mock.MagicMock()
         self.mv = MapView(
