@@ -99,21 +99,22 @@ widget_map = {
     param.Date:
         lambda p, initial: forms.DateTimeField(
             initial=initial or p.default,
-            widget=DateWidget(options={
-                'startDate': p.bounds[0].strftime('%Y-%m-%d') if p.bounds else '0000-01-01',  # start of supported time
-                'endDate': p.bounds[1].strftime('%Y-%m-%d') if p.bounds else '9999-12-31',  # the end of supported time
-                'format': 'mm/dd/yyyy',
-                'autoclose': True,
-                # 'showMeridian': False,
-                'minView': 2,  # month view
-                'maxView': 4,  # 10-year overview
-                'todayBtn': 'true',
-                'clearBtn': True,
-                'todayHighlight': True,
-                'minuteStep': 5,
-                'pickerPosition': 'bottom-left',
-                'forceParse': 'true',
-                'keyboardNavigation': 'true',
+            widget=DateWidget(
+                options={
+                    'startDate': p.bounds[0].strftime('%Y-%m-%d') if p.bounds else '0000-01-01',  # start of supported time
+                    'endDate': p.bounds[1].strftime('%Y-%m-%d') if p.bounds else '9999-12-31',  # the end of supported time
+                    'format': 'mm/dd/yyyy',
+                    'autoclose': True,
+                    # 'showMeridian': False,
+                    'minView': 2,  # month view
+                    'maxView': 4,  # 10-year overview
+                    'todayBtn': 'true',
+                    'clearBtn': True,
+                    'todayHighlight': True,
+                    'minuteStep': 5,
+                    'pickerPosition': 'bottom-left',
+                    'forceParse': 'true',
+                    'keyboardNavigation': 'true',
                 },
                 bootstrap_version=3
             ),
