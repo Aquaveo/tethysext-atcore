@@ -51,12 +51,6 @@
 {% endblock %}
 
 {% block app_actions %}
-  {% if allow_shapefile %}
-  <button type="button" class="btn btn-default btn-shapefile" data-toggle="modal" data-target="#shapefile-upload-modal">
-    Upload Shapefile
-  </button>
-  {% endif %}
-
   {% if previous_step %}
   <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="map-workflow-form">Previous</button>
   {% endif %}
@@ -67,40 +61,7 @@
   {{ block.super }}
 {% endblock %}
 
-{% block scripts %}
-  {{ block.super }}
-  <script src="{% static 'atcore/file_input/js/file_input.js' %}" type="text/javascript"></script>
-{% endblock %}
-
 {% block content_dependent_styles %}
   {{ block.super }}
   <link href="{% static 'atcore/resource_workflows/atcore_map_workflow.css' %}" rel="stylesheet"/>
-  <link href="{% static 'atcore/file_input/css/file_input.css' %}" rel="stylesheet"/>
-{% endblock %}
-
-{% block after_app_content %}
-  {% if allow_shapefile %}
-  <!-- Shapefile Modal -->
-  <div class="modal fade" id="shapefile-upload-modal" tabindex="-1" role="dialog" aria-labelledby="shapefile-upload-modal-label">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="shapefile-upload-modal-label">Upload Shapefile</h4>
-        </div>
-        <div class="modal-body">
-          <p>Select all of the files for the shapefile you'd like to upload and create a zip archive. Then use the <b>Browse</b> button below to select the zip archive.</p>
-          <div class="input-file-wrapper">
-            <input id="shapefile-upload" name="shapefile" class="file-input" type="file" accept=".zip" form="map-workflow-form">
-            <label for="shapefile-upload" class="btn btn-default btn-file-input">Browse</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success" form="map-workflow-form">Upload Shapefile</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endif %}
 {% endblock %}

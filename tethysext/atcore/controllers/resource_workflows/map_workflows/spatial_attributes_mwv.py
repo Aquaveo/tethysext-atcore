@@ -11,6 +11,10 @@ from tethysext.atcore.models.app_users.resource_workflow_steps import SpatialAtt
 
 
 class SpatialAttributesMWV(MapWorkflowView):
+    """
+    Controller for a map workflow view requiring spatial input (drawing).
+    """
+    template_name = 'atcore/resource_workflows/spatial_attributes_mwv.html'
 
     def validate_step(self, request, session, current_step, previous_step, next_step):
         """
