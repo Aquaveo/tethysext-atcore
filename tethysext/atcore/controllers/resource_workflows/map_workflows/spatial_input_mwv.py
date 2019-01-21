@@ -24,6 +24,10 @@ log = logging.getLogger(__name__)
 
 
 class SpatialInputMWV(MapWorkflowView):
+    """
+    Controller for a map workflow view requiring spatial input (drawing).
+    """
+    template_name = 'atcore/resource_workflows/spatial_input_mwv.html'
 
     def validate_step(self, request, session, current_step, previous_step, next_step):
         """
