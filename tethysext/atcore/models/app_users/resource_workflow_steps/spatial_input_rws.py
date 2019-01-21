@@ -9,7 +9,7 @@
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
-class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
+class SpatialInputRWS(ResourceWorkflowStep):
     """
     Workflow step used for retrieving simple spatial user input (points, lines, polygons).
 
@@ -30,15 +30,20 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
     def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
         """
         Constructor.
+
+        Args:
+            geoserver_name(str): Name of geoserver setting to use.
+            map_manager(MapManager): Instance of MapManager to use for the map view.
+            spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
         """
-        self.controller_path = 'tethysext.atcore.controllers.resource_workflows.MapWorkflowView'
+        self.controller_path = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialInputMWV'
         self.controller_kwargs = {
             'geoserver_name': geoserver_name,
             '_MapManager': map_manager,
             '_SpatialManager': spatial_manager
         }
 
-        super(SpatialInputResourceWorkflowStep, self).__init__(*args, **kwargs)
+        super(SpatialInputRWS, self).__init__(*args, **kwargs)
 
     @property
     def default_options(self):
@@ -80,7 +85,7 @@ class SpatialInputResourceWorkflowStep(ResourceWorkflowStep):
             ValueError
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
-        super(SpatialInputResourceWorkflowStep, self).validate()
+        super(SpatialInputRWS, self).validate()
         #
         # polygon = self._parameters['polygon']
         # value = polygon['value']

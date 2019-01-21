@@ -6,5 +6,4 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from .resource_workflow_view import ResourceWorkflowView  # noqa: F401
-from .map_workflow_view import MapWorkflowView  # noqa: F401
+from tethysext.atcore.controllers.resource_workflows.resource_workflow_router import ResourceWorkflowRouter  # noqa: F401, E501
