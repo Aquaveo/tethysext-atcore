@@ -101,8 +101,10 @@ widget_map = {
             initial=initial or p.default,
             widget=DateWidget(
                 options={
-                    'startDate': p.bounds[0].strftime('%Y-%m-%d') if p.bounds else '0000-01-01',  # start of supported time
-                    'endDate': p.bounds[1].strftime('%Y-%m-%d') if p.bounds else '9999-12-31',  # the end of supported time
+                    'startDate': p.bounds[0].strftime(
+                        '%Y-%m-%d') if p.bounds else '0000-01-01',  # start of supported time
+                    'endDate': p.bounds[1].strftime(
+                        '%Y-%m-%d') if p.bounds else '9999-12-31',  # end of supported time
                     'format': 'mm/dd/yyyy',
                     'autoclose': True,
                     # 'showMeridian': False,
