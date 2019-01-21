@@ -6,10 +6,10 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from tethysext.atcore.models.app_users.resource_workflow_steps import SpatialInputResourceWorkflowStep
+from tethysext.atcore.models.app_users.resource_workflow_steps import SpatialInputRWS
 
 
-class SpatialAttributesStep(SpatialInputResourceWorkflowStep):
+class SpatialAttributesRWS(SpatialInputRWS):
     """
     Workflow step used for retrieving simple spatial user input (points, lines, polygons).
 
@@ -17,11 +17,28 @@ class SpatialAttributesStep(SpatialInputResourceWorkflowStep):
         geometry(varies): Geometry or step to retrieve the geometry from. For passing geometry, use GeoJSON string. For specifying a step to use, enter the id of the step or use the keyword 'previous' to use the previous step.
         attributes(dict): Dictionary of param instances defining the attributes to be defined for each feature.
     """  # noqa: #501
-    TYPE = 'spatial_attributes_step'
+    TYPE = 'spatial_attributes_workflow_step'
 
     __mapper_args__ = {
         'polymorphic_identity': TYPE
     }
+
+    def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
+        """
+        Constructor.
+
+        Args:
+            geoserver_name(str): Name of geoserver setting to use.
+            map_manager(MapManager): Instance of MapManager to use for the map view.
+            spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
+        """
+        super(SpatialAttributesRWS, self).__init__(
+            geoserver_name=geoserver_name,
+            map_manager=map_manager,
+            spatial_manager=spatial_manager,
+            *args, **kwargs
+        )
+        self.controller_path = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialAttributesMWV'
 
     @property
     def default_options(self):
@@ -59,4 +76,4 @@ class SpatialAttributesStep(SpatialInputResourceWorkflowStep):
             ValueError
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
-        super(SpatialInputResourceWorkflowStep, self).validate()
+        super(SpatialInputRWS, self).validate()
