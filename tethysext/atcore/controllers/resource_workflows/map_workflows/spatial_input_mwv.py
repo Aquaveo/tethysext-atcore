@@ -79,10 +79,10 @@ class SpatialInputMWV(MapWorkflowView):
         """
         # Get Map View
         map_view = context['map_view']
-        # Disable feature selection on all layers so it doesn't interfere with drawing
-        for layer in map_view.layers:
-            layer.feature_selection = False
-            layer.editable = False
+
+        # Turn off feature selection
+        self.set_feature_selection(map_view=map_view, enabled=False)
+
         # Add layer for current geometry
         enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
         if current_step.options['allow_drawing']:
@@ -97,8 +97,10 @@ class SpatialInputMWV(MapWorkflowView):
                     enabled_controls.append('Box')
                 else:
                     raise ValueError('Invalid shapes defined: {}.'.format(elem))
+
         # Load the currently saved geometry, if any.
         current_geometry = current_step.get_parameter('geometry')
+
         # Configure drawing
         draw_options = MVDraw(
             controls=enabled_controls,
@@ -109,8 +111,10 @@ class SpatialInputMWV(MapWorkflowView):
             snapping_layer=current_step.options['snapping_layer'],
             snapping_options=current_step.options['snapping_options']
         )
+
         if draw_options is not None and 'map_view' in context:
             map_view.draw = draw_options
+
         # Save changes to map view
         context.update({'map_view': map_view})
 
