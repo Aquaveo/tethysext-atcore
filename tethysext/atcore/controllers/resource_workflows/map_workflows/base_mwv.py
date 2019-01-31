@@ -150,6 +150,18 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
 
         return context
 
+    def set_feature_selection(self, map_view, enabled=True):
+        """
+        Set whether features are selectable or not.
+        Args:
+            map_view(MapView): The MapView gizmo options object.
+            enabled(bool): True to enable selection, False to disable it.
+        """
+        # Disable feature selection on all layers so it doesn't interfere with drawing
+        for layer in map_view.layers:
+            layer.feature_selection = enabled
+            layer.editable = enabled
+
     @abc.abstractmethod
     def process_step_options(self, request, session, context, current_step, previous_step, next_step):
         """

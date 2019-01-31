@@ -12,6 +12,7 @@ from abc import abstractmethod
 from copy import deepcopy
 
 from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
+from sqlalchemy.orm import relationship, backref
 from tethys_sdk.base import TethysController
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin
@@ -36,8 +37,10 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
 
     TYPE = 'generic_workflow_step'
     ATTR_STATUS_MESSAGE = 'status_message'
+    OPT_PARENT_STEP = 'parent'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    child_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
     resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
     type = Column(String)
 
@@ -51,6 +54,9 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     _options = Column(PickleType, default={})
     _attributes = Column(String)
     _parameters = Column(PickleType, default={})
+
+    parent = relationship('ResourceWorkflowStep', cascade="all,delete", uselist=False,
+                          backref=backref('child', remote_side=[id]))
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
@@ -73,7 +79,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
             self._options = self.default_options
 
     def __str__(self):
-        return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
+        return '<{} id="{}" name="{}">'.format(self.__class__.__name__, self.id, self.name)
 
     @property
     def default_options(self):
@@ -157,7 +163,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         try:
             return self._parameters[name]['value']
         except KeyError:
-            raise ValueError('No parameter named "{}" in this step.'.format(name))
+            raise ValueError('No parameter named "{}" in step "{}".'.format(name, self))
 
     def get_parameters(self):
         """
