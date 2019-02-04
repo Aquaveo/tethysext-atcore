@@ -15,6 +15,8 @@ from tethys_sdk.permissions import has_permission, permission_required
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
+from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.gizmos import SlideSheet
 
 
@@ -52,15 +54,22 @@ class MapView(AppUsersResourceController):
             return resource
 
         database_id = resource.get_attribute('database_id')
+        srid = resource.get_attribute('srid')
         if not database_id:
             messages.error(request, 'An unexpected error occurred. Please try again.')
             return redirect(self.back_url)
 
+        # Get Managers Hook
+        self.get_managers(
+            request=request,
+            epsg=srid,
+            database_id=database_id,
+            *args, **kwargs
+        )
+
         # Initialize MapManager
-        model_db = self._ModelDatabase(app=self._app, database_id=database_id)
-        gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
-        spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
-        map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
+        model_db = self._ModelDatabase
+        map_manager = self._MapManager
 
         # Render the Map
         # TODO: Figure out what to do with the scenario_id. Workflow id?
@@ -168,6 +177,24 @@ class MapView(AppUsersResourceController):
             bool: True to disable the basemap.
         """
         return self.default_disable_basemap
+
+    def get_managers(self, request, epsg, database_id, *args, **kwargs):
+        """
+        Hook to get managers. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+        Args:
+            request (HttpRequest): The request.
+            context (dict): The context dictionary.
+            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            map_manager (MapManager): MapManager instance associated with this request.
+
+        Returns:
+            dict: modified context dictionary.
+        """  # noqa: E501
+        self._ModelDatabase = ModelDatabase(app=self._app, database_id=database_id)
+        gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
+        self._SpatialManager = BaseSpatialManager(geoserver_engine=gs_engine)
+        self._MapManager = MapManagerBase(spatial_manager=self._SpatialManager, model_db=self._ModelDatabase)
 
     def get_context(self, request, context, model_db, map_manager, *args, **kwargs):
         """
