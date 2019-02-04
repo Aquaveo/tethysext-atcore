@@ -75,7 +75,7 @@ class MapViewTests(TethysTestCase):
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_mm,
             _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
-            _SpatialManager=mock.MagicMock(spec=SpatialManager),
+            _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
 
         self.resource_id = 'abc123'
@@ -215,7 +215,7 @@ class MapViewTests(TethysTestCase):
 
         # test the results
         self.assertEqual(200, ret.status_code)
-        mock_resource.assert_called_with(mock_request, '12345')
+        mock_resource.assert_called_with(mock_request, 'feature id')
 
     @mock.patch('tethysext.atcore.controllers.map_view.isinstance')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')

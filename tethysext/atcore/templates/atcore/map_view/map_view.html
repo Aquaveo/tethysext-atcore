@@ -35,20 +35,19 @@
           <a id="layers-tab-toggle"
              href="#layers-tab-panel"
              aria-controls="layers-tab-panel"
+             aria-selected="true"
              role="tab"
              data-toggle="tab">Layers</a>
         </li>
         {# LEGEND TAB #}
-        {% comment %}
-        {# TODO: Implement Legend tab
-        <li role="presentation">
+        <li role="presentation" {% block disable_legend_tab %}{% endblock %}>
           <a id="legend-tab-toggle"
              href="#legend-tab-panel"
              aria-controls="legend-tab-panel"
+             aria-selected="false"
              role="tab"
              data-toggle="tab">Legend</a>
         </li>
-        {% endcomment %}
 
         {# CUSTOM TABS #}
         {% block custom_map_tabs %}
@@ -153,8 +152,25 @@
         </div>
 
         {# LEGEND TAB PANEL #}
-        <div role="tabpanel" class="tab-pane" id="legend-tab-panel">
-          <li class="title">Legend</li>
+        <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %} active{% endblock %}" id="legend-tab-panel">
+          {% for layer, layer_info in legend.items %}
+            <div id="legend-{{ layer }}" class="hidden">
+                <li class="legend-group-item">
+                  <label class="flatmark"><span class="display-name">{{ layer }}</span>
+                  </label>
+                </li>
+                <ul class="legend-list" data-collapsed="false">
+                  {% for value, color in layer_info.items  %}
+                    <div class="legend-item">
+                      <li class="legend-list-item">
+                        <input type="text" value="{{ value }}" />
+                        <div class="color-box" style="background-color: {{ color }};"></div>
+                      </li>
+                    </div>
+                  {% endfor %}
+                </ul>
+            </div>
+          {% endfor %}
         </div>
 
         {# CUSTOM TAB PANELS #}

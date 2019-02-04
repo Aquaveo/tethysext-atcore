@@ -441,6 +441,15 @@ var ATCORE_MAP_VIEW = (function() {
             // Set the visibility of layer
             m_layers[layer_name].setVisible(checked);
 
+            console.log($target)
+            console.log($target.data)
+            // Set the visibility of legend
+            if (checked) {
+                $('"#legend-' + layer_name + '"').removeClass('hidden')
+            } else {
+                $('"#legend-' + layer_name + '"').addClass('hidden')
+            }
+
             // TODO: Save state to resource - store in attributes?
         });
 
