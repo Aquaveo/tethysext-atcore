@@ -410,7 +410,15 @@ var ATCORE_MAP_VIEW = (function() {
                 // Set layer visibility
                 let layer_name = $item.data('layer-name');
                 let layer_checked = $item.is(':checked');
+                let layer_variable = $item.data('layer-variable');
                 m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
+
+                if (layer_group_checked && layer_checked) {
+                    $("#legend-" + layer_variable).removeClass('hidden')
+                } else {
+                    $("#legend-" + layer_variable).addClass('hidden')
+                }
+
             });
 
             // For each context menu...
@@ -434,6 +442,7 @@ var ATCORE_MAP_VIEW = (function() {
             let $target = $(e.target);
             let checked = $target.is(':checked');
             let layer_name = $target.data('layer-name');
+            let layer_variable = $target.data('layer-variable');
 
             // Reset the ui
             reset_ui();
@@ -441,14 +450,8 @@ var ATCORE_MAP_VIEW = (function() {
             // Set the visibility of layer
             m_layers[layer_name].setVisible(checked);
 
-            console.log($target)
-            console.log($target.data)
             // Set the visibility of legend
-            if (checked) {
-                $('"#legend-' + layer_name + '"').removeClass('hidden')
-            } else {
-                $('"#legend-' + layer_name + '"').addClass('hidden')
-            }
+             $("#legend-" + layer_variable).removeClass('hidden')
 
             // TODO: Save state to resource - store in attributes?
         });
@@ -458,9 +461,13 @@ var ATCORE_MAP_VIEW = (function() {
             let $target = $(e.target);
             let checked = $target.is(':checked');
             let layer_name = $target.data('layer-name');
+            let layer_variable = $target.data('layer-variable');
 
             // Set the visibility of layer
             m_layers[layer_name].setVisible(checked);
+
+            // Set the visibility of legend
+            $("#legend-" + layer_variable).addClass('hidden')
 
             // TODO: Save state to resource - store in attributes?
         });

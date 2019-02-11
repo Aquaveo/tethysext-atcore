@@ -118,7 +118,7 @@ class MapManagerBase(object):
         return param_string
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                       visible=True, tiled=True, selectable=False, plottable=False):
+                       visible=True, tiled=True, selectable=False, plottable=False, extent=None):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -157,7 +157,8 @@ class MapManagerBase(object):
         options = {
             'url': endpoint,
             'params': params,
-            'serverType': 'geoserver'
+            'serverType': 'geoserver',
+            'crossOrigin': 'anonymous'
         }
 
         if tiled:
@@ -171,12 +172,15 @@ class MapManagerBase(object):
         if plottable:
             data.update({'plottable': plottable})
 
+        if not extent:
+            extent = self.map_extent
+
         mv_layer = MVLayer(
             source='TileWMS' if tiled else 'ImageWMS',
             options=options,
             layer_options={"visible": visible},
             legend_title=layer_title,
-            legend_extent=self.map_extent,
+            legend_extent=extent,
             legend_classes=[],
             data=data,
             geometry_attribute='geometry',
@@ -218,16 +222,17 @@ class MapManagerBase(object):
         """
         return self.spatial_manager.get_wms_endpoint(public=True)
 
-    def get_map_extent(self):
+    def get_map_extent(self, extent=None):
         """
         Get the default view and extent for the project.
 
         Returns:
             MVView, 4-list<float>: default view and extent of the project.
         """
-        extent = self.spatial_manager.get_extent_for_project(
-            model_db=self.model_db
-        )
+        if not extent:
+            extent = self.spatial_manager.get_extent_for_project(
+                model_db=self.model_db
+            )
 
         # Compute center
         center = self.DEFAULT_CENTER
@@ -277,7 +282,10 @@ class MapManagerBase(object):
         b = max_val - (m * max_div)
 
         for i in range(min_div, max_div + 1):
-            divisions['{}{}'.format(prefix, i)] = ceil(m * i + b)
+            if (max_value - min_value) / num_divisions <= 2 or i == min_div:
+                divisions['{}{}'.format(prefix, i)] = "{0:.5f}".format(m * i + b)
+            else:
+                divisions['{}{}'.format(prefix, i)] = ceil(m * i + b)
 
         return divisions
 

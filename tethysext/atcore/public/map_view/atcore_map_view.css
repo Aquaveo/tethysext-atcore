@@ -330,10 +330,17 @@
     list-style: none;
     padding-inline-start: 30px;
     transition: height 0.2s ease-out;
+    border-style: solid;
+    border-width: 1px;
+    background-color: #ffffff;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
 }
 
 .legend-list-item {
-    margin-bottom: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 .legend-list-item .flatmark {
@@ -346,12 +353,13 @@
     position: relative;
 }
 
-.legend-item input {
-    padding-left: 20px;
+.legend-item p {
+    padding-left: 40px;
+    padding-top: 2px;
 }
 
 .legend-item .color-box {
-    width: 10px;
+    width: 20px;
     height: 10px;
     display: inline-block;
     background-color: #ccc;

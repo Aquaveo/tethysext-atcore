@@ -40,29 +40,30 @@ class MapView(AppUsersResourceController):
     _SpatialManager = None
 
     @active_user_required()
-    def get(self, request, resource_id, *args, **kwargs):
+    def get(self, request, resource_id=None, *args, **kwargs):
         """
         Handle GET requests.
         """
         from django.conf import settings
 
-        # Get Resource
-        resource = self.get_resource(request, resource_id)
+        database_id = None
+        if resource_id:
+            # Get Resource
+            resource = self.get_resource(request, resource_id)
 
-        # TODO: Move permissions check into decorator
-        if isinstance(resource, HttpResponse):
-            return resource
+            # TODO: Move permissions check into decorator
+            if isinstance(resource, HttpResponse):
+                return resource
 
-        database_id = resource.get_attribute('database_id')
-        srid = resource.get_attribute('srid')
-        if not database_id:
-            messages.error(request, 'An unexpected error occurred. Please try again.')
-            return redirect(self.back_url)
+            database_id = resource.get_attribute('database_id')
+            if not database_id:
+                messages.error(request, 'An unexpected error occurred. Please try again.')
+                return redirect(self.back_url)
 
         # Get Managers Hook
         self.get_managers(
             request=request,
-            epsg=srid,
+            resource_id=resource_id,
             database_id=database_id,
             *args, **kwargs
         )
@@ -74,6 +75,7 @@ class MapView(AppUsersResourceController):
         # Render the Map
         # TODO: Figure out what to do with the scenario_id. Workflow id?
         map_view, model_extent, layer_groups = map_manager.compose_map(
+            resource_id=resource_id,
             scenario_id=1,
             *args, **kwargs
         )
@@ -99,21 +101,26 @@ class MapView(AppUsersResourceController):
 
         # Initialize context
         context = {
-            'resource': resource,
             'map_view': map_view,
             'map_extent': model_extent,
             'layer_groups': layer_groups,
             'is_in_debug': settings.DEBUG,
-            'map_title': self.map_title or resource.name,
             'map_subtitle': self.map_subtitle,
             'workspace': self._SpatialManager.WORKSPACE,
             'back_url': self.back_url
         }
 
+        if resource_id:
+            context.update({'resource': resource})
+            context.update({'map_title': self.map_title or resource.name})
+        else:
+            context.update({'map_title': self.map_title})
+
         # Context hook
         context = self.get_context(
             request=request,
             context=context,
+            resource_id=resource_id,
             model_db=model_db,
             map_manager=map_manager,
             *args, **kwargs
@@ -178,7 +185,7 @@ class MapView(AppUsersResourceController):
         """
         return self.default_disable_basemap
 
-    def get_managers(self, request, epsg, database_id, *args, **kwargs):
+    def get_managers(self, request, resource_id, database_id, *args, **kwargs):
         """
         Hook to get managers. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
@@ -196,7 +203,7 @@ class MapView(AppUsersResourceController):
         self._SpatialManager = BaseSpatialManager(geoserver_engine=gs_engine)
         self._MapManager = MapManagerBase(spatial_manager=self._SpatialManager, model_db=self._ModelDatabase)
 
-    def get_context(self, request, context, model_db, map_manager, *args, **kwargs):
+    def get_context(self, request, context, resource_id, model_db, map_manager, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
 

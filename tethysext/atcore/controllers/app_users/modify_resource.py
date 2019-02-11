@@ -306,6 +306,8 @@ class ModifyResource(AppUsersController):
             'file_upload_accept': self.file_upload_accept
         }
 
+        context = self.get_context(context)
+
         return render(request, self.template_name, context)
 
     def can_create_resource(self, session, request, request_app_user):
@@ -396,3 +398,11 @@ class ModifyResource(AppUsersController):
             editing(bool): True if editing, False if creating a new resource.
         """
         pass
+
+    def get_context(self, context):
+        """
+        Hook to add to context.
+        Args:
+            context(dict): context for controller.
+        """
+        return context

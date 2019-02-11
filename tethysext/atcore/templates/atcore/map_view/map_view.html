@@ -152,7 +152,7 @@
         </div>
 
         {# LEGEND TAB PANEL #}
-        <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %} active{% endblock %}" id="legend-tab-panel">
+        <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
           {% for layer, layer_info in legend.items %}
             <div id="legend-{{ layer }}" class="hidden">
                 <li class="legend-group-item">
@@ -163,7 +163,7 @@
                   {% for value, color in layer_info.items  %}
                     <div class="legend-item">
                       <li class="legend-list-item">
-                        <input type="text" value="{{ value }}" />
+                        <p>{{ value }} </p>
                         <div class="color-box" style="background-color: {{ color }};"></div>
                       </li>
                     </div>
