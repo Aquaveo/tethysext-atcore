@@ -10,11 +10,13 @@
   {# MAP HEADER #}
   <div id="map-header">
     {# BACK BUTTON #}
+    {% block back_button %}
     <div id="back-button">
       <a href="{{ back_url }}" title="Back">
         <span class="glyphicon glyphicon-chevron-left"></span>
       </a>
     </div>
+    {% endblock %}
 
     {# TITLE #}
     <div id="map-title">
@@ -40,6 +42,7 @@
              data-toggle="tab">Layers</a>
         </li>
         {# LEGEND TAB #}
+        {% block legend_tab %}
         <li role="presentation" {% block disable_legend_tab %}{% endblock %}>
           <a id="legend-tab-toggle"
              href="#legend-tab-panel"
@@ -48,6 +51,7 @@
              role="tab"
              data-toggle="tab">Legend</a>
         </li>
+        {% endblock %}
 
         {# CUSTOM TABS #}
         {% block custom_map_tabs %}
@@ -152,6 +156,7 @@
         </div>
 
         {# LEGEND TAB PANEL #}
+        {% block legend_panel %}
         <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
           {% for layer, layer_info in legend.items %}
             <div id="legend-{{ layer }}" class="hidden">
@@ -172,6 +177,7 @@
             </div>
           {% endfor %}
         </div>
+        {% endblock %}
 
         {# CUSTOM TAB PANELS #}
         {% block custom_map_tab_panels %}

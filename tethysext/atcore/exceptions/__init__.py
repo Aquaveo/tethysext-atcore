@@ -18,3 +18,7 @@ class ModelDatabaseError(ATCoreException):
 
 class ModelDatabaseInitializationError(ModelDatabaseError):
     pass
+
+
+class ModelFileDatabaseInitializationError(ModelDatabaseError):
+    pass

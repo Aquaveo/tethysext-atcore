@@ -15,8 +15,6 @@ from tethys_sdk.permissions import has_permission, permission_required
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.model_database import ModelDatabase
-from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
-from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.gizmos import SlideSheet
 
 
@@ -61,20 +59,17 @@ class MapView(AppUsersResourceController):
                 return redirect(self.back_url)
 
         # Get Managers Hook
-        self.get_managers(
-            request=request,
+        model_db, map_manager = self.get_managers(
+            request,
             resource_id=resource_id,
             database_id=database_id,
             *args, **kwargs
         )
 
-        # Initialize MapManager
-        model_db = self._ModelDatabase
-        map_manager = self._MapManager
-
         # Render the Map
         # TODO: Figure out what to do with the scenario_id. Workflow id?
         map_view, model_extent, layer_groups = map_manager.compose_map(
+            request,
             resource_id=resource_id,
             scenario_id=1,
             *args, **kwargs
@@ -198,10 +193,12 @@ class MapView(AppUsersResourceController):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
-        self._ModelDatabase = ModelDatabase(app=self._app, database_id=database_id)
+        model_db = self._ModelDatabase(app=self._app, database_id=database_id)
         gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
-        self._SpatialManager = BaseSpatialManager(geoserver_engine=gs_engine)
-        self._MapManager = MapManagerBase(spatial_manager=self._SpatialManager, model_db=self._ModelDatabase)
+        spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
+        map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
+
+        return model_db, map_manager
 
     def get_context(self, request, context, resource_id, model_db, map_manager, *args, **kwargs):
         """

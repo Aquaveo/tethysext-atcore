@@ -282,7 +282,7 @@ class MapManagerBase(object):
         b = max_val - (m * max_div)
 
         for i in range(min_div, max_div + 1):
-            if (max_value - min_value) / num_divisions <= 2 or i == min_div:
+            if (max_value - min_value) / num_divisions <= 2:
                 divisions['{}{}'.format(prefix, i)] = "{0:.5f}".format(m * i + b)
             else:
                 divisions['{}{}'.format(prefix, i)] = ceil(m * i + b)
