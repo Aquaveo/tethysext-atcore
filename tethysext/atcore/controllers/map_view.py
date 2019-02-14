@@ -186,12 +186,12 @@ class MapView(AppUsersResourceController):
 
         Args:
             request (HttpRequest): The request.
-            context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
-            map_manager (MapManager): MapManager instance associated with this request.
+            resource_id(str): UUID of the resource being mapped.            
+            database_id(str): Database ID of the resource being mapped.            
 
         Returns:
-            dict: modified context dictionary.
+            model_db (ModelDatabase): ModelDatabase instance.
+            map_manager (MapManager): Map Manager instance
         """  # noqa: E501
         model_db = self._ModelDatabase(app=self._app, database_id=database_id)
         gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
