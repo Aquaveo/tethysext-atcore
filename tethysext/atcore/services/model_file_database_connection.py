@@ -114,7 +114,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         Returns:
             str: Path to location of file within model db.
         """
-        with ZipFile(zip_file, 'r') as zip:
+        with zipfile.ZipFile(zip_file, 'r') as zip:
             zip.extractall(self.db_dir)
 
     def duplicate(self, ex_filename, new_filename):
