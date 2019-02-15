@@ -186,8 +186,8 @@ class MapView(AppUsersResourceController):
 
         Args:
             request (HttpRequest): The request.
-            resource_id(str): UUID of the resource being mapped.            
-            database_id(str): Database ID of the resource being mapped.            
+            resource_id (str): UUID of the resource being mapped.
+            database_id (str): Database ID of the resource being mapped.
 
         Returns:
             model_db (ModelDatabase): ModelDatabase instance.
