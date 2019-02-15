@@ -114,6 +114,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         Returns:
             str: Path to location of file within model db.
         """
+        import zipfile
         with zipfile.ZipFile(zip_file, 'r') as zip:
             zip.extractall(self.db_dir)
 
