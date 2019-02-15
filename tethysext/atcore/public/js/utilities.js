@@ -81,6 +81,21 @@ function compute_center(features) {
                 }
             }
         }
+        else if (geometry_type == 'MultiPolygon') {
+            let line_strings = geometry.getCoordinates();
+            for (var i = 0; i < line_strings.length; i++) {
+                let line_string = line_strings[i];
+
+                for (var j = 0; j < line_string.length; j++) {
+                    let coordinate = line_string[j];
+                    for (var k = 0; k < coordinate.length; k++) {
+                        sum_x += coordinate[k][0];
+                        sum_y += coordinate[k][1];
+                        num_coordinates += 1;
+                    }
+                }
+            }
+        }
     }
 
     // Return null if no coordinates found

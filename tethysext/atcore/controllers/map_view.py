@@ -45,6 +45,7 @@ class MapView(AppUsersResourceController):
         from django.conf import settings
 
         database_id = None
+        resource = None
         if resource_id:
             # Get Resource
             resource = self.get_resource(request, resource_id)
@@ -96,6 +97,7 @@ class MapView(AppUsersResourceController):
 
         # Initialize context
         context = {
+            'resource': resource,
             'map_view': map_view,
             'map_extent': model_extent,
             'layer_groups': layer_groups,
@@ -106,7 +108,6 @@ class MapView(AppUsersResourceController):
         }
 
         if resource_id:
-            context.update({'resource': resource})
             context.update({'map_title': self.map_title or resource.name})
         else:
             context.update({'map_title': self.map_title})

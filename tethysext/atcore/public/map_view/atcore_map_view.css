@@ -333,9 +333,10 @@
     border-style: solid;
     border-width: 1px;
     background-color: #ffffff;
-    margin-left: auto;
+    margin-left: 30px;
     margin-right: auto;
     width: 50%;
+    overflow-x: auto;
 }
 
 .legend-list-item {
@@ -354,12 +355,12 @@
 }
 
 .legend-item p {
-    padding-left: 40px;
+    padding-left: 60px;
     padding-top: 2px;
 }
 
 .legend-item .color-box {
-    width: 20px;
+    width: 40px;
     height: 10px;
     display: inline-block;
     background-color: #ccc;

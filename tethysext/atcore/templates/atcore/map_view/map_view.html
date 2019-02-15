@@ -11,20 +11,22 @@
   <div id="map-header">
     {# BACK BUTTON #}
     {% block back_button %}
-    <div id="back-button">
-      <a href="{{ back_url }}" title="Back">
-        <span class="glyphicon glyphicon-chevron-left"></span>
-      </a>
-    </div>
+      <div id="back-button">
+        <a href="{{ back_url }}" title="Back">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+      </div>
     {% endblock %}
 
     {# TITLE #}
-    <div id="map-title">
-      <p class="title">{{ map_title }}</p>
-      {% if map_subtitle %}
-      <p class="subtitle">{{ map_subtitle }}</p>
-      {% endif %}
-    </div>
+    {% block map_title %}
+      <div id="map-title">
+        <p class="title">{{ map_title }}</p>
+        {% if map_subtitle %}
+        <p class="subtitle">{{ map_subtitle }}</p>
+        {% endif %}
+      </div>
+    {% endblock %}
   </div>
 
   {# TABS #}

@@ -1048,6 +1048,22 @@ var ATCORE_MAP_VIEW = (function() {
 	    properties_table_generator: function(f) {
 	        generate_properties_table = f;
 	    },
+
+	    plot_button_generator: function(f) {
+	        generate_plot_button = f;
+	    },
+
+        plot_button_binder: function(f) {
+            bind_plot_buttons = f;
+        },
+
+        plot_loader: function(f) {
+            load_plot = f;
+        },
+
+        get_layer_name_from_feature: get_layer_name_from_feature,
+
+        get_feature_id_from_feature: get_feature_id_from_feature,
 	};
 
 	/************************************************************************

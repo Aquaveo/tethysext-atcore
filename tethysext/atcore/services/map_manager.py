@@ -118,7 +118,8 @@ class MapManagerBase(object):
         return param_string
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                       visible=True, tiled=True, selectable=False, plottable=False, extent=None):
+                       visible=True, tiled=True, selectable=False, plottable=False, extent=None,
+                       geometry_attribute='geometry'):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -132,6 +133,8 @@ class MapManagerBase(object):
             tiled (bool): Configure as tiled layer if True. Defaults to True.
             selectable (bool): Enable feature selection. Defaults to False.
             plottable (bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            extent (list): Extent for the layer. Defaults to None.
+            geometry_attribute (str): Name of the geometry attribute. Defaults to geometry.
 
         Returns:
             MVLayer: the MVLayer object.
@@ -183,7 +186,7 @@ class MapManagerBase(object):
             legend_extent=extent,
             legend_classes=[],
             data=data,
-            geometry_attribute='geometry',
+            geometry_attribute=geometry_attribute,
             feature_selection=selectable
         )
 
@@ -222,17 +225,16 @@ class MapManagerBase(object):
         """
         return self.spatial_manager.get_wms_endpoint(public=True)
 
-    def get_map_extent(self, extent=None):
+    def get_map_extent(self):
         """
         Get the default view and extent for the project.
 
         Returns:
             MVView, 4-list<float>: default view and extent of the project.
         """
-        if not extent:
-            extent = self.spatial_manager.get_extent_for_project(
-                model_db=self.model_db
-            )
+        extent = self.spatial_manager.get_extent_for_project(
+            model_db=self.model_db
+        )
 
         # Compute center
         center = self.DEFAULT_CENTER
