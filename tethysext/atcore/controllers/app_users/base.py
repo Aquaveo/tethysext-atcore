@@ -10,6 +10,7 @@ from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from django.shortcuts import reverse, redirect
 from django.contrib import messages
+from django.conf import settings
 from tethys_apps.utilities import get_active_app
 from tethys_sdk.base import TethysController
 from tethysext.atcore.exceptions import ATCoreException
@@ -106,10 +107,12 @@ class AppUsersResourceController(AppUsersController):
                 filter(_Resource.id == resource_id). \
                 one()
 
-            if not request_app_user.can_view(session, request, resource):
-                raise ATCoreException('You are not allowed to access this {}'.format(
-                    _Resource.DISPLAY_TYPE_SINGULAR.lower()
-                ))
+            # TODO: Let the apps check permissions so anonymous user only has access to app specific resources?
+            if not getattr(settings, 'ENABLE_OPEN_PORTAL', False):
+                if not request_app_user.can_view(session, request, resource):
+                    raise ATCoreException('You are not allowed to access this {}'.format(
+                        _Resource.DISPLAY_TYPE_SINGULAR.lower()
+                    ))
 
         # TODO: Create resource controller decorator to handle permissions checks and redirects
         except (StatementError, NoResultFound):

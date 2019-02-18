@@ -104,6 +104,20 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
 
         return dst
 
+    def add_zip_file(self, zip_file):
+        """
+        Adds a zipped file (from a filepath) to the model database.
+
+        Args:
+            zip_file(str): Absolute path to file that will be added to the model file database.
+
+        Returns:
+            str: Path to location of file within model db.
+        """
+        import zipfile
+        with zipfile.ZipFile(zip_file, 'r') as zip:
+            zip.extractall(self.db_dir)
+
     def duplicate(self, ex_filename, new_filename):
         """
         Copies a file or directory to the model database.

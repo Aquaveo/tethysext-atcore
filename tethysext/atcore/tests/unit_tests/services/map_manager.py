@@ -145,6 +145,28 @@ class MapManagerBaseTests(unittest.TestCase):
         }
         self.assertEqual(expected, val)
 
+    def test_generate_custom_color_ramp_divisions_decimals(self):
+        min_elevation = 100
+        max_elevation = 109
+        val = self.map_manager.generate_custom_color_ramp_divisions(
+            min_value=min_elevation,
+            max_value=max_elevation,
+            num_divisions=10
+        )
+        expected = {
+            'val1': '100.00000',
+            'val2': '101.00000',
+            'val3': '102.00000',
+            'val4': '103.00000',
+            'val5': '104.00000',
+            'val6': '105.00000',
+            'val7': '106.00000',
+            'val8': '107.00000',
+            'val9': '108.00000',
+            'val10': '109.00000'
+        }
+        self.assertEqual(expected, val)
+
     def test_generate_custom_color_ramp_divisions_first_division(self):
         min_elevation = 100
         max_elevation = 1000

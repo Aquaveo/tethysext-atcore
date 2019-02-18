@@ -309,3 +309,66 @@
 .btn-plot {
     display: block;
 }
+
+/* legend tab */
+.legend-group-item:first-child {
+    margin-top: 20px;
+}
+
+.legend-group-item {
+    margin-bottom: 5px;
+}
+
+.legend-group-item .flatmark {
+    display: inline-block;
+    font-weight: 700;
+    max-width: 315px;
+    overflow: hidden;
+}
+
+.legend-list {
+    list-style: none;
+    padding-inline-start: 30px;
+    transition: height 0.2s ease-out;
+    border-style: solid;
+    border-width: 1px;
+    background-color: #ffffff;
+    margin-left: 30px;
+    margin-right: auto;
+    width: 50%;
+    overflow-x: auto;
+}
+
+.legend-list-item {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.legend-list-item .flatmark {
+    display: inline-block;
+    max-width: 310px;
+    overflow: hidden;
+}
+
+.legend-item {
+    position: relative;
+}
+
+.legend-item p {
+    padding-left: 60px;
+    padding-top: 2px;
+}
+
+.legend-item .color-box {
+    width: 40px;
+    height: 10px;
+    display: inline-block;
+    background-color: #ccc;
+    position: absolute;
+    left: 5px;
+    top: 5px;
+}
+
+.hidden {
+    display: none
+}

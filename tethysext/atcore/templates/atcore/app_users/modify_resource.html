@@ -61,6 +61,9 @@
             {% endif %}
             {{ resource_srid_error }}
 
+            {% block custom_app_content %}
+            {% endblock %}
+
             {# FILE UPLOAD FIELD #}
             {% if show_file_upload_field %}
             <div class="form-group {% if file_upload_error %}has-error{% endif %}" id="input-file-upload-wrapper">

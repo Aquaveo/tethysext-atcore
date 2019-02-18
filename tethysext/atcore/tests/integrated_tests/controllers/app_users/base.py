@@ -13,6 +13,7 @@ from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.app_users.base import AppUsersController, AppUsersResourceController
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from django.test.utils import override_settings
 
 
 class FakeAppUsersController(AppUsersController):
@@ -145,6 +146,7 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         self.assertEqual(mock_resource, ret)
         mock_session.close.assert_not_called()
 
+    @override_settings(ENABLE_OPEN_PORTAL=False)
     @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
     @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
@@ -164,6 +166,21 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         self.assertEqual(mock_redirect(), ret)
         mock_messages.warning.assert_called()
         mock_session.close.assert_called()
+
+    @override_settings(ENABLE_OPEN_PORTAL=True)
+    def test_get_resource_open_portal(self):
+        self.farc.get_app_user_model = mock.MagicMock()
+        self.farc.get_resource_model = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_session = mock.MagicMock()
+        mock_resource = mock_session.query().filter().one()
+
+        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
+
+        self.assertEqual(mock_resource, ret)
+        mock_session.close.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
     @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')

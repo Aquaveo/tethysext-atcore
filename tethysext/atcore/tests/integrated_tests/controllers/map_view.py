@@ -75,7 +75,7 @@ class MapViewTests(TethysTestCase):
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_mm,
             _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
-            _SpatialManager=mock.MagicMock(spec=SpatialManager),
+            _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
 
         self.resource_id = 'abc123'
@@ -113,6 +113,32 @@ class MapViewTests(TethysTestCase):
         render_call_args = mock_render.call_args_list
         context = render_call_args[0][0][2]
         self.assertIn('resource', context)
+        self.assertIn('map_view', context)
+        self.assertIn('map_extent', context)
+        self.assertIn('layer_groups', context)
+        self.assertIn('is_in_debug', context)
+        self.assertIn('map_title', context)
+        self.assertIn('map_subtitle', context)
+        self.assertIn('can_use_geocode', context)
+        self.assertIn('can_use_plot', context)
+        self.assertIn('back_url', context)
+        self.assertIn('plot_slide_sheet', context)
+        self.assertEqual(mock_render(), response)
+
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch('tethysext.atcore.controllers.map_view.render')
+    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    def test_get_no_resource_id(self, mock_has_permission, mock_render, _):
+        mock_request = self.request_factory.get('/foo/bar/map-view/')
+        mock_request.user = self.django_user
+
+        response = self.controller(request=mock_request, resource_id=None, back_url='/foo/bar')
+
+        mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
+        mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
+
+        render_call_args = mock_render.call_args_list
+        context = render_call_args[0][0][2]
         self.assertIn('map_view', context)
         self.assertIn('map_extent', context)
         self.assertIn('layer_groups', context)
@@ -197,7 +223,8 @@ class MapViewTests(TethysTestCase):
 
     def test_get_context(self):
         mv = MapView()
-        self.assertEqual('context', mv.get_context(request='r', context='context', model_db='m', map_manager='m'))
+        self.assertEqual('context', mv.get_context(request='r', context='context', resource_id='12345', model_db='m',
+                                                   map_manager='m'))
 
     def test_get_permissions(self):
         mv = MapView()
@@ -216,6 +243,26 @@ class MapViewTests(TethysTestCase):
         # test the results
         self.assertEqual(200, ret.status_code)
         mock_resource.assert_called_with(mock_request, '12345')
+
+    @mock.patch('tethysext.atcore.controllers.map_view.redirect')
+    @mock.patch('tethysext.atcore.controllers.map_view.messages')
+    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')
+    def test_get_plot_data_no_db_id(self, mock_resource, mock_messages, mock_redirect):
+        mock_request = mock.MagicMock()
+        mock_res_ret = mock.MagicMock()
+        mock_resource.return_value = mock_res_ret
+        mock_res_ret.get_attribute.return_value = ""
+        self.mv.back_url = '/foo/bar/'
+
+        self.mock_mm().get_plot_for_layer_feature.return_value = ('foo', 'bar', 'bazz')
+
+        # call the method
+        self.mv.get_plot_data(mock_request, '12345', 'layer name', 'feature id')
+
+        # test the results
+        meg_call_args = mock_messages.error.call_args_list
+        self.assertEqual('An unexpected error occurred. Please try again.', meg_call_args[0][0][1])
+        mock_redirect.assert_called()
 
     @mock.patch('tethysext.atcore.controllers.map_view.isinstance')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')

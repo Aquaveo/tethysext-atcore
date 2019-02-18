@@ -9,6 +9,7 @@
 import unittest
 import os
 import shutil
+import zipfile
 from filelock import FileLock
 from tethysext.atcore.services.model_file_database_connection import ModelFileDatabaseConnection
 
@@ -88,7 +89,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'test.txt')))
 
     def test_add_dir(self):
-        test_add = os.path.join(self.db_dir, "test_dir")
+        test_add = os.path.join(self.root, "test_dir")
         os.makedirs(test_add)
         self.mdc.add(test_add)
         self.assertTrue(os.path.isdir(os.path.join(self.db_dir, 'test_dir')))
@@ -103,6 +104,16 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         lock = FileLock(self.mdc.lock_path, timeout=1)
         with lock.acquire(timeout=15, poll_intervall=0.5):
             self.assertRaises(TimeoutError, self.mdc.add, test_add)
+
+    def test_add_zip_file(self):
+        test_add = os.path.join(self.root, "test.txt")
+        test_zip = os.path.join(self.root, "test.zip")
+        open(test_add, "w+").close()
+        zipf = zipfile.ZipFile(test_zip, 'w', zipfile.ZIP_DEFLATED)
+        zipf.write(test_add)
+        zipf.close()
+        self.mdc.add_zip_file(test_zip)
+        self.assertTrue(os.path.isfile(os.path.join(self.db_dir, 'test.txt')))
 
     def test_duplicate_file(self):
         res = self.mdc.duplicate('test.txt', 'newtest.txt')
