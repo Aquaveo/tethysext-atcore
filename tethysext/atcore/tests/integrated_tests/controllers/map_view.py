@@ -267,13 +267,14 @@ class MapViewTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.map_view.isinstance')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')
     def test_post_get_plot_data_permissions(self, mock_get_resource, _):
-        mock_get_resource.return_value = 'Success'
+        mock_response = mock.MagicMock(spec=HttpResponse)
+        mock_get_resource.return_value = mock_response
 
         # call the method
         ret = self.mv.get_plot_data(mock.MagicMock(), '', '', '')
 
         # test the results
-        self.assertEqual('Success', ret)
+        self.assertEqual(mock_response, ret)
 
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_find_location_by_query(self, _):
