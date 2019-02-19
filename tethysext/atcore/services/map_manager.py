@@ -118,7 +118,7 @@ class MapManagerBase(object):
         return param_string
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                       visible=True, tiled=True, selectable=False, plottable=False, extent=None,
+                       visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                        geometry_attribute='geometry'):
         """
         Build an MVLayer object with supplied arguments.
@@ -133,6 +133,7 @@ class MapManagerBase(object):
             tiled (bool): Configure as tiled layer if True. Defaults to True.
             selectable (bool): Enable feature selection. Defaults to False.
             plottable (bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            has_action (bool): Enable "Action" button on pop-up properties. Defaults to False.
             extent (list): Extent for the layer. Defaults to None.
             geometry_attribute (str): Name of the geometry attribute. Defaults to geometry.
 
@@ -174,6 +175,9 @@ class MapManagerBase(object):
 
         if plottable:
             data.update({'plottable': plottable})
+
+        if has_action:
+            data.update({'has_action': has_action})
 
         if not extent:
             extent = self.map_extent
