@@ -58,3 +58,6 @@ build:
     - docker push $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG
   tags:
     - docker
+  only:
+    - tags
+    - branches
