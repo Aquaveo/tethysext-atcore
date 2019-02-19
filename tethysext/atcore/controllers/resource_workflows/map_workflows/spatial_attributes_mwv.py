@@ -78,6 +78,7 @@ class SpatialAttributesMWV(MapWorkflowView):
 
         spatial_attributes_param = SpatialAttributesParam()
         dynamic_form = widgets.widgets(spatial_attributes_param, {})
+        print(dynamic_form)  # TODO: USE THIS
 
         # Turn off feature selection
         map_view = context['map_view']
