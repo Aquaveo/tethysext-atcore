@@ -56,6 +56,9 @@ var ATCORE_MAP_VIEW = (function() {
  	// Map management
  	var remove_layer_from_map, get_layer_name_from_feature, get_feature_id_from_feature;
 
+ 	// Action Button
+ 	var generate_action_button, bind_action_buttons, load_action
+
  	// Plotting
  	var init_plot, generate_plot_button, bind_plot_buttons, load_plot, fit_plot, update_plot, show_plot, hide_plot;
 
@@ -220,10 +223,8 @@ var ATCORE_MAP_VIEW = (function() {
         if (!p_can_plot) {
             return;
         }
-
         let layer_name = get_layer_name_from_feature(feature);
         let fid = get_feature_id_from_feature(feature);
-
         // Check if layer is plottable
         let layer = m_layers[layer_name];
         if (!layer || !layer.tethys_data.plottable) {
@@ -233,7 +234,7 @@ var ATCORE_MAP_VIEW = (function() {
         // Build Plot Button Markup
         let plot_button =
             '<div class="plot-btn-wrapper">' +
-                '<a class="btn btn-primary btn-plot" ' +
+                '<a class="btn btn-primary btn-popup" ' +
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
@@ -242,6 +243,35 @@ var ATCORE_MAP_VIEW = (function() {
             '</div>';
 
         return plot_button;
+    };
+
+    generate_action_button = function(feature) {
+        // Skip if no permission to use plot
+        if (!p_can_plot) {
+            return;
+        }
+
+        let layer_name = get_layer_name_from_feature(feature);
+        let fid = get_feature_id_from_feature(feature);
+
+        // Check if layer is has action
+        let layer = m_layers[layer_name];
+        if (!layer || !layer.tethys_data.has_action) {
+            return;
+        }
+
+        // Build Action Button Markup
+        let action_button =
+            '<div class="action-btn-wrapper">' +
+                '<a class="btn btn-primary btn-popup" ' +
+                    'href="javascript:void(0);" ' +
+                    'role="button"' +
+                    'data-feature-id="' + fid +'"' +
+                    'data-layer-name="' + layer_name + '"' +
+                '>Action</a>' +
+            '</div>';
+
+        return action_button;
     };
 
     bind_plot_buttons = function() {
@@ -255,6 +285,20 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Load the plot
             load_plot(e.target, layer_name, feature_id);
+        });
+    };
+
+    bind_action_buttons = function() {
+        // Reset click events on plot buttons
+        $('.btn-plot').off('click');
+
+        // Call load_plot when buttons are clicked
+        $('.btn-plot').on('click', function(e) {
+            let layer_name = $(e.target).data('layer-name');
+            let feature_id = $(e.target).data('feature-id');
+
+            // Load the plot
+            load_action(e.target, layer_name, feature_id);
         });
     };
 
@@ -281,6 +325,10 @@ var ATCORE_MAP_VIEW = (function() {
             // Enable plot button
             $(plot_button).removeAttr('disabled');
         });
+    };
+
+    load_action = function(action_button, layer_name, feature_id) {
+        // Use public interface in Apps to customize action
     };
 
     fit_plot = function() {
@@ -742,6 +790,11 @@ var ATCORE_MAP_VIEW = (function() {
                     let plot_button = generate_plot_button(feature);
                     append_properties_pop_up_content(plot_button);
                     bind_plot_buttons();
+
+                    // Generate plot button
+                    let action_button = generate_action_button(feature);
+                    append_properties_pop_up_content(action_button);
+                    bind_action_buttons();
                     // TODO: Add hook  to allow apps to customize properties table.
                 }
             }
@@ -1049,17 +1102,21 @@ var ATCORE_MAP_VIEW = (function() {
 	        generate_properties_table = f;
 	    },
 
+	    action_button_generator: function(f) {
+	        generate_action_button = f;
+	    },
+
 	    plot_button_generator: function(f) {
 	        generate_plot_button = f;
 	    },
 
-        plot_button_binder: function(f) {
-            bind_plot_buttons = f;
-        },
+	    plot_loader: function(f) {
+	        load_plot = f;
+	    },
 
-        plot_loader: function(f) {
-            load_plot = f;
-        },
+	    action_loader: function(f) {
+	        load_action = f;
+	    },
 
         get_layer_name_from_feature: get_layer_name_from_feature,
 
