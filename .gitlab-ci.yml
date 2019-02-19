@@ -88,3 +88,6 @@ test_image:
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
     - docker
+  only:
+    - tags
+    - branches
