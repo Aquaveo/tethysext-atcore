@@ -25,7 +25,7 @@ tests:
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
     - echo "wait for container to start up..."
-    - sleep 15s
+    - sleep 30s
     # Create Test Database
     - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U tethys_super -p 5435 -h 172.17.0.1 -E SQL_ASCII --no-password --owner tethys_super atcore_tests"
     # Build
