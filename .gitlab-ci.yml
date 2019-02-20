@@ -5,7 +5,7 @@ stages:
   - build
 
 variables:
-  TETHYS_CORE_TAG: 'v3.0.0b-r2'
+  TETHYS_CORE_TAG: 'v3.0.0b-r3'
 
 lint:
   image: python:3.6
