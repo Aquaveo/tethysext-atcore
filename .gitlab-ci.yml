@@ -3,6 +3,7 @@ image: docker:git
 stages:
   - test
   - build
+  - test_image
 
 variables:
   TETHYS_CORE_TAG: 'v3.0.0b-r3'
@@ -59,5 +60,30 @@ build:
   tags:
     - docker
   only:
-    - tags
-    - branches
+    refs:
+      - tags
+      - master
+
+test_image:
+  stage: test_image
+  script:
+    - docker rm -f tethys_atcore tethys_postgis || true
+    - docker pull ciwater/postgis
+    # Run dependencies
+    - docker run -d --name tethys_postgis -p 5435:5432 -e TETHYS_DEFAULT_PASS='pass' -e TETHYS_SUPER_PASS='pass' ciwater/postgis
+    - echo "wait for container to start up..."
+    - sleep 15s
+    # Get latest atcore Image
+    - if [ -z "$CI_COMMIT_TAG" ]; then export LATEST_TAG="dev"; else export LATEST_TAG="latest"; fi
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG
+    # Run test script
+    - docker run --name tethys_atcore -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='tethys_super' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG bash test-docker.sh
+    # Clean up
+    - docker rm -f tethys_atcore tethys_postgis || true
+  tags:
+    - docker
+  only:
+    refs:
+      - tags
+      - master
