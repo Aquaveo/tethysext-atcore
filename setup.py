@@ -19,8 +19,6 @@ ext_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'teth
 # -- Python Dependencies -- #
 dependencies = [
     'sqlalchemy',
-    'future',
-    'mock',
     'factory_boy',
     'jinja2',
     'requests',
