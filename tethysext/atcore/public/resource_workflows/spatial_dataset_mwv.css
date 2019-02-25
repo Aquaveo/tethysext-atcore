@@ -1,0 +1,78 @@
+/* popup styles */
+#spatial-data-popup {
+    padding-top: 15px;
+}
+
+#spatial-data-popup .ol-popup-content {
+    max-height: 410px;
+}
+
+#spatial-data-popup .ol-popup-content .title {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#spatial-data-popup .ol-popup-content .row {
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 5px;
+}
+
+#spatial-data-popup .ol-popup-content .table-col {
+    padding-left: 0;
+}
+
+/* table styles */
+.table.spatial-data-table {
+    margin-bottom: 0;
+}
+
+.table.spatial-data-table>thead {
+    display: block;
+}
+
+.table.spatial-data-table>tbody {
+    display: block;
+    max-height: 280px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.table.spatial-data-table>tbody>tr,
+.table.spatial-data-table>thead>tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.table.spatial-data-table>tbody td,
+.table.spatial-data-table>thead th {
+    width: 140px;
+}
+
+.table.spatial-data-table>thead th:last-child {
+    width: 156px;
+}
+
+.table.spatial-data-table>tbody>tr>td {
+    padding: 0;
+}
+
+.table.spatial-data-table>thead>tr>th {
+    padding: 3px 8px;
+}
+
+.spatial-data-table input {
+    width: 100%;
+}
+
+/* table button styles */
+.table-btn {
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+
+/* plot styles */
+#spatial-dataset-plot {
+    padding-top: 28px;
+}

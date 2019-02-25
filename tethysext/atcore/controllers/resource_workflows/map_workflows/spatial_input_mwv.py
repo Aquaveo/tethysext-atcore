@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: spatial_input_mwv
+* Name: spatial_input_mwv.py
 * Author: nswain
 * Created On: January 21, 2019
 * Copyright: (c) Aquaveo 2019
@@ -17,7 +17,7 @@ import logging
 from django.shortcuts import redirect
 from tethys_sdk.gizmos import MVDraw
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
-from tethysext.atcore.models.app_users.resource_workflow_steps import SpatialInputRWS
+from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
 
 
 log = logging.getLogger(__name__)
@@ -28,25 +28,7 @@ class SpatialInputMWV(MapWorkflowView):
     Controller for a map workflow view requiring spatial input (drawing).
     """
     template_name = 'atcore/resource_workflows/spatial_input_mwv.html'
-
-    def validate_step(self, request, session, current_step, previous_step, next_step):
-        """
-        Validate the step being used for this view. Raises TypeError if current_step is invalid.
-        Args:
-            request(HttpRequest): The request.
-            session(sqlalchemy.orm.Session): Session bound to the steps.
-            current_step(ResourceWorkflowStep): The current step to be rendered.
-            previous_step(ResourceWorkflowStep): The previous step.
-            next_step(ResourceWorkflowStep): The next step.
-
-        Raises:
-            TypeError: if step is invalid.
-        """
-        # Initialize drawing tools for spatial input parameter types.
-        if not isinstance(current_step, SpatialInputRWS):
-            raise TypeError('Invalid step type for view: {}. Must be a SpatialInputRWS.'.format(
-                type(current_step))
-            )
+    valid_step_classes = [SpatialInputRWS]
 
     def extend_context(self, request, session, context, current_step, previous_step, next_step):
         """
@@ -157,11 +139,16 @@ class SpatialInputMWV(MapWorkflowView):
         shapefile_geojson = self.parse_shapefile(request, shapefile)
 
         # Handle geometry parameter
-        geometry_geojson = self.parse_geometry(geometry)
+        geometry_geojson = self.parse_drawn_geometry(geometry)
 
         # Combine the geojson objects.
         combined_geojson = self.combine_geojson_objects(shapefile_geojson, geometry_geojson)
-        step.set_parameter('geometry', combined_geojson)
+
+        # Post process geojson
+        post_processed_geojson = self.post_process_geojson(combined_geojson)
+
+        # Update the geometry parameter
+        step.set_parameter('geometry', post_processed_geojson)
 
         # Validate the Parameters
         step.validate()
@@ -263,7 +250,7 @@ class SpatialInputMWV(MapWorkflowView):
         return geojson_objs
 
     @staticmethod
-    def parse_geometry(geometry):
+    def parse_drawn_geometry(geometry):
         """
         Parse the geometry into GeoJSON and validate.
 
@@ -311,3 +298,52 @@ class SpatialInputMWV(MapWorkflowView):
 
         shapefile_geojson['features'] += geometry_geojson['features']
         return shapefile_geojson
+
+    @staticmethod
+    def post_process_geojson(geojson):
+        """
+        Standardize GeoJSON format and add IDs. Note: OpenLayers is pretty finicky about the format of the geojson for mapping properties to the ol.Feature objects.
+
+        Args:
+            geojson: geojson object derived from input (drawing and/or shapefile.
+
+        Returns:
+            object: geojson object.
+        """  # noqa: E501
+        post_processed_geojson = {
+            'type': 'FeatureCollection',
+            'crs': {
+                'type': 'name',
+                'properties': {
+                    'name': 'EPSG:4326'
+                }
+            },
+            'features': []
+        }
+
+        if not geojson or 'features' not in geojson:
+            return geojson
+
+        # Sort the features for consistent ID'ing
+        s_features = sorted(geojson['features'], key=lambda f: f.coordinates)
+
+        for i, feature in enumerate(s_features):
+            if 'type' not in feature or 'coordinates' not in feature:
+                continue
+
+            processed_feature = {
+                'type': 'Feature',
+                'geometry': {
+                    'type': feature['type'],
+                    'coordinates': feature['coordinates']
+                },
+                'properties': feature['properties'] if 'properties' in feature else {}
+            }
+
+            # Generate ID if not given
+            if 'id' not in feature['properties']:
+                feature['properties']['id'] = str(uuid.uuid4())
+
+            post_processed_geojson['features'].append(processed_feature)
+
+        return post_processed_geojson

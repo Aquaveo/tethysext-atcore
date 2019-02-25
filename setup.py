@@ -28,7 +28,9 @@ dependencies = [
     'django-datetime-widget',
     'django-select2',
     'django-taggit',
-    'filelock'
+    'filelock',
+    'pandas',
+    'django'
 ]
 
 # -- Get Resource File -- #

@@ -1,20 +1,20 @@
 """
 ********************************************************************************
-* Name: polygon_step.py
+* Name: spatial_attributes_rws.py
 * Author: nswain
 * Created On: December 17, 2018
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from tethysext.atcore.models.app_users.resource_workflow_steps import SpatialInputRWS
+from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
 
 
 class SpatialAttributesRWS(SpatialInputRWS):
     """
-    Workflow step used for retrieving simple spatial user input (points, lines, polygons).
+    Workflow step used for setting simple valued attributes on features.
 
     Options:
-        geometry(varies): Geometry or step to retrieve the geometry from. For passing geometry, use GeoJSON string. For specifying a step to use, enter the id of the step or use the keyword 'previous' to use the previous step.
+        geometry(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
         attributes(dict): Dictionary of param instances defining the attributes to be defined for each feature.
     """  # noqa: #501
     TYPE = 'spatial_attributes_workflow_step'
@@ -32,7 +32,7 @@ class SpatialAttributesRWS(SpatialInputRWS):
             map_manager(MapManager): Instance of MapManager to use for the map view.
             spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
         """
-        super(SpatialAttributesRWS, self).__init__(
+        super().__init__(
             geoserver_name=geoserver_name,
             map_manager=map_manager,
             spatial_manager=spatial_manager,
@@ -43,7 +43,7 @@ class SpatialAttributesRWS(SpatialInputRWS):
     @property
     def default_options(self):
         return {
-            'geometry': None,
+            'geometry_source': None,
             'attributes': {}
         }
 
@@ -58,7 +58,7 @@ class SpatialAttributesRWS(SpatialInputRWS):
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
         return {
-            'geometry': {
+            'attributed_geometry': {
                 'help': 'Valid GeoJSON representing geometry input by user.',
                 'value': None,
                 'required': False
@@ -76,4 +76,4 @@ class SpatialAttributesRWS(SpatialInputRWS):
             ValueError
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
-        super(SpatialInputRWS, self).validate()
+        super().validate()

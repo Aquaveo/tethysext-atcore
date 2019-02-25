@@ -1,111 +1,94 @@
 """
 ********************************************************************************
-* Name: spatial_input_mwv
+* Name: spatial_attributes_mwv.py
 * Author: nswain
 * Created On: January 21, 2019
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
 import param
-from tethys_sdk.gizmos import MVLayer
-from tethysext.atcore import widgets
-from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
-from tethysext.atcore.models.app_users.resource_workflow_steps import SpatialAttributesRWS
+from django.shortcuts import render
+from django.http import JsonResponse
+from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
+from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_data_mwv import SpatialDataMWV
+from tethysext.atcore.models.resource_workflow_steps import SpatialAttributesRWS
+from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 
 
-class SpatialAttributesMWV(MapWorkflowView):
+class SpatialAttributesMWV(SpatialDataMWV):
     """
     Controller for a map workflow view requiring spatial input (drawing).
     """
-    template_name = 'atcore/resource_workflows/spatial_attributes_mwv.html'
+    valid_step_classes = [SpatialAttributesRWS]
 
-    def validate_step(self, request, session, current_step, previous_step, next_step):
+    @staticmethod
+    def get_params(current_step):
         """
-        Validate the step being used for this view. Raises TypeError if current_step is invalid.
-        Args:
-            request(HttpRequest): The request.
-            session(sqlalchemy.orm.Session): Session bound to the steps.
-            current_step(ResourceWorkflowStep): The current step to be rendered.
-            previous_step(ResourceWorkflowStep): The previous step.
-            next_step(ResourceWorkflowStep): The next step.
-
-        Raises:
-            TypeError: if step is invalid.
-        """
-        # Initialize drawing tools for spatial input parameter types.
-        if not isinstance(current_step, SpatialAttributesRWS):
-            raise TypeError('Invalid step type for view: {}. Must be a SpatialAttributesRWS.'.format(
-                type(current_step))
-            )
-
-    def process_step_options(self, request, session, context, current_step, previous_step, next_step):
-        """
-        Hook for processing step options (i.e.: modify map or context based on step options).
+        Get the an instance of the Paramaterized object containing the attribute definitions.
 
         Args:
-            request(HttpRequest): The request.
-            session(sqlalchemy.orm.Session): Session bound to the steps.
-            context(dict): Context object for the map view template.
-            current_step(ResourceWorkflowStep): The current step to be rendered.
-            previous_step(ResourceWorkflowStep): The previous step.
-            next_step(ResourceWorkflowStep): The next step.
+            current_step(ResourceWorkflowStep): The current step instance.
+
+        Returns:
+            Parameterized: Instance of a Parameterized object with Parameters for each attribute.
         """
-        if not current_step.options['geometry']:
-            raise RuntimeError('The geometry option is required.')
-
-        if not current_step.options['attributes']:
-            raise RuntimeError('The attributes option is required.')
-
-        # Get geometry
-        geometry = None
-        geometry_opts = current_step.options['geometry']
-
-        if isinstance(geometry_opts, dict) and current_step.OPT_PARENT_STEP in geometry_opts:
-            field_name = geometry_opts[current_step.OPT_PARENT_STEP]
-            parent_step = current_step.parent
-
-            try:
-                geometry = parent_step.get_parameter(field_name)
-            except ValueError as e:
-                raise RuntimeError(str(e))
+        # Add hidden id field
+        attribute_fields = current_step.options['attributes']
 
         # Create spatial form
         SpatialAttributesParam = type(
             'SpatialAttributesParam',
             (param.Parameterized,),
-            current_step.options['attributes']
+            attribute_fields
         )
 
-        spatial_attributes_param = SpatialAttributesParam()
-        dynamic_form = widgets.widgets(spatial_attributes_param, {})
-        print(dynamic_form)  # TODO: USE THIS
+        # Generate Django form from params
+        params = SpatialAttributesParam()
+        return params
 
-        # Turn off feature selection
-        map_view = context['map_view']
-        self.set_feature_selection(map_view=map_view, enabled=False)
+    @workflow_step_controller(is_rest_controller=True)
+    def get_popup_form(self, request, session, resource, workflow, step, back_url, *args, **kwargs):
+        """
+        Handle GET requests with method get-attributes-form.
+        Args:
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+            resource(Resource): the resource this workflow applies to.
+            workflow(ResourceWorkflow): the workflow.
+            step(ResourceWorkflowStep): the step.
+            args, kwargs: Additional arguments passed to the controller.
 
-        # Create new layer for geometry
-        geometry_layer = MVLayer(
-            source='GeoJSON',
-            options=geometry,
-            legend_title='Test GeoJSON',
-            layer_options={
-                'style': {
-                    'fill': {
-                        'color': 'rbga(255,0,0,0.5)'
-                    },
-                    'stroke': {
-                        'color': 'rbga(0,255,0,1.0)',
-                        'width': 3
-                    }
-                },
-            },
-            feature_selection=True,
-            editable=False,
-            data={}
-        )
+        Returns:
+            HttpResponse: A Django response.
+        """
+        # GET Parameters
+        feature_id = int(request.GET.get('feature-id', 0))
 
-        map_view.layers.insert(0, geometry_layer)
+        sa_params = self.get_params(step)
+        attributes_form = generate_django_form(sa_params, {})
 
-        # Save changes to map view
-        context.update({'map_view': map_view})
+        context = {
+            'attributes_form': attributes_form,
+            'feature_id': feature_id
+        }
+
+        return render(request, 'atcore/resource_workflows/spatial_attributes_form.html', context)
+
+    @workflow_step_controller(is_rest_controller=True)
+    def save_spatial_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs):
+        """
+        Handle GET requests with method get-attributes-form.
+        Args:
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+            resource(Resource): the resource this workflow applies to.
+            workflow(ResourceWorkflow): the workflow.
+            step(ResourceWorkflowStep): the step.
+            args, kwargs: Additional arguments passed to the controller.
+
+        Returns:
+            HttpResponse: A Django response.
+        """
+        print(request.POST)
+        print(request.GET)
+        return JsonResponse({'success': True})

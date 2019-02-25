@@ -43,7 +43,7 @@ class SpatialInputRWS(ResourceWorkflowStep):
             '_SpatialManager': spatial_manager
         }
 
-        super(SpatialInputRWS, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def default_options(self):
@@ -59,9 +59,6 @@ class SpatialInputRWS(ResourceWorkflowStep):
     def init_parameters(self, *args, **kwargs):
         """
         Initialize the parameters for this step.
-
-        Args:
-            step_options(dict): Options for this step.
 
         Returns:
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
@@ -85,7 +82,7 @@ class SpatialInputRWS(ResourceWorkflowStep):
             ValueError
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
-        super(SpatialInputRWS, self).validate()
+        super().validate()
         #
         # polygon = self._parameters['polygon']
         # value = polygon['value']

@@ -64,7 +64,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     }
 
     def __init__(self, *args, **kwargs):
-        super(ResourceWorkflowStep, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Set initial status
         self.set_status(self.ROOT_STATUS_KEY, self.STATUS_PENDING)
@@ -147,9 +147,9 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         # Must copy the entire parameters dict, make changes to the copy,
         # and overwrite to get sqlalchemy to recognize a change has occurred,
         # and propagate the changes to the database.
-        old_parameters = deepcopy(self._parameters)
-        old_parameters[name]['value'] = value
-        self._parameters = old_parameters
+        dc_parameters = deepcopy(self._parameters)
+        dc_parameters[name]['value'] = value
+        self._parameters = dc_parameters
 
     def get_parameter(self, name):
         """
@@ -172,6 +172,25 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
         return deepcopy(self._parameters)
+
+    def resolve_option(self, option):
+        """
+        Resolve options that depend on parameters from other steps.
+        """
+        option_value = self.options.get(option, None)
+
+        if option_value is None:
+            return None
+
+        if isinstance(option_value, dict) and self.OPT_PARENT_STEP in option_value:
+            field_name = option_value[self.OPT_PARENT_STEP]
+            parent_step = self.parent
+
+            try:
+                parent_parameter = parent_step.get_parameter(field_name)
+                return parent_parameter
+            except ValueError as e:
+                raise RuntimeError(str(e))
 
     def get_controller(self, **kwargs):
         """

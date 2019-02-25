@@ -12,22 +12,27 @@ function contains(str, sub) {
     return true;
 }
 
+
 function in_array(item, array) {
     return array.indexOf(item) !== -1;
 }
+
 
 function is_defined(variable) {
     return !!(typeof variable !== typeof undefined && variable !== false);
 }
 
+
 function to_title_case(str) {
     return str.replace(/\w+/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-};
+}
+
 
 function var_to_title_case(str) {
     str = str.replace(/_/ig, ' ');
     return to_title_case(str);
-};
+}
+
 
 function compute_center(features) {
     let sum_x = 0,
@@ -105,4 +110,36 @@ function compute_center(features) {
 
     let center_coordinates = [ sum_x / num_coordinates, sum_y / num_coordinates];
     return new ol.geom.Point(center_coordinates);
-};
+}
+
+
+function copy_text_to_clipboard(text) {
+    if (!navigator.clipboard) {
+        _fallback_copy_text_to_clipboard(text);
+        return;
+    }
+
+    navigator.clipboard.writeText(text).then(function() {
+        console.log('Async: Copying to clipboard was successful!');
+    }, function(err) {
+        console.error('Async: Could not copy text: ', err);
+    });
+}
+
+
+function _fallback_copy_text_to_clipboard(text) {
+    // Copy hack using hidden text area
+    var text_area = document.createElement('textarea');
+    text_area.value = text;
+    document.body.appendChild(text_area);
+    text_area.focus();
+    text_area.select();
+
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+    }
+
+    document.body.removeChild(text_area);
+}

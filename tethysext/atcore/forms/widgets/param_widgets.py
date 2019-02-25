@@ -1,39 +1,17 @@
 """
 ********************************************************************************
-* Name: widgets.py
-* Author: nswain
+* Name: param_widgets.py
+* Author: Scott Christensen and Nathan Swain
 * Created On: January 18, 2019
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
 import param
 from django import forms
-from tethys_sdk.gizmos import SelectInput
 from datetimewidget.widgets import DateWidget
 from django_select2.forms import Select2Widget
 from taggit.forms import TagField
-
-
-class ConditionalSelectWidget(forms.widgets.Select):
-    template_name = 'conditional_input.html'
-
-    def __init__(self, forms, **kwargs):
-        self.forms = forms
-        super(ConditionalSelectWidget, self).__init__(**kwargs)
-
-    def get_context(self, name, value, attrs):
-        context = super(ConditionalSelectWidget, self).get_context(name, value, attrs)
-
-        select_options = SelectInput(
-            name=name,
-            display_text='select',
-            options=[(option, option) for option in self.forms.keys()],
-        )
-
-        context['select_options'] = select_options
-        context['forms'] = self.forms
-
-        return context
+# from dataframewidget.forms.fields import DataFrameField
 
 
 widget_map = {
@@ -153,44 +131,35 @@ widget_map = {
     param.Integer:
         lambda p, initial: forms.IntegerField(
             initial=initial or p.default,
-        )
+        ),
+    # TODO: Implement DataFrameField someday...
+    # param.DataFrame:
+    #     lambda p, initial: DataFrameField(
+    #         initial=initial is not None or p.default is not None
+    #     )
 }
 
 
-def widgets(paramitarized_obj, set_options):
-    class_name = '{}Form'.format(paramitarized_obj.name.title())
+def generate_django_form(parameterized_obj, set_options):
+    """
+    Create a Django form from a Parameterized object.
+
+    Args:
+        parameterized_obj(Parameterized): the parameterized object.
+        set_options(dict<attrib_name, initial_value>): Dictionary of initial value for one or more fields.
+
+    Returns:
+        Form: a Django form with fields matching the parameters of the given parameterized object.
+    """
+    class_name = '{}Form'.format(parameterized_obj.name.title())
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
     params = list(filter(lambda x: (x.precedence is None or x.precedence >= 0) and not x.constant,
-                         paramitarized_obj.params().values()))
+                         parameterized_obj.params().values()))
 
     for p in sorted(params, key=lambda p: p.precedence or 9999):
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
         form_class.base_fields[p._attrib_name] = widget_map[type(p)](p, set_options.get(p._attrib_name))
         form_class.base_fields[p._attrib_name].widget.attrs.update({'class': 'form-control'})
-
-    return form_class
-
-
-# WIP: attempt at handling conditional widgets
-def widgets_form(paramitarized_obj_dict, set_options):
-
-    form_classes = {}
-
-    for name, paramitarized_obj in paramitarized_obj_dict.items():
-        form_class = widgets(paramitarized_obj, set_options)
-        form_classes[name] = form_class
-
-    if len(form_classes) > 1:
-        class_name = '{}Form'.format('Conditional')
-        form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
-        choices = [(p, p) for p in form_classes.keys()]
-        form_class.base_fields['condition'] = forms.ChoiceField(
-                                                choices=choices,
-                                                widget=ConditionalSelectWidget(
-                                                    forms=form_classes,
-                                                    attrs={'class': 'form-control'})
-                                              )
-        # form_class.media = lambda: [f.media for f in form_classes.values()]
 
     return form_class

@@ -6,10 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from sqlalchemy.exc import StatementError
-from sqlalchemy.orm.exc import NoResultFound
-from django.shortcuts import reverse, redirect
-from django.contrib import messages
+from django.shortcuts import reverse
 from django.conf import settings
 from tethys_apps.utilities import get_active_app
 from tethys_sdk.base import TethysController
@@ -113,18 +110,6 @@ class AppUsersResourceController(AppUsersController):
                     raise ATCoreException('You are not allowed to access this {}'.format(
                         _Resource.DISPLAY_TYPE_SINGULAR.lower()
                     ))
-
-        # TODO: Create resource controller decorator to handle permissions checks and redirects
-        except (StatementError, NoResultFound):
-            messages.warning(request, 'The {} could not be found.'.format(
-                _Resource.DISPLAY_TYPE_SINGULAR.lower()
-            ))
-            return redirect(self.back_url)
-        except ATCoreException as e:
-            error_message = str(e)
-            messages.warning(request, error_message)
-            return redirect(self.back_url)
-
         finally:
             if manage_session:
                 session.close()

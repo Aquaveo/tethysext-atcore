@@ -735,6 +735,9 @@ var ATCORE_MAP_VIEW = (function() {
             TETHYS_MAP_VIEW.clearSelection();
             return false;
         });
+
+        // Unset Display None
+        m_$props_popup_container.css('display', 'block');
     };
 
     show_properties_pop_up = function(coordinates) {

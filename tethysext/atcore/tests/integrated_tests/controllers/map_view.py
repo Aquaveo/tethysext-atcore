@@ -7,13 +7,9 @@
 ********************************************************************************
 """
 import mock
-
-# Patch the permission_required decorator
-# mock.patch('tethys_apps.decorators.permission_required').start()
 from tethysext.atcore.tests.factories.django_user import UserFactory
 
 from django.test import RequestFactory
-from django.http import HttpResponse
 from sqlalchemy.orm.session import Session
 from tethys_sdk.testing import TethysTestCase
 from tethys_sdk.base import TethysAppBase
@@ -126,6 +122,22 @@ class MapViewTests(TethysTestCase):
         self.assertIn('plot_slide_sheet', context)
         self.assertEqual(mock_render(), response)
 
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.map_request_to_method')
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch('tethysext.atcore.controllers.map_view.render')
+    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    def test_get_with_method(self, mock_has_permission, mock_render, _, mock_mrtm):
+        resource_id = '12345'
+        mock_request = self.request_factory.get('/foo/bar/map-view/', data={'method': 'foo'})
+        mock_request.user = self.django_user
+        mock_method = mock.MagicMock()
+        mock_mrtm.return_value = mock_method
+
+        response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
+
+        mock_method.assert_called()
+        self.assertEqual(mock_method(), response)
+
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
     @mock.patch('tethysext.atcore.controllers.map_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
@@ -151,17 +163,6 @@ class MapViewTests(TethysTestCase):
         self.assertIn('back_url', context)
         self.assertIn('plot_slide_sheet', context)
         self.assertEqual(mock_render(), response)
-
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
-    @mock.patch('tethysext.atcore.controllers.map_view.isinstance')
-    def test_get_no_resource_permissions(self, mock_isinstance, mock_resource):
-        mock_resource.return_value = 'foo'
-        mock_isinstance.return_value = True
-        resource_id = '12345'
-        mock_request = self.request_factory.get('/foo/bar/map-view/')
-        mock_request.user = self.django_user
-        response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
-        self.assertEqual('foo', response)
 
     @mock.patch('tethysext.atcore.controllers.map_view.redirect')
     @mock.patch('tethysext.atcore.controllers.map_view.messages')
@@ -208,14 +209,16 @@ class MapViewTests(TethysTestCase):
         self.controller(mock_request, resource_id=resource_id)
         mock_plot.called_assert_with(mock_request, resource_id=resource_id)
 
-    @mock.patch('django.http.response.HttpResponseNotFound')
-    def test_post_httpresponsenotfound(self, _):
+    @mock.patch('tethysext.atcore.controllers.map_view.HttpResponseNotFound')
+    def test_post_httpresponsenotfound(self, mock_hrnf):
         mock_request = mock.MagicMock(POST={})
         resource_id = '12345'
 
         mv = MapView()
+        mv.get_resource = mock.MagicMock(return_value=mock.MagicMock())
+        mv.get_sessionmaker = mock.MagicMock()
         mv.post(request=mock_request, resource_id=resource_id)
-        pass
+        mock_hrnf.assert_called()
 
     def test_should_disable_basemap(self):
         mv = MapView()
@@ -223,26 +226,37 @@ class MapViewTests(TethysTestCase):
 
     def test_get_context(self):
         mv = MapView()
-        self.assertEqual('context', mv.get_context(request='r', context='context', resource_id='12345', model_db='m',
-                                                   map_manager='m'))
+        context = {}
+        self.assertEqual(context, mv.get_context(
+            request=mock.MagicMock(),
+            session=mock.MagicMock(),
+            resource=mock.MagicMock,
+            context=context,
+            model_db=mock.MagicMock(),
+            map_manager=mock.MagicMock()
+        ))
 
     def test_get_permissions(self):
         mv = MapView()
         self.assertEqual('permissions', mv.get_permissions(request='r', permissions='permissions', model_db='m',
                                                            map_manager='m'))
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')
-    def test_get_plot_data(self, mock_resource):
-        mock_request = mock.MagicMock()
+    def test_get_plot_data(self):
+        mock_request = mock.MagicMock(POST={'layer_name': 'foo', 'feature_id': '123'})
 
         self.mock_mm().get_plot_for_layer_feature.return_value = ('foo', 'bar', 'bazz')
 
         # call the method
-        ret = self.mv.get_plot_data(mock_request, '12345', 'layer name', 'feature id')
+        self.mv.get_resource = mock.MagicMock()
+        ret = self.mv.get_plot_data(
+            request=mock_request,
+            session=mock.MagicMock(),
+            resource=mock.MagicMock()
+        )
 
         # test the results
         self.assertEqual(200, ret.status_code)
-        mock_resource.assert_called_with(mock_request, '12345')
+        self.mock_mm().get_plot_for_layer_feature.assert_called_with('foo', '123')
 
     @mock.patch('tethysext.atcore.controllers.map_view.redirect')
     @mock.patch('tethysext.atcore.controllers.map_view.messages')
@@ -257,24 +271,16 @@ class MapViewTests(TethysTestCase):
         self.mock_mm().get_plot_for_layer_feature.return_value = ('foo', 'bar', 'bazz')
 
         # call the method
-        self.mv.get_plot_data(mock_request, '12345', 'layer name', 'feature id')
+        self.mv.get_plot_data(
+            request=mock_request,
+            session=mock.MagicMock(),
+            resource=None
+        )
 
         # test the results
         meg_call_args = mock_messages.error.call_args_list
         self.assertEqual('An unexpected error occurred. Please try again.', meg_call_args[0][0][1])
         mock_redirect.assert_called()
-
-    @mock.patch('tethysext.atcore.controllers.map_view.isinstance')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')
-    def test_post_get_plot_data_permissions(self, mock_get_resource, _):
-        mock_response = mock.MagicMock(spec=HttpResponse)
-        mock_get_resource.return_value = mock_response
-
-        # call the method
-        ret = self.mv.get_plot_data(mock.MagicMock(), '', '', '')
-
-        # test the results
-        self.assertEqual(mock_response, ret)
 
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_find_location_by_query(self, _):

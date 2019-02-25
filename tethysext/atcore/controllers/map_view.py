@@ -9,10 +9,10 @@
 import uuid
 import requests
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseNotFound
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
-from tethysext.atcore.services.app_users.decorators import active_user_required
+from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
@@ -38,22 +38,31 @@ class MapView(AppUsersResourceController):
     _SpatialManager = None
 
     @active_user_required()
-    def get(self, request, resource_id=None, *args, **kwargs):
+    @resource_controller()
+    def get(self, request, session, resource, back_url, *args, **kwargs):
         """
         Handle GET requests.
         """
         from django.conf import settings
 
+        # Check for GET request alternative methods
+        the_method = self.map_request_to_method(request)
+
+        if the_method is not None:
+            return the_method(
+                request=request,
+                session=session,
+                resource=resource,
+                back_url=back_url,
+                *args, **kwargs
+            )
+
+        # Load Primary Map View
         database_id = None
-        resource = None
-        if resource_id:
-            # Get Resource
-            resource = self.get_resource(request, resource_id)
+        resource_id = None
 
-            # TODO: Move permissions check into decorator
-            if isinstance(resource, HttpResponse):
-                return resource
-
+        if resource:
+            resource_id = resource.id
             database_id = resource.get_attribute('database_id')
             if not database_id:
                 messages.error(request, 'An unexpected error occurred. Please try again.')
@@ -61,16 +70,17 @@ class MapView(AppUsersResourceController):
 
         # Get Managers Hook
         model_db, map_manager = self.get_managers(
-            request,
+            request=request,
             resource_id=resource_id,
             database_id=database_id,
+            back_url=back_url,
             *args, **kwargs
         )
 
         # Render the Map
         # TODO: Figure out what to do with the scenario_id. Workflow id?
         map_view, model_extent, layer_groups = map_manager.compose_map(
-            request,
+            request=request,
             resource_id=resource_id,
             scenario_id=1,
             *args, **kwargs
@@ -107,7 +117,7 @@ class MapView(AppUsersResourceController):
             'back_url': self.back_url
         }
 
-        if resource_id:
+        if resource:
             context.update({'map_title': self.map_title or resource.name})
         else:
             context.update({'map_title': self.map_title})
@@ -115,8 +125,9 @@ class MapView(AppUsersResourceController):
         # Context hook
         context = self.get_context(
             request=request,
+            session=session,
             context=context,
-            resource_id=resource_id,
+            resource=resource,
             model_db=model_db,
             map_manager=map_manager,
             *args, **kwargs
@@ -150,20 +161,43 @@ class MapView(AppUsersResourceController):
 
         return render(request, self.template_name, context)
 
+    def map_request_to_method(self, request):
+        """
+        Derive python method on this class from "method" GET or POST parameter.
+        Args:
+            request (HttpRequest): The request.
+
+        Returns:
+            callable: the method or None if not found.
+        """
+        if request.method == 'POST':
+            method = request.POST.get('method', '')
+        elif request.method == 'GET':
+            method = request.GET.get('method', '')
+        else:
+            return None
+        python_method = method.replace('-', '_')
+        the_method = getattr(self, python_method, None)
+        return the_method
+
     @active_user_required()
-    def post(self, request, resource_id, *args, **kwargs):
+    @resource_controller()
+    def post(self, request, session, resource, back_url, *args, **kwargs):
         """
         Route POST requests.
         """
-        method = request.POST.get('method', '')
-        python_method = method.replace('-', '_')
-
-        the_method = getattr(self, python_method, None)
+        the_method = self.map_request_to_method(request)
 
         if the_method is None:
             return HttpResponseNotFound()
 
-        return the_method(request, resource_id, *args, **kwargs)
+        return the_method(
+            request=request,
+            session=session,
+            resource=resource,
+            back_url=back_url,
+            *args, **kwargs
+        )
 
     def should_disable_basemap(self, request, model_db, map_manager):
         """
@@ -179,7 +213,7 @@ class MapView(AppUsersResourceController):
         """
         return self.default_disable_basemap
 
-    def get_managers(self, request, resource_id, database_id, *args, **kwargs):
+    def get_managers(self, request, resource_id, database_id, back_url, *args, **kwargs):
         """
         Hook to get managers. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
@@ -199,12 +233,14 @@ class MapView(AppUsersResourceController):
 
         return model_db, map_manager
 
-    def get_context(self, request, context, resource_id, model_db, map_manager, *args, **kwargs):
+    def get_context(self, request, session, resource, context, model_db, map_manager, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
         Args:
             request (HttpRequest): The request.
+            session (sqlalchemy.Session): the session.
+            resource (Resource): the resource for this request.
             context (dict): The context dictionary.
             model_db (ModelDatabase): ModelDatabase instance associated with this request.
             map_manager (MapManager): MapManager instance associated with this request.
@@ -229,13 +265,14 @@ class MapView(AppUsersResourceController):
         """
         return permissions
 
-    def get_plot_data(self, request, resource_id, *args, **kwargs):
+    def get_plot_data(self, request, session, resource, *args, **kwargs):
         """
         Load plot from given parameters.
 
         Args:
             request (HttpRequest): The request.
-            resource_id(str): UUID of the resource being mapped.
+            session(sqlalchemy.Session): The database session.
+            resource(Resource): The resource.
 
         Returns:
             JsonResponse: title, data, and layout options for the plot.
@@ -243,13 +280,8 @@ class MapView(AppUsersResourceController):
         # Get Resource
         layer_name = request.POST.get('layer_name', '')
         feature_id = request.POST.get('feature_id', '')
-        resource = self.get_resource(request, resource_id)
+        database_id = resource.get_attribute('database_id') if resource else None
 
-        # TODO: Move permissions check into decorator
-        if isinstance(resource, HttpResponse):
-            return resource
-
-        database_id = resource.get_attribute('database_id')
         if not database_id:
             messages.error(request, 'An unexpected error occurred. Please try again.')
             return redirect(self.back_url)
@@ -264,7 +296,7 @@ class MapView(AppUsersResourceController):
         return JsonResponse({'title': title, 'data': data, 'layout': layout})
 
     @permission_required('use_map_geocode', raise_exception=True)
-    def find_location_by_query(self, request, resource_id, *args, **kwargs):
+    def find_location_by_query(self, request, *args, **kwargs):
         """"
         This controller is used in default geocode feature.
 
@@ -345,7 +377,7 @@ class MapView(AppUsersResourceController):
         return JsonResponse(json)
 
     @permission_required('use_map_geocode', raise_exception=True)
-    def find_location_by_advanced_query(self, request, resource_id, *args, **kwargs):
+    def find_location_by_advanced_query(self, request, *args, **kwargs):
         """"
         This controller called by the advanced geocode search feature.
 
