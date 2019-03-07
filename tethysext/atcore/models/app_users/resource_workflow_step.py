@@ -8,8 +8,11 @@
 """
 import inspect
 import uuid
+from abc import abstractmethod
+from copy import deepcopy
 
-from sqlalchemy import Column, ForeignKey, String, PickleType
+from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
+from sqlalchemy.orm import relationship, backref
 from tethys_sdk.base import TethysController
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin
@@ -33,18 +36,27 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     __tablename__ = 'app_users_resource_workflow_steps'
 
     TYPE = 'generic_workflow_step'
+    ATTR_STATUS_MESSAGE = 'status_message'
+    OPT_PARENT_STEP = 'parent'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    child_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
     resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
     type = Column(String)
 
     name = Column(String)
     help = Column(String)
+    order = Column(Integer)
     http_methods = Column(PickleType, default=['get', 'post', 'delete'])
     controller_path = Column(String)
     controller_kwargs = Column(PickleType, default={})
     status = Column(String)
+    _options = Column(PickleType, default={})
     _attributes = Column(String)
+    _parameters = Column(PickleType, default={})
+
+    parent = relationship('ResourceWorkflowStep', cascade="all,delete", uselist=False,
+                          backref=backref('child', remote_side=[id]))
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
@@ -52,10 +64,133 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     }
 
     def __init__(self, *args, **kwargs):
-        super(ResourceWorkflowStep, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Set initial status
         self.set_status(self.ROOT_STATUS_KEY, self.STATUS_PENDING)
+
+        # Initialize parameters
+        if not self._parameters:
+            self._parameters = self.init_parameters(*args, **kwargs)
+
+        if 'options' in kwargs:
+            self.options = kwargs['options']
+        else:
+            self._options = self.default_options
+
+    def __str__(self):
+        return '<{} id="{}" name="{}">'.format(self.__class__.__name__, self.id, self.name)
+
+    @property
+    def default_options(self):
+        """
+        Returns default options dictionary for the step.
+        """
+        return {}
+
+    @property
+    def options(self):
+        return self._options
+
+    @options.setter
+    def options(self, value):
+        if not isinstance(value, dict):
+            raise ValueError('The options must be a dictionary: {}'.format(value))
+        opts = self.default_options
+        opts.update(value)
+        self._options = opts
+
+    @abstractmethod
+    def init_parameters(self, *args, **kwargs):
+        """
+        Initialize the parameters for this step.
+        Returns:
+            dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+        """
+
+    def validate(self):
+        """
+        Validates parameter values of this this step.
+        Returns:
+            bool: True if data is valid, else False.
+        """
+        params = self._parameters
+
+        # Check Required
+        for name, param in params.items():
+            if param['required'] and not param['value']:
+                raise ValueError('Parameter "{}" is required.'.format(name))
+
+    def parse_parameters(self, parameters):
+        """
+        Parse parameters from a dictionary.
+
+        Args:
+            parameters(dict<name,value>): Dictionary of parameters.
+        """
+        for name, value in parameters.items():
+            try:
+                self.set_parameter(name, value)
+            except ValueError:
+                pass  # Ignore parameters that don't exist when parsing.
+
+    def set_parameter(self, name, value):
+        """
+        Sets the value of the named parameter.
+        Args:
+            name(str): Name of the parameter to set.
+            value(varies): Value of the parameter.
+        """
+        if name not in self._parameters:
+            raise ValueError('No parameter named "{}" in this step.'.format(name))
+
+        # Must copy the entire parameters dict, make changes to the copy,
+        # and overwrite to get sqlalchemy to recognize a change has occurred,
+        # and propagate the changes to the database.
+        dc_parameters = deepcopy(self._parameters)
+        dc_parameters[name]['value'] = value
+        self._parameters = dc_parameters
+
+    def get_parameter(self, name):
+        """
+        Get value of the named parameter.
+        Args:
+            name(str): name of parameter.
+
+        Returns:
+            varies: Value of the named parameter.
+        """
+        try:
+            return self._parameters[name]['value']
+        except KeyError:
+            raise ValueError('No parameter named "{}" in step "{}".'.format(name, self))
+
+    def get_parameters(self):
+        """
+        Get all parameter objects.
+        Returns:
+            dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+        """
+        return deepcopy(self._parameters)
+
+    def resolve_option(self, option):
+        """
+        Resolve options that depend on parameters from other steps.
+        """
+        option_value = self.options.get(option, None)
+
+        if option_value is None:
+            return None
+
+        if isinstance(option_value, dict) and self.OPT_PARENT_STEP in option_value:
+            field_name = option_value[self.OPT_PARENT_STEP]
+            parent_step = self.parent
+
+            try:
+                parent_parameter = parent_step.get_parameter(field_name)
+                return parent_parameter
+            except ValueError as e:
+                raise RuntimeError(str(e))
 
     def get_controller(self, **kwargs):
         """

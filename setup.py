@@ -19,12 +19,18 @@ ext_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'teth
 # -- Python Dependencies -- #
 dependencies = [
     'sqlalchemy',
-    'future',
-    'mock',
     'factory_boy',
     'jinja2',
     'requests',
-    'filelock'
+    'param',
+    'geojson',
+    'pyshp',
+    'django-datetime-widget',
+    'django-select2',
+    'django-taggit',
+    'filelock',
+    'pandas',
+    'django'
 ]
 
 # -- Get Resource File -- #

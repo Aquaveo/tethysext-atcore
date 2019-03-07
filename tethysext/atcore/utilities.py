@@ -46,3 +46,59 @@ def parse_url(url):
         )
     else:
         raise ValueError('Invalid url given: {}'.format(url))
+
+
+def clean_request(request):
+    """
+    Strip the "method" variable from the GET and POST params of a request.
+
+    Args:
+        request(HttpRequest): the request.
+
+    Returns:
+        HttpRequest: the modified request
+    """
+    # Save mutablility of GET and POST
+    get_mutable = request.GET._mutable
+    post_mutable = request.POST._mutable
+
+    # Make GET and POST mutable
+    request.GET._mutable = True
+    request.POST._mutable = True
+
+    # Pop off the 'method' parameter
+    request.GET.pop('method', None)
+    request.POST.pop('method', None)
+
+    # Restore mutabilility
+    request.GET._mutable = get_mutable
+    request.POST._mutable = post_mutable
+
+    return request
+
+
+def strip_list(l, *args):
+    """
+    Strip emtpy items from end of list.
+
+    Args:
+        l(list): the list.
+        *args: any number of values to strip from the end of the list.
+    """
+    targets = ''
+
+    if args:
+        targets = args
+
+    while True:
+        if len(l) == 0:
+            break
+
+        back = l[-1]
+
+        if back not in targets:
+            break
+
+        l.pop(-1)
+
+    return l

@@ -33,7 +33,7 @@ var ATCORE_MAP_VIEW = (function() {
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
-        
+
     var m_props_popup_overlay,          // OpenLayers overlay containing the properties popup
         m_$props_popup_container,       // Properties popup container element
         m_$props_popup_content,         // Properties popup content element
@@ -82,6 +82,9 @@ var ATCORE_MAP_VIEW = (function() {
 
  	// Cache methods
  	var is_in_cache, add_to_cache, remove_from_cache, get_from_cache;
+
+ 	// Drawing methods
+ 	var init_draw_controls;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -732,6 +735,9 @@ var ATCORE_MAP_VIEW = (function() {
             TETHYS_MAP_VIEW.clearSelection();
             return false;
         });
+
+        // Unset Display None
+        m_$props_popup_container.css('display', 'block');
     };
 
     show_properties_pop_up = function(coordinates) {
@@ -830,7 +836,7 @@ var ATCORE_MAP_VIEW = (function() {
         let title_markup = '<h6 class="properites-title">' + title + '</h6>';
         return title_markup;
     };
-    
+
     generate_properties_table = function(feature) {
         let properties = feature.getProperties();
         let geometry = feature.getGeometry();
@@ -873,7 +879,7 @@ var ATCORE_MAP_VIEW = (function() {
         table_template = table_template.replace('{{ROWS}}', rows);
         return table_template;
     };
-    
+
     // Feature Selection
     init_feature_selection = function() {
         init_properties_pop_up();
@@ -1084,6 +1090,23 @@ var ATCORE_MAP_VIEW = (function() {
         }
     };
 
+    // Drawing methods
+    init_draw_controls = function() {
+        var left_position = 7,
+            LEFT_POSITION_OFFSET = 42;
+        $('.tethys-map-view-draw-control').each(function(index, control) {
+            // Reset position of draw controls so they are left aligned on the bottom.
+            $(control).css('left', left_position + 'px');
+            $(control).css('bottom', '7px');
+            $(control).css('top', 'auto');
+            left_position += LEFT_POSITION_OFFSET;
+        });
+
+        // Reset tooltips to show on top
+        $('[data-toggle="tooltip"]').tooltip('destroy');
+        $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
+    };
+
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
  	*************************************************************************/
@@ -1142,6 +1165,7 @@ var ATCORE_MAP_VIEW = (function() {
 		init_layers_tab();
         init_geocode();
         init_plot();
+        init_draw_controls();
 	});
 
 	return m_public_interface;

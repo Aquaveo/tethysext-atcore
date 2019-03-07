@@ -15,9 +15,9 @@ from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
 
 
-class ResourceWorkflowView(AppUsersResourceWorkflowController):
+class ResourceWorkflowRouter(AppUsersResourceWorkflowController):
     """
-    Controller for resource workflow views.
+    Router for resource workflow views. Routes to appropriate step controller.
     """
     http_method_names = ['get', 'post', 'delete']
 

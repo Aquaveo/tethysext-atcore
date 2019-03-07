@@ -29,7 +29,7 @@ RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
 ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
- RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
+RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
    ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
    ; python setup.py install"
 
@@ -56,6 +56,7 @@ EXPOSE 80
 # COPY IN SALT #
 ################
 ADD docker/salt/ /srv/salt/
+ADD docker/test-docker.sh ${TETHYS_HOME}/
 
 #######
 # RUN #

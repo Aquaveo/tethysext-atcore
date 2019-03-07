@@ -8,7 +8,7 @@
 """
 import inspect
 from django.utils.text import slugify
-from tethysext.atcore.controllers.resource_workflows import ResourceWorkflowView
+from tethysext.atcore.controllers.resource_workflows import ResourceWorkflowRouter
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource, ResourceWorkflow
 
 
@@ -28,7 +28,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         url_map_maker(UrlMap): UrlMap class bound to app root url.
         app(TethysAppBase): instance of Tethys app class.
         persistent_store_name(str): name of persistent store database setting the controllers should use to create sessions.
-        workflow_pairs(2-tuple<ResourceWorkflow, ResourceWorkflowView>): Pairs of ResourceWorkflow models and ResourceWorkFlow views.
+        workflow_pairs(2-tuple<ResourceWorkflow, ResourceWorkflowRouter>): Pairs of ResourceWorkflow models and ResourceWorkFlow views.
         base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
         custom_models(cls): custom subclasses of AppUser, Organization, or Resource models.
 
@@ -67,15 +67,15 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
 
     url_maps = []
 
-    for _ResourceWorkflow, _ResourceWorkflowView in workflow_pairs:
+    for _ResourceWorkflow, _ResourceWorkflowRouter in workflow_pairs:
         if not _ResourceWorkflow or not inspect.isclass(_ResourceWorkflow) \
            or not issubclass(_ResourceWorkflow, ResourceWorkflow):
             raise ValueError('Must provide a valid ResourceWorkflow model as the first item in the '
                              'workflow_pairs argument.')
 
-        if not _ResourceWorkflowView or not inspect.isclass(_ResourceWorkflowView) \
-           or not issubclass(_ResourceWorkflowView, ResourceWorkflowView):
-            raise ValueError('Must provide a valid ResourceWorkflowView controller as the second item in the '
+        if not _ResourceWorkflowRouter or not inspect.isclass(_ResourceWorkflowRouter) \
+           or not issubclass(_ResourceWorkflowRouter, ResourceWorkflowRouter):
+            raise ValueError('Must provide a valid ResourceWorkflowRouter controller as the second item in the '
                              'workflow_pairs argument.')
 
         workflow_name = '{}_workflow'.format(_ResourceWorkflow.TYPE)
@@ -85,7 +85,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
             url_map_maker(
                 name=workflow_name,
                 url='/'.join([base_url_path, workflow_url]) if base_url_path else workflow_url,
-                controller=_ResourceWorkflowView.as_controller(
+                controller=_ResourceWorkflowRouter.as_controller(
                     _app=app,
                     _persistent_store_name=persistent_store_name,
                     _AppUser=_AppUser,
@@ -97,7 +97,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
             url_map_maker(
                 name=workflow_step_name,
                 url='/'.join([base_url_path, workflow_step_url]) if base_url_path else workflow_step_url,
-                controller=_ResourceWorkflowView.as_controller(
+                controller=_ResourceWorkflowRouter.as_controller(
                     _app=app,
                     _persistent_store_name=persistent_store_name,
                     _AppUser=_AppUser,

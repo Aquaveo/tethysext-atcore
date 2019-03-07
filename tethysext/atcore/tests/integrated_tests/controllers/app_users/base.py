@@ -9,11 +9,12 @@
 import mock
 from sqlalchemy.orm.exc import NoResultFound
 from django.test import RequestFactory
+from django.test.utils import override_settings
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.app_users.base import AppUsersController, AppUsersResourceController
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
-from django.test.utils import override_settings
+from tethysext.atcore.exceptions import ATCoreException
 
 
 class FakeAppUsersController(AppUsersController):
@@ -147,10 +148,7 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         mock_session.close.assert_not_called()
 
     @override_settings(ENABLE_OPEN_PORTAL=False)
-    @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
-    def test_get_resource_no_permission(self, mock_messages, _, mock_redirect):
+    def test_get_resource_no_permission(self):
         self.farc.get_app_user_model = mock.MagicMock()
         self.farc.get_resource_model = mock.MagicMock()
         self.farc.get_sessionmaker = mock.MagicMock()
@@ -161,10 +159,8 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = False
 
-        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
+        self.assertRaises(ATCoreException, self.farc.get_resource, request=mock_request, resource_id=mock_resource_id)
 
-        self.assertEqual(mock_redirect(), ret)
-        mock_messages.warning.assert_called()
         mock_session.close.assert_called()
 
     @override_settings(ENABLE_OPEN_PORTAL=True)
@@ -182,10 +178,7 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         self.assertEqual(mock_resource, ret)
         mock_session.close.assert_not_called()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
-    def test_get_resource_db_exception(self, mock_messages, _, mock_redirect):
+    def test_get_resource_db_exception(self):
         self.farc.get_app_user_model = mock.MagicMock()
         self.farc.get_resource_model = mock.MagicMock()
         self.farc.get_sessionmaker = mock.MagicMock()
@@ -195,8 +188,6 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         mock_session = self.farc.get_sessionmaker()()
         mock_session.query.side_effect = NoResultFound
 
-        ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
+        self.assertRaises(NoResultFound, self.farc.get_resource, request=mock_request, resource_id=mock_resource_id)
 
-        self.assertEqual(mock_redirect(), ret)
-        mock_messages.warning.assert_called()
         mock_session.close.assert_called()

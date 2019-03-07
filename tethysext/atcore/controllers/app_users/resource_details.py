@@ -8,13 +8,12 @@
 """
 # Django
 from django.shortcuts import render, reverse
-from django.http import HttpResponse
 # Tethys core
 from tethys_sdk.permissions import permission_required
 from tethys_apps.utilities import get_active_app
 # ATCore
 from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
-from tethysext.atcore.services.app_users.decorators import active_user_required
+from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 
 
 class ResourceDetails(AppUsersResourceController):
@@ -35,16 +34,11 @@ class ResourceDetails(AppUsersResourceController):
 
     @active_user_required()
     @permission_required('view_resources')
-    def _handle_get(self, request, resource_id, *args, **kwargs):
+    @resource_controller()
+    def _handle_get(self, request, session, resource, back_url, *args, **kwargs):
         """
         Handle get requests.
         """
-        resource = self.get_resource(request, resource_id)
-
-        # TODO: Move permissions check into decorator
-        if isinstance(resource, HttpResponse):
-            return resource
-
         context = {
             'resource': resource,
             'back_url': self.back_url,
