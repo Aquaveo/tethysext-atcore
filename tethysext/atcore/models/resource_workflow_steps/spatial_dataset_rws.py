@@ -15,13 +15,13 @@ class SpatialDatasetRWS(SpatialInputRWS):
     Workflow step used for setting dataset attributes on features.
 
     Options:
-        geometry(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
+        geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
         dataset_title(str): Title of the dataset (e.g.: Hydrograph). Defaults to 'Dataset'.
-        columns(tuple): Names and number of columns (the number of columns derived from the length of list). Defaults to ['X', 'Y']
-        read_only_columns(tuple): Names of columns that are read only. All columns are editable by default.
-        plot_columns(2-tuple): Two columns to plot. First column given will be plotted on X, the second on Y axis. No plot if not given.
+        template_dataset(pd.DataFrame): A Pandas dataset to use as a template for the dataset. Default is pd.DataFrame(columns=['X', 'Y'])
+        read_only_columns(tuple,list): Names of columns of the template dataset that are read only. All columns are editable by default.
+        plot_columns(2-tuple): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given.
         max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
-        initial(2D-list): Initial values to populate.
+        empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
     """  # noqa: #501
     TYPE = 'spatial_dataset_workflow_step'
 

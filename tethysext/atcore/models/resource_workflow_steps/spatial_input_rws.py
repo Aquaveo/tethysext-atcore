@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: polygon_step.py
+* Name: spatial_input_rws.py
 * Author: nswain
 * Created On: December 17, 2018
 * Copyright: (c) Aquaveo 2018

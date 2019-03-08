@@ -108,6 +108,15 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
 
+    @abstractmethod
+    def to_json(self):
+        """
+        Serialize resource workflow step, including parameters, to json.
+
+        Returns:
+            str: JSON string
+        """
+
     def validate(self):
         """
         Validates parameter values of this this step.

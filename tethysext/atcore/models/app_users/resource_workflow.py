@@ -121,3 +121,17 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
         next_step = self.steps[next_index] if next_index < len(self.steps) else None
 
         return previous_step, next_step
+
+    def get_previous_steps(self, step):
+        """
+        Get all previous steps to the given step.
+
+        Args:
+           step(ResourceWorkflowStep): A step belonging to this workflow.
+
+        Returns:
+            list<ResourceWorkflowStep>: a list of steps previous to this one.
+        """
+        step_index = self.steps.index(step)
+        previous_steps = self.steps[:step_index]
+        return previous_steps

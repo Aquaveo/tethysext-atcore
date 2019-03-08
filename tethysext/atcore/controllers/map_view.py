@@ -58,22 +58,15 @@ class MapView(AppUsersResourceController):
             )
 
         # Load Primary Map View
-        database_id = None
         resource_id = None
 
         if resource:
             resource_id = resource.id
-            database_id = resource.get_attribute('database_id')
-            if not database_id:
-                messages.error(request, 'An unexpected error occurred. Please try again.')
-                return redirect(self.back_url)
 
         # Get Managers Hook
         model_db, map_manager = self.get_managers(
             request=request,
-            resource_id=resource_id,
-            database_id=database_id,
-            back_url=back_url,
+            resource=resource,
             *args, **kwargs
         )
 
@@ -213,19 +206,27 @@ class MapView(AppUsersResourceController):
         """
         return self.default_disable_basemap
 
-    def get_managers(self, request, resource_id, database_id, back_url, *args, **kwargs):
+    def get_managers(self, request, resource, *args, **kwargs):
         """
         Hook to get managers. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
         Args:
             request (HttpRequest): The request.
-            resource_id (str): UUID of the resource being mapped.
-            database_id (str): Database ID of the resource being mapped.
+            resource (Resource): Resource instance or None.
 
         Returns:
             model_db (ModelDatabase): ModelDatabase instance.
             map_manager (MapManager): Map Manager instance
         """  # noqa: E501
+        database_id = None
+
+        if resource:
+            database_id = resource.get_attribute('database_id')
+
+        if not database_id:
+            raise RuntimeError('A resource with database_id attribute is required: '
+                               'Resource - {} Database ID - {}'.format(resource, database_id))
+
         model_db = self._ModelDatabase(app=self._app, database_id=database_id)
         gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
         spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)

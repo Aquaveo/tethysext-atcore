@@ -9,3 +9,4 @@
 from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.spatial_attributes_rws import SpatialAttributesRWS  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS  # noqa: F401, E501
+from tethysext.atcore.models.resource_workflow_steps.spatial_condor_job_rws import SpatialCondorJobRWS  # noqa: F401, E501
