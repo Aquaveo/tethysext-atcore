@@ -31,6 +31,8 @@
           <i class="fas fa-check-circle"></i>
           {% elif step.status == 'error' %}
           <i class="fas fa-times-circle"></i>
+          {% elif step.status == 'working' %}
+          <i class="fas fa-cogs"></i>
           {% else %}
           <i class="fas fa-question-circle"></i>
           {% endif %}
@@ -57,7 +59,10 @@
 
   {% if next_step %}
   <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Next</button>
+  {% else %}
+  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Submit</button>
   {% endif %}
+
   {{ block.super }}
 {% endblock %}
 

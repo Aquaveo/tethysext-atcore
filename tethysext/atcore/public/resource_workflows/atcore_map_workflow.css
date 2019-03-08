@@ -78,6 +78,24 @@
     color: #EF3737;
 }
 
+/* Working Status */
+.workflow-step.workflow-step-working {
+    color: #E67E22!important;
+}
+
+.workflow-step.active.workflow-step-working {
+    color: #ffffff!important;
+    background-color: #E67E22!important;
+}
+
+.workflow-step.active.workflow-step-working:hover {
+    background-color: #D35400!important;
+}
+
+.workflow-step.workflow-step-working i {
+    color: #E67E22;
+}
+
 /* Status Symbol Active */
 .workflow-step.active i {
     color: #ffffff!important;
