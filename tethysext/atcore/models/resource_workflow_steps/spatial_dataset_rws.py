@@ -110,3 +110,23 @@ class SpatialDatasetRWS(SpatialInputRWS):
                         datasets[feature_id] is None or datasets[feature_id].empty:
                     raise ValueError('At least one {0} is empty. You must define one {0} for each feature to continue.'
                                      .format(dataset_title))
+
+    def to_dict(self):
+        """
+        Serialize ResourceWorkflowStep into a dictionary.
+
+        Returns:
+            dict: dictionary representation of ResourceWorkflowStep.
+        """
+        # Get default dict representation
+        d = super().to_dict()
+
+        # serialize the dataframe parameters
+        datasets = {}
+
+        for feature_id, dataframe in d['parameters']['datasets'].items():
+            datasets.update({feature_id: dataframe.to_dict(orient='list')})
+
+        d['parameters']['datasets'] = datasets
+
+        return d

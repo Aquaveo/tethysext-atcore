@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import json
 import inspect
 import uuid
 from abc import abstractmethod
@@ -38,6 +39,8 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     TYPE = 'generic_workflow_step'
     ATTR_STATUS_MESSAGE = 'status_message'
     OPT_PARENT_STEP = 'parent'
+    UUID_FIELDS = ['id', 'child_id', 'resource_workflow_id']
+    SERIALIZED_FIELDS = ['id', 'child_id', 'resource_workflow_id', 'type', 'name', 'help']
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     child_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
@@ -108,14 +111,38 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
 
+    def to_dict(self):
+        """
+        Serialize ResourceWorkflowStep into a dictionary.
+
+        Returns:
+            dict: dictionary representation of ResourceWorkflowStep.
+        """
+        d = {}
+
+        for k, v in self.__dict__.items():
+            if k in self.SERIALIZED_FIELDS and k[0] != '_':
+                if k in self.UUID_FIELDS:
+                    d.update({k: str(v)})
+                else:
+                    d.update({k: v})
+
+        parameters = {}
+        for param, data in self.get_parameters().items():
+            parameters.update({param: data['value']})
+
+        d.update({'parameters': parameters})
+        return d
+
     @abstractmethod
     def to_json(self):
         """
-        Serialize resource workflow step, including parameters, to json.
+        Serialize ResourceWorkflowStep, including parameters, to json.
 
         Returns:
-            str: JSON string
+            str: JSON string representation of ResourceWorkflowStep.
         """
+        return json.dumps(self.to_dict())
 
     def validate(self):
         """
