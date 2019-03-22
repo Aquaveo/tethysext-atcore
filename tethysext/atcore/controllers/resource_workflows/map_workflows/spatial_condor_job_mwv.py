@@ -6,10 +6,12 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import os
+import json
 import logging
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
-from tethysext.atcore.services.condor_workflow_manager import CondorWorkflowJobManager
+from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
 log = logging.getLogger(__name__)
@@ -100,7 +102,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
         Raises:
             ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
             RuntimeError: exceptions that require developer attention.
-            :param model_db: 
         """  # noqa: E501
         # Validate data if going to next step
         if 'next-submit' in request.POST:
@@ -111,22 +112,16 @@ class SpatialCondorJobMWV(MapWorkflowView):
             if not scheduler_name:
                 raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.')
 
-            job_dicts = step.options.get('jobs', None)
-            if not job_dicts:
+            jobs = step.options.get('jobs', None)
+            if not jobs:
                 raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.')
-
-            # Create the CondorWorkflowJobNodes
-            jobs = self.build_job_nodes(job_dicts)
 
             # Define the working directory
             app = self.get_app()
             working_directory = self.get_working_directory(request, app)
 
-            # Serialize parameters from all previous steps into a parameters.json file to send to the job
-            params_file = self.serialize_parameters(step)
-
             # Setup the Condor Workflow
-            condor_job_manager = CondorWorkflowJobManager(
+            condor_job_manager = ResourceWorkflowCondorJobManager(
                 session=session,
                 model_db=model_db,
                 resource_workflow_step=step,
@@ -135,11 +130,21 @@ class SpatialCondorJobMWV(MapWorkflowView):
                 working_directory=working_directory,
                 app=app,
                 scheduler_name=scheduler_name,
-                input_files=[params_file],
             )
 
-            # TODO: Uncomment to submit job
-            # condor_job_manager.run_job()
+            # Serialize parameters from all previous steps into json
+            serialized_params = self.serialize_parameters(step)
+
+            # Write serialized params to file for transfer
+            params_file_path = os.path.join(condor_job_manager.working_directory, 'workflow_params.json')
+            with open(params_file_path, 'w') as params_file:
+                params_file.write(serialized_params)
+
+            # Add parameter file to workflow input files
+            condor_job_manager.input_files.append(params_file_path)
+
+            # Submit job
+            condor_job_manager.run_job()
 
             # Update status of the resource workflow step
             step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
@@ -166,34 +171,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         return working_directory
 
     @staticmethod
-    def build_job_nodes(job_dicts):
-        """
-        Build CondorWorkflowJobNodes from the job_dicts provided.
-
-        Args:
-            job_dicts(list<dicts>): A list of dictionaries, each containing the kwargs for a CondorWorkflowJobNode.
-
-        Returns:
-            list<CondorWorkflowJobNodes>: the job nodes.
-        """
-        from tethys_sdk.jobs import CondorWorkflowJobNode
-
-        jobs = []
-
-        for job_dict in job_dicts:
-            # Pop-off keys to be handled separately
-            attributes = job_dict.pop('attributes', {})
-
-            job = CondorWorkflowJobNode(*job_dict)
-
-            for attribute, value in attributes.items():
-                job.set_attribute(attribute, value)
-
-            jobs.append(job)
-
-        return jobs
-
-    def serialize_parameters(self, step):
+    def serialize_parameters(step):
         """
         Serialize parameters from previous steps into a file for sending with the workflow.
 
@@ -205,7 +183,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         """
         parameters = {}
         previous_steps = step.workflow.get_previous_steps(step)
+
         for previous_step in previous_steps:
-            parameters.update({previous_step.name: previous_step.get_parameters()})
-        import pdb; pdb.set_trace()
-        return parameters
+            parameters.update({previous_step.name: previous_step.to_dict()})
+
+        return json.dumps(parameters)
