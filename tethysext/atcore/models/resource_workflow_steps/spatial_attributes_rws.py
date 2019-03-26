@@ -6,10 +6,10 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
-class SpatialAttributesRWS(SpatialInputRWS):
+class SpatialAttributesRWS(ResourceWorkflowStep):
     """
     Workflow step used for setting simple valued attributes on features.
 

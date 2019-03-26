@@ -9,8 +9,10 @@
 import os
 import json
 import logging
+from tethys_sdk.gizmos import MVLayer, MapView
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
-from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
+from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS, SpatialInputRWS, \
+    SpatialDatasetRWS, SpatialAttributesRWS
 from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
@@ -36,52 +38,66 @@ class SpatialCondorJobMWV(MapWorkflowView):
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.
         """
-        # TODO: RENDER DATA ON MAP FOR REVIEW
+        # Get Map View and Layer Groups
+        map_view = context['map_view']
+        layer_groups = context['layer_groups']
 
-        # SHOW SPATIAL DATASETS/ATTRIBUTES as READONLY POPUPS
-        # SHOW SPATIAL INPUT FEATURES
-        # EACH STEP ON IT'S OWN LAYER
+        # Turn off feature selection on current layers
+        self.set_feature_selection(map_view=map_view, enabled=False)
 
-        # # Get Map View
-        # map_view = context['map_view']
-        #
-        # # Turn off feature selection
-        # self.set_feature_selection(map_view=map_view, enabled=False)
-        #
-        # # Add layer for current geometry
-        # enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
-        # if current_step.options['allow_drawing']:
-        #     for elem in current_step.options['shapes']:
-        #         if elem == 'points':
-        #             enabled_controls.append('Point')
-        #         elif elem == 'lines':
-        #             enabled_controls.append('LineString')
-        #         elif elem == 'polygons':
-        #             enabled_controls.append('Polygon')
-        #         elif elem == 'extents':
-        #             enabled_controls.append('Box')
-        #         else:
-        #             raise ValueError('Invalid shapes defined: {}.'.format(elem))
-        #
-        # # Load the currently saved geometry, if any.
-        # current_geometry = current_step.get_parameter('geometry')
-        #
-        # # Configure drawing
-        # draw_options = MVDraw(
-        #     controls=enabled_controls,
-        #     initial='Pan',
-        #     initial_features=current_geometry,
-        #     output_format='GeoJSON',
-        #     snapping_enabled=current_step.options['snapping_enabled'],
-        #     snapping_layer=current_step.options['snapping_layer'],
-        #     snapping_options=current_step.options['snapping_options']
-        # )
-        #
-        # if draw_options is not None and 'map_view' in context:
-        #     map_view.draw = draw_options
-        #
-        # # Save changes to map view
-        # context.update({'map_view': map_view})
+        # Process each previous step
+        previous_steps = current_step.workflow.get_previous_steps(current_step)
+
+        workflow_layers = []
+
+        for step in previous_steps:
+            if isinstance(step, SpatialInputRWS):
+                # TODO: Add layer and layer group to map
+                geometry = step.get_parameter('geometry')
+                if not geometry:
+                    log.warning('Parameter "geometry" for SpatialInputRWS with name "{}" was '
+                                'not defined.'.format(step.name))
+                    continue
+
+                workflow_layer = MVLayer(
+                    source='GeoJSON',
+                    options=geometry,
+                    legend_title=step.name,
+                    data={
+                        'layer_name': str(step.id),
+                        'layer_variable': 'spatial_input_rws'
+                    },
+                    layer_options={'visible': True},
+                    feature_selection=True
+                )
+
+                workflow_layers.append(workflow_layer)
+                map_view.layers.append(workflow_layer)
+
+            elif isinstance(step, SpatialAttributesRWS):
+                # TODO: Figure out out to map datasets attributes to the layers...
+                pass
+
+            elif isinstance(step, SpatialDatasetRWS):
+                # TODO: Figure out out to map datasets attributes to the layers...
+                pass
+
+        # Build the Layer Group for Workflow Layers
+        workflow_layer_group = {
+            'id': 'workflow_layers',
+            'display_name': 'Workflow Layers',
+            'control': 'checkbox',
+            'layers': workflow_layers,
+            'visible': True
+        }
+
+        layer_groups.append(workflow_layer_group)
+
+        # Save changes to map view and layer groups
+        context.update({
+            'map_view': map_view,
+            'layer_groups': layer_groups
+        })
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
@@ -188,3 +204,10 @@ class SpatialCondorJobMWV(MapWorkflowView):
             parameters.update({previous_step.name: previous_step.to_dict()})
 
         return json.dumps(parameters)
+
+    def create_layer_from_geometry(self, geometry):
+        """
+
+        :param geometry:
+        :return:
+        """

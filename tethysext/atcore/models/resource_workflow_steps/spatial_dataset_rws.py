@@ -7,10 +7,10 @@
 ********************************************************************************
 """
 import pandas as pd
-from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
-class SpatialDatasetRWS(SpatialInputRWS):
+class SpatialDatasetRWS(ResourceWorkflowStep):
     """
     Workflow step used for setting dataset attributes on features.
 
