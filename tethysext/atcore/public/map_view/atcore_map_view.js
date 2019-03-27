@@ -29,7 +29,9 @@ var ATCORE_MAP_VIEW = (function() {
  	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
  	    m_workspace,                    // Workspace from SpatialManager
- 	    m_extent;                       // Home extent for map
+ 	    m_extent,                       // Home extent for map
+ 	    m_enable_properties_popup,      // Show properties pop-up
+ 	    m_select_interaction;           // TethysMap select interaction for vector layers
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
@@ -72,7 +74,8 @@ var ATCORE_MAP_VIEW = (function() {
         generate_properties_table;
 
  	// Feature selection
- 	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler;
+ 	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler,
+ 	    on_select_vector_features, on_select_wms_features;
 
  	// Action modal
  	var init_action_modal, build_action_modal, show_action_modal, hide_action_modal;
@@ -89,12 +92,13 @@ var ATCORE_MAP_VIEW = (function() {
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
  	*************************************************************************/
-    // Conifg
+    // Config
     parse_attributes = function() {
         var $map_attributes = $('#atcore-map-attributes');
         m_layer_groups = $map_attributes.data('layer-groups');
         m_extent = $map_attributes.data('map-extent');
         m_workspace = $map_attributes.data('workspace');
+        m_enable_properties_popup = $map_attributes.data('enable-properties-popup');
     };
 
     parse_permissions = function() {
@@ -153,14 +157,31 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     get_layer_name_from_feature = function(feature) {
-        let feature_id = feature.getId();
-        let layer_name = m_workspace + ':' + feature_id.split('.')[0];
+        // Get layer_name from property of the feature
+        let layer_name = feature.get('layer_name');
+
+        // Attempt to derive layer name from ID assigned by GeoServer to be able to map to features to layers in map (<layer_name>.<fid>)
+        // e.g.: 0958cc07-c194-4af9-81c5-118a77d335ac_stream_links.fid--72787a80_169a16811e6_-7aa6
+        if (!layer_name) {
+            let feature_id = feature.getId();
+            layer_name = m_workspace + ':' + feature_id.split('.')[0];
+        }
+
         return layer_name;
     };
 
     get_feature_id_from_feature = function(feature) {
         let feature_id = feature.getId();
-        let fid = feature_id.split('.')[1];
+        let fid = '-1';
+
+        if (feature_id) {
+            // Derive fid from ID assigned by GeoServer (<layer_name>.<fid>)
+            // e.g.: 0958cc07-c194-4af9-81c5-118a77d335ac_stream_links.fid--72787a80_169a16811e6_-7aa6
+            fid = feature_id.split('.')[1];
+        } else {
+            fid = feature.get('id');
+        }
+
         return fid;
     };
 
@@ -738,6 +759,15 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Unset Display None
         m_$props_popup_container.css('display', 'block');
+
+        // Bind wms select method
+        TETHYS_MAP_VIEW.onSelectionChange(on_select_wms_features);
+
+        // Bind vector select methods
+        let select_interaction = TETHYS_MAP_VIEW.getSelectInteraction();
+        if (select_interaction){
+            select_interaction.on('select', on_select_vector_features);
+        }
     };
 
     show_properties_pop_up = function(coordinates) {
@@ -763,46 +793,67 @@ var ATCORE_MAP_VIEW = (function() {
         m_$props_popup_content.append(content);
     };
 
-    display_properties = function(points_layer, lines_layer, polygons_layer) {
-        let center_points = [],
-            layers = [points_layer, lines_layer, polygons_layer];
+    on_select_vector_features = function(event) {
+        let selected = event.selected;
+        if (selected.length > 0) {
+            display_properties(selected);
+        }
+    };
 
-        // TODO: Add hook  to allow apps to customize properties table.
+    on_select_wms_features = function(points_layer, lines_layer, polygons_layer) {
+        let layers = [points_layer, lines_layer, polygons_layer];
+        display_properties(layers);
+    };
+
+    display_properties = function(layers_or_features) {
+        let center_points = [];
+
+        // TODO: Add hook to allow apps to customize properties table.
 
         // Clear popup
         reset_ui(false);
 
-        for (var i = 0; i < layers.length; i++) {
-            let layer = layers[i];
+        for (var i = 0; i < layers_or_features.length; i++) {
+            let layer_or_features = layers_or_features[i],
+                features = [];
 
-            if (layer && layer.getSource() && layer.getSource().getFeatures().length) {
-                let source = layer.getSource();
-                let features = source.getFeatures();
+            if (layer_or_features && layer_or_features instanceof ol.Feature) {
+                features = [layer_or_features];
                 center_points.push(compute_center(features));
+            }
+            else if (layer_or_features && layer_or_features.getSource()
+                && layer_or_features.getSource().getFeatures().length) {
 
-                // Generate one table of properties for each node
-                for (var j = 0; j < features.length; j++) {
-                    let feature = features[j];
+                let source = layer_or_features.getSource();
+                features = source.getFeatures();
+                center_points.push(compute_center(features));
+            }
+            else {
+                continue;
+            }
 
-                    // Generate Title
-                    let title_markup = generate_properties_table_title(feature);
-                    append_properties_pop_up_content(title_markup);
+            // Generate one table of properties for each node
+            for (var j = 0; j < features.length; j++) {
+                let feature = features[j];
 
-                    // Generate properties table
-                    let properties_table = generate_properties_table(feature);
-                    append_properties_pop_up_content(properties_table);
+                // Generate Title
+                let title_markup = generate_properties_table_title(feature);
+                append_properties_pop_up_content(title_markup);
 
-                    // Generate plot button
-                    let plot_button = generate_plot_button(feature);
-                    append_properties_pop_up_content(plot_button);
-                    bind_plot_buttons();
+                // Generate properties table
+                let properties_table = generate_properties_table(feature);
+                append_properties_pop_up_content(properties_table);
 
-                    // Generate plot button
-                    let action_button = generate_action_button(feature);
-                    append_properties_pop_up_content(action_button);
-                    bind_action_buttons();
-                    // TODO: Add hook  to allow apps to customize properties table.
-                }
+                // Generate plot button
+                let plot_button = generate_plot_button(feature);
+                append_properties_pop_up_content(plot_button);
+                bind_plot_buttons();
+
+                // Generate plot button
+                let action_button = generate_action_button(feature);
+                append_properties_pop_up_content(action_button);
+                bind_action_buttons();
+                // TODO: Add hook to allow apps to customize properties table.
             }
         }
 
@@ -814,7 +865,7 @@ var ATCORE_MAP_VIEW = (function() {
             show_properties_pop_up(popup_location);
         }
 
-        // TODO: Add hook  to allow apps to customize properties table.
+        // TODO: Add hook to allow apps to customize properties table.
     };
 
     reset_ui = function(clear_selection=true) {
@@ -882,11 +933,13 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Feature Selection
     init_feature_selection = function() {
-        init_properties_pop_up();
         TETHYS_MAP_VIEW.overrideSelectionStyler('points', points_selection_styler);
         TETHYS_MAP_VIEW.overrideSelectionStyler('lines', lines_selection_styler);
         TETHYS_MAP_VIEW.overrideSelectionStyler('polygons', polygons_selection_styler);
-        TETHYS_MAP_VIEW.onSelectionChange(display_properties);
+
+        if (m_enable_properties_popup) {
+            init_properties_pop_up();
+        }
     };
 
     points_selection_styler = function(feature, resolution) {
@@ -1142,7 +1195,6 @@ var ATCORE_MAP_VIEW = (function() {
 	    },
 
         get_layer_name_from_feature: get_layer_name_from_feature,
-
         get_feature_id_from_feature: get_feature_id_from_feature,
 	};
 

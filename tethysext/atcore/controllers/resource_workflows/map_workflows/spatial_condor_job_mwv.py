@@ -55,17 +55,23 @@ class SpatialCondorJobMWV(MapWorkflowView):
                 # TODO: Add layer and layer group to map
                 geometry = step.get_parameter('geometry')
                 if not geometry:
-                    log.warning('Parameter "geometry" for SpatialInputRWS with name "{}" was '
-                                'not defined.'.format(step.name))
+                    log.warning('Parameter "geometry" for {} with name "{}" was '
+                                'not defined.'.format(type(step), step.name))
                     continue
+
+                # Assign layer name as property of features
+                layer_name = str(step.id)  #: TODO: What should these layers be named?
+                for feature in geometry['features']:
+                    feature['properties']['layer_name'] = layer_name
 
                 workflow_layer = MVLayer(
                     source='GeoJSON',
                     options=geometry,
-                    legend_title=step.name,
+                    legend_title=step.name,  #: TODO: How to get legend title (would make more sense as Detention Basins instead of Create Detention Basins).  # noqa: E501
                     data={
-                        'layer_name': str(step.id),
-                        'layer_variable': 'spatial_input_rws'
+                        'layer_name': layer_name,
+                        'layer_variable': 'spatial_input_rws',  #: TODO: What should the variable name be?
+                        'exclude_properties': [],  # TODO: Implement an approach for excluding properties
                     },
                     layer_options={'visible': True},
                     feature_selection=True
@@ -76,22 +82,24 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
             elif isinstance(step, SpatialAttributesRWS):
                 # TODO: Figure out out to map datasets attributes to the layers...
+                # TODO: Implement support for complex data types like the Hydrographs
                 pass
 
             elif isinstance(step, SpatialDatasetRWS):
                 # TODO: Figure out out to map datasets attributes to the layers...
+                # TODO: Implement support for complex data types like the Hydrographs
                 pass
 
         # Build the Layer Group for Workflow Layers
         workflow_layer_group = {
-            'id': 'workflow_layers',
-            'display_name': 'Workflow Layers',
+            'id': 'workflow_datasets',
+            'display_name': 'Workflow Datasets',
             'control': 'checkbox',
             'layers': workflow_layers,
             'visible': True
         }
 
-        layer_groups.append(workflow_layer_group)
+        layer_groups.insert(0, workflow_layer_group)
 
         # Save changes to map view and layer groups
         context.update({

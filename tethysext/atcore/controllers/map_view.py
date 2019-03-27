@@ -29,9 +29,10 @@ class MapView(AppUsersResourceController):
 
     default_disable_basemap = False
     geoserver_name = ''
-    geocode_api_key = '449ce48a52689190cb913b284efea8e9'
+    geocode_api_key = '449ce48a52689190cb913b284efea8e9'  # TODO: Set as controller arg
     geocode_endpoint = 'http://api.opencagedata.com/geocode/v1/geojson'
     mutiselect = False
+    properties_popup_enabled = True
 
     _MapManager = None
     _ModelDatabase = ModelDatabase
@@ -105,6 +106,7 @@ class MapView(AppUsersResourceController):
             'map_extent': model_extent,
             'layer_groups': layer_groups,
             'is_in_debug': settings.DEBUG,
+            'enable_properties_popup': self.properties_popup_enabled,
             'map_subtitle': self.map_subtitle,
             'workspace': self._SpatialManager.WORKSPACE,
             'back_url': self.back_url
