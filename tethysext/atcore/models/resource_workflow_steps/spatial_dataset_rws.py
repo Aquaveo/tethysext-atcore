@@ -7,10 +7,10 @@
 ********************************************************************************
 """
 import pandas as pd
-from tethysext.atcore.models.app_users import ResourceWorkflowStep
+from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
 
 
-class SpatialDatasetRWS(ResourceWorkflowStep):
+class SpatialDatasetRWS(SpatialResourceWorkflowStep):
     """
     Workflow step used for setting dataset attributes on features.
 
@@ -23,6 +23,7 @@ class SpatialDatasetRWS(ResourceWorkflowStep):
         max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
         empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
     """  # noqa: #501
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialDatasetMWV'
     TYPE = 'spatial_dataset_workflow_step'
 
     __mapper_args__ = {
@@ -34,23 +35,6 @@ class SpatialDatasetRWS(ResourceWorkflowStep):
     DEFAULT_MAX_ROWS = 1000
     DEFAULT_COLUMNS = ['X', 'Y']
     DEFAULT_DATASET = pd.DataFrame(columns=DEFAULT_COLUMNS)
-
-    def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
-        """
-        Constructor.
-
-        Args:
-            geoserver_name(str): Name of geoserver setting to use.
-            map_manager(MapManager): Instance of MapManager to use for the map view.
-            spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
-        """
-        super().__init__(
-            geoserver_name=geoserver_name,
-            map_manager=map_manager,
-            spatial_manager=spatial_manager,
-            *args, **kwargs
-        )
-        self.controller_path = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialDatasetMWV'
 
     @property
     def default_options(self):

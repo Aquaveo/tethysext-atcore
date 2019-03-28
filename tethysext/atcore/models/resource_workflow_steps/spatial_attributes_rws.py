@@ -6,10 +6,10 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from tethysext.atcore.models.app_users import ResourceWorkflowStep
+from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
 
 
-class SpatialAttributesRWS(ResourceWorkflowStep):
+class SpatialAttributesRWS(SpatialResourceWorkflowStep):
     """
     Workflow step used for setting simple valued attributes on features.
 
@@ -17,28 +17,12 @@ class SpatialAttributesRWS(ResourceWorkflowStep):
         geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
         attributes(dict): Dictionary of param instances defining the attributes to be defined for each feature.
     """  # noqa: #501
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialAttributesMWV'
     TYPE = 'spatial_attributes_workflow_step'
 
     __mapper_args__ = {
         'polymorphic_identity': TYPE
     }
-
-    def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
-        """
-        Constructor.
-
-        Args:
-            geoserver_name(str): Name of geoserver setting to use.
-            map_manager(MapManager): Instance of MapManager to use for the map view.
-            spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
-        """
-        super().__init__(
-            geoserver_name=geoserver_name,
-            map_manager=map_manager,
-            spatial_manager=spatial_manager,
-            *args, **kwargs
-        )
-        self.controller_path = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialAttributesMWV'
 
     @property
     def default_options(self):

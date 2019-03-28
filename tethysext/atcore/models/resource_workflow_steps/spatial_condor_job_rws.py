@@ -6,10 +6,10 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-from tethysext.atcore.models.app_users import ResourceWorkflowStep
+from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
 
 
-class SpatialCondorJobRWS(ResourceWorkflowStep):
+class SpatialCondorJobRWS(SpatialResourceWorkflowStep):
     """
     Workflow step used for reviewing previous step parameters and submitting processing jobs to Condor.
 
@@ -17,29 +17,12 @@ class SpatialCondorJobRWS(ResourceWorkflowStep):
         scheduler(str): Name of the Condor scheduler to use.
         jobs(list<dict>): A list of dictionaries, each containing the kwargs for a CondorWorkflowJobNode.
     """  # noqa: #501
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialCondorJobMWV'
     TYPE = 'spatial_condor_job_workflow_step'
 
     __mapper_args__ = {
         'polymorphic_identity': TYPE
     }
-
-    def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
-        """
-        Constructor.
-
-        Args:
-            geoserver_name(str): Name of geoserver setting to use.
-            map_manager(MapManager): Instance of MapManager to use for the map view.
-            spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
-        """
-        self.controller_path = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialCondorJobMWV'
-        self.controller_kwargs = {
-            'geoserver_name': geoserver_name,
-            '_MapManager': map_manager,
-            '_SpatialManager': spatial_manager
-        }
-
-        super().__init__(*args, **kwargs)
 
     @property
     def default_options(self):

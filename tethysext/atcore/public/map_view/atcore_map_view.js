@@ -883,7 +883,18 @@ var ATCORE_MAP_VIEW = (function() {
 
     generate_properties_table_title = function(feature) {
         let layer_name = get_layer_name_from_feature(feature);
-        let title = m_layers[layer_name].tethys_legend_title;
+        let layer = m_layers[layer_name];
+        let title = '';
+
+        // Get custom title from layer data properties
+        if (layer.hasOwnProperty('tethys_data') && layer.tethys_data.hasOwnProperty('popup_title')) {
+            title = layer.tethys_data.popup_title;
+        }
+        // Or use the legend title as a fallback
+        else {
+            title = layer.tethys_legend_title;
+        }
+
         let title_markup = '<h6 class="properites-title">' + title + '</h6>';
         return title_markup;
     };
@@ -893,25 +904,32 @@ var ATCORE_MAP_VIEW = (function() {
         let geometry = feature.getGeometry();
         let geometry_type = geometry.getType().toLowerCase();
         let feature_class = (('type' in properties) ? properties['type'] : geometry_type);
+        let layer_name = get_layer_name_from_feature(feature);
+        let layer_data = m_layers[layer_name].tethys_data;
+        let excluded_properties = ['geometry', 'the_geom'];
+
+        // Get custom excluded properties
+        if (layer_data.hasOwnProperty('excluded_properties')) {
+            excluded_properties = excluded_properties.concat(layer_data.excluded_properties);
+        }
 
         // Templates
         let kv_row_template = '<tr><td>{{KEY}}</td><td>{{VALUE}}&nbsp;<span id="{{ELEMENT_CLASS}}-{{PROPERTY}}-units"></span></td></tr>';
-        kv_row_template = kv_row_template
-            .replace('{{ELEMENT_CLASS}}', feature_class);
+        kv_row_template = kv_row_template.replace('{{ELEMENT_CLASS}}', feature_class);
         let table_template = '<table class="table table-condensed table-striped {{CLASS}}">{{ROWS}}</table>';
 
         // Initial rows
         let rows = '';
 
         // Append the type of feature
-        rows += kv_row_template
-                .replace('{{KEY}}', 'Type')
-                .replace('{{VALUE}}', geometry.getType())
-                .replace('{{PROPERTY}}', 'type');
+        if (!excluded_properties.includes('type')) {
+            rows += kv_row_template
+                    .replace('{{KEY}}', 'Type')
+                    .replace('{{VALUE}}', geometry.getType())
+                    .replace('{{PROPERTY}}', 'type');
+        }
 
-        // Assemble other rows
-        let excluded_properties = ['geometry', 'the_geom'];
-
+        // Build property rows
         for(var property in properties) {
             // Skip excluded properties
             if (in_array(property, excluded_properties)) {
@@ -926,9 +944,14 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         // Compose table
-        table_template = table_template.replace('{{CLASS}}', feature_class);
-        table_template = table_template.replace('{{ROWS}}', rows);
-        return table_template;
+        if (rows.length) {
+            table_template = table_template.replace('{{CLASS}}', feature_class);
+            table_template = table_template.replace('{{ROWS}}', rows);
+            return table_template;
+        }
+        else {
+            return '';
+        }
     };
 
     // Feature Selection

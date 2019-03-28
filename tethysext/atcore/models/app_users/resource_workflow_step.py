@@ -35,7 +35,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     5. STATUS_COMPLETE = Step has been completed successfully.
     """
     __tablename__ = 'app_users_resource_workflow_steps'
-
+    CONTROLLER = ''
     TYPE = 'generic_workflow_step'
     ATTR_STATUS_MESSAGE = 'status_message'
     OPT_PARENT_STEP = 'parent'
@@ -80,6 +80,8 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
             self.options = kwargs['options']
         else:
             self._options = self.default_options
+
+        self.controller_path = self.CONTROLLER
 
     def __str__(self):
         return '<{} id="{}" name="{}">'.format(self.__class__.__name__, self.id, self.name)
@@ -134,7 +136,6 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         d.update({'parameters': parameters})
         return d
 
-    @abstractmethod
     def to_json(self):
         """
         Serialize ResourceWorkflowStep, including parameters, to json.

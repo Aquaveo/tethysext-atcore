@@ -52,33 +52,20 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
         for step in previous_steps:
             if isinstance(step, SpatialInputRWS):
-                # TODO: Add layer and layer group to map
                 geometry = step.get_parameter('geometry')
                 if not geometry:
                     log.warning('Parameter "geometry" for {} with name "{}" was '
                                 'not defined.'.format(type(step), step.name))
                     continue
 
-                # Assign layer name as property of features
-                layer_name = str(step.id)  #: TODO: What should these layers be named?
-                for feature in geometry['features']:
-                    feature['properties']['layer_name'] = layer_name
+                # Build the Layer
+                workflow_layer = self._build_mv_layer(step, geometry)
 
-                workflow_layer = MVLayer(
-                    source='GeoJSON',
-                    options=geometry,
-                    legend_title=step.name,  #: TODO: How to get legend title (would make more sense as Detention Basins instead of Create Detention Basins).  # noqa: E501
-                    data={
-                        'layer_name': layer_name,
-                        'layer_variable': 'spatial_input_rws',  #: TODO: What should the variable name be?
-                        'exclude_properties': [],  # TODO: Implement an approach for excluding properties
-                    },
-                    layer_options={'visible': True},
-                    feature_selection=True
-                )
-
+                # Save for building layer group later
                 workflow_layers.append(workflow_layer)
-                map_view.layers.append(workflow_layer)
+
+                # Add layer to beginning the map's of layer list
+                map_view.layers.insert(0, workflow_layer)
 
             elif isinstance(step, SpatialAttributesRWS):
                 # TODO: Figure out out to map datasets attributes to the layers...
@@ -106,6 +93,42 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'map_view': map_view,
             'layer_groups': layer_groups
         })
+
+    @staticmethod
+    def _build_mv_layer(step, geometry):
+        """
+        Build an MVLayer object given a step and a GeoJSON formatted geometry.
+
+        Args:
+            step(SpatialResourceWorkflowStep): The step the geometry is associated with.
+            geometry(dict): GeoJSON Python equivalent.
+
+        Returns:
+            MVLayer: the layer object.
+        """
+        # Derive names from step options
+        plural_name = step.options.get('plural_name')
+        plural_codename = plural_name.lower().replace(' ', '_')
+        singular_name = step.options.get('singular_name')
+        layer_name = '{}_{}'.format(step.id, plural_codename)
+
+        # Bind geometry features to layer via layer name
+        for feature in geometry['features']:
+            feature['properties']['layer_name'] = layer_name
+        workflow_layer = MVLayer(
+            source='GeoJSON',
+            options=geometry,
+            legend_title=plural_name,
+            data={
+                'layer_name': layer_name,
+                'layer_variable': '{}-{}'.format(step.TYPE, plural_codename),
+                'popup_title': singular_name,
+                'excluded_properties': ['id', 'type', 'layer_name'],
+            },
+            layer_options={'visible': True},
+            feature_selection=True
+        )
+        return workflow_layer
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
