@@ -7,6 +7,7 @@ stages:
 
 variables:
   TETHYS_CORE_TAG: 'v3.0.0b-r4'
+  CONDA_HOME: '/opt/conda'
 
 lint:
   image: python:3.6
@@ -38,19 +39,19 @@ tests:
     - sleep 60s
     - docker logs tethys_atcore
     - echo "Settings"
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /usr/lib/tethys/src/tethys_portal && cat settings.py"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/tethys_portal && cat settings.py"
     # Clean coverage data
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     # Unit Tests
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Intermediate Tests
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /usr/lib/tethys/src/ && coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/ && coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     # Coverage Report
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
-    - docker exec tethys_atcore /bin/bash -c ". /usr/lib/tethys/miniconda/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
