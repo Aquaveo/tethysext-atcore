@@ -6,7 +6,6 @@ FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v3.0.0b-r4
 #####################
 ENV TETHYSAPP_DIR /var/www/tethys/apps
 ENV TETHYSEXT_DIR /var/www/tethys/exts
-ENV CONDA_HOME /usr/lib/tethys/miniconda
 
 #########
 # SETUP #
