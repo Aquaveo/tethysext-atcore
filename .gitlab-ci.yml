@@ -6,7 +6,7 @@ stages:
   - test_image
 
 variables:
-  TETHYS_CORE_TAG: 'v3.0.0b-r3'
+  TETHYS_CORE_TAG: 'v3.0.0b-r4'
 
 lint:
   image: python:3.6
