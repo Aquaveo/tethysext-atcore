@@ -71,7 +71,7 @@ var ATCORE_MAP_VIEW = (function() {
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
         reset_properties_pop_up, append_properties_pop_up_content, reset_ui, generate_properties_table_title,
-        generate_properties_table;
+        generate_properties_table, generate_dataset_row;
 
  	// Feature selection
  	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler,
@@ -907,6 +907,7 @@ var ATCORE_MAP_VIEW = (function() {
         let layer_name = get_layer_name_from_feature(feature);
         let layer_data = m_layers[layer_name].tethys_data;
         let excluded_properties = ['geometry', 'the_geom'];
+        let extra_table_content = '';
 
         // Get custom excluded properties
         if (layer_data.hasOwnProperty('excluded_properties')) {
@@ -936,11 +937,25 @@ var ATCORE_MAP_VIEW = (function() {
                 continue;
             }
 
-            // Build row
-            rows += kv_row_template
-                .replace('{{KEY}}', var_to_title_case(property))
-                .replace('{{VALUE}}', properties[property])
-                .replace('{{PROPERTY}}', property);
+            let value = properties[property];
+
+            // If value is an object, build row with appropriate method
+            if (value instanceof Object) {
+                if (value.hasOwnProperty('type') && value.hasOwnProperty('value') && value.type == 'dataset') {
+                    rows += generate_dataset_row(property, value.value);
+                } else {
+                    console.log('WARNING: Unable to load property row - ' + var_to_title_case(property) + ': ' + value);
+                }
+
+            // Otherwise, build simple valued row
+            } else {
+                // Build row
+                rows += kv_row_template
+                    .replace('{{KEY}}', var_to_title_case(property))
+                    .replace('{{VALUE}}', value)
+                    .replace('{{PROPERTY}}', property);
+            }
+
         }
 
         // Compose table
@@ -952,6 +967,55 @@ var ATCORE_MAP_VIEW = (function() {
         else {
             return '';
         }
+    };
+
+    generate_dataset_row = function(property, dataset) {
+        let dataset_row_template = '<tr><td colspan="2">{{VALUE}}</td></tr>';
+        let row = '';
+        let dataset_table = '<table class="table">';
+        let dataset_table_row_template = '<tr>{{COLUMNS}}</tr>';
+
+        // Get dataset metadata
+        let columns = dataset.meta.columns;
+        let length = dataset.meta.length;
+
+        // Add dataset title
+        row += dataset_row_template.replace('{{VALUE}}', var_to_title_case(property));
+
+        // Add column header row
+        let header_columns = '';
+        let dataset_table_header_template = '<th>{{VALUE}}</th>';
+
+        $.each(columns, function(index, col) {
+            header_columns += dataset_table_header_template.replace('{{VALUE}}', col);
+        });
+
+        dataset_table += dataset_table_row_template.replace('{{COLUMNS}}', header_columns);
+
+        // Add value rows
+        let value_rows = '';
+        let dataset_table_column_template = '<td>{{VALUE}}</td>';
+
+        for (var i = 0; i < length; i++) {
+            let row_columns = '';
+
+            $.each(columns, function(index, col) {
+                let val = dataset[col][i];
+                row_columns += dataset_table_column_template.replace('{{VALUE}}', val);
+            });
+
+            value_rows +=  dataset_table_row_template.replace('{{COLUMNS}}', row_columns);
+        }
+
+        dataset_table += value_rows;
+
+        // Close out dataset table
+        dataset_table += '</table>';
+        // Add row containing the dataset table
+        row += dataset_row_template.replace('{{VALUE}}', dataset_table);
+
+
+        return row;
     };
 
     // Feature Selection

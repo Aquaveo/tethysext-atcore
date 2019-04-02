@@ -84,7 +84,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         self.controller_path = self.CONTROLLER
 
     def __str__(self):
-        return '<{} id="{}" name="{}">'.format(self.__class__.__name__, self.id, self.name)
+        return '<{} name="{}" id="{}" >'.format(self.__class__.__name__, self.name, self.id)
 
     @property
     def default_options(self):

@@ -9,10 +9,10 @@
 import os
 import json
 import logging
-from tethys_sdk.gizmos import MVLayer, MapView
+from tethys_sdk.gizmos import MVLayer
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS, SpatialInputRWS, \
-    SpatialDatasetRWS, SpatialAttributesRWS
+    SpatialResourceWorkflowStep
 from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
@@ -49,38 +49,48 @@ class SpatialCondorJobMWV(MapWorkflowView):
         previous_steps = current_step.workflow.get_previous_steps(current_step)
 
         workflow_layers = []
+        steps_to_skip = set()
+        mappable_step_types = (SpatialInputRWS,)
 
         for step in previous_steps:
-            if isinstance(step, SpatialInputRWS):
-                geometry = step.get_parameter('geometry')
-                if not geometry:
-                    log.warning('Parameter "geometry" for {} with name "{}" was '
-                                'not defined.'.format(type(step), step.name))
+            # Skip these steps
+            if step in steps_to_skip or not isinstance(step, mappable_step_types):
+                continue
+
+            # If step has a child, get geojson from the child,
+            # which will include the properties added by the child
+            if step.child is not None:
+                # Child step must be a SpatialResourceWorkflowStep
+                if not isinstance(step.child, SpatialResourceWorkflowStep):
                     continue
 
-                # Build the Layer
-                workflow_layer = self._build_mv_layer(step, geometry)
+                # Child geojson should include properties it adds to the features
+                geometry = step.child.to_geojson()
 
-                # Save for building layer group later
-                workflow_layers.append(workflow_layer)
+                # Skip child step in the future to avoid adding it twice
+                steps_to_skip.add(step.child)
 
-                # Add layer to beginning the map's of layer list
-                map_view.layers.insert(0, workflow_layer)
+            # Otherwise, get the geojson from this step directly
+            else:
+                geometry = step.to_geojson()
 
-            elif isinstance(step, SpatialAttributesRWS):
-                # TODO: Figure out out to map datasets attributes to the layers...
-                # TODO: Implement support for complex data types like the Hydrographs
-                pass
+            if not geometry:
+                log.warning('Parameter "geometry" for {} was not defined.'.format(step))
+                continue
 
-            elif isinstance(step, SpatialDatasetRWS):
-                # TODO: Figure out out to map datasets attributes to the layers...
-                # TODO: Implement support for complex data types like the Hydrographs
-                pass
+            # Build the Layer
+            workflow_layer = self._build_mv_layer(step, geometry)
+
+            # Save for building layer group later
+            workflow_layers.append(workflow_layer)
+
+            # Add layer to beginning the map's of layer list
+            map_view.layers.insert(0, workflow_layer)
 
         # Build the Layer Group for Workflow Layers
         workflow_layer_group = {
             'id': 'workflow_datasets',
-            'display_name': 'Workflow Datasets',
+            'display_name': '{} Datasets'.format(current_step.workflow.DISPLAY_TYPE_SINGULAR),
             'control': 'checkbox',
             'layers': workflow_layers,
             'visible': True
@@ -115,6 +125,73 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Bind geometry features to layer via layer name
         for feature in geometry['features']:
             feature['properties']['layer_name'] = layer_name
+
+        image = {'ol.style.CircleStyle': {
+            'radius': 5,
+            'fill': None,
+            'stroke': {'ol.style.Stroke': {
+                'color': 'red',
+                'width': 1
+            }}
+        }}
+
+        styles_map = {
+            'Point': {'ol.style.Style': {
+                'image': image
+            }},
+            'LineString': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': 'green',
+                    'width': 1
+                }}
+            }},
+            'MultiLineString': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': 'green',
+                    'width': 1
+                }}
+            }},
+            'MultiPoint': {'ol.style.Style': {
+                'image': image
+            }},
+            'MultiPolygon': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': 'yellow',
+                    'width': 1
+                }},
+                'fill': {'ol.style.Fill': {
+                    'color': 'rgba(255, 255, 0, 0.1)'
+                }}
+            }},
+            'Polygon': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': 'blue',
+                    'lineDash': [4],
+                    'width': 1
+                }},
+                'fill': {'ol.style.Fill': {
+                    'color': 'rgba(0, 0, 255, 0.1)'
+                }}
+            }},
+            'GeometryCollection': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': 'magenta',
+                    'width': 2
+                }},
+                'fill': {
+                    'color': 'magenta'
+                },
+                'image': {'ol.style.CircleStyle': {
+                    'radius': 10,
+                    'fill': None,
+                    'stroke': {'ol.style.Stroke': {
+                        'color': 'magenta'
+                    }}
+                }}
+            }},
+        }
+
+        # Define the workflow MVLayer
         workflow_layer = MVLayer(
             source='GeoJSON',
             options=geometry,
@@ -125,7 +202,10 @@ class SpatialCondorJobMWV(MapWorkflowView):
                 'popup_title': singular_name,
                 'excluded_properties': ['id', 'type', 'layer_name'],
             },
-            layer_options={'visible': True},
+            layer_options={
+                'visible': True,
+                'style_map': styles_map
+            },
             feature_selection=True
         )
         return workflow_layer

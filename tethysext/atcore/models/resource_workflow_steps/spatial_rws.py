@@ -4,8 +4,9 @@
 * Author: nswain
 * Created On: March 28, 2019
 * Copyright: (c) Aquaveo 2019
-******
+********************************************************************************
 """
+import json
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
@@ -34,3 +35,20 @@ class SpatialResourceWorkflowStep(ResourceWorkflowStep):
             '_MapManager': map_manager,
             '_SpatialManager': spatial_manager
         }
+
+    def to_geojson(self, as_str=False):
+        """
+        Serialize SpatialResourceWorkflowStep to GeoJSON.
+
+        Args:
+            as_str(bool): Returns GeoJSON string if True, otherwise returns dict equivalent.
+
+        Returns:
+            str or dict: GeoJSON string or dict equivalent representation of the spatial portions of a SpatialResourceWorkflowStep.
+        """  # noqa: E501
+        geojson_dict = self.get_parameter('geometry')
+
+        if as_str:
+            return json.dumps(geojson_dict)
+
+        return geojson_dict

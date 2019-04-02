@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import json
 import pandas as pd
 from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
 
@@ -114,3 +115,48 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
         d['parameters']['datasets'] = datasets
 
         return d
+
+    def to_geojson(self, as_str=False):
+        """
+        Serialize SpatialResourceWorkflowStep to GeoJSON.
+
+        Args:
+            as_str(bool): Returns GeoJSON string if True, otherwise returns dict equivalent.
+
+        Returns:
+            str or dict: GeoJSON string or dict equivalent representation of the spatial portions of a SpatialResourceWorkflowStep.
+        """  # noqa: E501
+        # Get geometry from parent step
+        geojson_dict = self.resolve_option('geometry_source')
+
+        # Serialize dataset parameters and map as a property to each feature in the GeoJSON
+        serlialized_step = self.to_dict()
+        serialized_datasets = serlialized_step['parameters']['datasets']
+
+        for feature in geojson_dict['features']:
+            feature_id = str(feature['properties']['id'])
+            if feature_id in serialized_datasets:
+                feature['properties'].pop('dataset', None)
+                dataset_title = self.options.get('dataset_title', 'dataset')
+                dataset_codename = dataset_title.lower().replace(' ', '_')
+
+                # Add some metadata to the dataset object
+                dataset = serialized_datasets[feature_id]
+                columns = self.options.get('template_dataset').columns.to_list()
+                length = len(dataset[columns[0]])
+
+                dataset['meta'] = {
+                    'columns': columns,
+                    'length': length,
+                }
+
+                # Add dataset as property of geojson feature
+                feature['properties'][dataset_codename] = {
+                    'type': 'dataset',
+                    'value': dataset
+                }
+
+        if as_str:
+            return json.dumps(geojson_dict)
+
+        return geojson_dict
