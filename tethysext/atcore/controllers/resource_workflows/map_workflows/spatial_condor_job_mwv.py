@@ -126,67 +126,33 @@ class SpatialCondorJobMWV(MapWorkflowView):
         for feature in geometry['features']:
             feature['properties']['layer_name'] = layer_name
 
-        image = {'ol.style.CircleStyle': {
-            'radius': 5,
-            'fill': None,
-            'stroke': {'ol.style.Stroke': {
-                'color': 'red',
-                'width': 1
-            }}
-        }}
-
-        styles_map = {
+        # Define default styles for layers
+        color = 'gold'
+        style_map = {
             'Point': {'ol.style.Style': {
-                'image': image
+                'image': {'ol.style.Circle': {
+                    'radius': 5,
+                    'fill': {'ol.style.Fill': {
+                        'color': color,
+                    }},
+                    'stroke': {'ol.style.Stroke': {
+                        'color': color,
+                    }}
+                }}
             }},
             'LineString': {'ol.style.Style': {
                 'stroke': {'ol.style.Stroke': {
-                    'color': 'green',
-                    'width': 1
-                }}
-            }},
-            'MultiLineString': {'ol.style.Style': {
-                'stroke': {'ol.style.Stroke': {
-                    'color': 'green',
-                    'width': 1
-                }}
-            }},
-            'MultiPoint': {'ol.style.Style': {
-                'image': image
-            }},
-            'MultiPolygon': {'ol.style.Style': {
-                'stroke': {'ol.style.Stroke': {
-                    'color': 'yellow',
-                    'width': 1
-                }},
-                'fill': {'ol.style.Fill': {
-                    'color': 'rgba(255, 255, 0, 0.1)'
+                    'color': color,
+                    'width': 2
                 }}
             }},
             'Polygon': {'ol.style.Style': {
                 'stroke': {'ol.style.Stroke': {
-                    'color': 'blue',
-                    'lineDash': [4],
-                    'width': 1
-                }},
-                'fill': {'ol.style.Fill': {
-                    'color': 'rgba(0, 0, 255, 0.1)'
-                }}
-            }},
-            'GeometryCollection': {'ol.style.Style': {
-                'stroke': {'ol.style.Stroke': {
-                    'color': 'magenta',
+                    'color': color,
                     'width': 2
                 }},
-                'fill': {
-                    'color': 'magenta'
-                },
-                'image': {'ol.style.CircleStyle': {
-                    'radius': 10,
-                    'fill': None,
-                    'stroke': {'ol.style.Stroke': {
-                        'color': 'magenta'
-                    }}
+                'fill': {'ol.style.Fill': {
+                    'color': 'rgba(255, 215, 0, 0.1)'
                 }}
             }},
         }
@@ -204,7 +170,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             },
             layer_options={
                 'visible': True,
-                'style_map': styles_map
+                'style_map': style_map
             },
             feature_selection=True
         )
