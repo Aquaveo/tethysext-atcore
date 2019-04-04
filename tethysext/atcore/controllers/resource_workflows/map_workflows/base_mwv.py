@@ -178,13 +178,22 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
 
         # Create for previous, next, and current steps
         previous_url = None
-        next_url = None
         active_app = get_active_app(request)
         step_url_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
+        # Get Managers Hook
+        model_db, _ = self.get_managers(
+            request=request,
+            resource=resource,
+            *args, **kwargs
+        )
+
         if next_step:
             next_url = reverse(step_url_name, args=(resource.id, workflow.id, str(next_step.id)))
+        else:
+            # Return to back_url if there is no next step
+            next_url = back_url
 
         if previous_step:
             previous_url = reverse(step_url_name, args=(resource.id, workflow.id, str(previous_step.id)))
@@ -194,9 +203,10 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             request=request,
             session=session,
             step=step,
+            model_db=model_db,
             current_url=current_url,
-            next_url=next_url,
-            previous_url=previous_url
+            previous_url=previous_url,
+            next_url=next_url
         )
 
         return response
@@ -252,7 +262,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
         """
         return {}
 
-    def process_step_data(self, request, session, step, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
 
@@ -260,6 +270,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
+            model_db(ModelDatabase): The model database associated with the resource.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.

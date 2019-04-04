@@ -29,7 +29,9 @@ var ATCORE_MAP_VIEW = (function() {
  	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
  	    m_workspace,                    // Workspace from SpatialManager
- 	    m_extent;                       // Home extent for map
+ 	    m_extent,                       // Home extent for map
+ 	    m_enable_properties_popup,      // Show properties pop-up
+ 	    m_select_interaction;           // TethysMap select interaction for vector layers
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
@@ -69,10 +71,11 @@ var ATCORE_MAP_VIEW = (function() {
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
         reset_properties_pop_up, append_properties_pop_up_content, reset_ui, generate_properties_table_title,
-        generate_properties_table;
+        generate_properties_table, generate_dataset_row;
 
  	// Feature selection
- 	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler;
+ 	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler,
+ 	    on_select_vector_features, on_select_wms_features;
 
  	// Action modal
  	var init_action_modal, build_action_modal, show_action_modal, hide_action_modal;
@@ -89,12 +92,13 @@ var ATCORE_MAP_VIEW = (function() {
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
  	*************************************************************************/
-    // Conifg
+    // Config
     parse_attributes = function() {
         var $map_attributes = $('#atcore-map-attributes');
         m_layer_groups = $map_attributes.data('layer-groups');
         m_extent = $map_attributes.data('map-extent');
         m_workspace = $map_attributes.data('workspace');
+        m_enable_properties_popup = $map_attributes.data('enable-properties-popup');
     };
 
     parse_permissions = function() {
@@ -153,14 +157,31 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     get_layer_name_from_feature = function(feature) {
-        let feature_id = feature.getId();
-        let layer_name = m_workspace + ':' + feature_id.split('.')[0];
+        // Get layer_name from property of the feature
+        let layer_name = feature.get('layer_name');
+
+        // Attempt to derive layer name from ID assigned by GeoServer to be able to map to features to layers in map (<layer_name>.<fid>)
+        // e.g.: 0958cc07-c194-4af9-81c5-118a77d335ac_stream_links.fid--72787a80_169a16811e6_-7aa6
+        if (!layer_name) {
+            let feature_id = feature.getId();
+            layer_name = m_workspace + ':' + feature_id.split('.')[0];
+        }
+
         return layer_name;
     };
 
     get_feature_id_from_feature = function(feature) {
         let feature_id = feature.getId();
-        let fid = feature_id.split('.')[1];
+        let fid = '-1';
+
+        if (feature_id) {
+            // Derive fid from ID assigned by GeoServer (<layer_name>.<fid>)
+            // e.g.: 0958cc07-c194-4af9-81c5-118a77d335ac_stream_links.fid--72787a80_169a16811e6_-7aa6
+            fid = feature_id.split('.')[1];
+        } else {
+            fid = feature.get('id');
+        }
+
         return fid;
     };
 
@@ -738,6 +759,15 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Unset Display None
         m_$props_popup_container.css('display', 'block');
+
+        // Bind wms select method
+        TETHYS_MAP_VIEW.onSelectionChange(on_select_wms_features);
+
+        // Bind vector select methods
+        let select_interaction = TETHYS_MAP_VIEW.getSelectInteraction();
+        if (select_interaction){
+            select_interaction.on('select', on_select_vector_features);
+        }
     };
 
     show_properties_pop_up = function(coordinates) {
@@ -763,46 +793,67 @@ var ATCORE_MAP_VIEW = (function() {
         m_$props_popup_content.append(content);
     };
 
-    display_properties = function(points_layer, lines_layer, polygons_layer) {
-        let center_points = [],
-            layers = [points_layer, lines_layer, polygons_layer];
+    on_select_vector_features = function(event) {
+        let selected = event.selected;
+        if (selected.length > 0) {
+            display_properties(selected);
+        }
+    };
 
-        // TODO: Add hook  to allow apps to customize properties table.
+    on_select_wms_features = function(points_layer, lines_layer, polygons_layer) {
+        let layers = [points_layer, lines_layer, polygons_layer];
+        display_properties(layers);
+    };
+
+    display_properties = function(layers_or_features) {
+        let center_points = [];
+
+        // TODO: Add hook to allow apps to customize properties table.
 
         // Clear popup
         reset_ui(false);
 
-        for (var i = 0; i < layers.length; i++) {
-            let layer = layers[i];
+        for (var i = 0; i < layers_or_features.length; i++) {
+            let layer_or_features = layers_or_features[i],
+                features = [];
 
-            if (layer && layer.getSource() && layer.getSource().getFeatures().length) {
-                let source = layer.getSource();
-                let features = source.getFeatures();
+            if (layer_or_features && layer_or_features instanceof ol.Feature) {
+                features = [layer_or_features];
                 center_points.push(compute_center(features));
+            }
+            else if (layer_or_features && layer_or_features.getSource()
+                && layer_or_features.getSource().getFeatures().length) {
 
-                // Generate one table of properties for each node
-                for (var j = 0; j < features.length; j++) {
-                    let feature = features[j];
+                let source = layer_or_features.getSource();
+                features = source.getFeatures();
+                center_points.push(compute_center(features));
+            }
+            else {
+                continue;
+            }
 
-                    // Generate Title
-                    let title_markup = generate_properties_table_title(feature);
-                    append_properties_pop_up_content(title_markup);
+            // Generate one table of properties for each node
+            for (var j = 0; j < features.length; j++) {
+                let feature = features[j];
 
-                    // Generate properties table
-                    let properties_table = generate_properties_table(feature);
-                    append_properties_pop_up_content(properties_table);
+                // Generate Title
+                let title_markup = generate_properties_table_title(feature);
+                append_properties_pop_up_content(title_markup);
 
-                    // Generate plot button
-                    let plot_button = generate_plot_button(feature);
-                    append_properties_pop_up_content(plot_button);
-                    bind_plot_buttons();
+                // Generate properties table
+                let properties_table = generate_properties_table(feature);
+                append_properties_pop_up_content(properties_table);
 
-                    // Generate plot button
-                    let action_button = generate_action_button(feature);
-                    append_properties_pop_up_content(action_button);
-                    bind_action_buttons();
-                    // TODO: Add hook  to allow apps to customize properties table.
-                }
+                // Generate plot button
+                let plot_button = generate_plot_button(feature);
+                append_properties_pop_up_content(plot_button);
+                bind_plot_buttons();
+
+                // Generate plot button
+                let action_button = generate_action_button(feature);
+                append_properties_pop_up_content(action_button);
+                bind_action_buttons();
+                // TODO: Add hook to allow apps to customize properties table.
             }
         }
 
@@ -814,7 +865,7 @@ var ATCORE_MAP_VIEW = (function() {
             show_properties_pop_up(popup_location);
         }
 
-        // TODO: Add hook  to allow apps to customize properties table.
+        // TODO: Add hook to allow apps to customize properties table.
     };
 
     reset_ui = function(clear_selection=true) {
@@ -832,7 +883,18 @@ var ATCORE_MAP_VIEW = (function() {
 
     generate_properties_table_title = function(feature) {
         let layer_name = get_layer_name_from_feature(feature);
-        let title = m_layers[layer_name].tethys_legend_title;
+        let layer = m_layers[layer_name];
+        let title = '';
+
+        // Get custom title from layer data properties
+        if (layer.hasOwnProperty('tethys_data') && layer.tethys_data.hasOwnProperty('popup_title')) {
+            title = layer.tethys_data.popup_title;
+        }
+        // Or use the legend title as a fallback
+        else {
+            title = layer.tethys_legend_title;
+        }
+
         let title_markup = '<h6 class="properites-title">' + title + '</h6>';
         return title_markup;
     };
@@ -842,51 +904,129 @@ var ATCORE_MAP_VIEW = (function() {
         let geometry = feature.getGeometry();
         let geometry_type = geometry.getType().toLowerCase();
         let feature_class = (('type' in properties) ? properties['type'] : geometry_type);
+        let layer_name = get_layer_name_from_feature(feature);
+        let layer_data = m_layers[layer_name].tethys_data;
+        let excluded_properties = ['geometry', 'the_geom'];
+        let extra_table_content = '';
+
+        // Get custom excluded properties
+        if (layer_data.hasOwnProperty('excluded_properties')) {
+            excluded_properties = excluded_properties.concat(layer_data.excluded_properties);
+        }
 
         // Templates
         let kv_row_template = '<tr><td>{{KEY}}</td><td>{{VALUE}}&nbsp;<span id="{{ELEMENT_CLASS}}-{{PROPERTY}}-units"></span></td></tr>';
-        kv_row_template = kv_row_template
-            .replace('{{ELEMENT_CLASS}}', feature_class);
+        kv_row_template = kv_row_template.replace('{{ELEMENT_CLASS}}', feature_class);
         let table_template = '<table class="table table-condensed table-striped {{CLASS}}">{{ROWS}}</table>';
 
         // Initial rows
         let rows = '';
 
         // Append the type of feature
-        rows += kv_row_template
-                .replace('{{KEY}}', 'Type')
-                .replace('{{VALUE}}', geometry.getType())
-                .replace('{{PROPERTY}}', 'type');
+        if (!excluded_properties.includes('type')) {
+            rows += kv_row_template
+                    .replace('{{KEY}}', 'Type')
+                    .replace('{{VALUE}}', geometry.getType())
+                    .replace('{{PROPERTY}}', 'type');
+        }
 
-        // Assemble other rows
-        let excluded_properties = ['geometry', 'the_geom'];
-
+        // Build property rows
         for(var property in properties) {
             // Skip excluded properties
             if (in_array(property, excluded_properties)) {
                 continue;
             }
 
-            // Build row
-            rows += kv_row_template
-                .replace('{{KEY}}', var_to_title_case(property))
-                .replace('{{VALUE}}', properties[property])
-                .replace('{{PROPERTY}}', property);
+            let value = properties[property];
+
+            // If value is an object, build row with appropriate method
+            if (value instanceof Object) {
+                if (value.hasOwnProperty('type') && value.hasOwnProperty('value') && value.type == 'dataset') {
+                    rows += generate_dataset_row(property, value.value);
+                } else {
+                    console.log('WARNING: Unable to load property row - ' + var_to_title_case(property) + ': ' + value);
+                }
+
+            // Otherwise, build simple valued row
+            } else {
+                // Build row
+                rows += kv_row_template
+                    .replace('{{KEY}}', var_to_title_case(property))
+                    .replace('{{VALUE}}', value)
+                    .replace('{{PROPERTY}}', property);
+            }
+
         }
 
         // Compose table
-        table_template = table_template.replace('{{CLASS}}', feature_class);
-        table_template = table_template.replace('{{ROWS}}', rows);
-        return table_template;
+        if (rows.length) {
+            table_template = table_template.replace('{{CLASS}}', feature_class);
+            table_template = table_template.replace('{{ROWS}}', rows);
+            return table_template;
+        }
+        else {
+            return '';
+        }
+    };
+
+    generate_dataset_row = function(property, dataset) {
+        let dataset_row_template = '<tr><td colspan="2">{{VALUE}}</td></tr>';
+        let row = '';
+        let dataset_table = '<table class="table">';
+        let dataset_table_row_template = '<tr>{{COLUMNS}}</tr>';
+
+        // Get dataset metadata
+        let columns = dataset.meta.columns;
+        let length = dataset.meta.length;
+
+        // Add dataset title
+        row += dataset_row_template.replace('{{VALUE}}', var_to_title_case(property));
+
+        // Add column header row
+        let header_columns = '';
+        let dataset_table_header_template = '<th>{{VALUE}}</th>';
+
+        $.each(columns, function(index, col) {
+            header_columns += dataset_table_header_template.replace('{{VALUE}}', col);
+        });
+
+        dataset_table += dataset_table_row_template.replace('{{COLUMNS}}', header_columns);
+
+        // Add value rows
+        let value_rows = '';
+        let dataset_table_column_template = '<td>{{VALUE}}</td>';
+
+        for (var i = 0; i < length; i++) {
+            let row_columns = '';
+
+            $.each(columns, function(index, col) {
+                let val = dataset[col][i];
+                row_columns += dataset_table_column_template.replace('{{VALUE}}', val);
+            });
+
+            value_rows +=  dataset_table_row_template.replace('{{COLUMNS}}', row_columns);
+        }
+
+        dataset_table += value_rows;
+
+        // Close out dataset table
+        dataset_table += '</table>';
+        // Add row containing the dataset table
+        row += dataset_row_template.replace('{{VALUE}}', dataset_table);
+
+
+        return row;
     };
 
     // Feature Selection
     init_feature_selection = function() {
-        init_properties_pop_up();
         TETHYS_MAP_VIEW.overrideSelectionStyler('points', points_selection_styler);
         TETHYS_MAP_VIEW.overrideSelectionStyler('lines', lines_selection_styler);
         TETHYS_MAP_VIEW.overrideSelectionStyler('polygons', polygons_selection_styler);
-        TETHYS_MAP_VIEW.onSelectionChange(display_properties);
+
+        if (m_enable_properties_popup) {
+            init_properties_pop_up();
+        }
     };
 
     points_selection_styler = function(feature, resolution) {
@@ -1142,7 +1282,6 @@ var ATCORE_MAP_VIEW = (function() {
 	    },
 
         get_layer_name_from_feature: get_layer_name_from_feature,
-
         get_feature_id_from_feature: get_feature_id_from_feature,
 	};
 

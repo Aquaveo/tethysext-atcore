@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: spatial_attributes_rws.py
+* Name: spatial_condor_job_rws.py
 * Author: nswain
 * Created On: December 17, 2018
 * Copyright: (c) Aquaveo 2018
@@ -9,16 +9,16 @@
 from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
 
 
-class SpatialAttributesRWS(SpatialResourceWorkflowStep):
+class SpatialCondorJobRWS(SpatialResourceWorkflowStep):
     """
-    Workflow step used for setting simple valued attributes on features.
+    Workflow step used for reviewing previous step parameters and submitting processing jobs to Condor.
 
     Options:
-        geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
-        attributes(dict): Dictionary of param instances defining the attributes to be defined for each feature.
+        scheduler(str): Name of the Condor scheduler to use.
+        jobs(list<dict>): A list of dictionaries, each containing the kwargs for a CondorWorkflowJobNode.
     """  # noqa: #501
-    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialAttributesMWV'
-    TYPE = 'spatial_attributes_workflow_step'
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialCondorJobMWV'
+    TYPE = 'spatial_condor_job_workflow_step'
 
     __mapper_args__ = {
         'polymorphic_identity': TYPE
@@ -27,27 +27,18 @@ class SpatialAttributesRWS(SpatialResourceWorkflowStep):
     @property
     def default_options(self):
         return {
-            'geometry_source': None,
-            'attributes': {}
+            'scheduler': '',
+            'jobs': [],
         }
 
     def init_parameters(self, *args, **kwargs):
         """
         Initialize the parameters for this step.
 
-        Args:
-            step_options(dict): Options for this step.
-
         Returns:
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
-        return {
-            'attributed_geometry': {
-                'help': 'Valid GeoJSON representing geometry input by user.',
-                'value': None,
-                'required': False
-            },
-        }
+        return {}
 
     def validate(self):
         """

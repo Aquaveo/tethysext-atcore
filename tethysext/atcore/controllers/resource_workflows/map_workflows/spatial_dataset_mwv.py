@@ -128,7 +128,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
 
         return JsonResponse({'success': True})
 
-    def process_step_data(self, request, session, step, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
 
@@ -136,6 +136,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
+            model_db(ModelDatabase): The model database associated with the resource.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.
@@ -160,6 +161,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
             request=request,
             session=session,
             step=step,
+            model_db=model_db,
             current_url=current_url,
             previous_url=previous_url,
             next_url=next_url

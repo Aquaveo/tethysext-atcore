@@ -19,6 +19,9 @@ class SpatialDataMWV(MapWorkflowView):
     template_name = 'atcore/resource_workflows/spatial_data_mwv.html'
     valid_step_classes = [SpatialDatasetRWS, SpatialAttributesRWS]
 
+    # Disable the properties popup so we can create a custom pop-up
+    properties_popup_enabled = False
+
     def process_step_options(self, request, session, context, current_step, previous_step, next_step):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).

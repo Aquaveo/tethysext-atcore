@@ -138,15 +138,17 @@ class MapViewTests(TethysTestCase):
         mock_method.assert_called()
         self.assertEqual(mock_method(), response)
 
+    @mock.patch('tethysext.atcore.services.app_users.decorators.redirect')
+    @mock.patch('tethysext.atcore.services.app_users.decorators.messages')
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
     @mock.patch('tethysext.atcore.controllers.map_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    def test_get_no_resource_id(self, mock_has_permission, mock_render, _):
+    def test_get_no_resource_id(self, mock_has_permission, mock_render, mock_get_resource, __, ___):
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
+        mock_get_resource.return_value = None
 
         response = self.controller(request=mock_request, resource_id=None, back_url='/foo/bar')
-
         mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
         mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
 
@@ -164,10 +166,10 @@ class MapViewTests(TethysTestCase):
         self.assertIn('plot_slide_sheet', context)
         self.assertEqual(mock_render(), response)
 
-    @mock.patch('tethysext.atcore.controllers.map_view.redirect')
-    @mock.patch('tethysext.atcore.controllers.map_view.messages')
+    @mock.patch('tethysext.atcore.services.app_users.decorators.redirect')
+    @mock.patch('tethysext.atcore.services.app_users.decorators.messages')
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.get_resource')
-    def test_get_no_resource_data_base_id_error(self, mock_resource, mock_messages, mock_redirect):
+    def test_get_no_resource_database_id_error(self, mock_resource, mock_messages, mock_redirect):
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
@@ -177,7 +179,7 @@ class MapViewTests(TethysTestCase):
         self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
         meg_call_args = mock_messages.error.call_args_list
         self.assertIn('/foo/bar/map-view/', str(meg_call_args[0][0][0]))
-        self.assertEqual('An unexpected error occurred. Please try again.', meg_call_args[0][0][1])
+        self.assertEqual("We're sorry, an unexpected error has occurred.", meg_call_args[0][0][1])
         mock_redirect.assert_called()
 
     @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersResourceController.default_back_url')

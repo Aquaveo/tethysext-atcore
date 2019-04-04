@@ -214,6 +214,7 @@
        data-layer-groups="{{ layer_groups|jsonify }}"
        data-map-extent="{{ map_extent|jsonify }}"
        data-workspace="{{ workspace }}"
+       data-enable-properties-popup="{% if enable_properties_popup %}true{% else %}false{% endif %}"
        style="display: none;"
   ></div>
   <div id="atcore-map-permissions"
