@@ -6,7 +6,7 @@ stages:
   - test_image
 
 variables:
-  TETHYS_CORE_TAG: 'v3.0.0b-r4'
+  TETHYS_CORE_TAG: 'v3.0.0b-r5'
   CONDA_HOME: '/opt/conda'
 
 lint:
