@@ -35,7 +35,7 @@ tests:
     # Build
     - docker build -t tethys_atcore .
     # Run Tethys Container
-    - docker run -d --name tethys_atcore  -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='postgres' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' tethys_atcore
+    - docker run -d --name tethys_atcore  -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='postgres' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5435' atcore_tests
     - echo "wait for container to start up..."
     - sleep 60s
     - docker logs tethys_atcore
@@ -49,7 +49,7 @@ tests:
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Intermediate Tests
-    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/ && coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/ && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5435/atcore_tests' coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     # Coverage Report
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
