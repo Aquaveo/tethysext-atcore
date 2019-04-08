@@ -31,7 +31,7 @@ tests:
     - sleep 60s
     - docker logs tethys_postgis
     # Create Test Database
-    - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U postgres -p 5435 -h 172.17.0.1 -E SQL_ASCII --no-password --owner postgres atcore_tests"
+    - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U postgres -p 5435 -h 172.17.0.1 --no-password --owner postgres atcore_tests"
     # Build
     - docker build -t tethys_atcore .
     # Run Tethys Container
