@@ -45,7 +45,7 @@ tests:
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     # Unit Tests
-    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5435/atcore_tests' coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
     - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Intermediate Tests
