@@ -61,6 +61,8 @@ build:
   stage: build
   script:
     - if [ -z "$CI_COMMIT_TAG" ]; then export LATEST_TAG="dev"; else export LATEST_TAG="latest"; fi
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
     - docker build --squash -t $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_REF_NAME -t $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG .
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_REF_NAME
