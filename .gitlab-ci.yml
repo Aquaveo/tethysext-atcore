@@ -6,10 +6,9 @@ stages:
   - test_image
 
 variables:
-  TETHYS_CORE_TAG: 'v3.0.0b-r5'
+  TETHYS_CORE_TAG: 'v3.0.0b-r6'
   CONDA_HOME: '/opt/conda'
   POSTGRES_VERSION: '9.6'
-
 lint:
   image: python:3.6
   stage: test
