@@ -79,9 +79,11 @@ def resource_controller(is_rest_controller=False):
                 return controller_func(self, request, session, resource, back_url, *args, **kwargs)
 
             except (StatementError, NoResultFound) as e:
-                messages.warning(request, 'The {} could not be found.'.format(
+                message = 'The {} could not be found.'.format(
                     _Resource.DISPLAY_TYPE_SINGULAR.lower()
-                ))
+                )
+                log.exception(message)
+                messages.warning(request, message)
                 if not is_rest_controller:
                     return redirect(self.back_url)
                 else:
@@ -108,7 +110,7 @@ def resource_controller(is_rest_controller=False):
                     session.rollback()
 
                 messages.error(request, "We're sorry, an unexpected error has occurred.")
-                log.exception(e)
+                log.exception(str(e))
                 if not is_rest_controller:
                     return redirect(self.back_url)
                 else:
