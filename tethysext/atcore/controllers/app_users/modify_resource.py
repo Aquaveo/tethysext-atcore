@@ -8,6 +8,7 @@
 """
 import os
 import traceback
+import logging
 # Django
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -23,6 +24,7 @@ from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.gizmos import SpatialReferenceSelect
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
+log = logging.getLogger(__name__)
 
 class ModifyResource(AppUsersController):
     """
@@ -278,7 +280,7 @@ class ModifyResource(AppUsersController):
                 traceback.print_exc()
                 error_message = ("An unexpected error occurred while uploading your project. Please try again or "
                                  "contact support@aquaveo.com for further assistance.")
-
+            log.exception(error_message)
             messages.error(request, error_message)
 
             # Sessions closed in finally block

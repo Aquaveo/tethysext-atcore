@@ -14,7 +14,6 @@ from copy import deepcopy
 
 from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
 from sqlalchemy.orm import relationship, backref
-from tethys_sdk.base import TethysController
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
@@ -240,6 +239,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         """  # noqa: E501
         from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
         from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
+        from tethys_sdk.base import TethysController
 
         try:
             # Split into parts and extract function name
