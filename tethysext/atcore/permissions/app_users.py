@@ -232,6 +232,22 @@ class PermissionsGenerator:
             description='Assign any license'
         )
 
+        # Map View Permissions
+        remove_layers = Permission(
+            name='remove_layers',
+            description='Remove layers from map views'
+        )
+
+        rename_layers = Permission(
+            name='rename_layers',
+            description='Rename layers from map views'
+        )
+
+        toggle_public_layers = Permission(
+            name='toggle_public_layers',
+            description='Toggle layers from map views for public viewing'
+        )
+
         # Standard Viewer
         standard_user_perms = [
             view_resource_details,
@@ -249,7 +265,8 @@ class PermissionsGenerator:
         standard_admin_perms = standard_user_perms + [
             create_resource, edit_resource, delete_resource,
             view_users, modify_users, modify_organization_members,
-            assign_org_users_role, assign_org_admin_role
+            assign_org_users_role, assign_org_admin_role,
+            remove_layers, rename_layers, toggle_public_layers
         ]
 
         standard_admin_role = PermissionGroup(

@@ -372,3 +372,8 @@
 .hidden {
     display: none
 }
+
+.tab-content .form-group {
+    margin-bottom: 0 !important;
+    margin-left: 20px;
+}

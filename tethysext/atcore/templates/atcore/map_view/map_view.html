@@ -79,23 +79,32 @@
             </label>
 
             {# LAYER GROUP CONTEXT MENU #}
-            <div class="dropdown layers-context-menu pull-right">
-              <a id="{{ layer_group.id }}--context-menu"
-                 class="btn btn-xs dropdown-toggle layers-btn"
-                 data-toggle="dropdown" aria-haspopup="true"
-                 aria-expanded="true">
-                <span class="glyphicon glyphicon-option-vertical"></span>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
-                <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
-                <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer-group"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
-                {% comment %}
-                {# TODO: Implement add layer action #}
-                <li role="separator" class="divider"></li>
-                <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
-                {% endcomment %}
-              </ul>
-            </div>
+            {% if show_public_toggle or show_remove or show_rename %}
+              <div class="dropdown layers-context-menu pull-right">
+                <a id="{{ layer_group.id }}--context-menu"
+                   class="btn btn-xs dropdown-toggle layers-btn"
+                   data-toggle="dropdown" aria-haspopup="true"
+                   aria-expanded="true">
+                  <span class="glyphicon glyphicon-option-vertical"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
+                  {% if show_rename %}
+                    <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                  {% endif %}
+                  {% if show_remove %}
+                  <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                  {% endif %}
+                  {% if show_public_toggle %}
+                    {% gizmo layer_dropdown_toggle %}
+                  {% endif %}
+                  {% comment %}
+                  {# TODO: Implement add layer action #}
+                  <li role="separator" class="divider"></li>
+                  <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
+                  {% endcomment %}
+                </ul>
+              </div>
+            {% endif %}
             <a id="{{ layer_group.id }}--collapse"
                class="collapse-action btn btn-xs layers-btn pull-right"
                data-collapsed="false">
@@ -128,9 +137,18 @@
                   <span class="glyphicon glyphicon-option-vertical"></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_name }}--context-menu">
-                  <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                  {% if show_rename %}
+                    <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                  {% endif %}
+                  {% if show_remove %}
                   <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
-                  <li role="separator" class="divider"></li>
+                  {% endif %}
+                  {% if show_public_toggle %}
+                    {% gizmo layer_dropdown_toggle %}
+                  {% endif %}
+                  {% if show_public_toggle or show_remove or show_rename %}
+                    <li role="separator" class="divider"></li>
+                  {% endif %}
                   <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
                   {% comment %}
                   {# TODO: Implement download layer action #}
@@ -160,6 +178,7 @@
         {# LEGEND TAB PANEL #}
         {% block legend_panel %}
         <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
+          {% block legend_items %}
           {% for layer, layer_info in legend.items %}
             <div id="legend-{{ layer }}" class="hidden">
                 <li class="legend-group-item">
@@ -178,6 +197,7 @@
                 </ul>
             </div>
           {% endfor %}
+          {% endblock %}
         </div>
         {% endblock %}
 
