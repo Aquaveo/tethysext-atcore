@@ -26,6 +26,7 @@ from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
 log = logging.getLogger(__name__)
 
+
 class ModifyResource(AppUsersController):
     """
     Controller for modify_resource page.

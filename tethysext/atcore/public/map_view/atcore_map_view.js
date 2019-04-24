@@ -66,7 +66,8 @@ var ATCORE_MAP_VIEW = (function() {
 
  	// Layers tab
  	var init_layers_tab, init_visibility_controls, init_opacity_controls, init_rename_controls, init_remove_controls,
- 	    init_zoom_to_controls, init_collapse_controls, init_add_layer_controls, init_download_layer_controls;
+ 	    init_zoom_to_controls, init_collapse_controls, init_add_layer_controls, init_download_layer_controls,
+ 	    init_dropdown_layer_toggle_controls;
 
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
@@ -418,6 +419,7 @@ var ATCORE_MAP_VIEW = (function() {
         init_visibility_controls();
         init_opacity_controls();
         init_rename_controls();
+        init_dropdown_layer_toggle_controls();
         init_remove_controls();
         init_zoom_to_controls();
         init_download_layer_controls();
@@ -672,6 +674,18 @@ var ATCORE_MAP_VIEW = (function() {
 
                 // TODO: Save state to resource - store in attributes?
             });
+        });
+    };
+
+    init_dropdown_layer_toggle_controls = function() {
+        // Rename layer
+        $('.layer-dropdown-toggle').on('switchChange.bootstrapSwitch', function(e, state) {
+            let $action_button = $(e.target);
+            let $layer_label = $action_button.closest('.layers-context-menu').prev();
+            let display_name = $layer_label.find('.display-name').first().html();
+
+            // TODO: Implement
+            // TODO: Save state to workflow - store in attributes?
         });
     };
 

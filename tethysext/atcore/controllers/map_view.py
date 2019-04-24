@@ -12,6 +12,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseNotFound
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
+from tethys_sdk.gizmos import ToggleSwitch
 from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
 from tethysext.atcore.services.model_database import ModelDatabase
@@ -116,6 +117,29 @@ class MapView(AppUsersResourceController):
             context.update({'map_title': self.map_title or resource.name})
         else:
             context.update({'map_title': self.map_title})
+
+        open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
+        show_rename = has_permission(request, 'rename_layers')
+        show_remove = has_permission(request, 'remove_layers')
+        show_public_toggle = has_permission(request, 'toggle_public_layers') and open_portal_mode
+
+        context.update({'open_portal_mode': open_portal_mode,
+                        'show_rename': show_rename,
+                        'show_remove': show_remove,
+                        'show_public_toggle': show_public_toggle
+                        })
+
+        if open_portal_mode and show_public_toggle:
+            layer_dropdown_toggle = ToggleSwitch(display_text='',
+                                                 name='layer-dropdown-toggle',
+                                                 on_label='Yes',
+                                                 off_label='No',
+                                                 on_style='success',
+                                                 off_style='danger',
+                                                 initial=True,
+                                                 size='small',
+                                                 classes='layer-dropdown-toggle')
+            context.update({'layer_dropdown_toggle': layer_dropdown_toggle})
 
         # Context hook
         context = self.get_context(
