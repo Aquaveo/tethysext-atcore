@@ -743,6 +743,46 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     init_add_layer_controls = function() {
+        $('.add-layer-to-layer-group').on('click', function(e) {
+            let $action_button = $(e.target);
+
+            if (!$action_button.hasClass('add-layer-to-layer-group')) {
+                $action_button = $action_button.closest('.add-layer-to-layer-group');
+            }
+
+            let $layer_label = $action_button.closest('.layers-context-menu').prev();
+            let $display_name = $layer_label.find('.display-name').first();
+            let $new_layer = $layer_label.parent().next().first()
+            let current_name = $display_name.html();
+            let $abc = 1;
+            // Build Modal
+            let modal_content = '<div class="form-group">'
+                              +     '<label class="sr-only" for="new-name-field">New name:</label>'
+                              +     '<input class="form-control" type="text" id="new-name-field" value="' + current_name + '" autofocus onfocus="this.select();">'
+                              + '</div>';
+
+            let modal = build_action_modal('Add Layer', modal_content, 'Add', 'success');
+
+            // Show Modal
+            show_action_modal();
+
+            // Handle Modal Action
+            modal.action_button.on('click', function(e) {
+                // Rename layer label
+                let new_name = modal.content.find('#new-name-field').first().val();
+                let html_content = '<label class="flatmark"><span class="display-name">' + new_name + '</span>'
+                html_content += '<input type="checkbox" class="layer-visibility-control" checked '
+                html_content += 'data-layer-name="custom_map" data-layer-variable="custom_variable" name="' + new_name + '">'
+                html_content += '<span class="checkmark checkbox"></span></label>'
+                $new_layer.html(html_content);
+                $new_layer.css({'overflow': 'visible'});
+
+                // Hide the modal
+                hide_action_modal();
+
+                // TODO: Save state to resource - store in attributes?
+            });
+        });
         // TODO: Implement
         // TODO: Save state to workflow - store in attributes?
     };

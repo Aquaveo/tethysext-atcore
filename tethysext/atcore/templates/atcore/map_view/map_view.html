@@ -101,11 +101,10 @@
                             {{ layer_group.toggle_status }}>
                     </div>
                   {% endif %}
-                  {% comment %}
-                  {# TODO: Implement add layer action #}
-                  <li role="separator" class="divider"></li>
-                  <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
-                  {% endcomment %}
+                  {% if layer_group.id == 'custom_layer' %}
+                    <li role="separator" class="divider"></li>
+                    <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
+                  {% endif %}
                 </ul>
               </div>
             {% endif %}

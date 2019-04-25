@@ -100,6 +100,11 @@ class MapView(AppUsersResourceController):
         ]
         map_view.feature_selection = {'multiselect': self.mutiselect, 'sensitivity': 4}
 
+        # Append custom layer
+        custom_layer = map_manager.build_layer_group(id="custom_layer", display_name="Custom Layer", layers='',
+                                                     layer_control='checkbox', visible=True)
+        layer_groups.append(custom_layer)
+
         # Initialize context
         context = {
             'resource': resource,
