@@ -119,7 +119,7 @@ class MapManagerBase(object):
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
-                       geometry_attribute='geometry'):
+                       public='checked', geometry_attribute='geometry'):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -170,7 +170,8 @@ class MapManagerBase(object):
 
         data = {
             'layer_name': layer_name,
-            'layer_variable': layer_variable
+            'layer_variable': layer_variable,
+            'toggle_status': public
         }
 
         if plottable:
@@ -196,7 +197,7 @@ class MapManagerBase(object):
 
         return mv_layer
 
-    def build_layer_group(self, id, display_name, layers, layer_control='checkbox', visible=True):
+    def build_layer_group(self, id, display_name, layers, layer_control='checkbox', visible=True, public='checked'):
         """
         Build a layer group object.
 
@@ -219,7 +220,8 @@ class MapManagerBase(object):
             'display_name': display_name,
             'control': layer_control,
             'layers': layers,
-            'visible': visible
+            'visible': visible,
+            'toggle_status': public
         }
         return layer_group
 

@@ -95,7 +95,11 @@
                   <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                   {% endif %}
                   {% if show_public_toggle %}
-                    {% gizmo layer_dropdown_toggle %}
+                    <div class="form-group">
+                        <input class="form-control bootstrap-switch layer-dropdown-toggle" type="checkbox" data-size="small" data-on-text="Public"
+                            data-off-text="Private" data-on-color='success' data-off-color='danger'
+                            {{ layer_group.toggle_status }}>
+                    </div>
                   {% endif %}
                   {% comment %}
                   {# TODO: Implement add layer action #}
@@ -144,7 +148,11 @@
                   <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                   {% endif %}
                   {% if show_public_toggle %}
-                    {% gizmo layer_dropdown_toggle %}
+                    <div class="form-group">
+                        <input class="form-control bootstrap-switch layer-dropdown-toggle" type="checkbox" data-size="small" data-on-text="Public"
+                            data-off-text="Private" data-on-color='success' data-off-color='danger'
+                            {{ layer.data.toggle_status }}>
+                    </div>
                   {% endif %}
                   {% if show_public_toggle or show_remove or show_rename %}
                     <li role="separator" class="divider"></li>
