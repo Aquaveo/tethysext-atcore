@@ -9,7 +9,8 @@
 import os
 import json
 import logging
-from tethys_sdk.gizmos import MVLayer
+from django.shortcuts import render
+from tethys_sdk.gizmos import MVLayer, JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS, SpatialInputRWS, \
     SpatialResourceWorkflowStep
@@ -72,6 +73,10 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
             # Otherwise, get the geojson from this step directly
             else:
+                # Child step must be a SpatialResourceWorkflowStep
+                if not isinstance(step, SpatialResourceWorkflowStep):
+                    continue
+
                 geometry = step.to_geojson()
 
             if not geometry:
@@ -176,6 +181,59 @@ class SpatialCondorJobMWV(MapWorkflowView):
         )
         return workflow_layer
 
+    def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
+                    *args, **kwargs):
+        """
+        Hook that is called at the beginning of the get request for a workflow step, before any other controller logic occurs.
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): the session.
+            resource(Resource): the resource for this request.
+            workflow(ResourceWorkflow): The current workflow.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            previous_step(ResourceWorkflowStep): The previous step.
+            next_step(ResourceWorkflowStep): The next step.
+        Returns:
+            None or HttpResponse: If an HttpResponse is returned, render that instead.
+        """  # noqa: E501
+        step_status = current_step.get_status(current_step.ROOT_STATUS_KEY)
+        if step_status == current_step.STATUS_WORKING:
+            return self.render_condor_jobs_table(request, resource, workflow, current_step)
+
+    def render_condor_jobs_table(self, request, resource, workflow, current_step):
+        """
+        Render a condor jobs table showing the status of the current job that is processing.
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): the session.
+            resource(Resource): the resource for this request.
+            workflow(ResourceWorkflow): The current workflow.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+        Returns:
+            HttpResponse: The condor job table view.
+        """
+        job_id = current_step.get_attribute('condor_job_id')
+        app = self.get_app()
+        job_manager = app.get_job_manager()
+        step_job = job_manager.get_job(job_id=job_id)
+
+        jobs_table = JobsTable(
+            jobs=[step_job],
+            column_fields=('description', 'creation_time', ),
+            hover=True,
+            striped=True,
+            condensed=False,
+            show_detailed_status=True,
+            delete_btn=False,
+        )
+
+        context = {
+            'back_url': self.back_url,
+            'nav_title': '{}: {}'.format(resource.name, workflow.name),
+            'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
+            'jobs_table': jobs_table
+        }
+
+        return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)
+
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
@@ -236,12 +294,21 @@ class SpatialCondorJobMWV(MapWorkflowView):
             # Add parameter file to workflow input files
             condor_job_manager.input_files.append(params_file_path)
 
+            # Prepare the job
+            job_id = condor_job_manager.prepare()
+
             # Submit job
             condor_job_manager.run_job()
 
             # Update status of the resource workflow step
             step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
             step.set_attribute(step.ATTR_STATUS_MESSAGE, None)
+
+            # Save the job id to the step for later reference
+            step.set_attribute('condor_job_id', job_id)
+
+            # Allow the step to track statuses on each "sub-job"
+            step.set_attribute('condor_job_statuses', [])
             session.commit()
 
         return super().process_step_data(request=request, session=session, step=step, model_db=model_db,
@@ -281,10 +348,3 @@ class SpatialCondorJobMWV(MapWorkflowView):
             parameters.update({previous_step.name: previous_step.to_dict()})
 
         return json.dumps(parameters)
-
-    def create_layer_from_geometry(self, geometry):
-        """
-
-        :param geometry:
-        :return:
-        """

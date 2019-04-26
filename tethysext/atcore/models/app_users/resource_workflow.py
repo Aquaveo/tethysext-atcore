@@ -52,6 +52,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
     name = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
     _attributes = Column(String)
+    # TODO: Add a results field/relationship
 
     resource = relationship('Resource', backref='workflows')
     creator = relationship('AppUser', backref='workflows')
@@ -92,7 +93,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
             ResourceWorkflowStep.STATUS_X: status of the next step.
         """
         index, next_step = self.get_next_step()
-        # TODO: Handle when next step is None or all complete...
+        # TODO: Handle when next step is None or all complete = show results
         status = next_step.get_status(ResourceWorkflowStep.ROOT_STATUS_KEY)
 
         # If we are not on the first step and the status is pending, workflow status is continue

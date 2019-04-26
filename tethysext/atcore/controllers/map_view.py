@@ -9,7 +9,7 @@
 import uuid
 import requests
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponse
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
 from tethys_sdk.gizmos import ToggleSwitch
@@ -46,6 +46,12 @@ class MapView(AppUsersResourceController):
         Handle GET requests.
         """
         from django.conf import settings
+        scenario_id = request.GET.get('scenario-id', 1)
+
+        # Call on get hook
+        ret_on_get = self.on_get(request, session, resource, *args, **kwargs)
+        if ret_on_get and isinstance(ret_on_get, HttpResponse):
+            return ret_on_get
 
         # Check for GET request alternative methods
         the_method = self.map_request_to_method(request)
@@ -73,11 +79,10 @@ class MapView(AppUsersResourceController):
         )
 
         # Render the Map
-        # TODO: Figure out what to do with the scenario_id. Workflow id?
         map_view, model_extent, layer_groups = map_manager.compose_map(
             request=request,
             resource_id=resource_id,
-            scenario_id=1,
+            scenario_id=scenario_id,
             *args, **kwargs
         )
 
@@ -108,15 +113,15 @@ class MapView(AppUsersResourceController):
             'layer_groups': layer_groups,
             'is_in_debug': settings.DEBUG,
             'enable_properties_popup': self.properties_popup_enabled,
-            'map_subtitle': self.map_subtitle,
+            'nav_subtitle': self.map_subtitle,
             'workspace': self._SpatialManager.WORKSPACE,
             'back_url': self.back_url
         }
 
         if resource:
-            context.update({'map_title': self.map_title or resource.name})
+            context.update({'nav_title': self.map_title or resource.name})
         else:
-            context.update({'map_title': self.map_title})
+            context.update({'nav_title': self.map_title})
 
         open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
         show_rename = has_permission(request, 'rename_layers')
@@ -259,6 +264,16 @@ class MapView(AppUsersResourceController):
         map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
 
         return model_db, map_manager
+
+    def on_get(self, request, session, resource, *args, **kwargs):
+        """
+        Hook that is called at the beginning of the get request, before any other controller logic occurs.
+            request (HttpRequest): The request.
+            session (sqlalchemy.Session): the session.
+            resource (Resource): the resource for this request.
+        Returns:
+            None or HttpResponse: If an HttpResponse is returned, render that instead.
+        """  # noqa: E501
 
     def get_context(self, request, session, resource, context, model_db, map_manager, *args, **kwargs):
         """

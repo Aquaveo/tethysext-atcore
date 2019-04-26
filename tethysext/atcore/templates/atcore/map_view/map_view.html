@@ -1,4 +1,4 @@
-{% extends "atcore/base.html" %}
+{% extends "atcore/resource_base.html" %}
 {% load tethys_gizmos staticfiles %}
 
 {% block import_gizmos %}
@@ -7,27 +7,7 @@
 {% endblock %}
 
 {% block app_navigation_items %}
-  {# MAP HEADER #}
-  <div id="map-header">
-    {# BACK BUTTON #}
-    {% block back_button %}
-      <div id="back-button">
-        <a href="{{ back_url }}" title="Back">
-          <span class="glyphicon glyphicon-chevron-left"></span>
-        </a>
-      </div>
-    {% endblock %}
-
-    {# TITLE #}
-    {% block map_title %}
-      <div id="map-title">
-        <p class="title">{{ map_title }}</p>
-        {% if map_subtitle %}
-        <p class="subtitle">{{ map_subtitle }}</p>
-        {% endif %}
-      </div>
-    {% endblock %}
-  </div>
+  {{ block.super }}
 
   {# TABS #}
   <div class="map-tabs">

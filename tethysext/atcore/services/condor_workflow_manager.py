@@ -15,6 +15,8 @@ class ResourceWorkflowCondorJobManager(object):
     """
     Helper class that prepares and submits condor workflows/jobs for resource workflows.
     """
+    ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'resource_workflows')
+
     def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
                  jobs=None, input_files=None, *args):
         """
@@ -43,8 +45,12 @@ class ResourceWorkflowCondorJobManager(object):
 
         # Important IDs
         self.resource_id = str(resource_workflow_step.workflow.resource.id)
+        self.resource_name = resource_workflow_step.workflow.resource.name
         self.resource_workflow_id = str(resource_workflow_step.workflow.id)
+        self.resource_workflow_name = resource_workflow_step.workflow.name
+        self.resource_workflow_type = resource_workflow_step.workflow.DISPLAY_TYPE_SINGULAR
         self.resource_workflow_step_id = str(resource_workflow_step.id)
+        self.resource_workflow_step_name = resource_workflow_step.name
 
         # Job Definition Variables
         self.jobs = jobs
@@ -111,9 +117,12 @@ class ResourceWorkflowCondorJobManager(object):
 
         self.workspace_initialized = True
 
-    def _prepare(self):
+    def prepare(self):
         """
         Prepares all workflow jobs for processing upload to database.
+
+        Returns:
+            int: the job id.
         """
         # Prep
         scheduler = get_scheduler(self.scheduler_name)
@@ -122,6 +131,7 @@ class ResourceWorkflowCondorJobManager(object):
         # Create Workflow
         self.workflow = job_manager.create_job(
             name=self.safe_job_name,
+            description='{}: {}'.format(self.resource_workflow_type, self.resource_workflow_step_name),
             job_type='CONDORWORKFLOW',
             workspace=self.workspace,
             user=self.user,
@@ -168,8 +178,32 @@ class ResourceWorkflowCondorJobManager(object):
             # Save the job
             job.save()
 
+        # Create update status job
+        update_status_job = CondorWorkflowJobNode(
+            name='wrap_up',
+            condorpy_template_name='vanilla_transfer_files',
+            remote_input_files=[
+                os.path.join(self.ATCORE_EXECUTABLE_DIR, 'update_status.py'),
+            ],
+            workflow=self.workflow
+        )
+
+        update_status_job.set_attribute('executable', 'update_status.py')
+        update_status_job.set_attribute('arguments', self.job_args)
+
+        update_status_job.save()
+
+        for job in self.jobs:
+            update_status_job.add_parent(job)
+
+        self.jobs.append(update_status_job)
+
+        update_status_job.save()
+
         # Save Condor Workflow Job
         self.prepared = True
+
+        return self.workflow.id
 
     def _build_job_nodes(self, job_dicts):
         """
@@ -210,7 +244,7 @@ class ResourceWorkflowCondorJobManager(object):
         """
         # Prepare
         if not self.prepared:
-            self._prepare()
+            self.prepare()
 
         # Execute
         self.workflow.execute()

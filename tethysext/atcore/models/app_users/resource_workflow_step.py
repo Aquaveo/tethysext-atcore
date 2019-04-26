@@ -7,7 +7,6 @@
 ********************************************************************************
 """
 import json
-import inspect
 import uuid
 from abc import abstractmethod
 from copy import deepcopy
@@ -17,6 +16,7 @@ from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
+from tethysext.atcore.models.controller_metadata import ControllerMetadata
 
 
 __all__ = ['ResourceWorkflowStep']
@@ -28,12 +28,13 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
 
     Primary Workflow Step Status Progression:
     1. STATUS_PENDING = Step has not been started yet.
-    2. STATUS_WORKING = Step has has beens started but not complete.
-    3. STATUS_ERROR = ValueError or ValidateError has occured.
-    4. STATUS_FAILED = ProcessingError has occured.
+    2. STATUS_WORKING = Processing on step has been started but not complete.
+    3. STATUS_ERROR = ValueError or ValidateError has occurred.
+    4. STATUS_FAILED = Processing error has occurred.
     5. STATUS_COMPLETE = Step has been completed successfully.
     """
     __tablename__ = 'app_users_resource_workflow_steps'
+
     CONTROLLER = ''
     TYPE = 'generic_workflow_step'
     ATTR_STATUS_MESSAGE = 'status_message'
@@ -44,14 +45,12 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     child_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
     resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
+    controller_metadata_id = Column(GUID, ForeignKey('app_users_controller_metadata.id'))
     type = Column(String)
 
     name = Column(String)
     help = Column(String)
     order = Column(Integer)
-    http_methods = Column(PickleType, default=['get', 'post', 'delete'])
-    controller_path = Column(String)
-    controller_kwargs = Column(PickleType, default={})
     status = Column(String)
     _options = Column(PickleType, default={})
     _attributes = Column(String)
@@ -59,11 +58,19 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
 
     parent = relationship('ResourceWorkflowStep', cascade="all,delete", uselist=False,
                           backref=backref('child', remote_side=[id]))
+    _controller = relationship('ControllerMetadata', cascade="all,delete", uselist=False,
+                               backref=backref('owner'))
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
         'polymorphic_identity': TYPE
     }
+
+    @property
+    def controller(self):
+        if not self._controller:
+            self._controller = ControllerMetadata(path=self.CONTROLLER)
+        return self._controller
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,8 +86,6 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
             self.options = kwargs['options']
         else:
             self._options = self.default_options
-
-        self.controller_path = self.CONTROLLER
 
     def __str__(self):
         return '<{} name="{}" id="{}" >'.format(self.__class__.__name__, self.name, self.id)
@@ -227,49 +232,3 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
                 return parent_parameter
             except ValueError as e:
                 raise RuntimeError(str(e))
-
-    def get_controller(self, **kwargs):
-        """
-        Get the controller method from the given controller_name.
-        Args:
-            kwargs: any kwargs that would be passed to the get_controller method of TethysControllers (i.e.: class-based view property overrides).
-
-        Returns:
-            function: the controller method.
-        """  # noqa: E501
-        from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
-        from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
-        from tethys_sdk.base import TethysController
-
-        try:
-            # Split into parts and extract function name
-            module_path, controller_name = self.controller_path.rsplit('.', 1)
-
-            # Import module
-            module = __import__(module_path, fromlist=[str(controller_name)])
-
-        except (ValueError, ImportError):
-            raise ImportError('Unable to import controller: {}'.format(self.controller_path))
-
-        # Import the function or class
-        controller = getattr(module, controller_name)
-
-        # Get entry point for class based views
-        if inspect.isclass(controller) and issubclass(controller, TethysController):
-            # Call with all kwargs if is instance of an AppUsersResourceWorkflowController
-            if issubclass(controller, AppUsersResourceWorkflowController):
-                kwargs.update(self.controller_kwargs)
-                controller = controller.as_controller(**kwargs)
-
-            # Call with all but workflow kwargs if AppUsersResourceController
-            elif issubclass(controller, AppUsersResourceController):
-                kwargs.pop('_ResourceWorkflow')
-                kwargs.pop('_ResourceWorkflowStep')
-                kwargs.update(self.controller_kwargs)
-                controller = controller.as_controller(**kwargs)
-
-            # Otherwise, don't call with any kwargs
-            else:
-                controller = controller.as_controller(**self.controller_kwargs)
-
-        return controller

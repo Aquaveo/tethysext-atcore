@@ -36,9 +36,41 @@ class ResourceWorkflowRouter(AppUsersResourceWorkflowController):
             HttpResponse: A Django response.
         """
         _ResourceWorkflow = self.get_resource_workflow_model()
+        session = None
 
         try:
-            step = self.get_step(request, step_id)
+            make_session = self.get_sessionmaker()
+            session = make_session()
+            step = self.get_step(request, step_id, session=session)
+
+            # Validate HTTP method
+            if request.method.lower() not in step.controller.http_methods:
+                messages.warning(request, 'An unexpected error has occurred: '
+                                          'Method not allowed ({}).'.format(request.method))
+                return redirect(self.back_url)
+
+            controller = step.controller.instantiate(
+                _app=self._app,
+                _AppUser=self._AppUser,
+                _Organization=self._Organization,
+                _Resource=self._Resource,
+                _PermissionsManager=self._PermissionsManager,
+                _persistent_store_name=self._persistent_store_name,
+                _ResourceWorkflow=self._ResourceWorkflow,
+                _ResourceWorkflowStep=self._ResourceWorkflowStep
+            )
+
+            response = controller(
+                request=request,
+                resource_id=resource_id,
+                workflow_id=workflow_id,
+                step_id=step_id,
+                back_url=self.back_url,
+                *args, **kwargs
+            )
+
+            return response
+
         except (StatementError, NoResultFound):
             messages.warning(request, 'Invalid step for workflow: {}.'.format(
                 _ResourceWorkflow.DISPLAY_TYPE_SINGULAR.lower()
@@ -48,34 +80,8 @@ class ResourceWorkflowRouter(AppUsersResourceWorkflowController):
             error_message = str(e)
             messages.warning(request, error_message)
             return redirect(self.back_url)
-
-        # Validate HTTP method
-        if request.method.lower() not in step.http_methods:
-            messages.warning(request, 'An unexpected error has occured: '
-                                      'Method not allowed ({}).'.format(request.method))
-            return redirect(self.back_url)
-
-        controller = step.get_controller(
-            _app=self._app,
-            _AppUser=self._AppUser,
-            _Organization=self._Organization,
-            _Resource=self._Resource,
-            _PermissionsManager=self._PermissionsManager,
-            _persistent_store_name=self._persistent_store_name,
-            _ResourceWorkflow=self._ResourceWorkflow,
-            _ResourceWorkflowStep=self._ResourceWorkflowStep
-        )
-
-        response = controller(
-            request=request,
-            resource_id=resource_id,
-            workflow_id=workflow_id,
-            step_id=step_id,
-            back_url=self.back_url,
-            *args, **kwargs
-        )
-
-        return response
+        finally:
+            session and session.close()
 
     def get(self, request, resource_id, workflow_id, step_id=None, *args, **kwargs):
         """

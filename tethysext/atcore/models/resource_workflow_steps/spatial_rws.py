@@ -30,7 +30,7 @@ class SpatialResourceWorkflowStep(ResourceWorkflowStep):
             spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
         """
         super().__init__(*args, **kwargs)
-        self.controller_kwargs = {
+        self.controller.kwargs = {
             'geoserver_name': geoserver_name,
             '_MapManager': map_manager,
             '_SpatialManager': spatial_manager

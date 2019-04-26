@@ -117,8 +117,8 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             'previous_step': previous_step,
             'next_step': next_step,
             'url_map_name': '{}:{}_workflow_step'.format(active_app.namespace, workflow.type),
-            'map_title': workflow.name,
-            'map_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
+            'nav_title': '{}: {}'.format(resource.name, workflow.name),
+            'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
         })
 
         # Hook for extending the context
@@ -132,6 +132,36 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
         )
         context.update(additional_context)
         return context
+
+    def on_get(self, request, session, resource, workflow_id, step_id, *args, **kwargs):
+        """
+        Hook that is called at the beginning of the get request, before any other controller logic occurs.
+            request (HttpRequest): The request.
+            session (sqlalchemy.Session): the session.
+            resource (Resource): the resource for this request.
+        Returns:
+            None or HttpResponse: If an HttpResponse is returned, render that instead.
+        """  # noqa: E501
+        workflow = self.get_workflow(request, workflow_id, session=session)
+        current_step = self.get_step(request, step_id=step_id, session=session)
+        previous_step, next_step = workflow.get_adjacent_steps(current_step)
+        return self.on_get_step(request, session, resource, workflow, current_step, previous_step, next_step,
+                                *args, **kwargs)
+
+    def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
+                    *args, **kwargs):
+        """
+        Hook that is called at the beginning of the get request for a workflow step, before any other controller logic occurs.
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): the session.
+            resource(Resource): the resource for this request.
+            workflow(ResourceWorkflow): The current workflow.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            previous_step(ResourceWorkflowStep): The previous step.
+            next_step(ResourceWorkflowStep): The next step.
+        Returns:
+            None or HttpResponse: If an HttpResponse is returned, render that instead.
+        """  # noqa: E501
 
     def set_feature_selection(self, map_view, enabled=True):
         """
