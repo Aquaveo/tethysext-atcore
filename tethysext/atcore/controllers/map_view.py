@@ -34,6 +34,7 @@ class MapView(AppUsersResourceController):
     geocode_endpoint = 'http://api.opencagedata.com/geocode/v1/geojson'
     mutiselect = False
     properties_popup_enabled = True
+    show_custom_layer = True
 
     _MapManager = None
     _ModelDatabase = ModelDatabase
@@ -105,10 +106,17 @@ class MapView(AppUsersResourceController):
         ]
         map_view.feature_selection = {'multiselect': self.mutiselect, 'sensitivity': 4}
 
-        # Append custom layer
-        custom_layer = map_manager.build_layer_group(id="custom_layer", display_name="Custom Layer", layers='',
-                                                     layer_control='checkbox', visible=True)
-        layer_groups.append(custom_layer)
+        # Check if we need to create a blank custom layer group
+        create_custom_layer = True
+        for layer_group in layer_groups:
+            if layer_group['id'] == 'custom_layer':
+                create_custom_layer = False
+                break
+
+        if create_custom_layer:
+            custom_layer = map_manager.build_layer_group(id="custom_layer", display_name="Custom Layer", layers='',
+                                                         layer_control='checkbox', visible=True)
+            layer_groups.append(custom_layer)
 
         # Initialize context
         context = {
@@ -120,7 +128,8 @@ class MapView(AppUsersResourceController):
             'enable_properties_popup': self.properties_popup_enabled,
             'nav_subtitle': self.map_subtitle,
             'workspace': self._SpatialManager.WORKSPACE,
-            'back_url': self.back_url
+            'back_url': self.back_url,
+            'show_custom_layer': self.show_custom_layer,
         }
 
         if resource:
@@ -227,6 +236,22 @@ class MapView(AppUsersResourceController):
             back_url=back_url,
             *args, **kwargs
         )
+
+    def save_custom_layers(self, request, session, resource, back_url, *args, **kwargs):
+        layer_name = request.POST.get('layer_name', '')
+        layer_uuid = request.POST.get('uuid', '')
+        service_link = request.POST.get('service_link', '')
+        service_type = request.POST.get('service_type', 'WMS')
+        service_layer_name = request.POST.get('service_layer_name', '')
+        custom_layer = [{'layer_name': layer_name, 'uuid': layer_uuid, 'service_link': service_link,
+                         'service_type': service_type, 'service_layer_name': service_layer_name}]
+        custom_layers = resource.get_attribute('custom_layers')
+        if custom_layers is None:
+            custom_layers = []
+        custom_layers.extend(custom_layer)
+        resource.set_attribute('custom_layers', custom_layers)
+        session.commit()
+        return JsonResponse({'success': True})
 
     def should_disable_basemap(self, request, model_db, map_manager):
         """
