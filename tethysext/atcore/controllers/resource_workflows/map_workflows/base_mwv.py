@@ -77,6 +77,57 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
         )
 
         # Build step cards
+        steps = self.build_step_cards(workflow)
+
+        # Get the current app
+        url_map_name = self.get_step_url_name(request, workflow)
+
+        context.update({
+            'workflow': workflow,
+            'steps': steps,
+            'current_step': current_step,
+            'previous_step': previous_step,
+            'next_step': next_step,
+            'url_map_name': url_map_name,
+            'nav_title': '{}: {}'.format(resource.name, workflow.name),
+            'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
+        })
+
+        # Hook for extending the context
+        additional_context = self.extend_context(
+            request=request,
+            session=session,
+            context=context,
+            current_step=current_step,
+            previous_step=previous_step,
+            next_step=next_step
+        )
+        context.update(additional_context)
+        return context
+
+    def get_step_url_name(self, request, workflow):
+        """
+        Derive url map name for the given workflow step views.
+        Args:
+            request(HttpRequest): The request.
+            workflow(ResourceWorkflow): The current workflow.
+
+        Returns:
+            str: name of the url pattern for the given workflow step views.
+        """
+        active_app = get_active_app(request)
+        url_map_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
+        return url_map_name
+
+    def build_step_cards(self, workflow):
+        """
+        Build cards used by template to render the list of steps for the workflow.
+        Args:
+            workflow(ResourceWorkflow): the workflow with the steps to render.
+
+        Returns:
+            list<dict>: one dictionary for each step in the workflow.
+        """
         previous_status = None
         steps = []
 
@@ -106,32 +157,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             steps.append(card_dict)
 
             previous_status = step_status
-
-        # Get the current app
-        active_app = get_active_app(request)
-
-        context.update({
-            'workflow': workflow,
-            'steps': steps,
-            'current_step': current_step,
-            'previous_step': previous_step,
-            'next_step': next_step,
-            'url_map_name': '{}:{}_workflow_step'.format(active_app.namespace, workflow.type),
-            'nav_title': '{}: {}'.format(resource.name, workflow.name),
-            'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
-        })
-
-        # Hook for extending the context
-        additional_context = self.extend_context(
-            request=request,
-            session=session,
-            context=context,
-            current_step=current_step,
-            previous_step=previous_step,
-            next_step=next_step
-        )
-        context.update(additional_context)
-        return context
+        return steps
 
     def on_get(self, request, session, resource, workflow_id, step_id, *args, **kwargs):
         """
@@ -208,8 +234,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
 
         # Create for previous, next, and current steps
         previous_url = None
-        active_app = get_active_app(request)
-        step_url_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
+        step_url_name = self.get_step_url_name(request, workflow)
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
         # Get Managers Hook

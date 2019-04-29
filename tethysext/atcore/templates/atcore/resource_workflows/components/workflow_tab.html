@@ -1,0 +1,14 @@
+{# WORKFLOW TAB #}
+{% comment %}
+Include to add a "Workflow" tab. Also include the workflow_tab_content.html to get the body of the tab.
+{% endcomment %}
+
+{% block workflow_tab %}
+<li role="presentation" class="active">
+  <a id="workflow-tab-toggle"
+     href="#workflow-tab-panel"
+     aria-controls="workflow-tab-panel"
+     role="tab"
+     data-toggle="tab">Workflow</a>
+</li>
+{% endblock %}

@@ -1,0 +1,42 @@
+{# WORKFLOW TAB PANEL #}
+{% comment %}
+Include to add the workflow tab content. Also include the workflow_tab.html to get the tab link.
+
+Required Context Variables:
+  resource(Resource): the resource the workflow belongs to/acts on.
+  workflow(ResourceWorkflow): the workflow containing the steps that will be rendered.
+  steps(list<dicts>): list of dictionaries containing metadata about each step in the given workflow.
+  current_step(ResourceWorkflowStep): the current step.
+  url_map_name(str): the name of the url pattern for the current step.
+
+Required CSS:
+  <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/workflow_steps.css' %}" rel="stylesheet"/>
+{% endcomment %}
+
+{% block workflow_tab_content %}
+<div role="tabpanel" class="tab-pane active" id="workflow-tab-panel">
+  <ul class="workflow-steps">
+    {% for step in steps %}
+    <li>
+      <a class="workflow-step {% if step.id == current_step.id %}active {% endif %}workflow-step-{{ step.status }}"
+         title="{{ step.help }}"
+         {% if step.link %}href="{% url url_map_name resource.id workflow.id step.id %}"{% endif %}>
+        {% if step.status == 'pending' %}
+        <i class="far fa-circle"></i>
+        {% elif step.status == 'complete' %}
+        <i class="fas fa-check-circle"></i>
+        {% elif step.status == 'error' or step.status == 'failed' %}
+        <i class="fas fa-times-circle"></i>
+        {% elif step.status == 'working' %}
+        <i class="fas fa-cogs"></i>
+        {% else %}
+        <i class="fas fa-question-circle"></i>
+        {% endif %}
+        <span class="workflow-step-title">{{ step.name }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

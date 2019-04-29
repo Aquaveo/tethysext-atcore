@@ -1,4 +1,4 @@
-{% extends "atcore/resource_base.html" %}
+{% extends "atcore/base.html" %}
 {% load tethys_gizmos staticfiles %}
 
 {% block import_gizmos %}
@@ -7,7 +7,8 @@
 {% endblock %}
 
 {% block app_navigation_items %}
-  {{ block.super }}
+  {# NAV HEADER #}
+  {% include 'atcore/components/nav_header.html' %}
 
   {# TABS #}
   <div class="map-tabs">
@@ -271,6 +272,9 @@
 
 {% block content_dependent_styles %}
   {{ block.super }}
+  <link href="{% static 'atcore/css/wide_nav.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/nav_header.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/map_view/flat_map.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/map_view/atcore_map_view.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/map_view/geocoder.css' %}" rel="stylesheet"/>
