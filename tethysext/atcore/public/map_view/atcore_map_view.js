@@ -644,7 +644,7 @@ var ATCORE_MAP_VIEW = (function() {
             modal.action_button.on('click', function(e) {
                 // Reset the ui
                 reset_ui();
-
+                var uuid = ''
                 if (remove_type === 'layer') {
                     // Remove layer from map
                     let layer_name = $action_button.data('layer-name');
@@ -653,6 +653,7 @@ var ATCORE_MAP_VIEW = (function() {
                     // Remove item from layers tree
                     let layer_list_item = $action_button.closest('.layer-list-item');
                     layer_list_item.remove();
+                    uuid = $layer_label.find('.layer-visibility-control').first().data('layer-variable')
                 }
                 else {
                     // Remove layers from map
@@ -678,6 +679,22 @@ var ATCORE_MAP_VIEW = (function() {
                 hide_action_modal();
 
                 // TODO: Save state to resource - store in attributes?
+                // Save state of custom_layers to resource
+                if (remove_type === 'layer') {
+                    csrf_token = $('input[name=csrfmiddlewaretoken]').val()
+                    $.ajax({
+                        type: 'POST',
+                        url: '',
+                        data: {'method': 'remove_custom_layer',
+                               'layer_group_type': 'custom_layers',
+                               'uuid': uuid},
+                        beforeSend: xhr => {
+                            xhr.setRequestHeader('X-CSRFToken', csrf_token);
+                        },
+                    }).done(function (data) {
+
+                    })
+                }
             });
         });
     };
@@ -842,23 +859,7 @@ var ATCORE_MAP_VIEW = (function() {
                 })
 
                 // Save to resource
-                // Get plot data for feature
                 csrf_token = $('input[name=csrfmiddlewaretoken]').val()
-//                $.ajax({
-//                    url: '',
-//                    type: 'POST',
-//                    data: {
-//                        'method': 'save-custom-layers',
-////                        'resource': new_name,
-////                        'uuid': uuid,
-////                        'service_link': service_link,
-////                        'service_type': service_type,
-////                        'service_layer_name': service_layer_name,
-//                        'csrfmiddlewaretoken': csrf_token,
-//                    },
-//                }).done(function(data){
-//                    console.log(data);
-//                });
                 $.ajax({
                     type: 'POST',
                     url: '',

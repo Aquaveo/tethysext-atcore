@@ -109,14 +109,14 @@ class MapView(AppUsersResourceController):
         # Check if we need to create a blank custom layer group
         create_custom_layer = True
         for layer_group in layer_groups:
-            if layer_group['id'] == 'custom_layer':
+            if layer_group['id'] == 'custom_layers':
                 create_custom_layer = False
                 break
 
         if create_custom_layer:
-            custom_layer = map_manager.build_layer_group(id="custom_layer", display_name="Custom Layer", layers='',
-                                                         layer_control='checkbox', visible=True)
-            layer_groups.append(custom_layer)
+            custom_layers = map_manager.build_layer_group(id="custom_layers", display_name="Custom Layer", layers='',
+                                                          layer_control='checkbox', visible=True)
+            layer_groups.append(custom_layers)
 
         # Initialize context
         context = {
@@ -250,6 +250,20 @@ class MapView(AppUsersResourceController):
             custom_layers = []
         custom_layers.extend(custom_layer)
         resource.set_attribute('custom_layers', custom_layers)
+        session.commit()
+        return JsonResponse({'success': True})
+
+    def remove_custom_layer(self, request, session, resource, back_url, *args, **kwargs):
+        layer_uuid = request.POST.get('uuid', '')
+        layer_group_type = request.POST.get('layer_group_type', '')
+        if layer_group_type == 'custom_layers':
+            custom_layers = resource.get_attribute(layer_group_type)
+            if custom_layers is not None:
+                new_custom_layers = []
+                for custom_layer in custom_layers:
+                    if custom_layer['uuid'] != layer_uuid:
+                        new_custom_layers.append(custom_layer)
+                resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()
         return JsonResponse({'success': True})
 

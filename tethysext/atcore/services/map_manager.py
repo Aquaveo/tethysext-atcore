@@ -119,7 +119,7 @@ class MapManagerBase(object):
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
-                       public='checked', geometry_attribute='geometry'):
+                       public=True, geometry_attribute='geometry'):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -197,7 +197,7 @@ class MapManagerBase(object):
 
         return mv_layer
 
-    def build_layer_group(self, id, display_name, layers, layer_control='checkbox', visible=True, public='checked'):
+    def build_layer_group(self, id, display_name, layers, layer_control='checkbox', visible=True, public=True):
         """
         Build a layer group object.
 
