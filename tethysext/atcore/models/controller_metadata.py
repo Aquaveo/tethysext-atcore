@@ -13,6 +13,7 @@ from sqlalchemy import Column, String, PickleType
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users.base import AppUsersBase
 
+
 __all__ = ['ControllerMetadata']
 
 
