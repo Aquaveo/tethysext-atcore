@@ -53,7 +53,7 @@ var ATCORE_MAP_VIEW = (function() {
  	*                    PRIVATE FUNCTION DECLARATIONS
  	*************************************************************************/
  	// Config
- 	var parse_attributes, parse_permissions, setup_ajax, setup_map;
+ 	var parse_attributes, parse_permissions, setup_ajax, setup_map, csrf_token;
 
  	// Map management
  	var remove_layer_from_map, get_layer_name_from_feature, get_feature_id_from_feature;
@@ -89,6 +89,10 @@ var ATCORE_MAP_VIEW = (function() {
 
  	// Drawing methods
  	var init_draw_controls;
+
+ 	// Utility Methods
+
+ 	var generate_uuid;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -639,7 +643,7 @@ var ATCORE_MAP_VIEW = (function() {
             modal.action_button.on('click', function(e) {
                 // Reset the ui
                 reset_ui();
-
+                var uuid = ''
                 if (remove_type === 'layer') {
                     // Remove layer from map
                     let layer_name = $action_button.data('layer-name');
@@ -648,6 +652,7 @@ var ATCORE_MAP_VIEW = (function() {
                     // Remove item from layers tree
                     let layer_list_item = $action_button.closest('.layer-list-item');
                     layer_list_item.remove();
+                    uuid = $layer_label.find('.layer-visibility-control').first().data('layer-variable')
                 }
                 else {
                     // Remove layers from map
@@ -673,6 +678,22 @@ var ATCORE_MAP_VIEW = (function() {
                 hide_action_modal();
 
                 // TODO: Save state to resource - store in attributes?
+                // Save state of custom_layers to resource
+                if (remove_type === 'layer') {
+                    csrf_token = $('input[name=csrfmiddlewaretoken]').val()
+                    $.ajax({
+                        type: 'POST',
+                        url: '',
+                        data: {'method': 'remove_custom_layer',
+                               'layer_group_type': 'custom_layers',
+                               'uuid': uuid},
+                        beforeSend: xhr => {
+                            xhr.setRequestHeader('X-CSRFToken', csrf_token);
+                        },
+                    }).done(function (data) {
+
+                    })
+                }
             });
         });
     };
@@ -743,6 +764,118 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     init_add_layer_controls = function() {
+        $('.add-layer-to-layer-group').on('click', function(e) {
+            let $action_button = $(e.target);
+
+            if (!$action_button.hasClass('add-layer-to-layer-group')) {
+                $action_button = $action_button.closest('.add-layer-to-layer-group');
+            }
+
+            let $layer_label = $action_button.closest('.layers-context-menu').prev();
+            let $display_name = $layer_label.find('.display-name').first();
+            let $new_layer = $layer_label.parent().next().first()
+            var uuid = generate_uuid();
+            // Build Modal
+            let modal_content = '<div class="form-group">'
+                              + '<label class="sr-only" for="new-name-field">New name:</label>'
+                              + '<input class="form-control" type="text" id="new-name-field" style="margin-bottom:10px" value="New Layer" autofocus onfocus="this.select();">'
+                              + '<label class="sr-only" for="service-type">Map Service Type</label>'
+                              + '<select class="form-control" style="margin-bottom:10px" id="service-type">'
+                              + '<option value="WMS" selected>WMS</option>'
+                              + '</select>'
+                              + '<label class="sr-only" for="services-link">Service Link</label>'
+                              + '<input class="form-control" type="text" id="services-link" value="" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
+                              + '<label class="sr-only" for="service-layer-name">Layer Name</label>'
+                              + '<input class="form-control" type="text" id="service-layer-name" value="" placeholder="Layer Name (ex: Lithology)" autofocus onfocus="this.select();">'
+                              + '</div>';
+
+            let modal = build_action_modal('Add Layer', modal_content, 'Add', 'success');
+
+            // Show Modal
+            show_action_modal();
+
+            // Handle Modal Action
+            modal.action_button.on('click', function(e) {
+                // Rename layer label
+                let new_name = modal.content.find('#new-name-field').first().val();
+                let service_type = modal.content.find('#service-type').first().val();
+                let service_link =  modal.content.find('#services-link').first().val();
+                let service_layer_name =  modal.content.find('#service-layer-name').first().val();
+                let html_content = '<li class="layer-list-item">'
+                html_content += '<label class="flatmark"><span class="display-name">' + new_name + '</span>';
+                html_content += '<input type="checkbox" class="layer-visibility-control" checked id="' + uuid + '"';
+                html_content += 'data-layer-name="' + uuid + '" data-layer-variable="custom_variable" name="' + new_name + '">';
+                html_content += '<span class="checkmark checkbox"></span></label>';
+                html_content += '<div class="dropdown layers-context-menu pull-right">'
+                html_content += '<a id="' + uuid + '--context-menu" class="btn btn-xs dropdown-toggle layers-btn " data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="color: rgb(186, 12, 47);">';
+                html_content += '<span class="glyphicon glyphicon-option-vertical"></span></a>';
+                html_content += '<ul class="dropdown-menu dropdown-menu-right" aria-labeledby="' + uuid + '--context-menu">';
+                html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>';
+                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>';
+                html_content += '<div class="form-group">';
+                html_content += '<div class="bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-on bootstrap-switch-small bootstrap-switch-animate">'
+                html_content += '<div class="bootstrap-switch-container">'
+                html_content += '<span class="bootstrap-switch-handle-on bootstrap-switch-success">Public</span><label class="bootstrap-switch-label">&nbsp;</label>'
+                html_content += '<span class="bootstrap-switch-handle-off bootstrap-switch-danger">Private</span>'
+                html_content += '<input class="form-control bootstrap-switch layer-dropdown-toggle" type="checkbox" data-size="small" data-on-text="Public" data-off-text="Private" data-on-color="success" data-off-color="danger" true>'
+                html_content += '</div></div></div>';
+                html_content += '<li role="separator" class="divider"></li>';
+                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
+                html_content += '<li role="separator" class="divider"></li>';
+                html_content += '<li>';
+                html_content += '<div class="flat-slider-container">';
+                html_content += '<label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>';
+                html_content += '<div class="flat-slider-container">';
+                html_content += '<input type="range" class="flat-slider layer-opacity-control" min="0" max="100" value="100" data-layer-name="' + uuid + '" data-layer-variable="">';
+                html_content += '</div>';
+                html_content += '</li></ul>';
+                $new_layer.append(html_content);
+                $new_layer.css({'overflow': 'visible'});
+                init_layers_tab();
+                var wms_layers =
+                        new ol.layer.Tile({
+//                            extend: [-13884911, 2870341, -7455066,6338219],
+                            source: new ol.source.TileWMS({
+                                url:service_link,
+                                params: {'service': service_type, 'version': '1.3.0', 'request': 'GetMap',
+                                         'LAYERS': service_layer_name, 'TILED': true},
+                                serverType: 'geoserver'
+                            })
+                        })
+                m_layers[uuid] = wms_layers;
+                // Hide the modal
+                hide_action_modal();
+                m_map.addLayer(wms_layers);
+
+                $('#' + uuid).change(function(){
+                    if (this.checked) {
+                        m_map.addLayer(m_layers[uuid]);
+                    }
+                    else {
+                        m_map.removeLayer(m_layers[uuid]);
+                    }
+                })
+
+                // Save to resource
+                csrf_token = $('input[name=csrfmiddlewaretoken]').val()
+                $.ajax({
+                    type: 'POST',
+                    url: '',
+                    data: {'method': 'save_custom_layers',
+                           'layer_name': new_name,
+                           'uuid': uuid,
+                           'service_link': service_link,
+                           'service_type': service_type,
+                           'service_layer_name': service_layer_name,},
+                    beforeSend: xhr => {
+                        xhr.setRequestHeader('X-CSRFToken', csrf_token);
+                    },
+                }).done(function (data) {
+
+                })
+                // TODO: Save state to resource - store in attributes?
+            });
+        });
         // TODO: Implement
         // TODO: Save state to workflow - store in attributes?
     };
@@ -1032,6 +1165,15 @@ var ATCORE_MAP_VIEW = (function() {
         return row;
     };
 
+    // Generate UUID
+    generate_uuid = function () {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+        });
+    }
+
+
     // Feature Selection
     init_feature_selection = function() {
         TETHYS_MAP_VIEW.overrideSelectionStyler('points', points_selection_styler);
@@ -1260,6 +1402,7 @@ var ATCORE_MAP_VIEW = (function() {
         $('[data-toggle="tooltip"]').tooltip('destroy');
         $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
     };
+
 
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
