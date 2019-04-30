@@ -45,7 +45,6 @@ var ATCORE_MAP_VIEW = (function() {
     var m_plot,                         // Plot object
         m_plot_config;                  // Configuration options for the plot
 
-
     // Permissions
     var p_can_geocode,                  // Can use geocode feature
         p_can_plot;                     // Can use plotting feature
