@@ -14,7 +14,7 @@ from copy import deepcopy
 from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
-from tethysext.atcore.mixins import StatusMixin, AttributesMixin
+from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.controller_metadata import ControllerMetadata
 
@@ -22,7 +22,7 @@ from tethysext.atcore.models.controller_metadata import ControllerMetadata
 __all__ = ['ResourceWorkflowStep']
 
 
-class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
+class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMixin):
     """
     Data model for storing information about resource workflows.
 
@@ -34,7 +34,6 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     5. STATUS_COMPLETE = Step has been completed successfully.
     """
     __tablename__ = 'app_users_resource_workflow_steps'
-
     CONTROLLER = ''
     TYPE = 'generic_workflow_step'
     ATTR_STATUS_MESSAGE = 'status_message'
@@ -44,8 +43,8 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     child_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
-    resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
     controller_metadata_id = Column(GUID, ForeignKey('app_users_controller_metadata.id'))
+    resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
     type = Column(String)
 
     name = Column(String)
@@ -55,22 +54,16 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
     _options = Column(PickleType, default={})
     _attributes = Column(String)
     _parameters = Column(PickleType, default={})
+    _controller = relationship('ControllerMetadata', cascade="all,delete", uselist=False,
+                               backref=backref('step'))
 
     parent = relationship('ResourceWorkflowStep', cascade="all,delete", uselist=False,
                           backref=backref('child', remote_side=[id]))
-    _controller = relationship('ControllerMetadata', cascade="all,delete", uselist=False,
-                               backref=backref('owner'))
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
         'polymorphic_identity': TYPE
     }
-
-    @property
-    def controller(self):
-        if not self._controller:
-            self._controller = ControllerMetadata(path=self.CONTROLLER)
-        return self._controller
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,23 +84,10 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin):
         return '<{} name="{}" id="{}" >'.format(self.__class__.__name__, self.name, self.id)
 
     @property
-    def default_options(self):
-        """
-        Returns default options dictionary for the step.
-        """
-        return {}
-
-    @property
-    def options(self):
-        return self._options
-
-    @options.setter
-    def options(self, value):
-        if not isinstance(value, dict):
-            raise ValueError('The options must be a dictionary: {}'.format(value))
-        opts = self.default_options
-        opts.update(value)
-        self._options = opts
+    def controller(self):
+        if not self._controller:
+            self._controller = ControllerMetadata(path=self.CONTROLLER)
+        return self._controller
 
     @abstractmethod
     def init_parameters(self, *args, **kwargs):

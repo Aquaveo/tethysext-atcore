@@ -52,11 +52,11 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
     name = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
     _attributes = Column(String)
-    # TODO: Add a results field/relationship
 
     resource = relationship('Resource', backref='workflows')
     creator = relationship('AppUser', backref='workflows')
-    steps = relationship('ResourceWorkflowStep', order_by="ResourceWorkflowStep.order", backref='workflow')
+    steps = relationship('ResourceWorkflowStep', order_by='ResourceWorkflowStep.order', backref='workflow')
+    results = relationship('ResourceWorkflowResult', order_by='ResourceWorkflowResult.order', backref='workflow')
 
     __mapper_args__ = {
         'polymorphic_on': 'type',

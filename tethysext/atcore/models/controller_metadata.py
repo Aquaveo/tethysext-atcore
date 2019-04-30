@@ -14,6 +14,7 @@ from tethys_sdk.base import TethysController
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users.base import AppUsersBase
 
+
 __all__ = ['ControllerMetadata']
 
 
