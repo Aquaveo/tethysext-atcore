@@ -774,20 +774,19 @@ var ATCORE_MAP_VIEW = (function() {
             let $layer_label = $action_button.closest('.layers-context-menu').prev();
             let $display_name = $layer_label.find('.display-name').first();
             let $new_layer = $layer_label.parent().next().first()
-            let current_name = $display_name.html();
             var uuid = generate_uuid();
             // Build Modal
             let modal_content = '<div class="form-group">'
                               + '<label class="sr-only" for="new-name-field">New name:</label>'
-                              + '<input class="form-control" type="text" id="new-name-field" style="margin-bottom:10px" value="' + current_name + '" autofocus onfocus="this.select();">'
+                              + '<input class="form-control" type="text" id="new-name-field" style="margin-bottom:10px" value="New Layer" autofocus onfocus="this.select();">'
                               + '<label class="sr-only" for="service-type">Map Service Type</label>'
                               + '<select class="form-control" style="margin-bottom:10px" id="service-type">'
                               + '<option value="WMS" selected>WMS</option>'
                               + '</select>'
                               + '<label class="sr-only" for="services-link">Service Link</label>'
-                              + '<input class="form-control" type="text" id="services-link" value="https://mrdata.usgs.gov/services/sgmc2" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
+                              + '<input class="form-control" type="text" id="services-link" value="" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
                               + '<label class="sr-only" for="service-layer-name">Layer Name</label>'
-                              + '<input class="form-control" type="text" id="service-layer-name" value="Lithology" placeholder="Layer Name (ex: Lithology)" autofocus onfocus="this.select();">'
+                              + '<input class="form-control" type="text" id="service-layer-name" value="" placeholder="Layer Name (ex: Lithology)" autofocus onfocus="this.select();">'
                               + '</div>';
 
             let modal = build_action_modal('Add Layer', modal_content, 'Add', 'success');
