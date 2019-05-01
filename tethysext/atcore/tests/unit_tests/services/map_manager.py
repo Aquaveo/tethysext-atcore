@@ -314,8 +314,55 @@ class MapManagerBaseTests(unittest.TestCase):
         self.assertTrue(params['TILED'])
         self.assertIn('TILESORIGIN', params)
         self.assertEqual('0.0,0.0', params['TILESORIGIN'])
-        self.assertIn('layer_name', data)
-        self.assertEqual(layer_name, data['layer_name'])
+        self.assertIn('layer_id', data)
+        self.assertEqual(layer_name, data['layer_id'])
+        self.assertIn('layer_variable', data)
+        self.assertEqual(layer_variable, data['layer_variable'])
+
+    def test_build_mv_layer_w_layer_id(self):
+        endpoint = 'http://www.example.com/geoserver/wms'
+        layer_name = 'foo'
+        layer_id = 'foo_id'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+        extent = [400, 300, 800, 100]
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager.build_mv_layer(
+                endpoint=endpoint,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                layer_variable=layer_variable,
+                layer_id=layer_id
+            )
+
+        opts = ret['options']
+        params = opts['params']
+        data = ret['data']
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual('TileWMS', ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(endpoint, opts['url'])
+        self.assertEqual('geoserver', opts['serverType'])
+        self.assertEqual(layer_name, params['LAYERS'])
+        self.assertIn('tileGrid', opts)
+        self.assertEqual(map_manager.DEFAULT_TILE_GRID, opts['tileGrid'])
+        self.assertIn('TILED', params)
+        self.assertTrue(params['TILED'])
+        self.assertIn('TILESORIGIN', params)
+        self.assertEqual('0.0,0.0', params['TILESORIGIN'])
+        self.assertIn('layer_id', data)
+        self.assertEqual(layer_id, data['layer_id'])
         self.assertIn('layer_variable', data)
         self.assertEqual(layer_variable, data['layer_variable'])
 
@@ -528,8 +575,8 @@ class MapManagerBaseTests(unittest.TestCase):
         self.assertTrue(params['TILED'])
         self.assertIn('TILESORIGIN', params)
         self.assertEqual('0.0,0.0', params['TILESORIGIN'])
-        self.assertIn('layer_name', data)
-        self.assertEqual(layer_name, data['layer_name'])
+        self.assertIn('layer_id', data)
+        self.assertEqual(layer_name, data['layer_id'])
         self.assertIn('layer_variable', data)
         self.assertEqual(layer_variable, data['layer_variable'])
         self.assertTrue(plottable, data['plottable'])
