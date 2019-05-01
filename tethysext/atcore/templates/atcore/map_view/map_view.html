@@ -74,7 +74,7 @@
                         <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
                       {% endif %}
                       {% if show_remove %}
-                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                       {% endif %}
                       {% if layer_group.id == 'custom_layers' %}
                         <li role="separator" class="divider"></li>
@@ -99,7 +99,7 @@
                            class="layer-visibility-control"
                            {% if layer.layer_options.visible %}checked="checked"{% endif %}
                            {% if not layer_group.visible %}disabled{% endif %}
-                           data-layer-name="{{ layer.data.layer_name }}"
+                           data-layer-id="{{ layer.data.layer_id }}"
                            data-layer-variable="{{ layer.data.layer_variable }}"
                            name="{{ layer_group.id }}">
                     <span class="checkmark {{ layer_group.control }}"></span>
@@ -107,24 +107,24 @@
 
                   {# LAYER CONTEXT MENU #}
                   <div class="dropdown layers-context-menu pull-right">
-                    <a id="{{ layer.data.layer_name }}--context-menu"
+                    <a id="{{ layer.data.layer_id }}--context-menu"
                        class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
                        data-toggle="dropdown"
                        aria-haspopup="true"
                        aria-expanded="true">
                       <span class="glyphicon glyphicon-option-vertical"></span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_name }}--context-menu">
+                    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_id }}--context-menu">
                       {% if show_rename %}
                         <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
                       {% endif %}
                       {% if show_remove %}
-                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                       {% endif %}
                       {% if show_public_toggle or show_remove or show_rename %}
                         <li role="separator" class="divider"></li>
                       {% endif %}
-                      <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                      <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
                       {% comment %}
                       {# TODO: Implement download layer action #}
                       <li role="separator" class="divider"></li>
@@ -138,7 +138,7 @@
                                  class="flat-slider layer-opacity-control"
                                  min="0" max="100"
                                  value="100"
-                                 data-layer-name="{{ layer.data.layer_name }}"
+                                 data-layer-id="{{ layer.data.layer_id }}"
                                  data-layer-variable="{{ layer.data.variable }}">
                         </div>
                       </li>
@@ -173,7 +173,7 @@
                       <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
                     {% endif %}
                     {% if show_remove %}
-                    <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                    <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                     {% endif %}
                     {% if show_public_toggle %}
                       <div class="form-group">
@@ -201,7 +201,7 @@
                          class="layer-visibility-control"
                          {% if layer.layer_options.visible %}checked="checked"{% endif %}
                          {% if not layer_group.visible %}disabled{% endif %}
-                         data-layer-name="{{ layer.data.layer_name }}"
+                         data-layer-id="{{ layer.data.layer_id }}"
                          data-layer-variable="{{ layer.data.layer_variable }}"
                          name="{{ layer_group.id }}">
                   <span class="checkmark {{ layer_group.control }}"></span>
@@ -209,19 +209,19 @@
 
                 {# LAYER CONTEXT MENU #}
                 <div class="dropdown layers-context-menu pull-right">
-                  <a id="{{ layer.data.layer_name }}--context-menu"
+                  <a id="{{ layer.data.layer_id }}--context-menu"
                      class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
                      data-toggle="dropdown"
                      aria-haspopup="true"
                      aria-expanded="true">
                     <span class="glyphicon glyphicon-option-vertical"></span>
                   </a>
-                  <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_name }}--context-menu">
+                  <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_id }}--context-menu">
                     {% if show_rename %}
                       <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
                     {% endif %}
                     {% if show_remove %}
-                    <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                    <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
                     {% endif %}
                     {% if show_public_toggle %}
                       <div class="form-group">
@@ -233,7 +233,7 @@
                     {% if show_public_toggle or show_remove or show_rename %}
                       <li role="separator" class="divider"></li>
                     {% endif %}
-                    <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                    <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
                     {% comment %}
                     {# TODO: Implement download layer action #}
                     <li role="separator" class="divider"></li>
@@ -247,7 +247,7 @@
                                class="flat-slider layer-opacity-control"
                                min="0" max="100"
                                value="100"
-                               data-layer-name="{{ layer.data.layer_name }}"
+                               data-layer-id="{{ layer.data.layer_id }}"
                                data-layer-variable="{{ layer.data.variable }}">
                       </div>
                     </li>

@@ -140,11 +140,11 @@ var ATCORE_MAP_VIEW = (function() {
 
 	    // Get id from tethys_data attribute
 	    m_map.getLayers().forEach(function(item, index, array) {
-	        if ('tethys_data' in item && 'layer_name' in item.tethys_data) {
-	           if (item.tethys_data.layer_name in m_layers) {
-	               console.log('Warning: layer_name already in layers map: "' + item.tethys_data.layer_name + '".');
+	        if ('tethys_data' in item && 'layer_id' in item.tethys_data) {
+	           if (item.tethys_data.layer_id in m_layers) {
+	               console.log('Warning: layer_name already in layers map: "' + item.tethys_data.layer_id + '".');
 	           }
-	           m_layers[item.tethys_data.layer_name] = item;
+	           m_layers[item.tethys_data.layer_id] = item;
 	        }
 	    });
 
@@ -267,7 +267,7 @@ var ATCORE_MAP_VIEW = (function() {
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
-                    'data-layer-name="' + layer_name + '"' +
+                    'data-layer-id="' + layer_name + '"' +
                 '>Plot</a>' +
             '</div>';
 
@@ -296,7 +296,7 @@ var ATCORE_MAP_VIEW = (function() {
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
-                    'data-layer-name="' + layer_name + '"' +
+                    'data-layer-id="' + layer_name + '"' +
                 '>Action</a>' +
             '</div>';
 
@@ -309,7 +309,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Call load_plot when buttons are clicked
         $('.btn-plot').on('click', function(e) {
-            let layer_name = $(e.target).data('layer-name');
+            let layer_name = $(e.target).data('layer-id');
             let feature_id = $(e.target).data('feature-id');
 
             // Load the plot
@@ -323,7 +323,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Call load_plot when buttons are clicked
         $('.btn-plot').on('click', function(e) {
-            let layer_name = $(e.target).data('layer-name');
+            let layer_name = $(e.target).data('layer-id');
             let feature_id = $(e.target).data('feature-id');
 
             // Load the plot
@@ -486,7 +486,7 @@ var ATCORE_MAP_VIEW = (function() {
                 $item.prop('disabled', !layer_group_checked);
 
                 // Set layer visibility
-                let layer_name = $item.data('layer-name');
+                let layer_name = $item.data('layer-id');
                 let layer_checked = $item.is(':checked');
                 let layer_variable = $item.data('layer-variable');
                 m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
@@ -519,7 +519,7 @@ var ATCORE_MAP_VIEW = (function() {
         $('.layer-visibility-control').on('change', function(e) {
             let $target = $(e.target);
             let checked = $target.is(':checked');
-            let layer_name = $target.data('layer-name');
+            let layer_name = $target.data('layer-id');
             let layer_variable = $target.data('layer-variable');
 
             // Reset the ui
@@ -538,7 +538,7 @@ var ATCORE_MAP_VIEW = (function() {
         $('.layer-visibility-control').on('deselect', function(e) {
             let $target = $(e.target);
             let checked = $target.is(':checked');
-            let layer_name = $target.data('layer-name');
+            let layer_name = $target.data('layer-id');
             let layer_variable = $target.data('layer-variable');
 
             // Set the visibility of layer
@@ -563,7 +563,7 @@ var ATCORE_MAP_VIEW = (function() {
             $label_value.html(val + '%');
 
             // Update opacity of layer
-            let layer_name = $target.data('layer-name');
+            let layer_name = $target.data('layer-id');
             m_layers[layer_name].setOpacity(val/100);
 
             // TODO: Save state to resource - store in attributes?
@@ -646,8 +646,8 @@ var ATCORE_MAP_VIEW = (function() {
                 var uuid = ''
                 if (remove_type === 'layer') {
                     // Remove layer from map
-                    var layer_name = $action_button.data('layer-name');
-                    remove_layer_from_map(layer_name);
+                    var layer_id = $action_button.data('layer-id');
+                    remove_layer_from_map(layer_id);
 
                     // Remove item from layers tree
                     let layer_list_item = $action_button.closest('.layer-list-item');
@@ -662,7 +662,7 @@ var ATCORE_MAP_VIEW = (function() {
 
                     // Remove all layers in layer group
                     $layer_visiblity_controls.each(function(index, item) {
-                        let layer_name = $(item).data('layer-name');
+                        let layer_name = $(item).data('layer-id');
                         remove_layer_from_map(layer_name);
                     });
 
@@ -685,7 +685,7 @@ var ATCORE_MAP_VIEW = (function() {
                         url: '',
                         data: {'method': 'remove_custom_layer',
                                'layer_group_type': 'custom_layers',
-                               'layer_name': layer_name},
+                               'layer_id': layer_id},
                         beforeSend: xhr => {
                             xhr.setRequestHeader('X-CSRFToken', csrf_token);
                         },
@@ -718,7 +718,7 @@ var ATCORE_MAP_VIEW = (function() {
                 $action_button = $action_button.closest('.zoom-to-layer-action');
             }
 
-            let layer_name = $action_button.data('layer-name');
+            let layer_name = $action_button.data('layer-id');
             let extent = m_layers[layer_name].getExtent();
 
             if (extent) {
@@ -783,9 +783,9 @@ var ATCORE_MAP_VIEW = (function() {
                               + '<option value="WMS" selected>WMS</option>'
                               + '</select>'
                               + '<label class="sr-only" for="services-link">Service Link</label>'
-                              + '<input class="form-control" type="text" id="services-link" value="" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
+                              + '<input class="form-control" type="text" id="services-link" value="https://mrdata.usgs.gov/services/sgmc2" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
                               + '<label class="sr-only" for="service-layer-name">Layer Name</label>'
-                              + '<input class="form-control" type="text" id="service-layer-name" value="" placeholder="Layer Name (ex: Lithology)" autofocus onfocus="this.select();">'
+                              + '<input class="form-control" type="text" id="service-layer-name" value="Lithology" placeholder="Layer Name (ex: Lithology)" style="margin-top: 10px" autofocus onfocus="this.select();">'
                               + '</div>';
 
             let modal = build_action_modal('Add Layer', modal_content, 'Add', 'success');
@@ -803,14 +803,14 @@ var ATCORE_MAP_VIEW = (function() {
                 let html_content = '<li class="layer-list-item">'
                 html_content += '<label class="flatmark"><span class="display-name">' + new_name + '</span>';
                 html_content += '<input type="checkbox" class="layer-visibility-control" checked id="' + uuid + '"';
-                html_content += 'data-layer-name="' + uuid + '" data-layer-variable="' + uuid + '" name="custom_layers">';
+                html_content += 'data-layer-id="' + uuid + '" data-layer-variable="" name="custom_layers">';
                 html_content += '<span class="checkmark checkbox"></span></label>';
                 html_content += '<div class="dropdown layers-context-menu pull-right">'
                 html_content += '<a id="' + uuid + '--context-menu" class="btn btn-xs dropdown-toggle layers-btn " data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="color: rgb(186, 12, 47);">';
                 html_content += '<span class="glyphicon glyphicon-option-vertical"></span></a>';
                 html_content += '<ul class="dropdown-menu dropdown-menu-right" aria-labeledby="' + uuid + '--context-menu">';
                 html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>';
-                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-name="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>';
+                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>';
                 html_content += '<div class="form-group">';
                 html_content += '<div class="bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-on bootstrap-switch-small bootstrap-switch-animate">'
                 html_content += '<div class="bootstrap-switch-container">'
@@ -819,20 +819,19 @@ var ATCORE_MAP_VIEW = (function() {
                 html_content += '<input class="form-control bootstrap-switch layer-dropdown-toggle" type="checkbox" data-size="small" data-on-text="Public" data-off-text="Private" data-on-color="success" data-off-color="danger" true>'
                 html_content += '</div></div></div>';
                 html_content += '<li role="separator" class="divider"></li>';
-                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-name="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
+                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
                 html_content += '<li role="separator" class="divider"></li>';
                 html_content += '<li>';
                 html_content += '<div class="flat-slider-container">';
                 html_content += '<label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>';
                 html_content += '<div class="flat-slider-container">';
-                html_content += '<input type="range" class="flat-slider layer-opacity-control" min="0" max="100" value="100" data-layer-name="' + uuid + '" data-layer-variable="">';
+                html_content += '<input type="range" class="flat-slider layer-opacity-control" min="0" max="100" value="100" data-layer-id="' + uuid + '" data-layer-variable="">';
                 html_content += '</div>';
                 html_content += '</li></ul>';
                 $new_layer.append(html_content);
                 $new_layer.css({'overflow': 'visible'});
                 var wms_layers =
                         new ol.layer.Tile({
-//                            extend: [-13884911, 2870341, -7455066,6338219],
                             source: new ol.source.TileWMS({
                                 url:service_link,
                                 params: {'service': service_type, 'version': '1.3.0', 'request': 'GetMap',
@@ -845,15 +844,6 @@ var ATCORE_MAP_VIEW = (function() {
                 hide_action_modal();
                 m_map.addLayer(wms_layers);
                 init_layers_tab();
-
-//                $('#' + uuid).change(function(){
-//                    if (this.checked) {
-//                        m_map.addLayer(m_layers[uuid]);
-//                    }
-//                    else {
-//                        m_map.removeLayer(m_layers[uuid]);
-//                    }
-//                })
 
                 // Save to resource
                 csrf_token = $('input[name=csrfmiddlewaretoken]').val()

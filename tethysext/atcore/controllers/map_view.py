@@ -196,7 +196,6 @@ class MapView(AppUsersResourceController):
         )
 
         context.update({'plot_slide_sheet': plot_slidesheet})
-
         return render(request, self.template_name, context)
 
     def map_request_to_method(self, request):
@@ -243,7 +242,7 @@ class MapView(AppUsersResourceController):
         service_link = request.POST.get('service_link', '')
         service_type = request.POST.get('service_type', 'WMS')
         service_layer_name = request.POST.get('service_layer_name', '')
-        custom_layer = [{'layer_name': layer_uuid, 'display_name': display_name, 'service_link': service_link,
+        custom_layer = [{'layer_id': layer_uuid, 'display_name': display_name, 'service_link': service_link,
                          'service_type': service_type, 'service_layer_name': service_layer_name}]
         custom_layers = resource.get_attribute('custom_layers')
         if custom_layers is None:
@@ -254,14 +253,14 @@ class MapView(AppUsersResourceController):
         return JsonResponse({'success': True})
 
     def remove_custom_layer(self, request, session, resource, back_url, *args, **kwargs):
-        layer_name = request.POST.get('layer_name', '')
+        layer_id = request.POST.get('layer_id', '')
         layer_group_type = request.POST.get('layer_group_type', '')
         if layer_group_type == 'custom_layers':
             custom_layers = resource.get_attribute(layer_group_type)
             if custom_layers is not None:
                 new_custom_layers = []
                 for custom_layer in custom_layers:
-                    if custom_layer['layer_name'] != layer_name:
+                    if custom_layer['layer_id'] != layer_id:
                         new_custom_layers.append(custom_layer)
                 resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()

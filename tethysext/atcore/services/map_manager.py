@@ -119,7 +119,7 @@ class MapManagerBase(object):
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
-                       public=True, geometry_attribute='geometry', custom_layer=False):
+                       public=True, geometry_attribute='geometry', layer_id=''):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -136,6 +136,7 @@ class MapManagerBase(object):
             has_action (bool): Enable "Action" button on pop-up properties. Defaults to False.
             extent (list): Extent for the layer. Defaults to None.
             geometry_attribute (str): Name of the geometry attribute. Defaults to geometry.
+            layer_id(uuid): layer_id for non geoserver layer where layer_name may not be unique.
 
         Returns:
             MVLayer: the MVLayer object.
@@ -143,10 +144,7 @@ class MapManagerBase(object):
         # TODO: GAGE FIX TESTS FOR THIS
         # Build params
         params = {}
-        if custom_layer:
-            params['LAYERS'] = layer_variable
-        else:
-            params['LAYERS'] = layer_name
+        params['LAYERS'] = layer_name
 
         if tiled:
             params.update({
@@ -172,7 +170,7 @@ class MapManagerBase(object):
             options['tileGrid'] = self.DEFAULT_TILE_GRID
 
         data = {
-            'layer_name': layer_name,
+            'layer_id': layer_id if layer_id else layer_name,
             'layer_variable': layer_variable,
             'toggle_status': public
         }
