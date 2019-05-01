@@ -811,13 +811,6 @@ var ATCORE_MAP_VIEW = (function() {
                 html_content += '<ul class="dropdown-menu dropdown-menu-right" aria-labeledby="' + uuid + '--context-menu">';
                 html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>';
                 html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>';
-                html_content += '<div class="form-group">';
-                html_content += '<div class="bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-on bootstrap-switch-small bootstrap-switch-animate">'
-                html_content += '<div class="bootstrap-switch-container">'
-                html_content += '<span class="bootstrap-switch-handle-on bootstrap-switch-success">Public</span><label class="bootstrap-switch-label">&nbsp;</label>'
-                html_content += '<span class="bootstrap-switch-handle-off bootstrap-switch-danger">Private</span>'
-                html_content += '<input class="form-control bootstrap-switch layer-dropdown-toggle" type="checkbox" data-size="small" data-on-text="Public" data-off-text="Private" data-on-color="success" data-off-color="danger" true>'
-                html_content += '</div></div></div>';
                 html_content += '<li role="separator" class="divider"></li>';
                 html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
                 html_content += '<li role="separator" class="divider"></li>';
