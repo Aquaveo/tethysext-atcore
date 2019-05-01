@@ -238,12 +238,12 @@ class MapView(AppUsersResourceController):
         )
 
     def save_custom_layers(self, request, session, resource, back_url, *args, **kwargs):
-        layer_name = request.POST.get('layer_name', '')
+        display_name = request.POST.get('layer_name', '')
         layer_uuid = request.POST.get('uuid', '')
         service_link = request.POST.get('service_link', '')
         service_type = request.POST.get('service_type', 'WMS')
         service_layer_name = request.POST.get('service_layer_name', '')
-        custom_layer = [{'layer_name': layer_name, 'uuid': layer_uuid, 'service_link': service_link,
+        custom_layer = [{'layer_name': layer_uuid, 'display_name': display_name, 'service_link': service_link,
                          'service_type': service_type, 'service_layer_name': service_layer_name}]
         custom_layers = resource.get_attribute('custom_layers')
         if custom_layers is None:
@@ -254,14 +254,14 @@ class MapView(AppUsersResourceController):
         return JsonResponse({'success': True})
 
     def remove_custom_layer(self, request, session, resource, back_url, *args, **kwargs):
-        layer_uuid = request.POST.get('uuid', '')
+        layer_name = request.POST.get('layer_name', '')
         layer_group_type = request.POST.get('layer_group_type', '')
         if layer_group_type == 'custom_layers':
             custom_layers = resource.get_attribute(layer_group_type)
             if custom_layers is not None:
                 new_custom_layers = []
                 for custom_layer in custom_layers:
-                    if custom_layer['uuid'] != layer_uuid:
+                    if custom_layer['layer_name'] != layer_name:
                         new_custom_layers.append(custom_layer)
                 resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()

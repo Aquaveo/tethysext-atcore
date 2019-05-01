@@ -119,7 +119,7 @@ class MapManagerBase(object):
 
     def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
-                       public=True, geometry_attribute='geometry'):
+                       public=True, geometry_attribute='geometry', custom_layer=False):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -143,7 +143,10 @@ class MapManagerBase(object):
         # TODO: GAGE FIX TESTS FOR THIS
         # Build params
         params = {}
-        params['LAYERS'] = layer_name
+        if custom_layer:
+            params['LAYERS'] = layer_variable
+        else:
+            params['LAYERS'] = layer_name
 
         if tiled:
             params.update({
