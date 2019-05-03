@@ -11,6 +11,7 @@ from .controllers.app_users.add_existing_user import AddExistingUserTests  # noq
 from .models.app_user_tests import AppUserTests  # noqa: F401
 from .models.organization_tests import OrganizationTests  # noqa: F401
 from .models.initializer import AppUserInitializerTests  # noqa: F401
+from .models.app_users.resource_workflow_tests import ResourceWorkflowTests  # noqa: F401
 from .permissions.app_users import PermissionsGeneratorTests  # noqa: F401
 from .services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401
 from .services.app_users.decorators import ActiveUserRequiredDecoratorTests  # noqa: F401

@@ -59,6 +59,10 @@ class StatusMixin(object):
 
         try:
             status_result = status_dict[key]
+
+            if not status_result:
+                status_result = default
+
         except KeyError:
             status_result = default
 
