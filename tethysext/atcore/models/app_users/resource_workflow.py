@@ -7,15 +7,17 @@
 ********************************************************************************
 """
 import uuid
+import logging
 import datetime as dt
 from sqlalchemy import Column, ForeignKey, String, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
-from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
+from tethysext.atcore.models.app_users import ResourceWorkflowStep, ResourceWorkflowResult
 
 
+log = logging.getLogger(__name__)
 __all__ = ['ResourceWorkflow']
 
 
@@ -36,6 +38,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
     TYPE = 'generic_workflow'
     DISPLAY_TYPE_SINGULAR = 'Generic Workflow'
     DISPLAY_TYPE_PLURAL = 'Generic Workflows'
+    ATTR_LAST_RESULT = 'last_result'
 
     STATUS_PENDING = ResourceWorkflowStep.STATUS_PENDING
     STATUS_CONTINUE = ResourceWorkflowStep.STATUS_CONTINUE
@@ -64,7 +67,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
     }
 
     def __str__(self):
-        return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
+        return '<{} id={} name={}>'.format(self.__class__.__name__, self.id, self.name)
 
     def get_next_step(self):
         """
@@ -133,6 +136,70 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
         Returns:
             list<ResourceWorkflowStep>: a list of steps previous to this one.
         """
+        if step not in self.steps:
+            raise ValueError('Step {} does not belong to this workflow.'.format(step))
+
         step_index = self.steps.index(step)
         previous_steps = self.steps[:step_index]
         return previous_steps
+
+    def get_last_result(self):
+        """
+        Get the result which was last viewed by the user.
+
+        Args:
+            session(sqlalchemy.Session): the session.
+
+        Returns:
+            ResourceWorkflowResult: the last result or None if not found.
+        """
+        try:
+            session = Session.object_session(self)
+            last_result_id = self.get_attribute(self.ATTR_LAST_RESULT)
+            if last_result_id is not None:
+                # Load the previously viewed result?
+                result = session.query(ResourceWorkflowResult).get(last_result_id)
+
+                if result is None:
+                    log.warning('Result with id "{}" not in workflow'.format(last_result_id))
+                return result
+
+            return self.results[0]
+        except (IndexError, AttributeError) as e:
+            if isinstance(e, IndexError):
+                log.warning('Workflow has no results.')
+            elif isinstance(e, AttributeError):
+                log.error('Could not get session from workflow: {}'.format(str(e)))
+            return None
+
+    def set_last_result(self, result=None):
+        """
+        Set the id of the last result viewed by the user.
+
+        Args:
+           result(ResourceWorkflowResult): The result to mark as being last viewed.
+
+        """
+        if result not in self.results:
+            raise ValueError('Result provided must belong to this workflow.')
+        return self.set_attribute(self.ATTR_LAST_RESULT, str(result.id))
+
+    def get_adjacent_results(self, result):
+        """
+        Get the adjacent results the given result.
+
+        Args:
+            result(ResourceWorkflowResult): A result belonging to this workflow.
+
+        Returns:
+            ResourceWorkflowResult, ResourceWorkflowResult: previous and next results, respectively.
+        """
+        if result not in self.results:
+            raise ValueError('Result {} does not belong to this workflow.'.format(result))
+
+        index = self.results.index(result)
+        previous_index = index - 1
+        next_index = index + 1
+        previous_result = self.results[previous_index] if previous_index >= 0 else None
+        next_result = self.results[next_index] if next_index < len(self.results) else None
+        return previous_result, next_result
