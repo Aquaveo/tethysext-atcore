@@ -3,7 +3,7 @@ import json
 
 class StatusMixin(object):
     """
-    Provides convenience methods for managing a status attribute.
+    Provides methods for implementing the status pattern.
     """
     # User Project Statuses
     STATUS_PENDING = 'Pending'

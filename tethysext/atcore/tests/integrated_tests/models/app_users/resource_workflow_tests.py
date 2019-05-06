@@ -1,5 +1,4 @@
 from unittest import mock
-import uuid
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -139,64 +138,3 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
 
     def test_get_previous_steps_invalid_step(self):
         self.assertRaises(ValueError, self.workflow.get_previous_steps, self.step_4)
-
-    def test_get_last_result_not_stored(self):
-        ret = self.workflow.get_last_result()
-        self.assertEqual(self.result_1, ret)
-
-    def test_get_last_result_stored(self):
-        self.workflow.set_attribute(self.workflow.ATTR_LAST_RESULT, str(self.result_2.id))
-        ret = self.workflow.get_last_result()
-        self.assertEqual(self.result_2, ret)
-
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.log')
-    def test_get_last_result_invalid_id_stored(self, mock_log):
-        bad_id = str(uuid.uuid4())
-        self.workflow.set_attribute(self.workflow.ATTR_LAST_RESULT, bad_id)
-        ret = self.workflow.get_last_result()
-        self.assertIsNone(ret)
-        mock_log.warning.assert_called_with('Result with id "{}" not in workflow'.format(bad_id))
-
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.log')
-    def test_get_last_result_workflow_has_no_results(self, mock_log):
-        self.workflow.results = []
-        self.session.commit()
-        ret = self.workflow.get_last_result()
-        self.assertIsNone(ret)
-        mock_log.warning.assert_called_with('Workflow has no results.')
-
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.log')
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.Session')
-    def test_get_last_result_invalid_session(self, mock_Session, mock_log):
-        mock_Session.object_session.return_value = None
-        self.workflow.set_attribute(self.workflow.ATTR_LAST_RESULT, str(self.result_2.id))
-        ret = self.workflow.get_last_result()
-        self.assertIsNone(ret)
-        mock_log.error.assert_called_with("Could not get session from workflow: 'NoneType' object has "
-                                          "no attribute 'query'")
-
-    def test_set_last_result(self):
-        self.workflow.set_last_result(self.result_2)
-        received = self.workflow.get_attribute(self.workflow.ATTR_LAST_RESULT)
-        self.assertEqual(str(self.result_2.id), received)
-
-    def test_set_last_result_invalid_result(self):
-        self.assertRaises(ValueError, self.workflow.set_last_result, self.result_4)
-
-    def test_get_adjacent_results_first(self):
-        prev_result, next_result = self.workflow.get_adjacent_results(self.result_1)
-        self.assertIsNone(prev_result)
-        self.assertEqual(self.result_2, next_result)
-
-    def test_get_adjacent_results_middle(self):
-        prev_result, next_result = self.workflow.get_adjacent_results(self.result_2)
-        self.assertEqual(self.result_1, prev_result)
-        self.assertEqual(self.result_3, next_result)
-
-    def test_get_adjacent_results_last(self):
-        prev_result, next_result = self.workflow.get_adjacent_results(self.result_3)
-        self.assertEqual(self.result_2, prev_result)
-        self.assertIsNone(next_result)
-
-    def test_get_adjacent_results_invalid_result(self):
-        self.assertRaises(ValueError, self.workflow.get_adjacent_results, self.result_4)

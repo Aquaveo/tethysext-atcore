@@ -29,6 +29,7 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
+    resource_workflow_step_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
     controller_metadata_id = Column(GUID, ForeignKey('app_users_controller_metadata.id'))
     type = Column(String)
     name = Column(String)
