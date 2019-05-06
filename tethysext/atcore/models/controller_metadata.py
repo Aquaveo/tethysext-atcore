@@ -40,7 +40,7 @@ class ControllerMetadata(AppUsersBase):
             function: the controller method.
         """  # noqa: E501
         from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
-        from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
+        from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 
         try:
             # Split into parts and extract function name
@@ -58,7 +58,7 @@ class ControllerMetadata(AppUsersBase):
         # Get entry point for class based views
         if inspect.isclass(controller) and issubclass(controller, TethysController):
             # Call with all kwargs if is instance of an AppUsersResourceWorkflowController
-            if issubclass(controller, AppUsersResourceWorkflowController):
+            if issubclass(controller, ResourceWorkflowView):
                 kwargs.update(self.kwargs)
                 controller = controller.as_controller(**kwargs)
 

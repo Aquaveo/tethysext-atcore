@@ -30,7 +30,7 @@ class SpatialInputMWV(MapWorkflowView):
     template_name = 'atcore/resource_workflows/spatial_input_mwv.html'
     valid_step_classes = [SpatialInputRWS]
 
-    def extend_context(self, request, session, context, current_step, previous_step, next_step):
+    def get_step_specific_context(self, request, session, context, current_step, previous_step, next_step):
         """
         Hook for extending the view context.
 

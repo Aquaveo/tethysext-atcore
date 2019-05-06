@@ -322,6 +322,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
             step.set_attribute('condor_job_statuses', [])
             session.commit()
 
+            # Redirect back to self
+            next_url = request.path
+
         return super().process_step_data(request=request, session=session, step=step, model_db=model_db,
                                          current_url=current_url, previous_url=previous_url, next_url=next_url)
 
