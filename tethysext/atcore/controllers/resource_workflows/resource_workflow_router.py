@@ -13,14 +13,15 @@ from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from tethys_apps.utilities import get_active_app
 from tethysext.atcore.exceptions import ATCoreException
-from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import ResultsResourceWorkflowStep
 
 
 log = logging.getLogger(__name__)
 
 
-class ResourceWorkflowRouter(AppUsersResourceWorkflowController):
+# TODO: Does this need to inherit from ResourceWorkflowView?
+class ResourceWorkflowRouter(ResourceWorkflowView):
     """
     Router for resource workflow views. Routes to appropriate step controller.
     """
