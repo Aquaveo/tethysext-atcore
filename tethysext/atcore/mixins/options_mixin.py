@@ -10,7 +10,7 @@
 
 class OptionsMixin(object):
     """
-    Adds properties for managing options fields.
+    Provides methods for implementing the options pattern.
     """
     _options = None
 

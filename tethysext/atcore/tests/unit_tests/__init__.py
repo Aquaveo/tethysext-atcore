@@ -1,10 +1,10 @@
 from tethysext.atcore.tests.unit_tests.mixins.status_mixin import StatusMixinTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.mixins.results_mixin import ResultMixinTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.model_types.guid_tests import GuidTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.models.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.models.organization_resource_tests import OrganizationResourceTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.models.resource_tests import ResourceTests  # noqa: F401
-from tethysext.atcore.tests.unit_tests.models.resource_workflow_tests import ResourceWorkflowTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.app_users.licenses import LicensesTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.app_users.user_roles import AppUserRoleTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.paginate import PaginateTests  # noqa: F401

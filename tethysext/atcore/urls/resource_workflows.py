@@ -35,6 +35,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
     Url Map Names:
         <workflow_type>_workflow <resource_id> <workflow_id>
         <workflow_type>_workflow_step <resource_id> <workflow_id> <step_id>
+        <workflow_type>_workflow_step_result <resource_id> <workflow_id> <step_id> <result_id>
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
@@ -64,6 +65,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
     # Url Patterns
     workflow_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}'  # noqa: E222, E501
     workflow_step_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}/step/{step_id}'  # noqa: E222, E501
+    workflow_step_result_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}/step/{step_id}/result/{result_id}'  # noqa: E222, E501
 
     url_maps = []
 
@@ -80,6 +82,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
 
         workflow_name = '{}_workflow'.format(_ResourceWorkflow.TYPE)
         workflow_step_name = '{}_workflow_step'.format(_ResourceWorkflow.TYPE)
+        workflow_step_result_name = '{}_workflow_step_result'.format(_ResourceWorkflow.TYPE)
 
         url_maps.extend([
             url_map_maker(
@@ -97,6 +100,18 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
             url_map_maker(
                 name=workflow_step_name,
                 url='/'.join([base_url_path, workflow_step_url]) if base_url_path else workflow_step_url,
+                controller=_ResourceWorkflowRouter.as_controller(
+                    _app=app,
+                    _persistent_store_name=persistent_store_name,
+                    _AppUser=_AppUser,
+                    _Organization=_Organization,
+                    _Resource=_Resource,
+                    _ResourceWorkflow=_ResourceWorkflow,
+                )
+            ),
+            url_map_maker(
+                name=workflow_step_result_name,
+                url='/'.join([base_url_path, workflow_step_result_url]) if base_url_path else workflow_step_result_url,
                 controller=_ResourceWorkflowRouter.as_controller(
                     _app=app,
                     _persistent_store_name=persistent_store_name,
