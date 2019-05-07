@@ -130,7 +130,7 @@ class AppUsersResourceWorkflowControllerTests(TethysTestCase):
         self.assertEqual('for eating', a[0].description)
         self.assertEqual(Res, type(self.resource))
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController._app')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin._app')
     def test_get_permission_manager(self, _):
         app_user_resource_workflow = ResourceWorkflowView()
         Res = app_user_resource_workflow.get_permissions_manager()
@@ -209,9 +209,9 @@ class AppUsersResourceControllerTests(TethysTestCase):
     def test_default_back_url(self):
         pass
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
     def test_get_resource(self, _, mock_app_user, mock_session):
         app_user_resource_controller = AppUsersResourceController()
         mock_request = mock.MagicMock()
@@ -231,11 +231,11 @@ class AppUsersResourceControllerTests(TethysTestCase):
         self.assertEqual(resource_out, ret)
         session.close.asset_called()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.messages')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
     def test_get_resource_can_view_atcore_exception(self, mock_resource, mock_app_user, mock_session, mock_redirect,
                                                     mock_messages):
         mock_request = mock.MagicMock()
@@ -262,11 +262,11 @@ class AppUsersResourceControllerTests(TethysTestCase):
 
     # TODO: Finish up the following test
 
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.messages')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.redirect')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.messages')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
     # def test_get_resource_can_view_statement_error(self, mock_resource, mock_app_user, mock_session, mock_redirect,
     #                                                mock_messages):
     #     import pdb

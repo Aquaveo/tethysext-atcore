@@ -115,9 +115,9 @@ class ManageOrganizationsTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.ManageOrganizations.add_custom_fields')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
     @mock.patch('tethys_apps.utilities.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
     def test_handle_get(self, _, mock_get_app_user, mock_get_session, __, mock_has_permissions,
                         ___, mock_render):
         mock_request = self.request_factory.get('/foo/bar/')
@@ -148,9 +148,9 @@ class ManageOrganizationsTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.ManageOrganizations.add_custom_fields')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
     @mock.patch('tethys_apps.utilities.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
     def test_handle_get_not_staff(self, _, mock_get_app_user, mock_get_session, ___, mock_has_permissions, ____,
                                   mock_render):
         mock_request = self.request_factory.get('/foo/bar/')
@@ -182,9 +182,9 @@ class ManageOrganizationsTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.'
                 'ManageOrganizations.perform_custom_delete_operations')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
     def test_handle_delete(self, _, mock_get_app_user, mock_session, mock_perform_delete, mock_has_permission):
         mock_request = mock.MagicMock()
         mock_make_session = mock_session()()
@@ -212,9 +212,9 @@ class ManageOrganizationsTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.'
                 'ManageOrganizations.perform_custom_delete_operations')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
     def test_handle_delete_http_response_forbidden(self, _, mock_get_app_user, mock_session, mock_perform_delete,
                                                    mock_has_permission, mock_hrf):
         mock_request = mock.MagicMock()
@@ -241,9 +241,9 @@ class ManageOrganizationsTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.'
                 'ManageOrganizations.perform_custom_delete_operations')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
     def test_handle_delete_exception(self, _, mock_get_app_user, mock_session, __, ___):
         mock_request = mock.MagicMock()
         mock_make_session = mock_session()()

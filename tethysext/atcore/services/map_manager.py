@@ -141,7 +141,6 @@ class MapManagerBase(object):
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501
-        # TODO: GAGE FIX TESTS FOR THIS
         # Build params
         params = {}
         params['LAYERS'] = layer_name
@@ -212,7 +211,6 @@ class MapManagerBase(object):
         Returns:
             dict: Layer group definition.
         """
-        # TODO: GAGE TEST THIS
         if layer_control not in ['checkbox', 'radio']:
             raise ValueError('Invalid layer_control. Must be on of "checkbox" or "radio".')
 
@@ -309,7 +307,6 @@ class MapManagerBase(object):
         Returns:
             str, list<dict>, dict: plot title, data series, and layout options, respectively.
         """
-        # TODO: GAGE TEST THIS
         layout = {
             'xaxis': {
                 'title': layer_name

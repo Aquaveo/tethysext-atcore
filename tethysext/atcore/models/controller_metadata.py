@@ -39,7 +39,7 @@ class ControllerMetadata(AppUsersBase):
             function: the controller method.
         """  # noqa: E501
         from tethys_sdk.base import TethysController
-        from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
+        from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
         from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 
         try:
@@ -63,7 +63,7 @@ class ControllerMetadata(AppUsersBase):
                 controller = controller.as_controller(**kwargs)
 
             # Call with all but workflow kwargs if AppUsersResourceController
-            elif issubclass(controller, AppUsersResourceController):
+            elif issubclass(controller, ResourceViewMixin):
                 kwargs.pop('_ResourceWorkflow')
                 kwargs.pop('_ResourceWorkflowStep')
                 kwargs.update(self.kwargs)
