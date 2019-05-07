@@ -10,7 +10,6 @@ import inspect
 import uuid
 
 from sqlalchemy import Column, String, PickleType
-from tethys_sdk.base import TethysController
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users.base import AppUsersBase
 
@@ -38,6 +37,7 @@ class ControllerMetadata(AppUsersBase):
         Returns:
             function: the controller method.
         """  # noqa: E501
+        from tethys_sdk.base import TethysController
         from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
         from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
 
