@@ -12,11 +12,11 @@ from django.shortcuts import render, reverse
 from tethys_sdk.permissions import permission_required
 from tethys_apps.utilities import get_active_app
 # ATCore
-from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
+from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 
 
-class ResourceDetails(AppUsersResourceController):
+class ResourceDetails(ResourceViewMixin):
     """
     Controller for resource_details page.
 

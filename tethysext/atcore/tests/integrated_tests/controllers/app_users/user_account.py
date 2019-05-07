@@ -90,10 +90,10 @@ class UserAccountTest(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.user_account.render')
     @mock.patch('tethys_apps.utilities.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     def test_handle_get(self, mock_app_user_model, mock_get_org, mock_get_session, mock_get_permission, _, mock_render):
         session = mock_get_session()()
 
@@ -139,10 +139,10 @@ class UserAccountTest(TethysTestCase):
     # TODO: Line 53 needs to be covered in the following
     # @mock.patch('tethysext.atcore.controllers.app_users.user_account.render')
     # @mock.patch('tethys_apps.utilities.get_active_app')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    # @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     # def test_handle_get_not_request_user(self, mock_app_user_model, mock_get_org, mock_get_session,
     # mock_get_permission, _, mock_render):
     #     session = mock_get_session()()

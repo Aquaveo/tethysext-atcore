@@ -11,11 +11,11 @@ from django.shortcuts import render
 # Tethys core
 from tethys_sdk.permissions import has_permission
 # ATCore
-from tethysext.atcore.controllers.app_users.base import AppUsersController
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class UserAccount(AppUsersController):
+class UserAccount(AppUsersViewMixin):
     """
     Controller for user_account page.
 

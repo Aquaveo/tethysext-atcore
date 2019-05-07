@@ -101,9 +101,9 @@ class ManageResourcesTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.can_delete_resource')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.can_edit_resource')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.get_resources')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,
                         mock_can_edit, mock_can_delete, mock_get_resource_action, mock_paginate, mock_render,
@@ -183,9 +183,9 @@ class ManageResourcesTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.can_delete_resource')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.can_edit_resource')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources.get_resources')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get_first_time(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,
                                    mock_can_edit, mock_can_delete, mock_get_resource_action, mock_paginate, mock_render,
@@ -259,8 +259,8 @@ class ManageResourcesTests(TethysTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.'
                 'ManageResources.perform_custom_delete_operations')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
     def test_handle_delete(self, _, mock_get_session, mock_custom_delete, __):
         session = mock_get_session()()
         mock_resource = mock.MagicMock()
@@ -283,8 +283,8 @@ class ManageResourcesTests(TethysTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     @mock.patch(
         'tethysext.atcore.controllers.app_users.manage_resources.ManageResources.perform_custom_delete_operations')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
     def test_handle_delete_exception(self, _, mock_get_session, mock_custom_delete, __):
         session = mock_get_session()()
         session.query().get.side_effect = Exception

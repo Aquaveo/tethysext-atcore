@@ -1,6 +1,6 @@
 from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
-from .controllers.app_users.base import AppUsersControllerMixinTests  # noqa: F401
-from .controllers.app_users.base import AppUsersResourceControllerMixinTests  # noqa: F401
+from .controllers.app_users.mixins import AppUsersViewMixinTests  # noqa: F401
+from .controllers.app_users.mixins import ResourceViewMixinTests  # noqa: F401
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from .controllers.map_view import MapViewTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401

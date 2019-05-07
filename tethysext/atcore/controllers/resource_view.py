@@ -10,10 +10,10 @@ from django.shortcuts import render
 from django.http import HttpResponseNotFound, HttpResponse
 from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 from tethysext.atcore.services.model_database import ModelDatabase
-from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
+from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 
 
-class ResourceView(AppUsersResourceController):
+class ResourceView(ResourceViewMixin):
     """
     Base controller for all Resource-based views.
     """

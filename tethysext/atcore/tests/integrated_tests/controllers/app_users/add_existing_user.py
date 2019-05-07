@@ -81,11 +81,11 @@ class AddExistingUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     def test__handle_modify_user_requests(self, mock_get_app_usermodel, _,
                                           mock_get_session_maker, mock_get_active_app,
                                           mock_get_permission_manager, __, mock_reverse):
@@ -132,11 +132,11 @@ class AddExistingUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     def test__handle_modify_user_requests_permission_manager(self, mock_get_app_usermodel, mock_get_organization_model,
                                                              mock_get_session_maker, mock_get_active_app,
                                                              mock_get_permission_manager, _, mock_reverse):
@@ -181,11 +181,11 @@ class AddExistingUserTests(TethysTestCase):
         self.assertEqual('NameSpace:app_users_manage_users', mock_reverse.call_args_list[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     def test__handle_modify_user_requests_must_assign_user(self, mock_get_app_usermodel, _,
                                                            mock_get_session_maker, mock_get_active_app,
                                                            __, mock_render):
@@ -243,9 +243,9 @@ class AddExistingUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     def test__handle_modify_user_requests_with_invalid_post_data(self, mock_get_app_usermodel, _,
                                                                  mock_get_session_maker, mock_get_active_app,
                                                                  mock_render):
