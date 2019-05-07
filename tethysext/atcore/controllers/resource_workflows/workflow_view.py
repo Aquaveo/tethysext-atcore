@@ -35,7 +35,6 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
             model_db (ModelDatabase): ModelDatabase instance associated with this request.
-            map_manager (MapManager): MapManager instance associated with this request.
 
         Returns:
             dict: modified context dictionary.
@@ -78,7 +77,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         steps = self.build_step_cards(workflow)
 
         # Get the current app
-        url_map_name = self.get_step_url_name(request, workflow)
+        step_url_name = self.get_step_url_name(request, workflow)
 
         context.update({
             'workflow': workflow,
@@ -86,7 +85,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             'current_step': current_step,
             'previous_step': previous_step,
             'next_step': next_step,
-            'url_map_name': url_map_name,
+            'step_url_name': step_url_name,
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
         })
