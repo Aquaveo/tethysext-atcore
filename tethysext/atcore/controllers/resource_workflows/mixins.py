@@ -22,7 +22,7 @@ class WorkflowViewMixin(ResourceViewMixin):
         Args:
             request: Django HttpRequest.
             workflow_id: ID of the workflow.
-            session: SQLAlchemy session.
+            session: SQLAlchemy session. Optional
 
         Returns:
             ResourceWorkflow: the resource.
@@ -68,7 +68,7 @@ class WorkflowViewMixin(ResourceViewMixin):
             session = make_session()
 
         try:
-            workflow = session.query(_ResourceWorkflowStep). \
+            step = session.query(_ResourceWorkflowStep). \
                 filter(_ResourceWorkflowStep.id == step_id). \
                 one()
 
@@ -76,4 +76,4 @@ class WorkflowViewMixin(ResourceViewMixin):
             if manage_session:
                 session.close()
 
-        return workflow
+        return step

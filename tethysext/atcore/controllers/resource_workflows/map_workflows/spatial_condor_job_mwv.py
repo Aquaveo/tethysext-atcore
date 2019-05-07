@@ -229,14 +229,14 @@ class SpatialCondorJobMWV(MapWorkflowView):
         steps = self.build_step_cards(workflow)
 
         # Get the current app
-        url_map_name = self.get_step_url_name(request, workflow)
+        step_url_name = self.get_step_url_name(request, workflow)
 
         context = {
             'resource': resource,
             'workflow': workflow,
             'steps': steps,
             'current_step': current_step,
-            'url_map_name': url_map_name,
+            'step_url_name': step_url_name,
             'back_url': self.back_url,
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
