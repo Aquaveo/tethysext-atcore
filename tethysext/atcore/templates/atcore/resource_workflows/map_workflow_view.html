@@ -25,13 +25,13 @@
 
 {% block app_actions %}
   {% if previous_step %}
-  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="map-workflow-form">Previous</button>
+  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="map-workflow-form">{{ previous_title }}</button>
   {% endif %}
 
   {% if next_step %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Next</button>
+  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">{{ next_title }}</button>
   {% else %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Submit</button>
+  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">{{ finish_title }}</button>
   {% endif %}
 
   {{ block.super }}

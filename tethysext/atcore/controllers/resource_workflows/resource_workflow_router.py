@@ -57,17 +57,20 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             make_session = self.get_sessionmaker()
             session = make_session()
             workflow = self.get_workflow(request, workflow_id, session=session)
-            _, step = workflow.get_next_step()
-            is_result_step = isinstance(step, ResultsResourceWorkflowStep)
 
             if not step_id_given:
-
+                _, step = workflow.get_next_step()
                 # Get step id
                 step_id = step.id if step else None
 
                 if not step_id:
                     messages.warning(request, 'Could not identify next step.')
                     return redirect(self.back_url)
+            else:
+                step = self.get_step(request, step_id, session)
+
+            # Determine if step is result step
+            is_result_step = isinstance(step, ResultsResourceWorkflowStep)
 
             # Handle result steps
             if is_result_step and not result_id_given:
@@ -263,15 +266,16 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             session = make_session()
             step = self.get_step(request, step_id, session=session)
 
-            # Validate HTTP method
-            if request.method.lower() not in step.controller.http_methods:
-                raise RuntimeError('An unexpected error has occurred: Method not allowed ({}).'.format(request.method))
-
             # Check if step is ResultsResourceWorkflowStep
             if not isinstance(step, ResultsResourceWorkflowStep):
-                raise RuntimeError('Step must be a ResultsWorkflowStep.')
+                raise RuntimeError('Step must be a ResultsResourceWorkflowStep.')
 
+            # Get the result from the step
             result = step.get_result(result_id=result_id)
+
+            # Validate HTTP method
+            if request.method.lower() not in result.controller.http_methods:
+                raise RuntimeError('An unexpected error has occurred: Method not allowed ({}).'.format(request.method))
 
             if not result:
                 messages.error(request, 'Result not found.')

@@ -22,3 +22,18 @@ class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, Results
     }
 
     results = relationship('ResourceWorkflowResult', order_by='ResourceWorkflowResult.order', backref='step')
+
+    @property
+    def default_options(self):
+        """
+        Returns default options dictionary for the result.
+        """
+        return {}
+
+    def init_parameters(self, *args, **kwargs):
+        """
+        Initialize the parameters for this step.
+        Returns:
+            dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+        """
+        return {}

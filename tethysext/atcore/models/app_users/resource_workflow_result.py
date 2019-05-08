@@ -24,7 +24,7 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
     Data model for storing information about resource workflow results.
     """
     __tablename__ = 'app_users_resource_workflow_results'
-    CONTROLLER = ''
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.result_workflow_view.ResultWorkflowView'
     TYPE = 'generic_workflow_result'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
@@ -54,11 +54,14 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
         else:
             self._options = self.default_options
 
+        self._controller = ControllerMetadata(path=self.CONTROLLER)
+
     def __str__(self):
         return '<{} name="{}" id="{}" >'.format(self.__class__.__name__, self.name, self.id)
 
+    def __repr__(self):
+        return self.__str__()
+
     @property
     def controller(self):
-        if not self._controller:
-            self._controller = ControllerMetadata(path=self.CONTROLLER)
         return self._controller
