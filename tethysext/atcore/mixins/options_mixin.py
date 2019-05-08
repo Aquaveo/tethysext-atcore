@@ -17,7 +17,7 @@ class OptionsMixin(object):
     @property
     def default_options(self):
         """
-        Returns default options dictionary for the result.
+        Returns default options dictionary for the object.
         """
         return {}
 
