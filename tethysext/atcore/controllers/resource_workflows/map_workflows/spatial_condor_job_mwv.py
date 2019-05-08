@@ -25,6 +25,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
     Controller for a map workflow view requiring spatial input (drawing).
     """
     template_name = 'atcore/resource_workflows/spatial_condor_job_mwv.html'
+    next_title = 'Run Process'
     valid_step_classes = [SpatialCondorJobRWS]
 
     def process_step_options(self, request, session, context, current_step, previous_step, next_step):

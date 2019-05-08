@@ -80,13 +80,16 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         else:
             self._options = self.default_options
 
+        self._controller = ControllerMetadata(path=self.CONTROLLER)
+
     def __str__(self):
         return '<{} name="{}" id="{}" >'.format(self.__class__.__name__, self.name, self.id)
 
+    def __repr__(self):
+        return self.__str__()
+
     @property
     def controller(self):
-        if not self._controller:
-            self._controller = ControllerMetadata(path=self.CONTROLLER)
         return self._controller
 
     @abstractmethod

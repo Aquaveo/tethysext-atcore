@@ -23,6 +23,9 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
     view_title = ''
     view_subtitle = ''
     template_name = ''
+    previous_title = 'Previous'
+    next_title = 'Next'
+    finish_title = 'Finish'
     valid_step_classes = [ResourceWorkflowStep]
 
     def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, *args, **kwargs):
@@ -88,6 +91,9 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             'step_url_name': step_url_name,
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
+            'previous_title': self.previous_title,
+            'next_title': self.next_title,
+            'finish_title': self.finish_title
         })
 
         # Hook for extending the context
