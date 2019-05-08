@@ -56,14 +56,20 @@ class ResourceView(ResourceViewMixin):
         )
 
         # Initialize context
+        context = {}
+
+        # Add named url variables to context
+        context.update(self.kwargs)
+
+        # Add base view varibles to context
         open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
-        context = {
+        context.update({
             'resource': resource,
             'is_in_debug': settings.DEBUG,
             'nav_subtitle': self.view_subtitle,
             'back_url': self.back_url,
             'open_portal_mode': open_portal_mode,
-        }
+        })
 
         if resource:
             context.update({'nav_title': self.view_title or resource.name})

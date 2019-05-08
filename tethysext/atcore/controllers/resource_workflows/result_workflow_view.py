@@ -7,7 +7,7 @@ class ResultWorkflowView(ResourceWorkflowView):
     """
     Base class for result views.
     """
-    template_name = ''
+    template_name = 'atcore/resource_workflows/result_workflow_view.html'
     valid_step_classes = [ResultsResourceWorkflowStep]
 
     def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
@@ -79,8 +79,8 @@ class ResultWorkflowView(ResourceWorkflowView):
         results = []
         for result in step.results:
             result_dict = {
-                'id': result.id,
-                'name': result.id,
+                'id': str(result.id),
+                'name': result.name,
                 'description': result.description,
                 'type': result.type,
             }

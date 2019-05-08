@@ -22,7 +22,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
     """
     view_title = ''
     view_subtitle = ''
-    template_name = ''
+    template_name = 'atcore/resource_workflows/resource_workflow_view.html'
     previous_title = 'Previous'
     next_title = 'Next'
     finish_title = 'Finish'
