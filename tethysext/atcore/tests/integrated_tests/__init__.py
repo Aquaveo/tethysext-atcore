@@ -6,7 +6,6 @@ from .controllers.map_view import MapViewTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
 from .controllers.app_users.manage_organization_members import ManageOrganizationMembersTest  # noqa: F401
 from .controllers.resource_workflows.mixins import WorkflowViewMixinTests  # noqa: F401
-
 from .controllers.app_users.user_account import UserAccountTest  # noqa: F401
 from .controllers.app_users.add_existing_user import AddExistingUserTests  # noqa: F401
 from .models.app_user_tests import AppUserTests  # noqa: F401

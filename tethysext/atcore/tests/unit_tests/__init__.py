@@ -1,4 +1,5 @@
 from tethysext.atcore.tests.unit_tests.mixins.status_mixin import StatusMixinTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.mixins.options_mixin import OptionsMixinTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.mixins.results_mixin import ResultMixinTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.model_types.guid_tests import GuidTests  # noqa: F401
