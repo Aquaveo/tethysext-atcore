@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block map %}
-  <form id="map-workflow-form" class="map-form" method="post" enctype="multipart/form-data">
+  <form id="workflow-form" class="map-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input name="method" value="save-step-data" hidden>
     {{ block.super }}
@@ -24,16 +24,7 @@
 {% endblock %}
 
 {% block app_actions %}
-  {% if previous_step %}
-  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="map-workflow-form">{{ previous_title }}</button>
-  {% endif %}
-
-  {% if next_step %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">{{ next_title }}</button>
-  {% else %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">{{ finish_title }}</button>
-  {% endif %}
-
+  {% include 'atcore/resource_workflows/components/workflow_actions.html' %}
   {{ block.super }}
 {% endblock %}
 

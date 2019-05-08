@@ -1,0 +1,16 @@
+{% extends "atcore/resource_workflows/resource_workflow_view.html" %}
+{% load staticfiles %}
+
+{% block app_content %}
+{% include "atcore/resource_workflows/components/result_workflow_tabs.html" %}
+{{ block.super }}
+{% endblock %}
+
+{% block app_actions %}
+  {% include 'atcore/resource_workflows/components/workflow_actions.html' %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+{% endblock %}

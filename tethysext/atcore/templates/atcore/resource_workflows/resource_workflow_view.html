@@ -1,0 +1,38 @@
+{% extends "atcore/base.html" %}
+{% load staticfiles %}
+
+{% block app_navigation_items %}
+  {# NAV HEADER #}
+  {% include 'atcore/components/nav_header.html' %}
+
+  <div class="workflow-tabs">
+    <ul class="nav nav-tabs atcore-nav-tabs" role="tablist">
+    {# WORKFLOW TAB #}
+    {% include 'atcore/resource_workflows/components/workflow_tab.html' %}
+    </ul>
+    <div class="tab-content">
+    {# WORKFLOW TAB PANEL #}
+    {% include 'atcore/resource_workflows/components/workflow_tab_content.html' %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block app_content %}
+  <form id="workflow-form" class="workflow-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input name="method" value="save-step-data" hidden>
+    {% block workflow_form_content %}
+    {% endblock %}
+  </form>
+{% endblock %}
+
+{% block app_actions %}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/css/wide_nav.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/nav_header.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/workflow_steps.css' %}" rel="stylesheet"/>
+{% endblock %}
