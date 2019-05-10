@@ -9,48 +9,36 @@
 import datetime as dt
 import mock
 from tethys_sdk.base import TethysController
-from tethys_sdk.testing import TethysTestCase
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm.session import Session
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.models.app_users.organization import Organization
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
-from tethysext.atcore.models.app_users import AppUsersBase, ResourceWorkflow, AppUser, Resource
+from tethysext.atcore.models.app_users import ResourceWorkflow, AppUser, Resource
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.spatial_manager import SpatialManager
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView, \
     AppUsersResourceController
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
 class TestController(TethysController):
     pass
 
 
-class AppUsersResourceWorkflowControllerTests(TethysTestCase):
+class AppUsersResourceWorkflowControllerTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
-
+        super().setUp()
         self.user = AppUser(
             username="user1",
             role=Roles.ORG_USER,
@@ -101,10 +89,6 @@ class AppUsersResourceWorkflowControllerTests(TethysTestCase):
         self.resource_workflow.steps.append(step)
 
         self.session.commit()
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     def test_get_app(self):
         app_user_resource_workflow = ResourceWorkflowView()
@@ -142,10 +126,9 @@ class AppUsersResourceWorkflowControllerTests(TethysTestCase):
         self.assertRaises(NotImplementedError,  app_user_resource_workflow.get_sessionmaker)
 
 
-class AppUsersResourceControllerTests(TethysTestCase):
+class AppUsersResourceControllerTests(SqlAlchemyTestCase):
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
+        super().setUp()
 
         self.user = AppUser(
             username="user1",
@@ -197,10 +180,6 @@ class AppUsersResourceControllerTests(TethysTestCase):
         )
 
         self.resource_workflow.steps.append(step)
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     def test_dispatch(self):
         app_user_resource_workflow = ResourceWorkflowView()

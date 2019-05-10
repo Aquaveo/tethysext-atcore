@@ -13,6 +13,7 @@ def setup_module_for_sqlalchemy_tests():
     transaction = connection.begin()
     # Initialize db with staff user
     initialize_app_users_db(connection)
+    return engine, connection, transaction
 
 
 def tear_down_module_for_sqlalchemy_tests():

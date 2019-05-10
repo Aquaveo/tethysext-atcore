@@ -7,41 +7,29 @@
 ********************************************************************************
 """
 import mock
-from tethys_sdk.testing import TethysTestCase
 from django.test import RequestFactory
-from sqlalchemy.orm.session import Session
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.models.app_users import AppUser, AppUsersBase, Resource
+from tethysext.atcore.models.app_users import AppUser, Resource
 from django.core.handlers.wsgi import WSGIRequest
-
 from tethysext.atcore.services.app_users.roles import Roles
-from sqlalchemy.engine import create_engine
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.controllers.app_users.manage_resources import ManageResources
 from tethysext.atcore.mixins.status_mixin import StatusMixin
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class ManageResourcesTests(TethysTestCase):
+class ManageResourcesTests(SqlAlchemyTestCase):
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
+        super().setUp()
         self.request_factory = RequestFactory()
         self.django_user = UserFactory()
         self.django_user.is_staff = True
@@ -65,10 +53,6 @@ class ManageResourcesTests(TethysTestCase):
 
         self.session.add(self.resource)
         self.session.commit()
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.ManageResources._handle_get')
     def test_get(self, mock_handle_get):

@@ -7,42 +7,29 @@
 ********************************************************************************
 """
 import mock
-from tethys_sdk.testing import TethysTestCase
 from django.test import RequestFactory
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm.session import Session
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.models.app_users import AppUser, AppUsersBase
+from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.app_users.add_existing_user import AddExistingUser
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class AddExistingUserTests(TethysTestCase):
+class AddExistingUserTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        global connection, engine
+        super().setUp()
         self.request_factory = RequestFactory()
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
-
         self.django_user = UserFactory()
         self.django_user.is_staff = True
         self.django_user.is_superuser = True
@@ -55,10 +42,6 @@ class AddExistingUserTests(TethysTestCase):
         )
         self.session.add(self.app_user)
         self.session.commit()
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.AddExistingUser._handle_modify_user_requests')
     def test_get(self, mock_handle_modify_user):
