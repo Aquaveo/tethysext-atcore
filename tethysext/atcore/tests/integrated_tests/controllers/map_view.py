@@ -6,49 +6,35 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import json
 import mock
 from tethysext.atcore.tests.factories.django_user import UserFactory
-
 from django.test import RequestFactory
-from sqlalchemy.orm.session import Session
-from tethys_sdk.testing import TethysTestCase
 from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.controllers.map_view import MapView
-from tethysext.atcore.models.app_users import AppUser, Organization, Resource, AppUsersBase
+from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
-
-from sqlalchemy.engine import create_engine
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.services.app_users.roles import Roles
-
-import json
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class MapViewTests(TethysTestCase):
+class MapViewTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
+        super().setUp()
         self.mock_map_manager = mock.MagicMock(spec=MapManagerBase)
         self.mock_map_manager().compose_map.return_value = (
             mock.MagicMock(), mock.MagicMock(), mock.MagicMock()
@@ -89,10 +75,6 @@ class MapViewTests(TethysTestCase):
         self.session.add(self.app_user)
         self.session.commit()
         self.request_factory = RequestFactory()
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')

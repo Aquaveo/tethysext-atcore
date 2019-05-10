@@ -7,39 +7,27 @@
 ********************************************************************************
 """
 from django.contrib.auth.models import User, Group
-from sqlalchemy import create_engine
-from sqlalchemy.orm.session import Session
-from tethys_sdk.testing import TethysTestCase
-from tethysext.atcore.models.app_users import AppUser, initialize_app_users_db
+from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.services.app_users.licenses import Licenses
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
-from tethysext.atcore.tests import TEST_DB_URL
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    # Initialize db with staff user
-    initialize_app_users_db(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class AppPermissionsManagerTests(TethysTestCase):
+class AppPermissionsManagerTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
+        super().setUp()
         self.roles = Roles()
         self.licenses = Licenses()
 
@@ -73,10 +61,6 @@ class AppPermissionsManagerTests(TethysTestCase):
 
         # Create one of the groups for testing
         self.group = Group.objects.get_or_create(name=self.apm.STANDARD_USER_PERMS)
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     def test_list(self):
         permissions_groups = self.apm.list()
