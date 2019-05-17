@@ -10,7 +10,7 @@ import os
 import json
 import logging
 from django.shortcuts import render
-from tethys_sdk.gizmos import MVLayer, JobsTable
+from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS, SpatialInputRWS, \
     SpatialResourceWorkflowStep
@@ -110,14 +110,13 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'layer_groups': layer_groups
         })
 
-    @staticmethod
-    def _build_mv_layer(step, geometry):
+    def _build_mv_layer(self, step, geojson):
         """
         Build an MVLayer object given a step and a GeoJSON formatted geometry.
 
         Args:
             step(SpatialResourceWorkflowStep): The step the geometry is associated with.
-            geometry(dict): GeoJSON Python equivalent.
+            geojson(dict): GeoJSON Python equivalent.
 
         Returns:
             MVLayer: the layer object.
@@ -127,59 +126,16 @@ class SpatialCondorJobMWV(MapWorkflowView):
         plural_codename = plural_name.lower().replace(' ', '_')
         singular_name = step.options.get('singular_name')
         layer_name = '{}_{}'.format(step.id, plural_codename)
+        layer_variable = '{}-{}'.format(step.TYPE, plural_codename)
 
-        # Bind geometry features to layer via layer name
-        for feature in geometry['features']:
-            feature['properties']['layer_name'] = layer_name
-
-        # Define default styles for layers
-        color = 'gold'
-        style_map = {
-            'Point': {'ol.style.Style': {
-                'image': {'ol.style.Circle': {
-                    'radius': 5,
-                    'fill': {'ol.style.Fill': {
-                        'color': color,
-                    }},
-                    'stroke': {'ol.style.Stroke': {
-                        'color': color,
-                    }}
-                }}
-            }},
-            'LineString': {'ol.style.Style': {
-                'stroke': {'ol.style.Stroke': {
-                    'color': color,
-                    'width': 2
-                }}
-            }},
-            'Polygon': {'ol.style.Style': {
-                'stroke': {'ol.style.Stroke': {
-                    'color': color,
-                    'width': 2
-                }},
-                'fill': {'ol.style.Fill': {
-                    'color': 'rgba(255, 215, 0, 0.1)'
-                }}
-            }},
-        }
-
-        # Define the workflow MVLayer
-        workflow_layer = MVLayer(
-            source='GeoJSON',
-            options=geometry,
+        workflow_layer = self.build_geojson_layer(
+            geojson=geojson,
+            layer_name=layer_name,
+            layer_variable=layer_variable,
             legend_title=plural_name,
-            data={
-                'layer_name': layer_name,
-                'layer_variable': '{}-{}'.format(step.TYPE, plural_codename),
-                'popup_title': singular_name,
-                'excluded_properties': ['id', 'type', 'layer_name'],
-            },
-            layer_options={
-                'visible': True,
-                'style_map': style_map
-            },
-            feature_selection=True
+            popup_title=singular_name
         )
+
         return workflow_layer
 
     def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
