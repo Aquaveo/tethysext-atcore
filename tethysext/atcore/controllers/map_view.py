@@ -12,7 +12,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
-from tethys_sdk.gizmos import ToggleSwitch
+from tethys_sdk.gizmos import ToggleSwitch, MVLayer
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
@@ -160,6 +160,128 @@ class MapView(ResourceView):
         context.update({'plot_slide_sheet': plot_slidesheet})
 
         return context
+
+    def build_geojson_layer(self, geojson, layer_name, layer_variable, legend_title, popup_title, visible=True,
+                            feature_selection=True):
+        """
+        Utility method for building MVLayer objects a GeoJSON formatted geometry.
+
+        Args:
+            geojson(dict): GeoJSON Python equivalent.
+            layer_name(str): Name of layer.
+            layer_variable(str): Type of layer.
+            legend_title(str): Title to show in legend.
+            popup_title(str): Title to show in pop-ups.
+            visible(bool): Layer is initially visible if True.
+            feature_selection(bool): Feature selection is enabled on layer if True.
+
+        Returns:
+            MVLayer: the layer object.
+        """
+        # Bind geojson features to layer via layer name
+        for feature in geojson['features']:
+            feature['properties']['layer_name'] = layer_name
+
+        # Define default styles for layers
+        style_map = self.get_vector_style_map()
+
+        # Define the workflow MVLayer
+        workflow_layer = MVLayer(
+            source='GeoJSON',
+            options=geojson,
+            legend_title=legend_title,
+            data={
+                'layer_name': layer_name,
+                'layer_variable': layer_variable,
+                'popup_title': popup_title,
+                'excluded_properties': ['id', 'type', 'layer_name'],
+            },
+            layer_options={
+                'visible': visible,
+                'style_map': style_map
+            },
+            feature_selection=feature_selection
+        )
+        return workflow_layer
+
+    def build_geoserver_layer(self, service_url, layer_name, layer_variable, legend_title, popup_title, visible=True,
+                              feature_selection=True):
+        """
+        Utility method for building MVLayer objects for GeoServer sources.
+
+        Args:
+            service_url(str): URL of OGC service.
+            layer_name(str): Name of layer.
+            layer_variable(str): Type of layer.
+            legend_title(str): Title to show in legend.
+            popup_title(str): Title to show in pop-ups.
+            visible(bool): Layer is initially visible if True.
+            feature_selection(bool): Feature selection is enabled on layer if True.
+
+        Returns:
+            MVLayer: the layer object.
+        """
+        # Define the workflow MVLayer
+        workflow_layer = MVLayer(
+            source='ImageWMS',
+            options={
+                'url': service_url,
+                'params': {'LAYERS': layer_name},
+                'serverType': 'geoserver'
+            },
+            legend_title=legend_title,
+            data={
+                'layer_name': layer_name,
+                'layer_variable': layer_variable,
+                'popup_title': popup_title,
+                'excluded_properties': ['id', 'type', 'layer_name'],
+            },
+            layer_options={
+                'visible': visible,
+            },
+            feature_selection=feature_selection
+        )
+        return workflow_layer
+
+    @staticmethod
+    def get_vector_style_map():
+        """
+        Builds the style map for vector layers.
+
+        Returns:
+            dict: the style map.
+        """
+        color = 'gold'
+        style_map = {
+            'Point': {'ol.style.Style': {
+                'image': {'ol.style.Circle': {
+                    'radius': 5,
+                    'fill': {'ol.style.Fill': {
+                        'color': color,
+                    }},
+                    'stroke': {'ol.style.Stroke': {
+                        'color': color,
+                    }}
+                }}
+            }},
+            'LineString': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': color,
+                    'width': 2
+                }}
+            }},
+            'Polygon': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': color,
+                    'width': 2
+                }},
+                'fill': {'ol.style.Fill': {
+                    'color': 'rgba(255, 215, 0, 0.1)'
+                }}
+            }},
+        }
+
+        return style_map
 
     def get_permissions(self, request, permissions, model_db, *args, **kwargs):
         """
