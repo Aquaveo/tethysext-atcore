@@ -231,10 +231,10 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             TypeError: if step is invalid.
         """
         # Initialize drawing tools for spatial input parameter types.
-        if not all([isinstance(current_step, valid_class) for valid_class in self.valid_step_classes]):
-            raise TypeError('Invalid step type for view: {}. Must be one of {}.'.format(
-                type(current_step),
-                ', '.join([valid_class.__name__ for valid_class in self.valid_step_classes])
+        if not any([isinstance(current_step, valid_class) for valid_class in self.valid_step_classes]):
+            raise TypeError('Invalid step type for view: "{}". Must be one of "{}".'.format(
+                type(current_step).__name__,
+                '", "'.join([valid_class.__name__ for valid_class in self.valid_step_classes])
             ))
 
     def on_get(self, request, session, resource, workflow_id, step_id, *args, **kwargs):

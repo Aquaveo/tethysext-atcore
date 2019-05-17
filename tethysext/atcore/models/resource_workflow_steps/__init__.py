@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: __init__.py
+* Name: resource_workflow_steps
 * Author: nswain
 * Created On: December 17, 2018
 * Copyright: (c) Aquaveo 2018
