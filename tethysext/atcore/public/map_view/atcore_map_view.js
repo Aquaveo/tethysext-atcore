@@ -91,8 +91,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
-
- 	var generate_uuid;
+ 	var generate_uuid, load_layer;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1385,7 +1384,11 @@ var ATCORE_MAP_VIEW = (function() {
         $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
     };
 
-
+    // Append new layer
+    load_layer = function (layer, layer_id) {
+        m_layers[layer_id] = layer;
+        m_map.addLayer(layer);
+    }
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
  	*************************************************************************/
@@ -1422,6 +1425,9 @@ var ATCORE_MAP_VIEW = (function() {
 
         get_layer_name_from_feature: get_layer_name_from_feature,
         get_feature_id_from_feature: get_feature_id_from_feature,
+        load_layer: load_layer,
+        remove_layer_from_map: remove_layer_from_map,
+        init_layers_tab: init_layers_tab,
 	};
 
 	/************************************************************************
