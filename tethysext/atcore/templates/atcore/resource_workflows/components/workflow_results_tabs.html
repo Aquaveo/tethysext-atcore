@@ -15,14 +15,19 @@ Result Dicts:
   name(str): The name of the result tab.
   description(str): The description of the result.
   types(str): The type of the result.
+
+  Required CSS:
+  <link href="{% static 'atcore/resource_workflows/workflow_results_tabs.css' %}" rel="stylesheet"/>
 {% endcomment %}
 
 {% block result_tabs %}
-  <ul class="nav nav-tabs"  role="tablist">
-    {% for result in results %}
-      <li role="presentation" {% if result.id in request.path %}class="active"{% endif %} title="{{ result.description }}">
-        <a href="{% url result_url_name resource_id workflow_id step_id result.id %}">{{ result.name }}</a>
-      </li>
-    {% endfor %}
-  </ul>
+  <div class="results-tabs">
+    <ul class="nav nav-tabs"  role="tablist">
+      {% for result in results %}
+        <li role="presentation" {% if result.id in request.path %}class="active"{% endif %} title="{{ result.description }}">
+          <a href="{% url result_url_name resource_id workflow_id step_id result.id %}">{{ result.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endblock %}

@@ -1,5 +1,5 @@
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
-from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep
+from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep, ResourceWorkflowResult
 
 
 class WorkflowViewMixin(ResourceViewMixin):
@@ -77,3 +77,45 @@ class WorkflowViewMixin(ResourceViewMixin):
                 session.close()
 
         return step
+
+
+class ResultViewMixin(ResourceViewMixin):
+    """
+    Mixin for class-based views that adds convenience methods for working with resources, workflows, and results.
+    """
+    _ResourceWorkflowResult = ResourceWorkflowResult
+
+    def get_resource_workflow_result_model(self):
+        return self._ResourceWorkflowResult
+
+    def get_result(self, request, result_id, session=None):
+        """
+        Get the workflow and check permissions.
+
+        Args:
+            request: Django HttpRequest.
+            result_id: ID of the workflow.
+            session: SQLAlchemy session. Optional
+
+        Returns:
+            ResourceWorkflow: the resource.
+        """
+        # Setup
+        _ResourceWorkflowResult = self.get_resource_workflow_result_model()
+        manage_session = False
+
+        if not session:
+            manage_session = True
+            make_session = self.get_sessionmaker()
+            session = make_session()
+
+        try:
+            workflow = session.query(_ResourceWorkflowResult). \
+                filter(_ResourceWorkflowResult.id == result_id). \
+                one()
+
+        finally:
+            if manage_session:
+                session.close()
+
+        return workflow
