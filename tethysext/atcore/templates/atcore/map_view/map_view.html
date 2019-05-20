@@ -47,6 +47,7 @@
       <div class="tab-content">
         {# LAYERS TAB PANEL #}
         <div role="tabpanel" class="tab-pane{% block disable_default_tab_panel %} active{% endblock %}" id="layers-tab-panel">
+          {% include 'atcore/components/custom_layer_content.html' %}
           {% for layer_group in layer_groups %}
           {% if layer_group.id == 'custom_layers'%}
             {% if show_custom_layer %}
