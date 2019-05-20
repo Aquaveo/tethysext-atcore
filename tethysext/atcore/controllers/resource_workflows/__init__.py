@@ -7,3 +7,4 @@
 ********************************************************************************
 """
 from tethysext.atcore.controllers.resource_workflows.resource_workflow_router import ResourceWorkflowRouter  # noqa: F401, E501
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView  # noqa: F401, E501

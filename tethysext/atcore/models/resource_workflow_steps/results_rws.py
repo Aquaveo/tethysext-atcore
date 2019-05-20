@@ -1,0 +1,39 @@
+"""
+********************************************************************************
+* Name: results_rws.py
+* Author: nswain
+* Created On: March 28, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+"""
+from sqlalchemy.orm import relationship
+from tethysext.atcore.mixins import ResultsMixin, AttributesMixin
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
+
+
+class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, ResultsMixin):
+    """
+    Abstract base class of all Results Resource Workflow Steps.
+    """  # noqa: #501
+    TYPE = 'results_resource_workflow_step'
+
+    __mapper_args__ = {
+        'polymorphic_identity': TYPE
+    }
+
+    results = relationship('ResourceWorkflowResult', order_by='ResourceWorkflowResult.order', backref='step')
+
+    @property
+    def default_options(self):
+        """
+        Returns default options dictionary for the result.
+        """
+        return {}
+
+    def init_parameters(self, *args, **kwargs):
+        """
+        Initialize the parameters for this step.
+        Returns:
+            dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+        """
+        return {}

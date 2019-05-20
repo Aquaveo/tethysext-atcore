@@ -13,11 +13,11 @@ from django.shortcuts import render
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.controllers.app_users.base import AppUsersController
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class ManageOrganizations(AppUsersController):
+class ManageOrganizations(AppUsersViewMixin):
     """
     Controller for manage_organizations page.
 

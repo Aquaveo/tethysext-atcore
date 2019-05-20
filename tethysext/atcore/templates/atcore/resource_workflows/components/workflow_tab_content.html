@@ -7,7 +7,7 @@ Required Context Variables:
   workflow(ResourceWorkflow): the workflow containing the steps that will be rendered.
   steps(list<dicts>): list of dictionaries containing metadata about each step in the given workflow.
   current_step(ResourceWorkflowStep): the current step.
-  url_map_name(str): the name of the url pattern for the current step.
+  step_url_name(str): the name of the url pattern for the current step.
 
 Required CSS:
   <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
@@ -21,7 +21,7 @@ Required CSS:
     <li>
       <a class="workflow-step {% if step.id == current_step.id %}active {% endif %}workflow-step-{{ step.status }}"
          title="{{ step.help }}"
-         {% if step.link %}href="{% url url_map_name resource.id workflow.id step.id %}"{% endif %}>
+         {% if step.link %}href="{% url step_url_name resource.id workflow.id step.id %}"{% endif %}>
         {% if step.status == 'pending' %}
         <i class="far fa-circle"></i>
         {% elif step.status == 'complete' %}

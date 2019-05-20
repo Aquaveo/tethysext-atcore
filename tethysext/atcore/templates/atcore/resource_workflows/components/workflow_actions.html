@@ -1,0 +1,25 @@
+{% load staticfiles %}
+{# NAV HEADER #}
+{% comment %}
+Include to add Previous and Next buttons to a workflow page. Must create a form with id "workflow-form" for the buttons to work.
+
+Required Context:
+  previous_title(str): Title of the previous button.
+  next_title(str): Title of the next button.
+  finish_title(str): Title of next button when there is no next step.
+  previous_step(ResourceWorkflowStep): The previous step.
+  next_step(ResourceWorkflowStep): The next step.
+
+{% endcomment %}
+
+{% block workflow_actions %}
+  {% if previous_step %}
+  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="workflow-form">{{ previous_title }}</button>
+  {% endif %}
+
+  {% if next_step %}
+  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="workflow-form">{{ next_title }}</button>
+  {% else %}
+  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="workflow-form">{{ finish_title }}</button>
+  {% endif %}
+{% endblock %}

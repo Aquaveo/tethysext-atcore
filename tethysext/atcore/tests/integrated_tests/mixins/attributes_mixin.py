@@ -1,50 +1,34 @@
-import unittest
 import json
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm.session import Session
-from tethysext.atcore.models.app_users import AppUser, AppUsersBase
+from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.mixins.attributes_mixin import AttributesMixin
-from tethysext.atcore.tests import TEST_DB_URL
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
-
-    # If you want to insert fixtures to the DB, do it here
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
 class ClassWithAttributes(AttributesMixin):
     _attributes = None
 
 
-class AttributesMixinTests(unittest.TestCase):
+class AttributesMixinTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
-
+        super().setUp()
         self.instance = ClassWithAttributes()
         self.attributes = {'foo': 'bar', 'num': 1}
         self.attributes_json = json.dumps(self.attributes)
 
     def tearDown(self):
         del self.instance
-
-        self.session.close()
-        self.transaction.rollback()
+        super().tearDown()
 
     def test_attributes_getter_no_attributes(self):
         val = self.instance.attributes

@@ -78,7 +78,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
             'max_rows': max_rows,
         }
 
-        return render(request, 'atcore/resource_workflows/spatial_dataset_form.html', context)
+        return render(request, 'atcore/resource_workflows/components/spatial_dataset_form.html', context)
 
     @workflow_step_controller(is_rest_controller=True)
     def save_spatial_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs):

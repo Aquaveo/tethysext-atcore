@@ -3,7 +3,7 @@ import json
 
 class StatusMixin(object):
     """
-    Provides convenience methods for managing a status attribute.
+    Provides methods for implementing the status pattern.
     """
     # User Project Statuses
     STATUS_PENDING = 'Pending'
@@ -31,9 +31,6 @@ class StatusMixin(object):
 
     ROOT_STATUS_KEY = 'root'
 
-    # Default status dict
-    status_template = dict()
-
     def __init__(self, *args, **kwargs):
         super(StatusMixin, self).__init__(*args, **kwargs)
 
@@ -52,13 +49,17 @@ class StatusMixin(object):
         Get status for a given value.
         """
         if self.status is None:
-            status_dict = self.status_template
+            status_dict = {}
 
         else:
             status_dict = json.loads(self.status)
 
         try:
             status_result = status_dict[key]
+
+            if not status_result:
+                status_result = default
+
         except KeyError:
             status_result = default
 
@@ -70,7 +71,7 @@ class StatusMixin(object):
         Set status for given key.
         """
         if self.status is None:
-            status_dict = self.status_template
+            status_dict = {}
         else:
             status_dict = json.loads(self.status)
 

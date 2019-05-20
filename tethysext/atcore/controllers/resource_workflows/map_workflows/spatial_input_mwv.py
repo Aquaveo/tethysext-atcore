@@ -30,7 +30,7 @@ class SpatialInputMWV(MapWorkflowView):
     template_name = 'atcore/resource_workflows/spatial_input_mwv.html'
     valid_step_classes = [SpatialInputRWS]
 
-    def extend_context(self, request, session, context, current_step, previous_step, next_step):
+    def get_step_specific_context(self, request, session, context, current_step, previous_step, next_step):
         """
         Hook for extending the view context.
 
@@ -47,7 +47,7 @@ class SpatialInputMWV(MapWorkflowView):
         """
         return {'allow_shapefile': current_step.options['allow_shapefile']}
 
-    def process_step_options(self, request, session, context, current_step, previous_step, next_step):
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
 
@@ -55,6 +55,7 @@ class SpatialInputMWV(MapWorkflowView):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             context(dict): Context object for the map view template.
+            resource(Resource): the resource for this request.
             current_step(ResourceWorkflowStep): The current step to be rendered.
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.

@@ -7,19 +7,21 @@
 ********************************************************************************
 """
 import uuid
+import logging
 import datetime as dt
 from sqlalchemy import Column, ForeignKey, String, DateTime
 from sqlalchemy.orm import relationship
 from tethysext.atcore.models.types import GUID
-from tethysext.atcore.mixins import AttributesMixin
+from tethysext.atcore.mixins import AttributesMixin, ResultsMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
-from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
+log = logging.getLogger(__name__)
 __all__ = ['ResourceWorkflow']
 
 
-class ResourceWorkflow(AppUsersBase, AttributesMixin):
+class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     """
     Data model for storing information about resource workflows.
 
@@ -52,11 +54,11 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
     name = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
     _attributes = Column(String)
-    # TODO: Add a results field/relationship
 
     resource = relationship('Resource', backref='workflows')
     creator = relationship('AppUser', backref='workflows')
-    steps = relationship('ResourceWorkflowStep', order_by="ResourceWorkflowStep.order", backref='workflow')
+    steps = relationship('ResourceWorkflowStep', order_by='ResourceWorkflowStep.order', backref='workflow')
+    results = relationship('ResourceWorkflowResult', order_by='ResourceWorkflowResult.order', backref='workflow')
 
     __mapper_args__ = {
         'polymorphic_on': 'type',
@@ -64,7 +66,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
     }
 
     def __str__(self):
-        return '<{} id={} name={}>'.format(self.__class__, self.id, self.name)
+        return '<{} id={} name={}>'.format(self.__class__.__name__, self.id, self.name)
 
     def get_next_step(self):
         """
@@ -133,6 +135,9 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin):
         Returns:
             list<ResourceWorkflowStep>: a list of steps previous to this one.
         """
+        if step not in self.steps:
+            raise ValueError('Step {} does not belong to this workflow.'.format(step))
+
         step_index = self.steps.index(step)
         previous_steps = self.steps[:step_index]
         return previous_steps

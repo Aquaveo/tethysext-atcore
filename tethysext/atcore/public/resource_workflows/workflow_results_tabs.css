@@ -1,0 +1,33 @@
+.results-tabs {
+    position: absolute;
+    bottom: 51px;
+    left: 0;
+    z-index: 1500;
+    width: 100%;
+}
+
+.results-tabs .nav.nav-tabs {
+    width: 100%;
+    border: none;
+}
+
+.results-tabs .nav.nav-tabs>li>a {
+    background: #EFEFEF;
+    color: #666666;
+    border-color: #666666;
+    border-bottom: none;
+}
+
+.results-tabs .nav.nav-tabs>li>a:hover  {
+    background: #DDDDDD;
+}
+
+.results-tabs .nav.nav-tabs>li.active>a {
+    background: #41A6F4;
+    background: #A8D3F9;
+    border-bottom-color: #41A6F4;
+}
+
+.results-tabs .nav.nav-tabs:first-child {
+    padding-left: 10px;
+}

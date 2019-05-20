@@ -12,23 +12,23 @@ from django.test import RequestFactory
 from django.test.utils import override_settings
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.controllers.app_users.base import AppUsersController, AppUsersResourceController
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceViewMixin
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.exceptions import ATCoreException
 
 
-class FakeAppUsersController(AppUsersController):
+class FakeAppUsersView(AppUsersViewMixin):
     pass
 
 
-class FakeAppUsersResourceController(AppUsersResourceController):
+class FakeResourceView(ResourceViewMixin):
     pass
 
 
-class AppUsersControllerMixinTests(TethysTestCase):
+class AppUsersViewMixinTests(TethysTestCase):
 
     def setUp(self):
-        self.fauc = FakeAppUsersController()
+        self.fauc = FakeAppUsersView()
 
     def tearDown(self):
         pass
@@ -61,7 +61,7 @@ class AppUsersControllerMixinTests(TethysTestCase):
 
         self.assertEqual(Resource, ret)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppPermissionsManager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppPermissionsManager')
     def test_get_permissions_manager(self, mock_apm):
         mock_app = mock.MagicMock()
         self.fauc._app = mock_app
@@ -85,7 +85,7 @@ class AppUsersControllerMixinTests(TethysTestCase):
         self.assertRaises(NotImplementedError, self.fauc.get_sessionmaker)
 
 
-class AppUsersResourceControllerMixinTests(TethysTestCase):
+class ResourceViewMixinTests(TethysTestCase):
 
     def setUp(self):
         self.srid = '2232'
@@ -93,13 +93,13 @@ class AppUsersResourceControllerMixinTests(TethysTestCase):
         self.resource_id = 'abc123'
         self.user = UserFactory()
         self.request_factory = RequestFactory()
-        self.farc = FakeAppUsersResourceController()
+        self.farc = FakeResourceView()
 
     def tearDown(self):
         pass
 
-    @mock.patch('tethysext.atcore.controllers.app_users.base.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.reverse')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.get_active_app')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.reverse')
     def test_default_back_url(self, mock_reverse, mock_aa):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id

@@ -13,6 +13,7 @@ from sqlalchemy import Column, String, PickleType
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users.base import AppUsersBase
 
+
 __all__ = ['ControllerMetadata']
 
 
@@ -38,8 +39,8 @@ class ControllerMetadata(AppUsersBase):
             function: the controller method.
         """  # noqa: E501
         from tethys_sdk.base import TethysController
-        from tethysext.atcore.controllers.app_users.base import AppUsersResourceController
-        from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
+        from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
+        from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 
         try:
             # Split into parts and extract function name
@@ -57,12 +58,12 @@ class ControllerMetadata(AppUsersBase):
         # Get entry point for class based views
         if inspect.isclass(controller) and issubclass(controller, TethysController):
             # Call with all kwargs if is instance of an AppUsersResourceWorkflowController
-            if issubclass(controller, AppUsersResourceWorkflowController):
+            if issubclass(controller, ResourceWorkflowView):
                 kwargs.update(self.kwargs)
                 controller = controller.as_controller(**kwargs)
 
             # Call with all but workflow kwargs if AppUsersResourceController
-            elif issubclass(controller, AppUsersResourceController):
+            elif issubclass(controller, ResourceViewMixin):
                 kwargs.pop('_ResourceWorkflow')
                 kwargs.pop('_ResourceWorkflowStep')
                 kwargs.update(self.kwargs)

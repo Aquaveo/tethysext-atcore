@@ -7,41 +7,30 @@
 ********************************************************************************
 """
 import mock
-from tethys_sdk.testing import TethysTestCase
 from django.test import RequestFactory
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.exc import NoResultFound
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.models.app_users.organization import Organization
 from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.models.app_users import AppUser, AppUsersBase
+from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.app_users.modify_user import ModifyUser
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class ModifyUserTests(TethysTestCase):
+class ModifyUserTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
+        super().setUp()
         self.request_factory = RequestFactory()
 
         self.django_user = UserFactory()
@@ -69,10 +58,6 @@ class ModifyUserTests(TethysTestCase):
         self.session.add(self.app_user)
         self.session.commit()
 
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
-
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.ModifyUser._handle_modify_user_requests')
     def test_get(self, mock_handle_modify_user):
         mock_request = mock.MagicMock()
@@ -94,11 +79,11 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post(self, _, mock_get_app_user_model, mock_get_organization_model,
                                                mock_get_sessionmaker, mock_get_active_app,
@@ -146,11 +131,11 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_create_new_client(self, _, mock_get_app_user_model,
                                                                  mock_get_organization_model, mock_get_sessionmaker,
@@ -202,9 +187,9 @@ class ModifyUserTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_user_not_found_exception(self, _, mock_get_app_user_model,
                                                                    __, mock_get_sessionmaker, mock_get_active_app, ___,
@@ -257,9 +242,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_create_new_invalid_client(self, _, mock_get_app_user_model,
                                                                          __, mock_get_sessionmaker, mock_get_active_app,
@@ -338,9 +323,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_get(self, _, mock_get_app_user_model, mock_get_organization_model,
                                               mock_get_sessionmaker, mock_get_active_app, mock_render):
@@ -384,9 +369,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_create_new_client_is_me(self, _, mock_get_app_user_model,
                                                                        __,
@@ -456,9 +441,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_password_confirm_password_user_space_error(self, _,
                                                                                           mock_get_app_user_model,
@@ -537,9 +522,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_duplicate_username(self, _, mock_get_app_user_model,
                                                                   __, mock_get_sessionmaker, mock_get_active_app,
@@ -617,9 +602,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_validate_edit_confirm_password(self, _, mock_get_app_user_model,
                                                                          __, mock_get_sessionmaker,
@@ -688,9 +673,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_validate_edit__password_confirm_password(self, _, mock_get_app_user_model,
                                                                                    __, mock_get_sessionmaker,
@@ -759,9 +744,9 @@ class ModifyUserTests(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_normal_user_change_role(self, _, mock_get_app_user_model, __, mock_get_sessionmaker,
                                                     mock_get_active_app, mock_render):

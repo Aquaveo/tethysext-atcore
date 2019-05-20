@@ -8,42 +8,29 @@
 """
 import mock
 from django.test import RequestFactory
-from sqlalchemy.orm.session import Session
-from sqlalchemy.engine import create_engine
-from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.models.app_users import AppUser, AppUsersBase, Resource
+from tethysext.atcore.models.app_users import AppUser, Resource
 from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.models.app_users.organization import Organization
 from tethysext.atcore.controllers.app_users.manage_organization_members import ManageOrganizationMembers
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    AppUsersBase.metadata.create_all(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class ManageOrganizationMembersTest(TethysTestCase):
+class ManageOrganizationMembersTest(SqlAlchemyTestCase):
 
     def setUp(self):
-        global connection, engine
+        super().setUp()
         self.request_factory = RequestFactory()
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
-
         self.django_user = UserFactory()
         self.django_user.is_staff = True
         self.django_user.is_superuser = True
@@ -99,10 +86,6 @@ class ManageOrganizationMembersTest(TethysTestCase):
         self.session.add(self.app_user)
         self.session.commit()
 
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
-
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.'
                 'ManageOrganizationMembers._handle_manage_member_request')
     def test_get(self, mock_handle_manage_memeber_request):
@@ -129,9 +112,9 @@ class ManageOrganizationMembersTest(TethysTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.render')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_manage_member_request_get(self, _, mock_get_user_model, __,
                                               mock_get_sessionmaker, ___, mock_render):
@@ -175,11 +158,11 @@ class ManageOrganizationMembersTest(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.messages')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_manage_member_request_post_remove_orphan_member(self, _, mock_get_app_user_model,
                                                                     __,
@@ -225,11 +208,11 @@ class ManageOrganizationMembersTest(TethysTestCase):
         self.assertIn('app_users_manage_users', mock_reverse.call_args_list[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.render')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organization_members.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.base.AppUsersController.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_manage_member_request_post_is_client_remove(self, _, mock_get_app_user_model,
                                                                 __, mock_get_sessionmaker,
