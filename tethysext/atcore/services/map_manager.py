@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import copy
 from math import ceil
 from abc import ABCMeta, abstractmethod
 from tethys_gizmos.gizmo_options import MVView, MVLayer
@@ -66,6 +67,8 @@ class MapManagerBase(object):
         'tileSize': [256, 256]
     }
 
+    _DEFAULT_POPUP_EXCLUDED_PROPERTIES = ['id', 'type', 'layer_name']
+
     def __init__(self, spatial_manager, model_db):
         self.spatial_manager = spatial_manager
         self.model_db = model_db
@@ -91,7 +94,7 @@ class MapManagerBase(object):
         """
         Compose the MapView object.
         Args:
-            request (HttpRequest): A Django request object.
+            request(HttpRequest): A Django request object.
 
         Returns:
             MapView, 4-list<float>: The MapView and extent objects.
@@ -117,26 +120,80 @@ class MapManagerBase(object):
         param_string = ';'.join(joined_pairs)
         return param_string
 
-    def build_mv_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                       visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
-                       public=True, geometry_attribute='geometry', layer_id=''):
+    def build_geojson_layer(self, geojson, layer_name, layer_title, layer_variable, layer_id='', visible=True,
+                            public=True, selectable=False, plottable=False, has_action=False, extent=None,
+                            popup_title=None, excluded_properties=None):
         """
         Build an MVLayer object with supplied arguments.
         Args:
-            endpoint (str): URL to GeoServer WMS interface.
-            layer_name (str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
-            layer_title (str): Title of MVLayer (e.g.: Model Boundaries).
-            layer_variable (str): Variable type of the layer (e.g.: model_boundaries).
-            viewparams (str): VIEWPARAMS string.
-            env (str): ENV string.
-            visible (bool): Layer is visible when True. Defaults to True.
-            tiled (bool): Configure as tiled layer if True. Defaults to True.
-            selectable (bool): Enable feature selection. Defaults to False.
-            plottable (bool): Enable "Plot" button on pop-up properties. Defaults to False.
-            has_action (bool): Enable "Action" button on pop-up properties. Defaults to False.
-            extent (list): Extent for the layer. Defaults to None.
-            geometry_attribute (str): Name of the geometry attribute. Defaults to geometry.
-            layer_id(uuid): layer_id for non geoserver layer where layer_name may not be unique.
+            geojson(dict): Python equivalent GeoJSON FeatureCollection.
+            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+            layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+            layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+            visible(bool): Layer is visible when True. Defaults to True.
+            public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+            selectable(bool): Enable feature selection. Defaults to False.
+            plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+            extent(list): Extent for the layer. Optional.
+            popup_title(str): Title to display on feature popups. Defaults to layer title.
+            excluded_properties(list): List of properties to exclude from feature popups.
+
+        Returns:
+            MVLayer: the MVLayer object.
+        """  # noqa: E501
+        # Define default styles for layers
+        style_map = self.get_vector_style_map()
+
+        # Bind geometry features to layer via layer name
+        for feature in geojson['features']:
+            feature['properties']['layer_name'] = layer_name
+
+        mv_layer = self._build_mv_layer(
+            layer_source='GeoJSON',
+            layer_id=layer_id,
+            layer_name=layer_name,
+            layer_title=layer_title,
+            layer_variable=layer_variable,
+            options=geojson,
+            extent=extent,
+            visible=visible,
+            public=public,
+            selectable=selectable,
+            plottable=plottable,
+            has_action=has_action,
+            popup_title=popup_title,
+            excluded_properties=excluded_properties,
+            style_map=style_map
+        )
+
+        return mv_layer
+
+    def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
+                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
+                        public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
+                        popup_title=None):
+        """
+        Build an WMS MVLayer object with supplied arguments.
+        Args:
+            endpoint(str): URL to GeoServer WMS interface.
+            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+            layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+            layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+            viewparams(str): VIEWPARAMS string.
+            env(str): ENV string.
+            visible(bool): Layer is visible when True. Defaults to True.
+            public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+            tiled(bool): Configure as tiled layer if True. Defaults to True.
+            selectable(bool): Enable feature selection. Defaults to False.
+            plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+            extent(list): Extent for the layer. Optional.
+            popup_title(str): Title to display on feature popups. Defaults to layer title.
+            excluded_properties(list): List of properties to exclude from feature popups.
+            geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
 
         Returns:
             MVLayer: the MVLayer object.
@@ -165,14 +222,75 @@ class MapManagerBase(object):
             'crossOrigin': 'anonymous'
         }
 
+        layer_source = 'TileWMS' if tiled else 'ImageWMS'
+
         if tiled:
             options['tileGrid'] = self.DEFAULT_TILE_GRID
 
+        mv_layer = self._build_mv_layer(
+            layer_id=layer_id,
+            layer_name=layer_name,
+            layer_source=layer_source,
+            layer_title=layer_title,
+            layer_variable=layer_variable,
+            options=options,
+            extent=extent,
+            visible=visible,
+            public=public,
+            selectable=selectable,
+            plottable=plottable,
+            has_action=has_action,
+            popup_title=popup_title,
+            excluded_properties=excluded_properties,
+            geometry_attribute=geometry_attribute
+        )
+
+        return mv_layer
+
+    def _build_mv_layer(self, layer_source, layer_name, layer_title, layer_variable, options, layer_id=None,
+                        extent=None, visible=True, public=True, selectable=False, plottable=False, has_action=False,
+                        excluded_properties=None, popup_title=None, geometry_attribute=None, style_map=None):
+        """
+        Build an MVLayer object with supplied arguments.
+        Args:
+            layer_source(str): OpenLayers Source to use for the MVLayer (e.g.: "TileWMS", "ImageWMS", "GeoJSON").
+            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+            layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+            layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+            visible(bool): Layer is visible when True. Defaults to True.
+            selectable(bool): Enable feature selection. Defaults to False.
+            plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+            extent(list): Extent for the layer. Optional.
+            popup_title(str): Title to display on feature popups. Defaults to layer title.
+            excluded_properties(list): List of properties to exclude from feature popups.
+            geometry_attribute(str): Name of the geometry attribute. Optional.
+            style_map(dict): Style map dictionary. See MVLayer documentation for examples of style maps. Optional.
+
+        Returns:
+            MVLayer: the MVLayer object.
+        """  # noqa: E501
+
+        # Derive popup_title if not given
+        if not popup_title:
+            popup_title = layer_title
+
         data = {
-            'layer_id': layer_id if layer_id else layer_name,
+            'layer_id': str(layer_id) if layer_id else layer_name,
+            'layer_name': layer_name,
+            'popup_title': popup_title,
             'layer_variable': layer_variable,
-            'toggle_status': public
+            'toggle_status': public,
         }
+
+        if excluded_properties and isinstance(excluded_properties, (list, tuple)):
+            default_excluded_properties = copy.deepcopy(self._DEFAULT_POPUP_EXCLUDED_PROPERTIES)
+            for ep in excluded_properties:
+                if ep not in default_excluded_properties:
+                    default_excluded_properties.append(ep)
+
+            data.update({'excluded_properties': default_excluded_properties})
 
         if plottable:
             data.update({'plottable': plottable})
@@ -183,17 +301,25 @@ class MapManagerBase(object):
         if not extent:
             extent = self.map_extent
 
+        # Build layer options
+        layer_options = {"visible": visible}
+
+        if style_map:
+            layer_options.update({'style_map': style_map})
+
         mv_layer = MVLayer(
-            source='TileWMS' if tiled else 'ImageWMS',
+            source=layer_source,
             options=options,
-            layer_options={"visible": visible},
+            layer_options=layer_options,
             legend_title=layer_title,
             legend_extent=extent,
             legend_classes=[],
             data=data,
-            geometry_attribute=geometry_attribute,
             feature_selection=selectable
         )
+
+        if geometry_attribute:
+            mv_layer.geometry_attribute = geometry_attribute
 
         return mv_layer
 
@@ -223,6 +349,45 @@ class MapManagerBase(object):
             'toggle_status': public
         }
         return layer_group
+
+    def get_vector_style_map(self):
+        """
+        Builds the style map for vector layers.
+
+        Returns:
+            dict: the style map.
+        """
+        color = 'gold'
+        style_map = {
+            'Point': {'ol.style.Style': {
+                'image': {'ol.style.Circle': {
+                    'radius': 5,
+                    'fill': {'ol.style.Fill': {
+                        'color': color,
+                    }},
+                    'stroke': {'ol.style.Stroke': {
+                        'color': color,
+                    }}
+                }}
+            }},
+            'LineString': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': color,
+                    'width': 2
+                }}
+            }},
+            'Polygon': {'ol.style.Style': {
+                'stroke': {'ol.style.Stroke': {
+                    'color': color,
+                    'width': 2
+                }},
+                'fill': {'ol.style.Fill': {
+                    'color': 'rgba(255, 215, 0, 0.1)'
+                }}
+            }},
+        }
+
+        return style_map
 
     def get_wms_endpoint(self):
         """

@@ -28,7 +28,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
     next_title = 'Run Process'
     valid_step_classes = [SpatialCondorJobRWS]
 
-    def process_step_options(self, request, session, context, current_step, previous_step, next_step):
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
 
@@ -36,6 +36,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             context(dict): Context object for the map view template.
+            resource(Resource): the resource for this request.
             current_step(ResourceWorkflowStep): The current step to be rendered.
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.
@@ -53,6 +54,12 @@ class SpatialCondorJobMWV(MapWorkflowView):
         workflow_layers = []
         steps_to_skip = set()
         mappable_step_types = (SpatialInputRWS,)
+
+        # Get managers
+        _, map_manager = self.get_managers(
+            request=request,
+            resource=resource
+        )
 
         for step in previous_steps:
             # Skip these steps
@@ -85,7 +92,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
                 continue
 
             # Build the Layer
-            workflow_layer = self._build_mv_layer(step, geometry)
+            workflow_layer = self._build_mv_layer(step, geometry, map_manager)
 
             # Save for building layer group later
             workflow_layers.append(workflow_layer)
@@ -94,13 +101,12 @@ class SpatialCondorJobMWV(MapWorkflowView):
             map_view.layers.insert(0, workflow_layer)
 
         # Build the Layer Group for Workflow Layers
-        workflow_layer_group = {
-            'id': 'workflow_datasets',
-            'display_name': '{} Datasets'.format(current_step.workflow.DISPLAY_TYPE_SINGULAR),
-            'control': 'checkbox',
-            'layers': workflow_layers,
-            'visible': True
-        }
+        workflow_layer_group = map_manager.build_layer_group(
+            id='workflow_datasets',
+            display_name='{} Datasets'.format(current_step.workflow.DISPLAY_TYPE_SINGULAR),
+            layer_control='checkbox',
+            layers=workflow_layers
+        )
 
         layer_groups.insert(0, workflow_layer_group)
 
@@ -110,13 +116,14 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'layer_groups': layer_groups
         })
 
-    def _build_mv_layer(self, step, geojson):
+    def _build_mv_layer(self, step, geojson, map_manager):
         """
         Build an MVLayer object given a step and a GeoJSON formatted geometry.
 
         Args:
             step(SpatialResourceWorkflowStep): The step the geometry is associated with.
             geojson(dict): GeoJSON Python equivalent.
+            map_manager(MapManagerBase): the map manager for this MapView.
 
         Returns:
             MVLayer: the layer object.
@@ -128,12 +135,13 @@ class SpatialCondorJobMWV(MapWorkflowView):
         layer_name = '{}_{}'.format(step.id, plural_codename)
         layer_variable = '{}-{}'.format(step.TYPE, plural_codename)
 
-        workflow_layer = self.build_geojson_layer(
+        workflow_layer = map_manager.build_geojson_layer(
             geojson=geojson,
             layer_name=layer_name,
             layer_variable=layer_variable,
-            legend_title=plural_name,
-            popup_title=singular_name
+            layer_title=plural_name,
+            popup_title=singular_name,
+            selectable=True
         )
 
         return workflow_layer

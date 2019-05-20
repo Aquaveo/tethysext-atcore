@@ -71,6 +71,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             request=request,
             session=session,
             context=context,
+            resource=resource,
             current_step=current_step,
             previous_step=previous_step,
             next_step=next_step
@@ -294,7 +295,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         return response
 
     @abc.abstractmethod
-    def process_step_options(self, request, session, context, current_step, previous_step, next_step):
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
 
@@ -302,6 +303,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             context(dict): Context object for the map view template.
+            resource(Resource): the resource for this request.
             current_step(ResourceWorkflowStep): The current step to be rendered.
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.

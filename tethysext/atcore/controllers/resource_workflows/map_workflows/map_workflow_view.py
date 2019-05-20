@@ -27,11 +27,11 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
         Args:
-            request (HttpRequest): The request.
-            session (sqlalchemy.Session): the session.
-            resource (Resource): the resource for this request.
-            context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): the session.
+            resource(Resource): the resource for this request.
+            context(dict): The context dictionary.
+            model_db(ModelDatabase): ModelDatabase instance associated with this request.
 
         Returns:
             dict: modified context dictionary.
@@ -79,7 +79,7 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             layer.editable = enabled
 
     @abc.abstractmethod
-    def process_step_options(self, request, session, context, current_step, previous_step, next_step):
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
 
@@ -87,6 +87,7 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             context(dict): Context object for the map view template.
+            resource(Resource): the resource for this request.
             current_step(ResourceWorkflowStep): The current step to be rendered.
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.
