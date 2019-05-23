@@ -91,7 +91,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layer;
+ 	var generate_uuid, load_layers;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1389,10 +1389,48 @@ var ATCORE_MAP_VIEW = (function() {
         $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
     };
 
-    // Append new layer
-    load_layer = function (layer, layer_id) {
-        m_layers[layer_id] = layer;
-        m_map.addLayer(layer);
+    // Create new layer groups with layers
+    // This method allows user to create tree items and have them linked to the tree items created in this method.
+    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends) {
+        // layer_group_name: name of the layer group - Ex: My Layer Group
+        // layer_group_id: id of the layer group - Ex: my_layer_group_123456
+        // layer_data: list of openlayer layers
+        // layer_names: list of the name of the openlayer layers
+        // layer_ids: list of the id of the open layer layers
+        // layer_legends: list of the legend name of the open layer layers Ex: my-legend -> your legend id is going to be (#legend-my-legend)
+        // Add layers to map
+        var i = 0;
+        for (i = 0; i < layer_data.length; i++) {
+            m_layers[layer_ids[i]] = layer_data[i];
+            m_map.addLayer(layer_data[i]);
+        }
+        var status = 'create'
+        // If the layer group is already created, we will have the solution added to the same layer groups
+        if ($('#' + layer_group_id).length){
+            status = 'append'
+        }
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_layer_group_tree_item',
+                'status': status,
+                'layer_group_id': layer_group_id,
+                'layer_group_name': layer_group_name,
+                'layer_names': JSON.stringify(layer_names),
+                'layer_ids': JSON.stringify(layer_ids),
+                'layer_legends': JSON.stringify(layer_legends),
+            },
+        }).done(function(data){
+            if (status == 'create') {
+                $('#layers-tab-panel').prepend(data.response);
+            }
+            else {
+                $('#' + layer_group_id + '_associated_layers').prepend(data.response);
+            }
+        });
+        init_layers_tab();
     }
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
@@ -1430,7 +1468,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         get_layer_name_from_feature: get_layer_name_from_feature,
         get_feature_id_from_feature: get_feature_id_from_feature,
-        load_layer: load_layer,
+        load_layers: load_layers,
         remove_layer_from_map: remove_layer_from_map,
         init_layers_tab: init_layers_tab,
 	};
