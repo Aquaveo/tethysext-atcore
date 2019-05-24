@@ -505,4 +505,3 @@ class MapView(ResourceView):
             })
 
         return JsonResponse(json)
-
