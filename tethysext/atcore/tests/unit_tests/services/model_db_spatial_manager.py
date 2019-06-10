@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import mock
+from unittest import mock
 import unittest
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager

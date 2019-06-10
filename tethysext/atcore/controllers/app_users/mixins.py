@@ -15,7 +15,10 @@ from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
 
-class AppUsersController(TethysController):
+class AppUsersViewMixin(TethysController):
+    """
+    Mixin for class-based views that adds convenience methods for working with the app user models.
+    """
     _AppUser = AppUser
     _Organization = Organization
     _Resource = Resource
@@ -45,7 +48,10 @@ class AppUsersController(TethysController):
         return self._app.get_persistent_store_database(self._persistent_store_name, as_sessionmaker=True)
 
 
-class AppUsersResourceController(AppUsersController):
+class ResourceViewMixin(AppUsersViewMixin):
+    """
+    Mixin for class-based views that adds convenience methods for working with resources.
+    """
 
     back_url = ''
 
@@ -62,7 +68,7 @@ class AppUsersResourceController(AppUsersController):
                 request=request,
                 *args, **kwargs
             )
-        return super(AppUsersResourceController, self).dispatch(request, *args, **kwargs)
+        return super(ResourceViewMixin, self).dispatch(request, *args, **kwargs)
 
     def default_back_url(self, request, *args, **kwargs):
         """
@@ -84,6 +90,7 @@ class AppUsersResourceController(AppUsersController):
         Args:
             request: Django HttpRequest.
             resource_id: ID of the resource.
+            session: SQLAlchemy session. Optional.
 
         Returns:
             Resource: the resource.

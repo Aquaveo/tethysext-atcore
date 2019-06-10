@@ -1,5 +1,5 @@
 {% extends "atcore/base.html" %}
-{% load tethys_gizmos staticfiles %}
+{% load tethys_gizmos static %}
 
 {% block import_gizmos %}
   {% import_gizmo_dependency select_input %}
@@ -14,7 +14,7 @@
   <div class="map-tabs">
     <!-- Nav tabs -->
     {% block map_tabs %}
-      <ul class="nav nav-tabs" role="tablist">
+      <ul class="nav nav-tabs atcore-nav-tabs" role="tablist">
         {# LAYERS TAB #}
         <li role="presentation" {% block disable_default_tab %}class="active"{% endblock %}>
           <a id="layers-tab-toggle"

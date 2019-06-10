@@ -263,7 +263,7 @@ var ATCORE_MAP_VIEW = (function() {
         // Build Plot Button Markup
         let plot_button =
             '<div class="plot-btn-wrapper">' +
-                '<a class="btn btn-primary btn-popup" ' +
+                '<a class="btn btn-primary btn-popup btn-plot" ' +
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
@@ -292,7 +292,7 @@ var ATCORE_MAP_VIEW = (function() {
         // Build Action Button Markup
         let action_button =
             '<div class="action-btn-wrapper">' +
-                '<a class="btn btn-primary btn-popup" ' +
+                '<a class="btn btn-primary btn-popup btn-action" ' +
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
@@ -314,15 +314,16 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Load the plot
             load_plot(e.target, layer_name, feature_id);
+            hide_properties_pop_up();
         });
     };
 
     bind_action_buttons = function() {
         // Reset click events on plot buttons
-        $('.btn-plot').off('click');
+        $('.btn-action').off('click');
 
         // Call load_plot when buttons are clicked
-        $('.btn-plot').on('click', function(e) {
+        $('.btn-action').on('click', function(e) {
             let layer_name = $(e.target).data('layer-id');
             let feature_id = $(e.target).data('feature-id');
 
@@ -704,7 +705,6 @@ var ATCORE_MAP_VIEW = (function() {
             let $layer_label = $action_button.closest('.layers-context-menu').prev();
             let display_name = $layer_label.find('.display-name').first().html();
 
-            // TODO: Implement
             // TODO: Save state to workflow - store in attributes?
         });
     };
@@ -858,7 +858,7 @@ var ATCORE_MAP_VIEW = (function() {
                 // TODO: Save state to resource - store in attributes?
             });
         });
-        // TODO: Implement
+
         // TODO: Save state to workflow - store in attributes?
     };
 

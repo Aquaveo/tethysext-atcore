@@ -1,33 +1,34 @@
 """
 ********************************************************************************
-* Name: map_workflow_view.py
+* Name: workflow_view.py
 * Author: nswain
 * Created On: November 21, 2018
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
 import abc
-import logging
 from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from tethys_apps.utilities import get_active_app
-from tethysext.atcore.controllers.resource_workflows.base import AppUsersResourceWorkflowController
-from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
-from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
+from tethysext.atcore.controllers.resource_view import ResourceView
+from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
-log = logging.getLogger(__name__)
 
-
-class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc.ABCMeta):
+class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
     """
-    Controller for a map view with workflows integration.
+    Base class for workflow views.
     """
-    template_name = 'atcore/resource_workflows/map_workflow_view.html'
+    view_title = ''
+    view_subtitle = ''
+    template_name = 'atcore/resource_workflows/resource_workflow_view.html'
+    previous_title = 'Previous'
+    next_title = 'Next'
+    finish_title = 'Finish'
     valid_step_classes = [ResourceWorkflowStep]
 
-    def get_context(self, request, session, resource, context, model_db, map_manager, workflow_id, step_id,
-                    *args, **kwargs):
+    def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
@@ -37,7 +38,6 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
             model_db (ModelDatabase): ModelDatabase instance associated with this request.
-            map_manager (MapManager): MapManager instance associated with this request.
 
         Returns:
             dict: modified context dictionary.
@@ -71,6 +71,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             request=request,
             session=session,
             context=context,
+            resource=resource,
             current_step=current_step,
             previous_step=previous_step,
             next_step=next_step
@@ -80,7 +81,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
         steps = self.build_step_cards(workflow)
 
         # Get the current app
-        url_map_name = self.get_step_url_name(request, workflow)
+        step_url_name = self.get_step_url_name(request, workflow)
 
         context.update({
             'workflow': workflow,
@@ -88,13 +89,16 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             'current_step': current_step,
             'previous_step': previous_step,
             'next_step': next_step,
-            'url_map_name': url_map_name,
+            'step_url_name': step_url_name,
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
+            'previous_title': self.previous_title,
+            'next_title': self.next_title,
+            'finish_title': self.finish_title
         })
 
         # Hook for extending the context
-        additional_context = self.extend_context(
+        additional_context = self.get_step_specific_context(
             request=request,
             session=session,
             context=context,
@@ -102,10 +106,13 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             previous_step=previous_step,
             next_step=next_step
         )
+
         context.update(additional_context)
+
         return context
 
-    def get_step_url_name(self, request, workflow):
+    @staticmethod
+    def get_step_url_name(request, workflow):
         """
         Derive url map name for the given workflow step views.
         Args:
@@ -159,62 +166,6 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             previous_status = step_status
         return steps
 
-    def on_get(self, request, session, resource, workflow_id, step_id, *args, **kwargs):
-        """
-        Hook that is called at the beginning of the get request, before any other controller logic occurs.
-            request (HttpRequest): The request.
-            session (sqlalchemy.Session): the session.
-            resource (Resource): the resource for this request.
-        Returns:
-            None or HttpResponse: If an HttpResponse is returned, render that instead.
-        """  # noqa: E501
-        workflow = self.get_workflow(request, workflow_id, session=session)
-        current_step = self.get_step(request, step_id=step_id, session=session)
-        previous_step, next_step = workflow.get_adjacent_steps(current_step)
-        return self.on_get_step(request, session, resource, workflow, current_step, previous_step, next_step,
-                                *args, **kwargs)
-
-    def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
-                    *args, **kwargs):
-        """
-        Hook that is called at the beginning of the get request for a workflow step, before any other controller logic occurs.
-            request(HttpRequest): The request.
-            session(sqlalchemy.Session): the session.
-            resource(Resource): the resource for this request.
-            workflow(ResourceWorkflow): The current workflow.
-            current_step(ResourceWorkflowStep): The current step to be rendered.
-            previous_step(ResourceWorkflowStep): The previous step.
-            next_step(ResourceWorkflowStep): The next step.
-        Returns:
-            None or HttpResponse: If an HttpResponse is returned, render that instead.
-        """  # noqa: E501
-
-    def set_feature_selection(self, map_view, enabled=True):
-        """
-        Set whether features are selectable or not.
-        Args:
-            map_view(MapView): The MapView gizmo options object.
-            enabled(bool): True to enable selection, False to disable it.
-        """
-        # Disable feature selection on all layers so it doesn't interfere with drawing
-        for layer in map_view.layers:
-            layer.feature_selection = enabled
-            layer.editable = enabled
-
-    @abc.abstractmethod
-    def process_step_options(self, request, session, context, current_step, previous_step, next_step):
-        """
-        Hook for processing step options (i.e.: modify map or context based on step options).
-
-        Args:
-            request(HttpRequest): The request.
-            session(sqlalchemy.orm.Session): Session bound to the steps.
-            context(dict): Context object for the map view template.
-            current_step(ResourceWorkflowStep): The current step to be rendered.
-            previous_step(ResourceWorkflowStep): The previous step.
-            next_step(ResourceWorkflowStep): The next step.
-        """
-
     @workflow_step_controller()
     def save_step_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs):
         """
@@ -238,7 +189,7 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
         # Get Managers Hook
-        model_db, _ = self.get_managers(
+        model_db = self.get_model_db(
             request=request,
             resource=resource,
             *args, **kwargs
@@ -281,41 +232,41 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
             TypeError: if step is invalid.
         """
         # Initialize drawing tools for spatial input parameter types.
-        if not all([isinstance(current_step, valid_class) for valid_class in self.valid_step_classes]):
-            raise TypeError('Invalid step type for view: {}. Must be one of {}.'.format(
-                type(current_step),
-                ', '.join([valid_class.__name__ for valid_class in self.valid_step_classes])
+        if not any([isinstance(current_step, valid_class) for valid_class in self.valid_step_classes]):
+            raise TypeError('Invalid step type for view: "{}". Must be one of "{}".'.format(
+                type(current_step).__name__,
+                '", "'.join([valid_class.__name__ for valid_class in self.valid_step_classes])
             ))
 
-    def extend_step_cards(self, workflow_step, step_status):
+    def on_get(self, request, session, resource, workflow_id, step_id, *args, **kwargs):
         """
-        Hook for extending step card attributes.
-
-        Args:
-            workflow_step(ResourceWorkflowStep): The current step for which a card is being created.
-            step_status(str): Status of the workflow_step.
-
+        Override hook that is called at the beginning of the get request, before any other controller logic occurs.
+            request (HttpRequest): The request.
+            session (sqlalchemy.Session): the session.
+            resource (Resource): the resource for this request.
         Returns:
-            dict: dictionary containing key-value attributes to add to the step card.
+            None or HttpResponse: If an HttpResponse is returned, render that instead.
+        """  # noqa: E501
+        workflow = self.get_workflow(request, workflow_id, session=session)
+        current_step = self.get_step(request, step_id=step_id, session=session)
+        previous_step, next_step = workflow.get_adjacent_steps(current_step)
+        return self.on_get_step(request, session, resource, workflow, current_step, previous_step, next_step,
+                                *args, **kwargs)
+
+    def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
+                    *args, **kwargs):
         """
-        return {}
-
-    def extend_context(self, request, session, context, current_step, previous_step, next_step):
-        """
-        Hook for extending the view context.
-
-        Args:
-           request(HttpRequest): The request.
-           session(sqlalchemy.orm.Session): Session bound to the steps.
-           context(dict): Context object for the map view template.
-           current_step(ResourceWorkflowStep): The current step to be rendered.
-           previous_step(ResourceWorkflowStep): The previous step.
-           next_step(ResourceWorkflowStep): The next step.
-
+        Hook that is called at the beginning of the get request for a workflow step, before any other controller logic occurs.
+            request(HttpRequest): The request.
+            session(sqlalchemy.Session): the session.
+            resource(Resource): the resource for this request.
+            workflow(ResourceWorkflow): The current workflow.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            previous_step(ResourceWorkflowStep): The previous step.
+            next_step(ResourceWorkflowStep): The next step.
         Returns:
-            dict: key-value pairs to add to context.
-        """
-        return {}
+            None or HttpResponse: If an HttpResponse is returned, render that instead.
+        """  # noqa: E501
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
@@ -342,3 +293,48 @@ class MapWorkflowView(MapView, AppUsersResourceWorkflowController, metaclass=abc
         else:
             response = redirect(previous_url)
         return response
+
+    @abc.abstractmethod
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
+        """
+        Hook for processing step options (i.e.: modify map or context based on step options).
+
+        Args:
+            request(HttpRequest): The request.
+            session(sqlalchemy.orm.Session): Session bound to the steps.
+            context(dict): Context object for the map view template.
+            resource(Resource): the resource for this request.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            previous_step(ResourceWorkflowStep): The previous step.
+            next_step(ResourceWorkflowStep): The next step.
+        """
+
+    def extend_step_cards(self, workflow_step, step_status):
+        """
+        Hook for extending step card attributes.
+
+        Args:
+            workflow_step(ResourceWorkflowStep): The current step for which a card is being created.
+            step_status(str): Status of the workflow_step.
+
+        Returns:
+            dict: dictionary containing key-value attributes to add to the step card.
+        """
+        return {}
+
+    def get_step_specific_context(self, request, session, context, current_step, previous_step, next_step):
+        """
+        Hook for extending the view context.
+
+        Args:
+           request(HttpRequest): The request.
+           session(sqlalchemy.orm.Session): Session bound to the steps.
+           context(dict): Context object for the map view template.
+           current_step(ResourceWorkflowStep): The current step to be rendered.
+           previous_step(ResourceWorkflowStep): The previous step.
+           next_step(ResourceWorkflowStep): The next step.
+
+        Returns:
+            dict: key-value pairs to add to context.
+        """
+        return {}

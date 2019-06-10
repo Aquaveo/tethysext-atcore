@@ -7,7 +7,7 @@
 ********************************************************************************
 """
 import unittest
-import mock
+from unittest import mock
 import sqlalchemy
 from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.services.model_database import ModelDatabase

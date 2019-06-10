@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import logging
 # Django
 from django.http import JsonResponse
 from django.shortcuts import render, reverse
@@ -13,12 +14,15 @@ from django.shortcuts import render, reverse
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.controllers.app_users.base import AppUsersController
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.services.paginate import paginate
 
 
-class ManageResources(AppUsersController):
+log = logging.getLogger(__name__)
+
+
+class ManageResources(AppUsersViewMixin):
     """
     Controller for manage_resources page.
 
@@ -205,7 +209,10 @@ class ManageResources(AppUsersController):
 
         try:
             resource = session.query(_Resource).get(resource_id)
-            self.perform_custom_delete_operations(request, resource)
+            try:
+                self.perform_custom_delete_operations(request, resource)
+            except:  # noqa: E722
+                log.warning(f'Unable to perform custom delete operations on resource {resource}.')
             session.delete(resource)
             session.commit()
         except Exception as e:

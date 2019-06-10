@@ -10,6 +10,9 @@ import json
 
 
 class AttributesMixin(object):
+    """
+    Provides methods for implementing the attributes pattern.
+    """
     _attributes = None
 
     @property

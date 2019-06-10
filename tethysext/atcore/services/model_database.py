@@ -148,6 +148,15 @@ class ModelDatabase(ModelDatabaseBase):
 
         return self.database_id
 
+    def delete(self):
+        """
+        Delete the database associated with this model database.
+
+        Returns:
+            bool: True if successfully deleted, otherwise False.
+        """
+        return self._app.drop_persistent_store(self.database_id)
+
     def _get_cluster_connection_name_for_new_database(self):
         """
         Determine which database to connection to use based on a simple load balancing algorithm: (1) least number of databases and (2) least size if tied on number of database.  # noqa: E501

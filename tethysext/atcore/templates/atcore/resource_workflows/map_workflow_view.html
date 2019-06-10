@@ -1,5 +1,5 @@
 {% extends "atcore/map_view/map_view.html" %}
-{% load tethys_gizmos staticfiles %}
+{% load tethys_gizmos static %}
 
 {# OVERRIDE DEFAULT ACTIVE TAB #}
 {% block disable_default_tab %}{% endblock %}
@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block map %}
-  <form id="map-workflow-form" class="map-form" method="post" enctype="multipart/form-data">
+  <form id="workflow-form" class="map-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input name="method" value="save-step-data" hidden>
     {{ block.super }}
@@ -24,16 +24,7 @@
 {% endblock %}
 
 {% block app_actions %}
-  {% if previous_step %}
-  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="map-workflow-form">Previous</button>
-  {% endif %}
-
-  {% if next_step %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Next</button>
-  {% else %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="map-workflow-form">Submit</button>
-  {% endif %}
-
+  {% include 'atcore/resource_workflows/components/workflow_actions.html' %}
   {{ block.super }}
 {% endblock %}
 

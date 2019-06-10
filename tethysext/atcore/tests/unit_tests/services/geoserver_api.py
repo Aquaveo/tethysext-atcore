@@ -8,7 +8,7 @@
 """
 import os
 import unittest
-import mock
+from unittest import mock
 import requests
 from tethysext.atcore.services.geoserver_api import GeoServerAPI
 

@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import mock
+from unittest import mock
 from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from tethys_sdk.testing import TethysTestCase

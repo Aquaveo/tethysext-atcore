@@ -1,19 +1,17 @@
 import uuid
-
 from django.contrib.auth.models import User
 from mock import patch, MagicMock
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm.session import Session
-from tethys_sdk.testing import TethysTestCase
+from tethys_sdk.base import TethysController
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
-from tethysext.atcore.models.app_users import initialize_app_users_db
 from tethysext.atcore.models.app_users.user_setting import UserSetting
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.tests.mock.django import MockDjangoRequest
 from tethysext.atcore.tests.mock.permissions import mock_has_permission_false, mock_has_permission_assignable_roles, \
     mock_has_permission_true
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 class CustomOrganization(Organization):
@@ -40,29 +38,21 @@ class CustomAppUser(AppUser):
 
 
 def setUpModule():
-    global transaction, connection, engine
-
-    # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
-    # Initialize db with staff user
-    initialize_app_users_db(connection)
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
-    # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    tear_down_module_for_sqlalchemy_tests()
 
 
-class AppUserTests(TethysTestCase):
+class TestController(TethysController):
+    pass
+
+
+class AppUserTests(SqlAlchemyTestCase):
 
     def setUp(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
-
+        super().setUp()
         self.username = "test_user"
         self.role = Roles.ORG_USER
         self.is_active = True
@@ -185,10 +175,6 @@ class AppUserTests(TethysTestCase):
             user_username=app_admin_username,
             user_is_staff=False
         )
-
-    def tearDown(self):
-        self.session.close()
-        self.transaction.rollback()
 
     def test_create_user(self):
         user = self.session.query(AppUser).get(self.user_id)
