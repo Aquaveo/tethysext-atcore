@@ -1,6 +1,8 @@
 import sys
+import json
 import logging
 import traceback
+from pprint import pprint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import StatementError
@@ -12,7 +14,7 @@ from django.contrib import messages
 from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.services.resource_workflows.helpers import set_step_status, parse_workflow_step_args
 from tethysext.atcore.utilities import clean_request
-from tethysext.atcore.models.app_users import ResourceWorkflowStep
+from tethysext.atcore.models.app_users import ResourceWorkflowStep, Resource
 # DO NOT REMOVE, need to import all the subclasses of ResourceWorkflowStep for the polymorphism to work.
 from tethysext.atcore.models.resource_workflow_steps import *  # noqa: F401, F403
 
@@ -127,24 +129,37 @@ def workflow_step_job(job_func):
                 make_resource_db_session = sessionmaker(bind=resource_db_engine)
                 resource_db_session = make_resource_db_session()
 
+                model_db_engine = create_engine(args.model_db_url)
+                make_model_db_session = sessionmaker(bind=model_db_engine)
+                model_db_session = make_model_db_session()
+
                 # Get the step
                 # NOTE: if you get an error related to polymorphic_identity not being found, it may be caused by import
                 # errors with a subclass of the ResourceWorkflowStep. It could also be caused indirectly if the subclass
                 # has Pickle typed columns with values that import things.
                 step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
 
-                # TODO use polymorphism
-                from gssha_adapter.models.app_users.gssha_model_resource import GsshaModelResource
-                resource = resource_db_session.query(GsshaModelResource).get(args.resource_id)
+                # TODO use polymorphism - removing this line will break gssha - import model class dynamically
+                # See: tethysext.atcore.services.resource_workflows.helpers.parse_workflow_step_args
+                from gssha_adapter.models.app_users.gssha_model_resource import GsshaModelResource  # noqa: F401
+                resource = resource_db_session.query(Resource).get(args.resource_id)
+
+                # Process parameters from workflow steps
+                with open(args.workflow_params_file, 'r') as p:
+                    params_json = json.loads(p.read())
+
+                print('Workflow Parameters:')
+                pprint(params_json)
 
                 ret_val = job_func(
                     resource_db_session=resource_db_session,
-                    # TODO fill this
-                    model_db_session=None,
+                    model_db_session=model_db_session,
                     resource=resource,
-                    # TODO fill this
+                    # TODO fill workflow - need to import workflow class dynamically
+                    # workflow=step.workflow,  # Will break if the workflow class is not imported...
                     workflow=None,
                     step=step,
+                    params_json=params_json,
                     params_file=args.workflow_params_file,
                     cmd_args=args
                 )

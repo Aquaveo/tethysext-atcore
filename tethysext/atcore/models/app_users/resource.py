@@ -43,3 +43,6 @@ class Resource(StatusMixin, AttributesMixin, AppUsersBase):
         'polymorphic_identity': TYPE,
         'polymorphic_on': type
     }
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} name="{self.name}" description="{self.description}" id="{self.id}">'

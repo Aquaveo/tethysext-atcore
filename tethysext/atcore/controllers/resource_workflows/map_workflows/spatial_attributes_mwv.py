@@ -72,7 +72,7 @@ class SpatialAttributesMWV(SpatialDataMWV):
             'feature_id': feature_id
         }
 
-        return render(request, 'atcore/resource_workflows/spatial_attributes_form.html', context)
+        return render(request, 'atcore/resource_workflows/components/spatial_attributes_form.html', context)
 
     @workflow_step_controller(is_rest_controller=True)
     def save_spatial_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs):

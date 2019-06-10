@@ -189,12 +189,16 @@
 
 /* Properties Sheet */
 .plot-btn-wrapper {
-    margin-top: -15px;
-    margin-bottom: 20px;
+    margin-top: 10px;
 }
 
 .btn-popup {
     display: block;
+}
+
+#properties-popup-content .table {
+    margin-top: 10px;
+    margin-bottom: 0;
 }
 
 /* Legend Tab */

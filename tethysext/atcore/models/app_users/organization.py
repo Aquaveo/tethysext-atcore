@@ -39,7 +39,7 @@ class Organization(AppUsersBase):
     members = relationship('AppUser',
                            secondary=user_organization_association,
                            back_populates='organizations')
-    clients = relationship('Organization', cascade="all,delete",
+    clients = relationship('Organization', cascade='all,delete',
                            backref=backref('consultant', remote_side=[id]))
 
     # Polymorphism

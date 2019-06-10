@@ -15,11 +15,11 @@ from tethys_apps.decorators import permission_required
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
 # CityWater
-from tethysext.atcore.controllers.app_users.base import AppUsersController
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
-class ManageOrganizationMembers(AppUsersController):
+class ManageOrganizationMembers(AppUsersViewMixin):
     """
     Controller for manage_organization_members page.
 

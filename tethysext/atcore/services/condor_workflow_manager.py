@@ -126,6 +126,7 @@ class ResourceWorkflowCondorJobManager(object):
         """
         # Prep
         scheduler = get_scheduler(self.scheduler_name)
+        # TODO: Cleanup other jobs associated with this workflow...
         job_manager = self.app.get_job_manager()
 
         # Create Workflow
@@ -163,7 +164,8 @@ class ResourceWorkflowCondorJobManager(object):
             job.set_attribute('arguments', self.job_args)
 
             # Add input files to transfer input files
-            transfer_input_files = job.get_attribute('transfer_input_files') or []
+            transfer_input_files_str = job.get_attribute('transfer_input_files') or ''
+            transfer_input_files = transfer_input_files_str.split(',')
 
             for input_file_name in input_file_names:
                 transfer_input_files.append('../{}'.format(input_file_name))
@@ -180,7 +182,7 @@ class ResourceWorkflowCondorJobManager(object):
 
         # Create update status job
         update_status_job = CondorWorkflowJobNode(
-            name='wrap_up',
+            name='finalize',  # Better for display name
             condorpy_template_name='vanilla_transfer_files',
             remote_input_files=[
                 os.path.join(self.ATCORE_EXECUTABLE_DIR, 'update_status.py'),
@@ -193,8 +195,10 @@ class ResourceWorkflowCondorJobManager(object):
 
         update_status_job.save()
 
+        # Bind update_status job only to terminal nodes in the workflow (jobs without children)
         for job in self.jobs:
-            update_status_job.add_parent(job)
+            if len(job.children_nodes.select_subclasses()) <= 0:
+                update_status_job.add_parent(job)
 
         self.jobs.append(update_status_job)
 
@@ -218,9 +222,12 @@ class ResourceWorkflowCondorJobManager(object):
         from tethys_sdk.jobs import CondorWorkflowJobNode
 
         jobs = []
+        job_map = {}
 
+        # Create all the jobs
         for job_dict in job_dicts:
             # Pop-off keys to be handled separately
+            parents = job_dict.pop('parents', [])
             attributes = job_dict.pop('attributes', {})
 
             job_dict.update({'workflow': self.workflow})
@@ -232,6 +239,16 @@ class ResourceWorkflowCondorJobManager(object):
 
             job.save()
             jobs.append(job)
+
+            # For mapping relationships
+            job_map[job.name] = {'job': job, 'parents': parents}
+
+        # Set Parent Relationships
+        for job in jobs:
+            for parent_name in job_map[job.name]['parents']:
+                job.add_parent(job_map[parent_name]['job'])
+
+            job.save()
 
         return jobs
 
