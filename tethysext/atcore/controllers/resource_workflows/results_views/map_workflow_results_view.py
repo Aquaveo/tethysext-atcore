@@ -7,9 +7,7 @@
 ********************************************************************************
 """
 import logging
-from django.shortcuts import redirect
 from django.http import JsonResponse
-from django.contrib import messages
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
@@ -41,7 +39,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             dict: modified context dictionary.
         """  # noqa: E501
         base_context = MapWorkflowView.get_context(
-            self=self,
+            self,
             request=request,
             session=session,
             resource=resource,
@@ -53,7 +51,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         )
 
         result_workflow_context = WorkflowResultsView.get_context(
-            self=self,
+            self,
             request=request,
             session=session,
             resource=resource,
@@ -85,7 +83,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         )
 
         # Get Map View and Layer Groups
-        layer_groups = context['layer_groups']
+        layer_groups = base_context['layer_groups']
 
         # Generate MVLayers for spatial data
         results_layers = []
@@ -112,14 +110,15 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 results_layers.append(result_layer)
 
         # Build the Layer Group for Workflow Layers
-        results_layer_group = map_manager.build_layer_group(
-            id='workflow_results',
-            display_name=result.options.get('layer_group_title', 'Results'),
-            layer_control=result.options.get('layer_group_control', 'checkbox'),
-            layers=results_layers
-        )
+        if results_layers:
+            results_layer_group = map_manager.build_layer_group(
+                id='workflow_results',
+                display_name=result.options.get('layer_group_title', 'Results'),
+                layer_control=result.options.get('layer_group_control', 'checkbox'),
+                layers=results_layers
+            )
 
-        layer_groups.insert(0, results_layer_group)
+            layer_groups.insert(0, results_layer_group)
 
         return base_context
 
@@ -153,18 +152,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             title, data, layout = self.get_plot_for_geojson(layer, feature_id)
 
         elif layer_type == 'wms':
-            database_id = resource.get_attribute('database_id') if resource else None
-
-            if not database_id:
-                messages.error(request, 'An unexpected error occurred. Please try again.')
-                return redirect(self.back_url)
-
-            # Initialize MapManager
-            model_db = self._ModelDatabase(app=self._app, database_id=database_id)
-            gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
-            spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
-            map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
-            title, data, layout = map_manager.get_plot_for_layer_feature(layer_name, feature_id)
+            title, data, layout = super().get_plot_data(request, session, resource)
 
         return JsonResponse({'title': title, 'data': data, 'layout': layout})
 
@@ -220,7 +208,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 #         }
                 #     }
                 # }
-                if str(feature['properties']['id']) == feature_id:
+                if str(feature['properties']['id']) == str(feature_id):
                     plot = feature['properties'].get('plot', None)
                     break
 
@@ -228,7 +216,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             log.warning('Ill formed geojson: {}'.format(layer))
 
         title = plot.get('title', '') if plot else None
-        data = plot.get('data', {}) if plot else None
+        data = plot.get('data', []) if plot else None
         layout = plot.get('layout', {}) if plot else None
 
         return title, data, layout

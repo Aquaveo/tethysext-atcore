@@ -27,9 +27,13 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):
-        baseline = {'scheduler': '',
-                    'jobs': [],
-                    }
+        baseline = {
+            'scheduler': '',
+            'jobs': [],
+            'working_message': '',
+            'error_message': '',
+            'pending_message': ''
+        }
         self.assertDictEqual(baseline, self.instance.default_options)
 
     def test_init_parameters(self):

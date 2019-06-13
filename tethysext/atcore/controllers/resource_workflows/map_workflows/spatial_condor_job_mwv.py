@@ -9,7 +9,8 @@
 import os
 import json
 import logging
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import render, redirect
 from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS, SpatialInputRWS, \
@@ -25,7 +26,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
     Controller for a map workflow view requiring spatial input (drawing).
     """
     template_name = 'atcore/resource_workflows/spatial_condor_job_mwv.html'
-    next_title = 'Run Process'
     valid_step_classes = [SpatialCondorJobRWS]
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
@@ -161,10 +161,10 @@ class SpatialCondorJobMWV(MapWorkflowView):
             None or HttpResponse: If an HttpResponse is returned, render that instead.
         """  # noqa: E501
         step_status = current_step.get_status(current_step.ROOT_STATUS_KEY)
-        if step_status == current_step.STATUS_WORKING:
-            return self.render_condor_jobs_table(request, resource, workflow, current_step)
+        if step_status != current_step.STATUS_PENDING:
+            return self.render_condor_jobs_table(request, resource, workflow, current_step, previous_step, next_step)
 
-    def render_condor_jobs_table(self, request, resource, workflow, current_step):
+    def render_condor_jobs_table(self, request, resource, workflow, current_step, previous_step, next_step):
         """
         Render a condor jobs table showing the status of the current job that is processing.
             request(HttpRequest): The request.
@@ -201,7 +201,12 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'workflow': workflow,
             'steps': steps,
             'current_step': current_step,
+            'next_step': next_step,
+            'previous_step': previous_step,
             'step_url_name': step_url_name,
+            'next_title': self.next_title,
+            'finish_title': self.finish_title,
+            'previous_title': self.previous_title,
             'back_url': self.back_url,
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
@@ -230,70 +235,105 @@ class SpatialCondorJobMWV(MapWorkflowView):
             ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
             RuntimeError: exceptions that require developer attention.
         """  # noqa: E501
-        # Validate data if going to next step
-        # TODO: Provide "Next" button when job has finished running successfully.
-        # TODO: Automatically redirect after job finishes processing?
         if 'next-submit' in request.POST:
             step.validate()
 
-            # Get options
-            scheduler_name = step.options.get('scheduler', None)
-            if not scheduler_name:
-                raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.')
+            status = step.get_status(step.ROOT_STATUS_KEY)
 
-            jobs = step.options.get('jobs', None)
-            if not jobs:
-                raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.')
+            if status != step.STATUS_COMPLETE:
+                if status == step.STATUS_WORKING:
+                    working_message = step.options.get(
+                        'working_message',
+                        'Please wait for the job to finish running before proceeding.'
+                    )
+                    messages.warning(request, working_message)
+                elif status in (step.STATUS_ERROR, step.STATUS_FAILED):
+                    error_message = step.options.get(
+                        'error_message',
+                        'The job did not finish successfully. Please press "Rerun" to try again.'
+                    )
+                    messages.error(request, error_message)
+                else:
+                    pending_message = step.options.get(
+                        'pending_message',
+                        'Please press "Run" to continue.'
+                    )
+                    messages.info(request, pending_message)
 
-            # Define the working directory
-            app = self.get_app()
-            working_directory = self.get_working_directory(request, app)
+                return redirect(request.path)
 
-            # Setup the Condor Workflow
-            condor_job_manager = ResourceWorkflowCondorJobManager(
-                session=session,
-                model_db=model_db,
-                resource_workflow_step=step,
-                jobs=jobs,
-                user=request.user,
-                working_directory=working_directory,
-                app=app,
-                scheduler_name=scheduler_name,
-            )
+        return super().process_step_data(request, session, step, model_db, current_url, previous_url, next_url)
 
-            # Serialize parameters from all previous steps into json
-            serialized_params = self.serialize_parameters(step)
+    def run_job(self, request, session, resource, workflow_id, step_id, *args, **kwargs):
+        """
+        Handle run-job-form requests: prepare and submit the condor job.
+        """
+        if 'run-submit' not in request.POST and 'rerun-submit' not in request.POST:
+            return redirect(request.path)
 
-            # Write serialized params to file for transfer
-            params_file_path = os.path.join(condor_job_manager.workspace, 'workflow_params.json')
-            with open(params_file_path, 'w') as params_file:
-                params_file.write(serialized_params)
+        # Validate data if going to next step
+        step = self.get_step(request, step_id, session)
 
-            # Add parameter file to workflow input files
-            condor_job_manager.input_files.append(params_file_path)
+        # Get options
+        scheduler_name = step.options.get('scheduler', None)
+        if not scheduler_name:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.')
 
-            # Prepare the job
-            job_id = condor_job_manager.prepare()
+        jobs = step.options.get('jobs', None)
+        if not jobs:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.')
 
-            # Submit job
-            condor_job_manager.run_job()
+        # Get managers
+        model_db, _ = self.get_managers(
+            request=request,
+            resource=resource
+        )
 
-            # Update status of the resource workflow step
-            step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
-            step.set_attribute(step.ATTR_STATUS_MESSAGE, None)
+        # Define the working directory
+        app = self.get_app()
+        working_directory = self.get_working_directory(request, app)
 
-            # Save the job id to the step for later reference
-            step.set_attribute('condor_job_id', job_id)
+        # Setup the Condor Workflow
+        condor_job_manager = ResourceWorkflowCondorJobManager(
+            session=session,
+            model_db=model_db,
+            resource_workflow_step=step,
+            jobs=jobs,
+            user=request.user,
+            working_directory=working_directory,
+            app=app,
+            scheduler_name=scheduler_name,
+        )
 
-            # Allow the step to track statuses on each "sub-job"
-            step.set_attribute('condor_job_statuses', [])
-            session.commit()
+        # Serialize parameters from all previous steps into json
+        serialized_params = self.serialize_parameters(step)
 
-            # Redirect back to self
-            next_url = request.path
+        # Write serialized params to file for transfer
+        params_file_path = os.path.join(condor_job_manager.workspace, 'workflow_params.json')
+        with open(params_file_path, 'w') as params_file:
+            params_file.write(serialized_params)
 
-        return super().process_step_data(request=request, session=session, step=step, model_db=model_db,
-                                         current_url=current_url, previous_url=previous_url, next_url=next_url)
+        # Add parameter file to workflow input files
+        condor_job_manager.input_files.append(params_file_path)
+
+        # Prepare the job
+        job_id = condor_job_manager.prepare()
+
+        # Submit job
+        condor_job_manager.run_job()
+
+        # Update status of the resource workflow step
+        step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
+        step.set_attribute(step.ATTR_STATUS_MESSAGE, None)
+
+        # Save the job id to the step for later reference
+        step.set_attribute('condor_job_id', job_id)
+
+        # Allow the step to track statuses on each "sub-job"
+        step.set_attribute('condor_job_statuses', [])
+        session.commit()
+
+        return redirect(request.path)
 
     @staticmethod
     def get_working_directory(request, app):

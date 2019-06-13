@@ -29,6 +29,9 @@ class SpatialCondorJobRWS(SpatialResourceWorkflowStep):
         return {
             'scheduler': '',
             'jobs': [],
+            'working_message': '',
+            'error_message': '',
+            'pending_message': ''
         }
 
     def init_parameters(self, *args, **kwargs):
