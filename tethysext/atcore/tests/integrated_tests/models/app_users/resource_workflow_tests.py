@@ -40,7 +40,7 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
 
     def test___str__(self):
         ret = str(self.workflow)
-        self.assertEqual('<ResourceWorkflow id={} name=bar>'.format(self.workflow.id), ret)
+        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}">', ret)
 
     def test_get_next_step_no_steps(self):
         self.workflow.steps = []

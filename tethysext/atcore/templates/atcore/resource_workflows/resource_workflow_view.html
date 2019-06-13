@@ -27,6 +27,8 @@
 {% endblock %}
 
 {% block app_actions %}
+  {% include 'atcore/resource_workflows/components/workflow_actions.html' %}
+  {{ block.super }}
 {% endblock %}
 
 {% block content_dependent_styles %}

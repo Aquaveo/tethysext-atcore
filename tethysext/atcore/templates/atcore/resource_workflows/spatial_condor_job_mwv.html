@@ -1,7 +1,16 @@
 {% extends "atcore/resource_workflows/map_workflow_view.html" %}
 {% load tethys_gizmos static %}
 
+
+{% block app_content %}
+  {{ block.super }}
+  <form id="run-job-form" method="post">
+    {% csrf_token %}
+    <input hidden name="method" value="run-job">
+  </form>
+{% endblock %}
 {% block app_actions %}
+  <button class="btn btn-success" type="submit" form="run-job-form" name="run-submit">Run</button>
   {{ block.super }}
 {% endblock %}
 

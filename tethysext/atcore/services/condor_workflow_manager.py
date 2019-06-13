@@ -66,7 +66,7 @@ class ResourceWorkflowCondorJobManager(object):
         self.custom_job_args = args
 
         #: Safe name with only A-Z 0-9
-        self.safe_job_name = ''.join(s for s in resource_workflow_step.name if s.isalnum())
+        self.safe_job_name = ''.join(s if s.isalnum() else '_' for s in self.resource_workflow_step_name)
 
         # Prepare standard arguments for all jobs
         self.job_args = [

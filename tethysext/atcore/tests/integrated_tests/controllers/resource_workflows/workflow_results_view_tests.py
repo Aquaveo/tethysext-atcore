@@ -1,4 +1,5 @@
 from unittest import mock
+from tethysext.atcore.models.app_users import ResourceWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView  # noqa: E501
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -11,6 +12,14 @@ def setUpModule():
 
 def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
+
+
+class NotResourceWorkflowResult:
+    pass
+
+
+class AnotherResourceWorkflowResult(ResourceWorkflowResult):
+    pass
 
 
 class WorkflowResultsViewTests(SqlAlchemyTestCase):
@@ -117,8 +126,69 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         ret = self.instance.build_result_cards(mock_step)
         self.assertEqual(baseline, ret)
 
-    def test_validate_result(self):
-        pass
+    def test_validate_result_valid(self):
+        mock_request = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_result = mock.MagicMock(spec=ResourceWorkflowResult)
+        error_thrown = False
+
+        try:
+            self.instance.validate_result(mock_request, mock_session, mock_result)
+        except TypeError:
+            error_thrown = True
+
+        self.assertFalse(error_thrown)
+
+    def test_validate_result_invalid(self):
+        mock_request = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_result = NotResourceWorkflowResult()
+        error_thrown = False
+        error_message = ''
+
+        try:
+            self.instance.validate_result(mock_request, mock_session, mock_result)
+        except TypeError as e:
+            error_thrown = True
+            error_message = str(e)
+
+        expected_message = 'Invalid result type for view: "NotResourceWorkflowResult". ' \
+                           'Must be one of "ResourceWorkflowResult".'
+        self.assertTrue(error_thrown)
+        self.assertEqual(expected_message, error_message)
+
+    def test_validate_result_multiple_valid(self):
+        self.instance.valid_result_classes.append(AnotherResourceWorkflowResult)
+        mock_request = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_result = mock.MagicMock(spec=ResourceWorkflowResult)
+        error_thrown = False
+
+        try:
+            self.instance.validate_result(mock_request, mock_session, mock_result)
+        except TypeError:
+            error_thrown = True
+
+        self.assertFalse(error_thrown)
+
+    def test_validate_result_multiple_invalid(self):
+        self.instance.valid_result_classes.append(AnotherResourceWorkflowResult)
+        mock_request = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_result = NotResourceWorkflowResult()
+        error_thrown = False
+        error_message = ''
+
+        try:
+            self.instance.validate_result(mock_request, mock_session, mock_result)
+        except TypeError as e:
+            error_thrown = True
+            error_message = str(e)
+
+        expected_message = 'Invalid result type for view: "NotResourceWorkflowResult". ' \
+                           'Must be one of "ResourceWorkflowResult", "AnotherResourceWorkflowResult".'
+        self.assertTrue(error_thrown)
+        self.assertEqual(expected_message, error_message)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.process_step_data')
     def test_process_step_data(self, mock_process_step_data):
