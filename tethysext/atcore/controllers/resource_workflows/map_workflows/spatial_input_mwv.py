@@ -166,10 +166,7 @@ class SpatialInputMWV(MapWorkflowView):
 
         # Otherwise, go to the next step
         else:
-            if 'next-submit' in request.POST:
-                response = redirect(next_url)
-            else:
-                response = redirect(previous_url)
+            response = super().process_step_data(request, session, step, model_db, current_url, previous_url, next_url)
 
         return response
 

@@ -39,9 +39,9 @@ class DatasetWorkflowResultTests(SqlAlchemyTestCase):
         ret = self.instance.datasets
         self.assertListEqual([], ret)
 
-    def test_clear_datasets(self):
-        self.instance.data['datasets'] = 'Bad data to clear'
-        self.instance.clear_datasets()
+    def test_reset(self):
+        self.instance.data['datasets'] = 'Bad data to reset'
+        self.instance.reset()
         ret = self.instance.data['datasets']
         self.assertEqual([], ret)
 
@@ -54,9 +54,9 @@ class DatasetWorkflowResultTests(SqlAlchemyTestCase):
         self.bind_instance_to_session()
         self.test_datasets()
 
-    def test_clear_datasets_bound(self):
+    def test_reset_datasets_bound(self):
         self.bind_instance_to_session()
-        self.test_clear_datasets()
+        self.test_reset()
 
     def test__add_dataset_bound(self):
         self.bind_instance_to_session()

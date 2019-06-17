@@ -76,3 +76,8 @@ class ResourceWorkflowResultTests(SqlAlchemyTestCase):
         new_data = {'bar': 3}
         self.result.data = new_data
         self.assertDictEqual(new_data, self.result._data)
+
+    def test_reset(self):
+        self.result.data = {'fake': 'data to reset'}
+        self.result.reset()
+        self.assertDictEqual({}, self.result.data)

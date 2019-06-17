@@ -42,3 +42,12 @@ class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, Results
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
         return {}
+
+    def reset(self):
+        """
+        Resets the step back to its initial state.
+        """
+        for result in self.results:
+            result.reset()
+
+        super().reset()

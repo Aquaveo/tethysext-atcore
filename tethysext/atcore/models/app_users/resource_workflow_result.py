@@ -6,9 +6,8 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-from sqlalchemy.orm import Session
 import uuid
-
+from sqlalchemy.orm import Session
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
 from tethysext.atcore.models.types import GUID
@@ -76,13 +75,19 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
     @property
     def data(self):
         if not self._data:
-            self._data = {}
+            self._data = dict()
         return self._data
 
     @data.setter
     def data(self, value):
-        self._data = {}
+        self._data = dict()
         session = Session.object_session(self)
         session and session.commit()
         self._data = value
         session and session.commit()
+
+    def reset(self):
+        """
+        Resets result to initial state.
+        """
+        self._data = dict()

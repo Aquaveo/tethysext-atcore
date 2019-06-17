@@ -288,6 +288,11 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
             RuntimeError: exceptions that require developer attention.
         """  # noqa: E501
+        if step.dirty:
+            step.workflow.reset_next_steps(step)
+            step.dirty = False
+            session.commit()
+
         if 'next-submit' in request.POST:
             response = redirect(next_url)
         else:

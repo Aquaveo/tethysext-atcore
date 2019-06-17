@@ -143,3 +143,36 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
         step_index = self.steps.index(step)
         previous_steps = self.steps[:step_index]
         return previous_steps
+
+    def get_next_steps(self, step):
+        """
+        Get all steps following the given step.
+        Args:
+            step(ResourceWorkflowStep): A step belonging to this workflow.
+
+        Returns:
+            list<ResourceWorkflowStep>: a list of steps following this one.
+        """
+        if step not in self.steps:
+            raise ValueError('Step {} does not belong to this workflow.'.format(step))
+
+        step_index = self.steps.index(step)
+        next_steps = self.steps[step_index + 1:]
+        return next_steps
+
+    def reset_next_steps(self, step):
+        """
+        Reset all steps following the given step that are not PENDING.
+        Args:
+            step(ResourceWorkflowStep): A step belonging to this workflow.
+        """
+        if step not in self.steps:
+            raise ValueError('Step {} does not belong to this workflow.'.format(step))
+
+        next_steps = self.get_next_steps(step)
+
+        for s in next_steps:
+            # Only reset if the step is not in pending status
+            status = s.get_status(s.ROOT_STATUS_KEY)
+            if status != s.STATUS_PENDING:
+                s.reset()

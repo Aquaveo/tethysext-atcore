@@ -17,6 +17,7 @@ from tethysext.atcore.utilities import clean_request
 from tethysext.atcore.models.app_users import ResourceWorkflowStep, Resource
 # DO NOT REMOVE, need to import all the subclasses of ResourceWorkflowStep for the polymorphism to work.
 from tethysext.atcore.models.resource_workflow_steps import *  # noqa: F401, F403
+# END DO NOT REMOVE
 
 
 log = logging.getLogger(__name__)
@@ -139,9 +140,8 @@ def workflow_step_job(job_func):
                 # has Pickle typed columns with values that import things.
                 step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
 
-                # TODO use polymorphism - removing this line will break gssha - import model class dynamically
-                # See: tethysext.atcore.services.resource_workflows.helpers.parse_workflow_step_args
-                from gssha_adapter.models.app_users.gssha_model_resource import GsshaModelResource  # noqa: F401
+                # IMPORTANT: External Resource classes need to be imported at the top of the job file to
+                # allow sqlalchemy to resolve the polymorphic identity.
                 resource = resource_db_session.query(Resource).get(args.resource_id)
 
                 # Process parameters from workflow steps
@@ -155,9 +155,9 @@ def workflow_step_job(job_func):
                     resource_db_session=resource_db_session,
                     model_db_session=model_db_session,
                     resource=resource,
-                    # TODO fill workflow - need to import workflow class dynamically
-                    # workflow=step.workflow,  # Will break if the workflow class is not imported...
-                    workflow=None,
+                    # IMPORTANT: External ResourceWorkflow classes need to be imported at the top of the job file to
+                    # allow sqlalchemy to resolve the polymorphic identity.
+                    workflow=step.workflow,
                     step=step,
                     params_json=params_json,
                     params_file=args.workflow_params_file,

@@ -94,7 +94,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         layers.append(layer)
         self.layers = layers
 
-    def clear_layers(self):
+    def reset(self):
         self.layers = []
 
     def add_geojson_layer(self, geojson, layer_name, layer_title, layer_variable, layer_id='', visible=True,

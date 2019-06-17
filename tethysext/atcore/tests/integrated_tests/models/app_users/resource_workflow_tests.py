@@ -138,3 +138,22 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
 
     def test_get_previous_steps_invalid_step(self):
         self.assertRaises(ValueError, self.workflow.get_previous_steps, self.step_4)
+
+    def test_get_next_steps(self):
+        ret = self.workflow.get_next_steps(self.step_1)
+        self.assertListEqual([self.step_2, self.step_3], ret)
+
+    def test_get_next_steps_invalid_step(self):
+        self.assertRaises(ValueError, self.workflow.get_next_steps, self.step_4)
+
+    def test_reset_next_steps(self):
+        self.step_2.set_status(self.step_2.ROOT_STATUS_KEY, self.step_2.STATUS_COMPLETE)
+        self.step_3.set_status(self.step_3.ROOT_STATUS_KEY, self.step_3.STATUS_ERROR)
+
+        self.workflow.reset_next_steps(self.step_1)
+
+        self.assertEqual(self.step_2.STATUS_PENDING, self.step_2.get_status(self.step_2.ROOT_STATUS_KEY))
+        self.assertEqual(self.step_3.STATUS_PENDING, self.step_3.get_status(self.step_3.ROOT_STATUS_KEY))
+
+    def test_reset_next_steps_invalid_step(self):
+        self.assertRaises(ValueError, self.workflow.reset_next_steps, self.step_4)

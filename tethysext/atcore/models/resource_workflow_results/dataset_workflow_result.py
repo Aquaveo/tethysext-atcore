@@ -60,7 +60,7 @@ class DatasetWorkflowResult(ResourceWorkflowResult):
         data['datasets'] = value
         self.data = data
 
-    def clear_datasets(self):
+    def reset(self):
         self.datasets = []
 
     def _add_dataset(self, dataset):
