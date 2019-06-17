@@ -11,7 +11,7 @@ import uuid
 from abc import abstractmethod
 from copy import deepcopy
 
-from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
+from sqlalchemy import Column, ForeignKey, String, PickleType, Integer, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin
@@ -52,6 +52,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     help = Column(String)
     order = Column(Integer)
     status = Column(String)
+    dirty = Column(Boolean, default=False)
     _options = Column(PickleType, default={})
     _attributes = Column(String)
     _parameters = Column(PickleType, default={})
@@ -190,6 +191,10 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         # and propagate the changes to the database.
         dc_parameters = deepcopy(self._parameters)
         dc_parameters[name]['value'] = value
+
+        if dc_parameters != self._parameters:
+            self.dirty = True
+
         self._parameters = dc_parameters
 
     def get_parameter(self, name):
@@ -232,3 +237,16 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
                 return parent_parameter
             except ValueError as e:
                 raise RuntimeError(str(e))
+
+    def reset(self):
+        """
+        Resets the step back to its initial state.
+        """
+        # Reset status
+        self.set_status(self.ROOT_STATUS_KEY, self.STATUS_PENDING)
+
+        # Reset parameters
+        self._parameters = self.init_parameters()
+
+        # Reset dirty
+        self.dirty = False

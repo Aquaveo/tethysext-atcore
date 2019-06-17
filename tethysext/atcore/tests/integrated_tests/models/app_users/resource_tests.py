@@ -17,9 +17,9 @@ def tearDownModule():
 class ResourceTests(SqlAlchemyTestCase):
     def setUp(self):
         super().setUp()
-        self.name = "test_organization"
+        self.name = "A Resource"
         self.description = "Bad Description"
-        self.status = "PROCESSING"
+        self.status = "Processing"
         self.creation_date = datetime.datetime.utcnow()
 
     def test_create_resource(self):
@@ -45,3 +45,17 @@ class ResourceTests(SqlAlchemyTestCase):
             self.assertFalse(resource.public)
             self.assertEqual(resource.type, Resource.TYPE)
             self.assertIsInstance(resource.id, uuid.UUID)
+
+    def test_resource__repr__(self):
+        resource = Resource(
+            name=self.name,
+            description=self.description,
+            status=self.status,
+            date_created=self.creation_date,
+        )
+        self.session.add(resource)
+        self.session.commit()
+
+        ret = resource.__repr__()
+
+        self.assertEqual(f'<Resource name="A Resource" description="Bad Description" id="{resource.id}">', ret)

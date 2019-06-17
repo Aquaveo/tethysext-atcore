@@ -196,3 +196,23 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.instance.parent = magic_parent
         self.assertRaises(RuntimeError, self.instance.resolve_option, 'option')
         magic_parent.get_parameter.assert_called_with('test_data')
+
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.init_parameters')
+    def test_reset(self, mock_init_parameters):
+        mock_init_parameters.return_value = {}
+        self.instance = ResourceWorkflowStep(name='foo', help='step_0', order=1, dirty=True)
+        self.instance.set_status(ResourceWorkflowStep.ROOT_STATUS_KEY, ResourceWorkflowStep.STATUS_COMPLETE)
+        self.instance._parameters = {'fake': 'parameters'}
+        self.session.add(self.instance)
+        self.session.commit()
+        id = self.instance.id
+
+        self.instance.reset()
+        self.session.commit()
+
+        q_instance = self.session.query(ResourceWorkflowStep).get(id)
+
+        self.assertFalse(q_instance.dirty)
+        self.assertEqual(ResourceWorkflowStep.STATUS_PENDING,
+                         q_instance.get_status(ResourceWorkflowStep.ROOT_STATUS_KEY))
+        self.assertDictEqual({}, q_instance.get_parameters())

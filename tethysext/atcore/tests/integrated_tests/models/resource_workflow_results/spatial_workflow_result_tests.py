@@ -39,9 +39,9 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
         ret = self.instance.layers
         self.assertListEqual([], ret)
 
-    def test_clear_layers(self):
-        self.instance.data['layers'] = 'Bad data to clear'
-        self.instance.clear_layers()
+    def test_reset(self):
+        self.instance.data['layers'] = 'Bad data to reset'
+        self.instance.reset()
         ret = self.instance.data['layers']
         self.assertEqual([], ret)
 
@@ -49,9 +49,9 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
         self.bind_instance_to_session()
         self.test_layers()
 
-    def test_clear_layers_bound(self):
+    def test_reset_layers_bound(self):
         self.bind_instance_to_session()
-        self.test_clear_layers()
+        self.test_reset()
 
     def prepare_layers(self, with_layer_ids=True):
         self.layer_1 = {'layer_name': 'foo'}  # with_layer_ids: 'layer_id': 1

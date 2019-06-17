@@ -47,7 +47,6 @@ def parse_workflow_step_args():
         'workflow_params_file',
         help='Path to a file containing the JSON-serialized parameters from the workflow.'
     )
-    # TODO: Pass in paths to workflow and resource classes so they can be imported dynamically?
     parser.add_argument(
         '-s', '--scenario_id',
         dest='scenario_id',
