@@ -268,3 +268,8 @@
     margin-bottom: 0 !important;
     margin-left: 20px;
 }
+
+.map-tabs .tab-content {
+    max-height: 700px;
+    overflow-y: auto;
+}
