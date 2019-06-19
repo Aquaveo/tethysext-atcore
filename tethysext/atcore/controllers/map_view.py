@@ -38,6 +38,7 @@ class MapView(ResourceView):
     _MapManager = None
     _ModelDatabase = ModelDatabase
     _SpatialManager = None
+    layer_tab_name = 'Layers'
 
     def get_context(self, request, session, resource, context, model_db, *args, **kwargs):
         """
@@ -120,6 +121,7 @@ class MapView(ResourceView):
             'workspace': self._SpatialManager.WORKSPACE,
             'back_url': self.back_url,
             'show_custom_layer': self.show_custom_layer,
+            'layer_tab_name': self.layer_tab_name,
         })
 
         if resource:
