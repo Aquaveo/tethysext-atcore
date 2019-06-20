@@ -81,3 +81,13 @@ To run all of the test and linting with cumulative coverage:
 ```bash
 . test.sh </path/to/tethys/manage.py>
 ```
+
+## Minify Scripts
+
+The minified scripts were minified using the harmony branch of uglify-js. For example:
+
+```bash
+sudo apt install npm
+sudo npm install -g mishoo/UglifyJS2#harmony
+uglifyjs --compress --mangle -- input.js > input.min.js
+```
