@@ -35,7 +35,7 @@ Collect_Static_Atcore:
 
 Site_Settings_Atcore:
   cmd.run:
-    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && PGPASSWORD={{ TETHYS_DB_PASSWORD }} psql -U {{ TETHYS_DB_USERNAME }}-h {{ TETHYS_DB_HOST }} -p {{ TETHYS_DB_PORT }} -d tethys_default -f {{ TETHYSEXT_DIR }}/tethysext-atcore/tethysext/atcore/resources/tethys_site_settings.sql
+    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && PGPASSWORD={{ TETHYS_DB_PASSWORD }} psql -U {{ TETHYS_DB_USERNAME }} -h {{ TETHYS_DB_HOST }} -p {{ TETHYS_DB_PORT }} -d tethys_default -f {{ TETHYSEXT_DIR }}/tethysext-atcore/tethysext/atcore/resources/tethys_site_settings.sql
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "/usr/lib/tethys/atcore_setup_complete" ];"
 
