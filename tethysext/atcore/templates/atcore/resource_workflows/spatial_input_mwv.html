@@ -14,6 +14,7 @@
 {% block scripts %}
   {{ block.super }}
   <script src="{% static 'atcore/file_input/js/file_input.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/resource_workflows/spatial_input_mwv.js' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content_dependent_styles %}
@@ -24,7 +25,7 @@
 {% block after_app_content %}
   {{ block.super }}
   {% if allow_shapefile %}
-  <!-- Shapefile Modal -->
+  {# Shapefile Modal #}
   <div class="modal fade" id="shapefile-upload-modal" tabindex="-1" role="dialog" aria-labelledby="shapefile-upload-modal-label">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -47,4 +48,13 @@
     </div>
   </div>
   {% endif %}
+
+  {# Attributes Form #}
+  <div id="spatial-attributes-template">
+    <form class="spatial-attributes-form">
+      {{ attributes_form }}
+    </form>
+    <a class="btn btn-default spatial-attributes-cancel" href="javscript:void(0)">Cancel</a>
+    <a class="btn btn-default spatial-attributes-ok" href="javscript:void(0)">OK</a>
+  </div>
 {% endblock %}

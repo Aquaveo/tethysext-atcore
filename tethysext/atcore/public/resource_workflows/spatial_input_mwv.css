@@ -1,0 +1,7 @@
+#spatial-input-attributes {
+    display: none;
+}
+
+#properties-popup-content #spatial-input-attributes {
+    display: auto;
+}

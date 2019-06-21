@@ -16,6 +16,7 @@ import geojson
 import logging
 from django.shortcuts import redirect
 from tethys_sdk.gizmos import MVDraw
+from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
 
@@ -60,6 +61,17 @@ class SpatialInputMWV(MapWorkflowView):
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.
         """
+        # Generate the attributes form for the pop-up
+        import param
+
+        class Attributes(param.Parameterized):
+            location_name = param.String()
+
+        attributes = Attributes()  # TODO: Get from options attributes
+
+        attributes_form = generate_django_form(attributes)
+        context.update({'attributes_form': attributes_form})
+
         # Get Map View
         map_view = context['map_view']
 
@@ -90,10 +102,11 @@ class SpatialInputMWV(MapWorkflowView):
             initial='Pan',
             initial_features=current_geometry,
             output_format='GeoJSON',
-            snapping_enabled=current_step.options['snapping_enabled'],
-            snapping_layer=current_step.options['snapping_layer'],
-            snapping_options=current_step.options['snapping_options'],
-            feature_selection=current_step.options.get('attributes', None) is not None,
+            snapping_enabled=current_step.options.get('snapping_enabled'),
+            snapping_layer=current_step.options.get('snapping_layer'),
+            snapping_options=current_step.options.get('snapping_options'),
+            # feature_selection=current_step.options.get('attributes', None) is not None,
+            feature_selection=True,  # TODO: Remove when done testing
             legend_title=current_step.options.get('plural_name'),
             data={
                 'layer_id': 'drawing_layer',

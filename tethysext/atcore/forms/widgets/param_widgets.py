@@ -140,7 +140,7 @@ widget_map = {
 }
 
 
-def generate_django_form(parameterized_obj, set_options):
+def generate_django_form(parameterized_obj, set_options=None):
     """
     Create a Django form from a Parameterized object.
 
@@ -151,6 +151,7 @@ def generate_django_form(parameterized_obj, set_options):
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
+    set_options = set_options or dict()
     class_name = '{}Form'.format(parameterized_obj.name.title())
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
