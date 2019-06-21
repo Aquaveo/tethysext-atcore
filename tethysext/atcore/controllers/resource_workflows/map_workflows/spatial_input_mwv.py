@@ -92,7 +92,15 @@ class SpatialInputMWV(MapWorkflowView):
             output_format='GeoJSON',
             snapping_enabled=current_step.options['snapping_enabled'],
             snapping_layer=current_step.options['snapping_layer'],
-            snapping_options=current_step.options['snapping_options']
+            snapping_options=current_step.options['snapping_options'],
+            feature_selection=current_step.options.get('attributes', None) is not None,
+            legend_title=current_step.options.get('plural_name'),
+            data={
+                'layer_id': 'drawing_layer',
+                'layer_name': 'drawing_layer',
+                'popup_title': current_step.options.get('singular_name'),
+                'excluded_properties': ['type'],
+            }
         )
 
         if draw_options is not None and 'map_view' in context:

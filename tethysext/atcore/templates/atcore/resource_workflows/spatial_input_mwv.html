@@ -22,6 +22,7 @@
 {% endblock %}
 
 {% block after_app_content %}
+  {{ block.super }}
   {% if allow_shapefile %}
   <!-- Shapefile Modal -->
   <div class="modal fade" id="shapefile-upload-modal" tabindex="-1" role="dialog" aria-labelledby="shapefile-upload-modal-label">
