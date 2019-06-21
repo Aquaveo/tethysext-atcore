@@ -72,9 +72,9 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
-        reset_properties_pop_up, append_properties_pop_up_content, reset_ui, generate_properties_table_title,
-        generate_properties_table, generate_dataset_row, generate_custom_properties_table_content,
-        initialize_custom_content;
+        close_properties_pop_up, reset_properties_pop_up, append_properties_pop_up_content, reset_ui,
+        generate_properties_table_title, generate_properties_table, generate_dataset_row,
+        generate_custom_properties_table_content, initialize_custom_content;
 
  	// Feature selection
  	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler,
@@ -177,11 +177,11 @@ var ATCORE_MAP_VIEW = (function() {
         // Attempt to derive layer name from ID assigned by GeoServer to be able to map to features to layers in map (<layer_name>.<fid>)
         // e.g.: 0958cc07-c194-4af9-81c5-118a77d335ac_stream_links.fid--72787a80_169a16811e6_-7aa6
         if (!layer_name) {
-            let feature_id = feature.getId();
+            let feature_id = feature.getId() || feature.get('id');
             layer_name = feature_id.split('.')[0];
 
             // Prepend the workspace for everything except the drawing layer
-            if (!layer_name == 'drawing_layer') {
+            if (layer_name !== 'drawing_layer') {
                 layer_name = m_workspace + ':' + layer_name;
             }
         }
@@ -919,8 +919,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Handle closer click events
         m_$props_popup_closer.on('click', function() {
-            hide_properties_pop_up();
-            TETHYS_MAP_VIEW.clearSelection();
+            close_properties_pop_up();
             return false;
         });
 
@@ -949,6 +948,13 @@ var ATCORE_MAP_VIEW = (function() {
     hide_properties_pop_up = function() {
         m_props_popup_overlay.setPosition(undefined);
         m_$props_popup_closer.blur();
+    };
+
+    close_properties_pop_up = function() {
+        m_$props_popup_container.trigger('properties-popup:before-close');
+        hide_properties_pop_up();
+        TETHYS_MAP_VIEW.clearSelection();
+        m_$props_popup_container.trigger('properties-popup:after-close');
     };
 
     reset_properties_pop_up = function() {
@@ -1480,6 +1486,9 @@ var ATCORE_MAP_VIEW = (function() {
         get_layer_name_from_feature: get_layer_name_from_feature,
         get_layer_id_from_layer: get_layer_id_from_layer,
         get_feature_id_from_feature: get_feature_id_from_feature,
+        hide_properties_pop_up: hide_properties_pop_up,
+        reset_properties_pop_up: reset_properties_pop_up,
+        close_properties_pop_up: close_properties_pop_up
 	};
 
 	/************************************************************************
