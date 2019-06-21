@@ -40,7 +40,8 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             'allow_drawing': True,
             'snapping_enabled': True,
             'snapping_layer': {},
-            'snapping_options': {}
+            'snapping_options': {},
+            'attributes': None
         }
 
     def init_parameters(self, *args, **kwargs):
