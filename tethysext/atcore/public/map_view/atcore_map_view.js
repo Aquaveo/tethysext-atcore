@@ -942,19 +942,23 @@ var ATCORE_MAP_VIEW = (function() {
         if (coordinates instanceof ol.geom.Point) {
             c = coordinates.getCoordinates();
         }
+        m_$props_popup_container.trigger('show.atcore.popup');
         m_props_popup_overlay.setPosition(c);
+        m_$props_popup_container.trigger('shown.atcore.popup');
     };
 
     hide_properties_pop_up = function() {
+        m_$props_popup_container.trigger('hide.atcore.popup');
         m_props_popup_overlay.setPosition(undefined);
         m_$props_popup_closer.blur();
+        m_$props_popup_container.trigger('hidden.atcore.popup');
     };
 
     close_properties_pop_up = function() {
-        m_$props_popup_container.trigger('properties-popup:before-close');
+        m_$props_popup_container.trigger('closing.atcore.popup');
         hide_properties_pop_up();
         TETHYS_MAP_VIEW.clearSelection();
-        m_$props_popup_container.trigger('properties-popup:after-close');
+        m_$props_popup_container.trigger('closed.atcore.popup');
     };
 
     reset_properties_pop_up = function() {
