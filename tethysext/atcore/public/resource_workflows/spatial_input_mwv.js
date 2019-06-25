@@ -25,12 +25,14 @@ var SPATIAL_INPUT_MWV = (function() {
         m_current_feature;
 
  	// Selectors
- 	var m_sel_attributes_template =     '#spatial-attributes-template',
- 	    m_sel_attributes_wrapper =      '#spatial-attributes',
- 	    m_sel_attributes_form =         '.spatial-attributes-form',
+ 	var m_id_attributes_wrapper =       'spatial-attributes',
+ 	    m_sel_attributes_template =     '#spatial-attributes-template',
+ 	    m_sel_attributes_wrapper =      '#' + m_id_attributes_wrapper,
+ 	    m_sel_attributes_form =         m_sel_attributes_wrapper + ' .spatial-attributes-form',
  	    m_sel_cancel_button =           '.spatial-attributes-cancel',
  	    m_sel_ok_button =               '.spatial-attributes-ok',
- 	    m_sel_props_popup_container =   '#properties-popup';
+ 	    m_sel_props_popup_container =   '#properties-popup',
+ 	    m_sel_attributes_error =        '#spatial-attributes .spatial-attributes-error';
 
 	/************************************************************************
  	*                    PRIVATE FUNCTION DECLARATIONS
@@ -38,7 +40,7 @@ var SPATIAL_INPUT_MWV = (function() {
  	var reset;
 
  	var generate_attributes_form, initialize_attributes_form, bind_attributes_cancel, bind_attributes_ok,
- 	    bind_popup_close_event;
+ 	    bind_popup_shown_event, bind_popup_closed_event;
 
  	var process_attributes_form;
 
@@ -50,7 +52,7 @@ var SPATIAL_INPUT_MWV = (function() {
  	generate_attributes_form = function(feature, layer) {
  	    // Create attribute from from template
  	    let attributes_form = $(m_sel_attributes_template).clone();
- 	    attributes_form.prop('id', m_sel_attributes_wrapper);
+ 	    attributes_form.prop('id', m_id_attributes_wrapper);
 
  	    // Current property values
  	    let properties = feature.getProperties();
@@ -68,15 +70,44 @@ var SPATIAL_INPUT_MWV = (function() {
     };
 
     process_attributes_form = function() {
+        // Clear error messages
+        $(m_sel_attributes_error).html('');
+
+        // Serialize the form
         let data = $(m_sel_props_popup_container).find(m_sel_attributes_form).serializeArray();
-        data.forEach(function(attribute, index) {
-            let property = {};
-            property[attribute.name] = attribute.value;
-            m_current_feature.set(attribute.name, attribute.value);
+
+        // Prepare ajax call
+        data.push({'name': 'method', 'value': 'validate-feature-attributes'});
+
+        $.ajax({
+            method: 'POST',
+            url:'',
+            data: data,
+        }).done(function(response){
+            if (response.success) {
+                // Assign as properties to current feature
+                data.forEach(function(attribute, index) {
+                    // Skip the csrf token and method
+                    if (attribute.name == 'csrfmiddlewaretoken' || attribute.name == 'method') { return; }
+                    let property = {};
+                    property[attribute.name] = attribute.value;
+                    m_current_feature.set(attribute.name, attribute.value);
+                });
+
+                // Close popup and deselect
+                ATCORE_MAP_VIEW.close_properties_pop_up();
+            } else {
+                // Display error message to user
+                $(m_sel_attributes_error).html(response.error);
+
+                // Scroll to top of form div
+                $(m_sel_attributes_form).scrollTop(0);
+            }
         });
     };
 
     initialize_attributes_form = function() {
+ 	    // Bind to form buttons
  	    bind_attributes_cancel();
  	    bind_attributes_ok();
  	};
@@ -95,13 +126,20 @@ var SPATIAL_INPUT_MWV = (function() {
         $(m_sel_ok_button).off('click');
         $(m_sel_ok_button).on('click', function(){
             process_attributes_form();
-            ATCORE_MAP_VIEW.close_properties_pop_up();
             return false;
         });
     };
 
-    bind_popup_close_event = function() {
-        $(m_sel_props_popup_container).on('properties-popup:after-close', function(e) {
+    bind_popup_shown_event = function() {
+        $(m_sel_props_popup_container).on('shown.atcore.popup', function(e) {
+            // Focus on first element in the form when form is shown
+ 	        $(m_sel_attributes_form + ':first *:input[type!=hidden]:first').select();
+        });
+    };
+
+    bind_popup_closed_event = function() {
+        $(m_sel_props_popup_container).on('closed.atcore.popup', function(e) {
+            // Reset when the popup container is closed
             reset();
         });
     };
@@ -135,7 +173,9 @@ var SPATIAL_INPUT_MWV = (function() {
         ATCORE_MAP_VIEW.custom_properties_generator(generate_attributes_form);
         ATCORE_MAP_VIEW.custom_properties_initializer(initialize_attributes_form);
 
-        bind_popup_close_event();
+        // Bind to various popup events
+        bind_popup_shown_event();
+        bind_popup_closed_event();
 	});
 
 	return m_public_interface;

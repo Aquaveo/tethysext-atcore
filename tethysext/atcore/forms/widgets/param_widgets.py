@@ -18,6 +18,7 @@ widget_map = {
     param.Foldername:
         lambda p, initial: forms.FilePathField(
             initial=initial or p.default,
+            path=p.search_paths,
         ),
     param.Boolean:
         lambda p, initial: forms.BooleanField(
@@ -106,6 +107,7 @@ widget_map = {
     param.Path:
         lambda p, initial: forms.FilePathField(
             initial=initial or p.default,
+            path=p.search_paths,
         ),
     param.MultiFileSelector:
         lambda p, initial: forms.MultipleChoiceField(

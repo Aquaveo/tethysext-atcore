@@ -1,7 +1,24 @@
-#spatial-input-attributes {
+#spatial-attributes-template {
     display: none;
 }
 
-#properties-popup-content #spatial-input-attributes {
-    display: auto;
+#spatial-attributes form {
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+#spatial-attributes form label {
+    margin-top: 10px;
+}
+
+#spatial-attributes form .form-group {
+    margin: 0;
+}
+
+#spatial-attributes .spatial-attributes-error {
+    margin: 0;
+}
+
+#spatial-attributes .btn {
+    margin-top: 10px;
 }

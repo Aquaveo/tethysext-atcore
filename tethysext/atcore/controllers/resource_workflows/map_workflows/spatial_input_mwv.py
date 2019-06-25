@@ -15,6 +15,7 @@ import shapefile as shp
 import geojson
 import logging
 from django.shortcuts import redirect
+from django.http import JsonResponse
 from tethys_sdk.gizmos import MVDraw
 from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
@@ -61,16 +62,12 @@ class SpatialInputMWV(MapWorkflowView):
             previous_step(ResourceWorkflowStep): The previous step.
             next_step(ResourceWorkflowStep): The next step.
         """
-        # Generate the attributes form for the pop-up
-        import param
+        # Prepare attributes form
+        attributes = current_step.options.get('attributes', None)
 
-        class Attributes(param.Parameterized):
-            location_name = param.String()
-
-        attributes = Attributes()  # TODO: Get from options attributes
-
-        attributes_form = generate_django_form(attributes)
-        context.update({'attributes_form': attributes_form})
+        if attributes is not None:
+            attributes_form = generate_django_form(attributes)
+            context.update({'attributes_form': attributes_form})
 
         # Get Map View
         map_view = context['map_view']
@@ -105,8 +102,7 @@ class SpatialInputMWV(MapWorkflowView):
             snapping_enabled=current_step.options.get('snapping_enabled'),
             snapping_layer=current_step.options.get('snapping_layer'),
             snapping_options=current_step.options.get('snapping_options'),
-            # feature_selection=current_step.options.get('attributes', None) is not None,
-            feature_selection=True,  # TODO: Remove when done testing
+            feature_selection=attributes is not None,
             legend_title=current_step.options.get('plural_name'),
             data={
                 'layer_id': 'drawing_layer',
@@ -190,6 +186,34 @@ class SpatialInputMWV(MapWorkflowView):
             response = super().process_step_data(request, session, step, model_db, current_url, previous_url, next_url)
 
         return response
+
+    def validate_feature_attributes(self, request, session, resource, step_id, *args, **kwargs):
+        """
+        Handle feature attribute validation AJAX requests.
+        Args:
+            request(HttpRequest): The request.
+            session(sqlalchemy.orm.Session): Session bound to the steps.
+            resource(Resource): the resource for this request.
+            step_id(str): ID of the step to render.
+
+        Returns:
+            JsonResponse
+        """
+        step = self.get_step(request, step_id, session=session)
+        attributes = request.POST.dict()
+        attributes.pop('csrfmiddlewaretoken', None)
+        attributes.pop('method', None)
+        response = {'success': True}
+
+        try:
+            step.validate_feature_attributes(attributes)
+        except ValueError as e:
+            response.update({
+                'success': False,
+                'error': str(e)
+            })
+
+        return JsonResponse(response)
 
     def parse_shapefile(self, request, in_memory_file):
         """
