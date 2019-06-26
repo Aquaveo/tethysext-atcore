@@ -86,8 +86,8 @@ Test:
     - echo "Settings:"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/tethys_portal && cat settings.py"
     - echo "Python Environment:"
-    - docker exec tethys_agwa /bin/bash -c ". $CONDA_HOME/bin/activate tethys; conda list"
-    - docker exec tethys_agwa /bin/bash -c ". $CONDA_HOME/bin/activate tethys; pip list"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys; conda list"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys; pip list"
     # Clean coverage data
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
     # Unit Tests
