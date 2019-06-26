@@ -168,6 +168,7 @@ class SpatialInputMWV(MapWorkflowView):
 
         # Update the geometry parameter
         step.set_parameter('geometry', post_processed_geojson)
+        session.commit()
 
         # Validate the Parameters
         step.validate()
