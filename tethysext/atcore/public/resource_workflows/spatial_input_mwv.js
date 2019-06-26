@@ -39,7 +39,7 @@ var SPATIAL_INPUT_MWV = (function() {
  	*************************************************************************/
  	var reset;
 
- 	var generate_attributes_form, initialize_attributes_form, bind_attributes_cancel, bind_attributes_ok,
+ 	var generate_attributes_form, initialize_attributes_form, bind_attributes_ok,
  	    bind_popup_shown_event, bind_popup_closed_event;
 
  	var process_attributes_form;
@@ -108,18 +108,8 @@ var SPATIAL_INPUT_MWV = (function() {
 
     initialize_attributes_form = function() {
  	    // Bind to form buttons
- 	    bind_attributes_cancel();
  	    bind_attributes_ok();
  	};
-
-    bind_attributes_cancel = function() {
-        // Bind actions to pop-up buttons
-        $(m_sel_cancel_button).off('click');
-        $(m_sel_cancel_button).on('click', function(){
-            ATCORE_MAP_VIEW.close_properties_pop_up();
-            return false;
-        });
-    };
 
     bind_attributes_ok = function() {
         // Bind actions to pop-up buttons
