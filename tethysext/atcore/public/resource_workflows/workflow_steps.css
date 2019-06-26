@@ -5,6 +5,10 @@
     margin-top: 20px;
 }
 
+.workflow-steps .help-block {
+    padding-left: 42px;
+}
+
 .workflow-step {
     display: block;
     font-size: 16px!important;
