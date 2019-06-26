@@ -1,95 +1,131 @@
 image: docker:git
 
 stages:
-  - test
-  - build
-  - test_image
+  - Lint
+  - Build
+  - Test
 
 variables:
-  TETHYS_CORE_TAG: 'v3.0.0b-r14'
   CONDA_HOME: '/opt/conda'
-  POSTGRES_VERSION: '9.6'
-lint:
+
+Lint:
   image: python:3.6
-  stage: test
+  stage: Lint
   script:
     - pip install flake8
     - flake8 .
 
-tests:
-  stage: test
+.kaniko_prep: &kaniko_prep
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+
+Build:
+  stage: Build
+  <<: *kaniko_prep
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/${CI_PROJECT_PATH_SLUG}.tar
+    expire_in: 1 hour
   script:
+    - /kaniko/executor 
+        --context $CI_PROJECT_DIR
+        --dockerfile $CI_PROJECT_DIR/Dockerfile 
+        --destination $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}-dev
+        --tarPath $CI_PROJECT_DIR/${CI_PROJECT_PATH_SLUG}.tar
+        --cache true
+        --cache-repo $CI_REGISTRY_IMAGE/cache
+  except:
+    - tags
+
+"Build and Push":
+  stage: Build
+  <<: *kaniko_prep
+  script:
+    - /kaniko/executor 
+        --context $CI_PROJECT_DIR
+        --dockerfile $CI_PROJECT_DIR/Dockerfile 
+        --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+        --destination $CI_REGISTRY_IMAGE:latest
+        --cache true
+        --cache-repo $CI_REGISTRY_IMAGE/cache
+  only:
+    - tags
+
+Test:
+  stage: Test
+  script:
+    # Import build
+    - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
     # Setup
     - docker rm -f tethys_atcore tethys_postgis || true
-    - docker pull mdillon/postgis:$POSTGRES_VERSION
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
     # Run dependencies
-    - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis:$POSTGRES_VERSION
+    - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
     - sleep 60s
     - docker logs tethys_postgis
     # Create Test Database
     - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U postgres -p 5432 -h 172.17.0.1 --no-password --owner postgres atcore_tests"
-    # Build
-    - docker build -t tethys_atcore .
-    # Run Tethys Container
-    - docker run -d --name tethys_atcore  -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='postgres' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' tethys_atcore
+    # Run
+    - >
+        docker run -d --name tethys_atcore  
+        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" 
+        -e TETHYS_PUBLIC_HOST='172.17.0.1' 
+        -e TETHYS_DB_USERNAME='postgres' 
+        -e TETHYS_DB_PASSWORD='pass' 
+        -e TETHYS_DB_HOST='172.17.0.1' 
+        -e TETHYS_DB_PORT='5432'
+        $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}-dev
     - echo "wait for container to start up..."
     - sleep 60s
     - docker logs tethys_atcore
-    - echo "Settings"
+    - echo "Settings:"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/tethys_portal && cat settings.py"
+    - echo "Python Environment:"
+    - docker exec tethys_agwa /bin/bash -c ". $CONDA_HOME/bin/activate tethys; conda list"
+    - docker exec tethys_agwa /bin/bash -c ". $CONDA_HOME/bin/activate tethys; pip list"
     # Clean coverage data
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
-    - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     # Unit Tests
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5432/atcore_tests' coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
-    - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
-    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Intermediate Tests
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/ && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5432/atcore_tests' coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     # Coverage Report
-    - docker exec tethys_atcore /bin/bash -c "ls -al /var/www/tethys/exts/tethysext-atcore"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
     - docker
 
-build:
-  stage: build
+"Salt Test":
+  stage: Test
   script:
-    - if [ -z "$CI_COMMIT_TAG" ]; then export LATEST_TAG="dev"; else export LATEST_TAG="latest"; fi
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tethys/aqua-tethys/tethyscore:$TETHYS_CORE_TAG
-    - docker build --squash -t $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_REF_NAME -t $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG .
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG
-  tags:
-    - docker
-  only:
-    refs:
-      - tags
-      - master
-
-test_image:
-  stage: test_image
-  script:
+    # Import build
+    - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
+    # Setup
     - docker rm -f tethys_atcore tethys_postgis || true
-    - docker pull ciwater/postgis
     # Run dependencies
-    - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis:$POSTGRES_VERSION
+    - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
     - docker logs tethys_postgis
     - sleep 60s
     # Get latest atcore Image
     - if [ -z "$CI_COMMIT_TAG" ]; then export LATEST_TAG="dev"; else export LATEST_TAG="latest"; fi
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG
     # Run test script
-    - docker run --name tethys_atcore -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" -e TETHYS_PUBLIC_HOST='172.17.0.1' -e TETHYS_DB_USERNAME='postgres' -e TETHYS_DB_PASSWORD='pass' -e TETHYS_DB_HOST='172.17.0.1' -e TETHYS_DB_PORT='5432' $CI_REGISTRY_IMAGE/atcore:$LATEST_TAG bash test-docker.sh
+    - >
+        docker run --name tethys_atcore 
+        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" 
+        -e TETHYS_PUBLIC_HOST='172.17.0.1' 
+        -e TETHYS_DB_USERNAME='postgres' 
+        -e TETHYS_DB_PASSWORD='pass' 
+        -e TETHYS_DB_HOST='172.17.0.1' 
+        -e TETHYS_DB_PORT='5432' 
+        $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}-dev 
+        bash test-docker.sh
     - docker logs tethys_atcore
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
