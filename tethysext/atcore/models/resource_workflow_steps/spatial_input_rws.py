@@ -86,6 +86,8 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             properties = feature.get('properties', {})
             self.validate_feature_attributes(properties)
 
+        return True
+
     def validate_feature_attributes(self, attributes):
         """
         Validate attribute values of a feature against the given param-based attributes definition.
@@ -101,12 +103,12 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
         """  # noqa: E501
         # Get attributes param object if not given.
         attributes_definition = self.options.get('attributes', None)
-        all_defined_attributes = attributes_definition.param.params()
 
         # Skip if no attributes definition provided
         if attributes_definition is None:
             return True
 
+        all_defined_attributes = attributes_definition.param.params()
         null_equivalents = ['']
         validation_errors = []
 
@@ -126,7 +128,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             value = attributes[attribute_name]
 
             # Convert null equivalent values to None as a way to use "allow_None" attribute param.Parameters
-            val = value if value not in null_equivalents else None
+            val = None if value in null_equivalents else value
 
             if val is None and value_required:
                 validation_errors.append(f'{attribute_title} is required.')
@@ -154,7 +156,10 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             msg = '\n'.join(validation_errors)
             raise ValueError(msg)
 
-    def _colloquialize_validation_error(self, message, attribute_name, attribute_title):
+        return True
+
+    @staticmethod
+    def _colloquialize_validation_error(message, attribute_name, attribute_title):
         """
         Translate ValueError messages given by param to something the user can understand (e.g.: "Parameter 'integer' must be at least 0" to "Integer must be at least 0.").
         Args:
@@ -167,7 +172,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
         """  # noqa: E501
         if attribute_name in message:
             # Attribute name is in message, attempt to replace with attribute title
-            # e.g.: "Parameter 'integer' must be at least 0" to "Integer must be at least 0."
+            # e.g.: "Parameter 'integer' must be at least 0." to "Integer must be at least 0."
             dq_attribute_name = f'"{attribute_name}"'  #: attribute_name wrapped in double quotes
             sq_attribute_name = f"'{attribute_name}'"  #: attribute_name wrapped in single quotes
 
@@ -176,16 +181,25 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             elif sq_attribute_name in message:
                 msg_parts = message.split(sq_attribute_name)
             else:
-                msg_parts = message.split(attribute_title)
+                msg_parts = message.split(attribute_name)
 
-            if len(msg_parts) > 1:
-                # Join with attribute name in case it appears more than once in the message...
-                # e.g.: "Parameter 'integer' must be an integer."
-                message = f'{attribute_title} ' + f'{attribute_name}'.join(msg_parts[1:])
-            else:
-                # message starts with the attribute name
-                # e.g.: "'integer' must be at most 10"
-                message = f'{attribute_title} ' + msg_parts[0]
+            if '' not in msg_parts or msg_parts[0] == '' and msg_parts[-1] == '':
+                # attribute name not at beginning or end of message, could be in message multiple times
+                # e.g.: "Parameter integer must an integer and be greater than 0."
+                # or "Parameter integer must be greater than 0."
+                # or "integer must be an integer"
+                message = attribute_title + attribute_name.join(msg_parts[1:])
+
+            elif msg_parts[0] == '':
+                # attribute name at beginning only
+                # e.g.: "integer must be at most 10"
+                message = attribute_title + msg_parts[1]
+
+            elif msg_parts[-1] == '':
+                # attribute name at end only
+                # e.g.: "Bad value for field integer"
+                message = msg_parts[0] + attribute_title
+
         else:
             # Attribute name is not in message
             # e.g.: "An unexpected message was given."
