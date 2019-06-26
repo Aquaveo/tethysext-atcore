@@ -100,6 +100,8 @@ Test:
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
     - docker
+  except:
+    - tags
 
 "Salt Test":
   stage: Test
@@ -131,7 +133,5 @@ Test:
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
     - docker
-  only:
-    refs:
-      - tags
-      - master
+  except:
+    - tags
