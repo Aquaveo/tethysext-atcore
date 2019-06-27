@@ -32,9 +32,9 @@ Build:
       - $CI_PROJECT_DIR/${CI_PROJECT_PATH_SLUG}.tar
     expire_in: 1 hour
   script:
-    - /kaniko/executor 
+    - /kaniko/executor
         --context $CI_PROJECT_DIR
-        --dockerfile $CI_PROJECT_DIR/Dockerfile 
+        --dockerfile $CI_PROJECT_DIR/Dockerfile
         --destination $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
         --tarPath $CI_PROJECT_DIR/${CI_PROJECT_PATH_SLUG}.tar
         --cache true
@@ -46,9 +46,9 @@ Build:
   stage: Build
   <<: *kaniko_prep
   script:
-    - /kaniko/executor 
+    - /kaniko/executor
         --context $CI_PROJECT_DIR
-        --dockerfile $CI_PROJECT_DIR/Dockerfile 
+        --dockerfile $CI_PROJECT_DIR/Dockerfile
         --destination $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_TAG
         --destination $CI_REGISTRY_IMAGE/atcore:latest
         --cache true
@@ -72,12 +72,12 @@ Test:
     - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U postgres -p 5432 -h 172.17.0.1 --no-password --owner postgres atcore_tests"
     # Run
     - >
-        docker run -d --name tethys_atcore  
-        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" 
-        -e TETHYS_PUBLIC_HOST='172.17.0.1' 
-        -e TETHYS_DB_USERNAME='postgres' 
-        -e TETHYS_DB_PASSWORD='pass' 
-        -e TETHYS_DB_HOST='172.17.0.1' 
+        docker run -d --name tethys_atcore
+        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\""
+        -e TETHYS_PUBLIC_HOST='172.17.0.1'
+        -e TETHYS_DB_USERNAME='postgres'
+        -e TETHYS_DB_PASSWORD='pass'
+        -e TETHYS_DB_HOST='172.17.0.1'
         -e TETHYS_DB_PORT='5432'
         $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
     - echo "wait for container to start up..."
@@ -119,13 +119,13 @@ Test:
     - if [ -z "$CI_COMMIT_TAG" ]; then export LATEST_TAG="dev"; else export LATEST_TAG="latest"; fi
     # Run test script
     - >
-        docker run --name tethys_atcore 
-        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\"" 
-        -e TETHYS_PUBLIC_HOST='172.17.0.1' 
-        -e TETHYS_DB_USERNAME='postgres' 
-        -e TETHYS_DB_PASSWORD='pass' 
-        -e TETHYS_DB_HOST='172.17.0.1' 
-        -e TETHYS_DB_PORT='5432' 
+        docker run --name tethys_atcore
+        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\""
+        -e TETHYS_PUBLIC_HOST='172.17.0.1'
+        -e TETHYS_DB_USERNAME='postgres'
+        -e TETHYS_DB_PASSWORD='pass'
+        -e TETHYS_DB_HOST='172.17.0.1'
+        -e TETHYS_DB_PORT='5432'
         $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
         bash test-docker.sh
     # Clean up
