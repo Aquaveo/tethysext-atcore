@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v3.0.0b-r14
+FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v3.0.0b-r17
 
 #####################
 # Default Variables #
@@ -23,7 +23,7 @@ RUN apt-get update && apt-get -y install gcc libgdal-dev g++ libhdf5-dev
 # INSTALL #
 ###########
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
-  ; pip install django sqlalchemy==1.0.19 filelock"
+  ; pip install filelock"
 
 ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/

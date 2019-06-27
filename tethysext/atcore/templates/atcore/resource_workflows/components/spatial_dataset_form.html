@@ -1,6 +1,6 @@
 {% load tethys_gizmos %}
 {% csrf_token %}
-<input name="feature-id" type="number" value="{{ feature_id }}" hidden>
+<input name="feature-id" value="{{ feature_id }}" hidden>
 <h6 class="title">{{ dataset_title }}</h6>
 <div class="row" {% if plot_columns %}style="min-width:675px;"{% endif %}>
     <div class="col-sm-6 pop-up-col table-col">

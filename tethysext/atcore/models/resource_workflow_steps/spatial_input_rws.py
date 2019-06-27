@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import param
 from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
 
 
@@ -40,7 +41,8 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             'allow_drawing': True,
             'snapping_enabled': True,
             'snapping_layer': {},
-            'snapping_options': {}
+            'snapping_options': {},
+            'attributes': None
         }
 
     def init_parameters(self, *args, **kwargs):
@@ -70,33 +72,137 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
         """
         # Run super validate method first to perform built-in checks (e.g.: Required)
         super().validate()
-        #
-        # polygon = self._parameters['polygon']
-        # value = polygon['value']
-        #
-        # # Validate polygon parameter
-        #
-        # # Not list
-        # if not isinstance(value, list):
-        #     raise ValueError('The "polygon" parameter must be a list<2-list<number>>.')
-        #
-        # # Not 2-list inside list
-        # for item in value:
-        #     if not isinstance(item, list) or len(item) != 2:
-        #         raise ValueError('The "polygon" parameter must be a list<2-list<number>>.')
-        #
-        # # Not number-like in 2-list
-        # for x, y in value:
-        #     try:
-        #         float(x)
-        #         float(y)
-        #     except ValueError:
-        #         raise ValueError('The "polygon" parameter must contain only numbers.')
-        #
-        # # Not enough points to make a polygon (3+)
-        # if len(value) < 4:  # Last coordinate is repeated, so a 3-point polygon has 4-points
-        #     raise ValueError('At least 3 points required to create a polygon: {} given.'.format(len(value) - 1))
-        #
-        # # Last value not repeated
-        # if value[0] != value[-1]:
-        #     raise ValueError('The first coordinate of "polygon" parameter must be repeated at the end.')
+
+        attributes_param = self.options.get('attributes', None)
+
+        # Skip if no attributes option given
+        if attributes_param is None:
+            return True
+
+        # Iterate through each geometry defined by the user and validate attributes
+        geometry = self.get_parameter('geometry')
+
+        for feature in geometry.get('features', []):
+            properties = feature.get('properties', {})
+            self.validate_feature_attributes(properties)
+
+        return True
+
+    def validate_feature_attributes(self, attributes):
+        """
+        Validate attribute values of a feature against the given param-based attributes definition.
+
+        Args:
+            attributes(dict<attribute,value>): The attributes/properties of the feature to validate.
+
+        Returns:
+            bool: True if data is valid, else Raise exception.
+
+        Raises:
+            ValueError: If validation fails, a ValueError is raised with appropriate message to display to the user.
+        """  # noqa: E501
+        # Get attributes param object if not given.
+        attributes_definition = self.options.get('attributes', None)
+
+        # Skip if no attributes definition provided
+        if attributes_definition is None:
+            return True
+
+        all_defined_attributes = attributes_definition.param.params()
+        null_equivalents = ['']
+        validation_errors = []
+
+        # Validate required attributes that are not included in the given attributes
+        for attribute_name, defined_attribute in all_defined_attributes.items():
+            # Validate parameters that are "Required" but have no value
+            value_required = not defined_attribute.allow_None
+            attribute_title = attribute_name.replace("_", " ").title()
+
+            # Skip attributes that are not given, raising a validation error if it is required
+            if attribute_name not in attributes:
+                if value_required:
+                    validation_errors.append(f'{attribute_title} is required.')
+                continue
+
+            # Get the value
+            value = attributes[attribute_name]
+
+            # Convert null equivalent values to None as a way to use "allow_None" attribute param.Parameters
+            val = None if value in null_equivalents else value
+
+            if val is None and value_required:
+                validation_errors.append(f'{attribute_title} is required.')
+                continue
+
+            # Cast values to numbers if definition is a number field
+            try:
+                if isinstance(defined_attribute, param.Integer):
+                    val = int(val)
+                elif isinstance(defined_attribute, (param.Number, param.Magnitude)):
+                    val = float(val)
+            except TypeError:
+                validation_errors.append(f'{attribute_title} must be a number.')
+                continue
+
+            # Validate by assigning attribute to Parameterized object
+            try:
+                setattr(attributes_definition, attribute_name, val)
+            except ValueError as e:
+                # Rewrite the message to something the user will understand
+                msg = self._colloquialize_validation_error(str(e), attribute_name, attribute_title)
+                validation_errors.append(msg)
+
+        if validation_errors:
+            msg = '\n'.join(validation_errors)
+            raise ValueError(msg)
+
+        return True
+
+    @staticmethod
+    def _colloquialize_validation_error(message, attribute_name, attribute_title):
+        """
+        Translate ValueError messages given by param to something the user can understand (e.g.: "Parameter 'integer' must be at least 0" to "Integer must be at least 0.").
+        Args:
+            message(str): The validation error message raised by param.
+            attribute_name(str): Name of the attribute/param property (e.g.: "location_name").
+            attribute_title(str): Title version of the attribute_name (e.g.: "Location Name").
+
+        Returns:
+            str: translated message
+        """  # noqa: E501
+        if attribute_name in message:
+            # Attribute name is in message, attempt to replace with attribute title
+            # e.g.: "Parameter 'integer' must be at least 0." to "Integer must be at least 0."
+            dq_attribute_name = f'"{attribute_name}"'  #: attribute_name wrapped in double quotes
+            sq_attribute_name = f"'{attribute_name}'"  #: attribute_name wrapped in single quotes
+
+            if dq_attribute_name in message:
+                msg_parts = message.split(dq_attribute_name)
+            elif sq_attribute_name in message:
+                msg_parts = message.split(sq_attribute_name)
+            else:
+                msg_parts = message.split(attribute_name)
+
+            if '' not in msg_parts or msg_parts[0] == '' and msg_parts[-1] == '':
+                # attribute name not at beginning or end of message, could be in message multiple times
+                # e.g.: "Parameter integer must an integer and be greater than 0."
+                # or "Parameter integer must be greater than 0."
+                # or "integer must be an integer"
+                message = attribute_title + attribute_name.join(msg_parts[1:])
+
+            elif msg_parts[0] == '':
+                # attribute name at beginning only
+                # e.g.: "integer must be at most 10"
+                message = attribute_title + msg_parts[1]
+
+            elif msg_parts[-1] == '':
+                # attribute name at end only
+                # e.g.: "Bad value for field integer"
+                message = msg_parts[0] + attribute_title
+
+        else:
+            # Attribute name is not in message
+            # e.g.: "An unexpected message was given."
+            message = ': '.join([attribute_title, message])
+
+        return message

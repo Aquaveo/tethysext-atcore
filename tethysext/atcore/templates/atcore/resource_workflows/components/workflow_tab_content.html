@@ -35,6 +35,9 @@ Required CSS:
         {% endif %}
         <span class="workflow-step-title">{{ step.name }}</span>
       </a>
+      {% if step.id == current_step.id and step.help %}
+      <p class="help-block">{{ step.help }}</p>
+      {% endif %}
     </li>
     {% endfor %}
   </ul>
