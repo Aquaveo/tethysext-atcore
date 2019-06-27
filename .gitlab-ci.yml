@@ -81,7 +81,7 @@ Test:
         -e TETHYS_DB_PORT='5432'
         $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}-dev
     - echo "wait for container to start up..."
-    - sleep 60s
+    - sleep 300s
     - docker logs tethys_atcore
     - echo "Settings:"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/src/tethys_portal && cat settings.py"
@@ -128,7 +128,6 @@ Test:
         -e TETHYS_DB_PORT='5432' 
         $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}-dev 
         bash test-docker.sh
-    - docker logs tethys_atcore
     # Clean up
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
