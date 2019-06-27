@@ -276,7 +276,8 @@ class AppPermissionsManager:
         Remove custom_permissions based on combo of role, license and other given criteria.
 
         Args:
-            app_user(tethysext.atcore.models.AppUser): AppUser object            role(str): Role of user.
+            app_user(tethysext.atcore.models.AppUser): AppUser object
+            role(str): Role of user.
             license(str): License of organization to which user belongs.
         """
         # Don't do anything for users with developer roles.
