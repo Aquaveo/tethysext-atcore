@@ -489,8 +489,19 @@ var ATCORE_MAP_VIEW = (function() {
                 let layer_name = $item.data('layer-id');
                 let layer_checked = $item.is(':checked');
                 let layer_variable = $item.data('layer-variable');
-                m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
-
+                if (layer_group_checked == false) {
+                    m_layers[layer_name].setVisible(false);
+                    }
+                else {
+                    if (index == 0) {
+                        // Turn on first layer radio check
+                        $item[0].checked = true
+                        m_layers[layer_name].setVisible(true)
+                        }
+                    else {
+                        m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
+                        }
+                }
                 if (layer_group_checked && layer_checked) {
                     $("#legend-" + layer_variable).removeClass('hidden')
                 } else {

@@ -8,7 +8,8 @@
 """
 import uuid
 import requests
-from django.shortcuts import redirect
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
@@ -16,6 +17,7 @@ from tethys_sdk.gizmos import ToggleSwitch
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
+import json
 
 
 class MapView(ResourceView):
@@ -231,6 +233,48 @@ class MapView(ResourceView):
                 resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()
         return JsonResponse({'success': True})
+
+    def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
+        """
+
+        status (create/append): create is create a whole new layer group with all the layer items associated with it
+                                append is append an associated layer into an existing layer group
+        :return:
+        """
+        # Get Managers Hook
+        model_db, map_manager = self.get_managers(
+            request=request,
+            resource=resource,
+            *args, **kwargs
+        )
+        status = request.POST.get('status', 'create')
+        layer_group_name = request.POST.get('layer_group_name')
+        layer_group_id = request.POST.get('layer_group_id')
+        layer_names = json.loads(request.POST.get('layer_names'))
+        layer_ids = json.loads(request.POST.get('layer_ids'))
+        layer_legends = json.loads(request.POST.get('layer_legends'))
+        show_rename = request.POST.get('show_rename', True)
+        show_remove = request.POST.get('show_remove', True)
+        layers = []
+
+        for i in range(len(layer_names)):
+            layers.append(map_manager._build_mv_layer("GeoJSON", layer_ids[i], layer_names[i], layer_legends[i],
+                                                      options=''))
+
+        # Build Layer groups
+        layer_group = map_manager.build_layer_group(layer_group_id, layer_group_name, layers=layers)
+        context = {'layer_group': layer_group, 'show_rename': show_rename, 'show_remove': show_remove}
+        if status == 'create':
+            html_link = 'atcore/components/layer_group_content.html'
+        else:
+            # Only works for one layer at a time for now.
+            html_link = 'atcore/components/layer_item_content.html'
+            context['layer'] = layers[0]
+
+        html = render(request, html_link, context)
+
+        response = str(html.content, 'utf-8')
+        return JsonResponse({'success': True, 'response': response})
 
     def should_disable_basemap(self, request, model_db, map_manager):
         """
