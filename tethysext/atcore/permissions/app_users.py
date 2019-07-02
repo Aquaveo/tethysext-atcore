@@ -43,6 +43,7 @@ class PermissionsGenerator:
         Returns:
             list<PermissionGroups>: all permission groups with permissions.
         """
+        # 1. Define All Permissions -----------------------------------------------------------------------------------#
 
         # Resource Management Permissions
         view_all_resources = Permission(
@@ -112,11 +113,17 @@ class PermissionsGenerator:
         )
         self.all_permissions.append(view_all_users)
 
-        assign_org_users_role = Permission(
-            name='assign_org_users_role',
+        assign_org_user_role = Permission(
+            name='assign_org_user_role',
             description='Assign organization user role'
         )
-        self.all_permissions.append(assign_org_users_role)
+        self.all_permissions.append(assign_org_user_role)
+
+        assign_org_reviewer_role = Permission(
+            name='assign_org_reviewer_role',
+            description='Assign organization reviewer role'
+        )
+        self.all_permissions.append(assign_org_reviewer_role)
 
         assign_org_admin_role = Permission(
             name='assign_org_admin_role',
@@ -245,17 +252,98 @@ class PermissionsGenerator:
         # Only add enabled permissions groups
         enabled_permissions_groups = self.permission_manager.list()
 
-        # Standard User -----------------------------------------------------------------------------------------------#
-        if self.permission_manager.STD_U_PERMS in enabled_permissions_groups:
-            standard_user_perms = [
-                view_resource_details,
-                view_organizations,
-                view_resources
-            ]
+        # 2. Collect Permissions --------------------------------------------------------------------------------------#
 
-            # Add custom permissions
+        # Standard User -----------------------------------------------------------------------------------------------#
+        standard_user_perms = [view_resource_details, view_organizations, view_resources]
+
+        if self.permission_manager.STD_U_PERMS in self.custom_permissions:
             standard_user_perms += self.custom_permissions[self.permission_manager.STD_U_PERMS]
 
+        # Standard Reviewer -------------------------------------------------------------------------------------------#
+        standard_reviewer_perms = standard_user_perms
+
+        if self.permission_manager.STD_R_PERMS in self.custom_permissions:
+            standard_reviewer_perms += self.custom_permissions[self.permission_manager.STD_R_PERMS]
+
+        # Standard Admin ----------------------------------------------------------------------------------------------#
+        standard_admin_perms = standard_user_perms + [
+            create_resource, edit_resource, delete_resource,
+            view_users, modify_users, modify_organization_members,
+            assign_org_user_role, assign_org_reviewer_role, assign_org_admin_role,
+            remove_layers, rename_layers, toggle_public_layers
+        ]
+
+        if self.permission_manager.STD_A_PERMS in self.custom_permissions:
+            standard_admin_perms += self.custom_permissions[self.permission_manager.STD_A_PERMS]
+
+        # Advanced User -----------------------------------------------------------------------------------------------#
+        advanced_user_perms = standard_user_perms
+
+        if self.permission_manager.ADV_U_PERMS in self.custom_permissions:
+            advanced_user_perms += self.custom_permissions[self.permission_manager.ADV_U_PERMS]
+
+        # Advanced Reviewer -------------------------------------------------------------------------------------------#
+        advanced_reviewer_perms = advanced_user_perms
+
+        if self.permission_manager.ADV_R_PERMS in self.custom_permissions:
+            advanced_reviewer_perms += self.custom_permissions[self.permission_manager.ADV_R_PERMS]
+
+        # Advanced Admin ----------------------------------------------------------------------------------------------#
+        advanced_admin_perms = standard_admin_perms + advanced_user_perms
+
+        if self.permission_manager.ADV_A_PERMS in self.custom_permissions:
+            advanced_admin_perms += self.custom_permissions[self.permission_manager.ADV_A_PERMS]
+
+        # Professional User -------------------------------------------------------------------------------------------#
+        professional_user_perms = advanced_user_perms
+
+        if self.permission_manager.PRO_U_PERMS in self.custom_permissions:
+            professional_user_perms += self.custom_permissions[self.permission_manager.PRO_U_PERMS]
+
+        # Professional Reviewer ---------------------------------------------------------------------------------------#
+        professional_reviewer_perms = professional_user_perms
+
+        if self.permission_manager.PRO_R_PERMS in self.custom_permissions:
+            professional_reviewer_perms += self.custom_permissions[self.permission_manager.PRO_R_PERMS]
+
+        # Professional Admin ------------------------------------------------------------------------------------------#
+        professional_admin_perms = advanced_admin_perms + professional_user_perms
+
+        if self.permission_manager.PRO_A_PERMS in self.custom_permissions:
+            professional_admin_perms += self.custom_permissions[self.permission_manager.PRO_A_PERMS]
+
+        # Enterprise User ---------------------------------------------------------------------------------------------#
+        enterprise_user_perms = professional_user_perms
+
+        if self.permission_manager.ENT_U_PERMS in self.custom_permissions:
+            enterprise_user_perms += self.custom_permissions[self.permission_manager.ENT_U_PERMS]
+
+        # Enterprise Reviewer Role ------------------------------------------------------------------------------------#
+        enterprise_reviewer_perms = professional_user_perms
+
+        if self.permission_manager.ENT_R_PERMS in self.custom_permissions:
+            enterprise_reviewer_perms += self.custom_permissions[self.permission_manager.ENT_R_PERMS]
+
+        # Enterprise Admin --------------------------------------------------------------------------------------------#
+        enterprise_admin_perms = professional_admin_perms + enterprise_user_perms + [
+            create_organizations, edit_organizations, assign_advanced_license,
+            assign_standard_license, assign_professional_license,
+        ]
+
+        if self.permission_manager.ENT_A_PERMS in self.custom_permissions:
+            enterprise_admin_perms += self.custom_permissions[self.permission_manager.ENT_A_PERMS]
+
+        # App Admin ---------------------------------------------------------------------------------------------------#
+        app_admin_perms = self.all_permissions
+
+        if self.permission_manager.APP_A_PERMS in self.custom_permissions:
+            app_admin_perms += self.custom_permissions[self.permission_manager.APP_A_PERMS]
+
+        # 3. Create Permission Groups/Roles ---------------------------------------------------------------------------#
+
+        # Standard User Role ------------------------------------------------------------------------------------------#
+        if self.permission_manager.STD_U_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_standard_user_role = Permission(
                 name='has_standard_user_role',
@@ -272,18 +360,26 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.STD_U_PERMS] = standard_user_role
             self.all_permissions_groups.append(standard_user_role)
 
-        # Standard Admin ----------------------------------------------------------------------------------------------#
+        # Standard Reviewer Role --------------------------------------------------------------------------------------#
+        if self.permission_manager.STD_R_PERMS in enabled_permissions_groups:
+            # Define role/permissions group
+            has_standard_reviewer_role = Permission(
+                name='has_standard_reviewer_role',
+                description='Has Standard Reviewer role'
+            )
+
+            standard_reviewer_role = PermissionGroup(
+                name=self.permission_manager.STD_R_PERMS,
+                permissions=standard_reviewer_perms + [has_standard_reviewer_role]
+            )
+
+            # Save for later use
+            self.permissions[self.permission_manager.STD_R_PERMS] = standard_reviewer_perms
+            self.permissions_groups[self.permission_manager.STD_R_PERMS] = standard_reviewer_role
+            self.all_permissions_groups.append(standard_reviewer_role)
+
+        # Standard Admin Role -----------------------------------------------------------------------------------------#
         if self.permission_manager.STD_A_PERMS in enabled_permissions_groups:
-            standard_admin_perms = standard_user_perms + [
-                create_resource, edit_resource, delete_resource,
-                view_users, modify_users, modify_organization_members,
-                assign_org_users_role, assign_org_admin_role,
-                remove_layers, rename_layers, toggle_public_layers
-            ]
-
-            # Add custom permissions
-            standard_admin_perms += self.custom_permissions[self.permission_manager.STD_A_PERMS]
-
             # Define role/permissions group
             has_standard_admin_role = Permission(
                 name='has_standard_admin_role',
@@ -300,13 +396,8 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.STD_A_PERMS] = standard_admin_role
             self.all_permissions_groups.append(standard_admin_role)
 
-        # Advanced User -----------------------------------------------------------------------------------------------#
+        # Advanced User Role ------------------------------------------------------------------------------------------#
         if self.permission_manager.ADV_U_PERMS in enabled_permissions_groups:
-            advanced_user_perms = standard_user_perms
-
-            # Add custom permissions
-            advanced_user_perms += self.custom_permissions[self.permission_manager.ADV_U_PERMS]
-
             # Define role/permissions group
             has_advanced_user_role = Permission(
                 name='has_advanced_user_role',
@@ -323,13 +414,26 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.ADV_U_PERMS] = advanced_user_role
             self.all_permissions_groups.append(advanced_user_role)
 
-        # Advanced Admin ----------------------------------------------------------------------------------------------#
+        # Advanced Reviewer Role --------------------------------------------------------------------------------------#
+        if self.permission_manager.ADV_R_PERMS in enabled_permissions_groups:
+            # Define role/permissions group
+            has_advanced_reviewer_role = Permission(
+                name='has_advanced_reviewer_role',
+                description='Has Advanced Reviewer role'
+            )
+
+            advanced_reviewer_role = PermissionGroup(
+                name=self.permission_manager.ADV_R_PERMS,
+                permissions=advanced_reviewer_perms + [has_advanced_reviewer_role]
+            )
+
+            # Save for later use
+            self.permissions[self.permission_manager.ADV_R_PERMS] = advanced_reviewer_perms
+            self.permissions_groups[self.permission_manager.ADV_R_PERMS] = advanced_reviewer_role
+            self.all_permissions_groups.append(advanced_reviewer_role)
+
+        # Advanced Admin Role -----------------------------------------------------------------------------------------#
         if self.permission_manager.ADV_A_PERMS in enabled_permissions_groups:
-            advanced_admin_perms = standard_admin_perms + advanced_user_perms
-
-            # Add custom permissions
-            advanced_admin_perms += self.custom_permissions[self.permission_manager.ADV_A_PERMS]
-
             # Define role/permissions group
             has_advanced_admin_role = Permission(
                 name='has_advanced_admin_role',
@@ -346,13 +450,8 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.ADV_A_PERMS] = advanced_admin_role
             self.all_permissions_groups.append(advanced_admin_role)
 
-        # Professional User -------------------------------------------------------------------------------------------#
+        # Professional User Role --------------------------------------------------------------------------------------#
         if self.permission_manager.PRO_U_PERMS in enabled_permissions_groups:
-            professional_user_perms = advanced_user_perms
-
-            # Add custom permissions
-            professional_user_perms += self.custom_permissions[self.permission_manager.PRO_U_PERMS]
-
             # Define role/permissions group
             has_professional_user_role = Permission(
                 name='has_professional_user_role',
@@ -369,13 +468,26 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.PRO_U_PERMS] = professional_user_role
             self.all_permissions_groups.append(professional_user_role)
 
-        # Professional Admin ------------------------------------------------------------------------------------------#
+        # Professional Reviewer Role ----------------------------------------------------------------------------------#
+        if self.permission_manager.PRO_R_PERMS in enabled_permissions_groups:
+            # Define role/permissions group
+            has_professional_reviewer_role = Permission(
+                name='has_professional_reviewer_role',
+                description='Has Professional Reviewer role'
+            )
+
+            professional_reviewer_role = PermissionGroup(
+                name=self.permission_manager.PRO_R_PERMS,
+                permissions=professional_reviewer_perms + [has_professional_reviewer_role]
+            )
+
+            # Save for later use
+            self.permissions[self.permission_manager.PRO_R_PERMS] = professional_reviewer_perms
+            self.permissions_groups[self.permission_manager.PRO_R_PERMS] = professional_reviewer_role
+            self.all_permissions_groups.append(professional_reviewer_role)
+
+        # Professional Admin Role -------------------------------------------------------------------------------------#
         if self.permission_manager.PRO_A_PERMS in enabled_permissions_groups:
-            professional_admin_perms = advanced_admin_perms + professional_user_perms
-
-            # Add custom permissions
-            professional_admin_perms += self.custom_permissions[self.permission_manager.PRO_A_PERMS]
-
             # Define role/permissions group
             has_professional_admin_role = Permission(
                 name='has_professional_admin_role',
@@ -392,13 +504,8 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.PRO_A_PERMS] = professional_admin_role
             self.all_permissions_groups.append(professional_admin_role)
 
-        # Enterprise User ---------------------------------------------------------------------------------------------#
+        # Enterprise User Role ----------------------------------------------------------------------------------------#
         if self.permission_manager.ENT_U_PERMS in enabled_permissions_groups:
-            enterprise_user_perms = professional_user_perms
-
-            # Add custom permissions
-            enterprise_user_perms += self.custom_permissions[self.permission_manager.ENT_U_PERMS]
-
             # Define role/permissions group
             has_enterprise_user_role = Permission(
                 name='has_enterprise_user_role',
@@ -415,16 +522,26 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.ENT_U_PERMS] = enterprise_user_role
             self.all_permissions_groups.append(enterprise_user_role)
 
-        # Enterprise Admin --------------------------------------------------------------------------------------------#
+        # Enterprise Reviewer Role ------------------------------------------------------------------------------------#
+        if self.permission_manager.ENT_R_PERMS in enabled_permissions_groups:
+            # Define role/permissions group
+            has_enterprise_reviewer_role = Permission(
+                name='has_enterprise_reviewer_role',
+                description='Has Enterprise Reviewer role'
+            )
+
+            enterprise_reviewer_role = PermissionGroup(
+                name=self.permission_manager.ENT_R_PERMS,
+                permissions=enterprise_reviewer_perms + [has_enterprise_reviewer_role]
+            )
+
+            # Save for later use
+            self.permissions[self.permission_manager.ENT_R_PERMS] = enterprise_reviewer_perms
+            self.permissions_groups[self.permission_manager.ENT_R_PERMS] = enterprise_reviewer_role
+            self.all_permissions_groups.append(enterprise_reviewer_role)
+
+        # Enterprise Admin Role ---------------------------------------------------------------------------------------#
         if self.permission_manager.ENT_A_PERMS in enabled_permissions_groups:
-            enterprise_admin_perms = professional_admin_perms + enterprise_user_perms + [
-                create_organizations, edit_organizations, assign_advanced_license,
-                assign_standard_license, assign_professional_license,
-            ]
-
-            # Add custom permissions
-            enterprise_admin_perms += self.custom_permissions[self.permission_manager.ENT_A_PERMS]
-
             # Define role/permissions group
             has_enterprise_admin_role = Permission(
                 name='has_enterprise_admin_role',
@@ -441,22 +558,8 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.ENT_A_PERMS] = enterprise_admin_role
             self.all_permissions_groups.append(enterprise_admin_role)
 
-        # App Admin ---------------------------------------------------------------------------------------------------#
+        # App Admin Role ----------------------------------------------------------------------------------------------#
         if self.permission_manager.APP_A_PERMS in enabled_permissions_groups:
-            app_admin_perms = [
-                view_resource_details, view_resources, view_all_resources, create_resource,
-                edit_resource, delete_resource, always_delete_resource,
-                modify_user_manager, modify_users, view_users, view_all_users, assign_org_users_role,
-                assign_org_admin_role, assign_app_admin_role, assign_developer_role, view_organizations,
-                view_all_organizations, create_organizations, edit_organizations, delete_organizations,
-                modify_organization_members,
-                assign_any_resource, assign_any_organization, assign_any_user, assign_advanced_license,
-                assign_standard_license, assign_professional_license, assign_enterprise_license, assign_any_license
-            ]
-
-            # Add custom permissions
-            app_admin_perms += self.custom_permissions[self.permission_manager.APP_A_PERMS]
-
             # Define role/permissions group
             has_app_admin_role = Permission(
                 name='has_app_admin_role',

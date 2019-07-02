@@ -14,31 +14,48 @@ class AppPermissionsManager:
     ROLES = Roles()
     LICENSES = Licenses()
 
+    # Standard License Permissions Groups
     STD_U_PERMS = 'standard_user_perms'
+    STD_R_PERMS = 'standard_reviewer_perms'
     STD_A_PERMS = 'standard_admin_perms'
+
+    # Advanced License Permissions Groups
     ADV_U_PERMS = 'advanced_user_perms'
+    ADV_R_PERMS = 'advanced_reviewer_perms'
     ADV_A_PERMS = 'advanced_admin_perms'
+
+    # Professional License Permissions Groups
     PRO_U_PERMS = 'professional_user_perms'
+    PRO_R_PERMS = 'professional_reviewer_perms'
     PRO_A_PERMS = 'professional_admin_perms'
+
+    # Enterprise License Permissions Groups
     ENT_U_PERMS = 'enterprise_user_perms'
+    ENT_R_PERMS = 'enterprise_reviewer_perms'
     ENT_A_PERMS = 'enterprise_admin_perms'
+
+    # Global Permissions Groups
     APP_A_PERMS = 'app_admin_perms'
 
     PERMISSIONS_GROUP_MAP = {
         LICENSES.STANDARD: {
             ROLES.ORG_USER: STD_U_PERMS,
+            ROLES.ORG_REVIEWER: STD_R_PERMS,
             ROLES.ORG_ADMIN: STD_A_PERMS,
         },
         LICENSES.ADVANCED: {
             ROLES.ORG_USER: ADV_U_PERMS,
+            ROLES.ORG_REVIEWER: ADV_R_PERMS,
             ROLES.ORG_ADMIN: ADV_A_PERMS,
         },
         LICENSES.PROFESSIONAL: {
             ROLES.ORG_USER: PRO_U_PERMS,
+            ROLES.ORG_REVIEWER: PRO_R_PERMS,
             ROLES.ORG_ADMIN: PRO_A_PERMS,
         },
         LICENSES.ENTERPRISE: {
             ROLES.ORG_USER: ENT_U_PERMS,
+            ROLES.ORG_REVIEWER: ENT_R_PERMS,
             ROLES.ORG_ADMIN: ENT_A_PERMS,
         }
     }
@@ -51,31 +68,48 @@ class AppPermissionsManager:
         """
         self.app_namespace = app_namespace
 
+        # Namespaced Standard License Permissions Groups
         self.STANDARD_USER_PERMS = '{}:{}'.format(self.app_namespace, self.STD_U_PERMS)
+        self.STANDARD_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.STD_R_PERMS)
         self.STANDARD_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.STD_A_PERMS)
+
+        # Namespaced Advanced License Permissions Groups
         self.ADVANCED_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_U_PERMS)
+        self.ADVANCED_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_R_PERMS)
         self.ADVANCED_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_A_PERMS)
+
+        # Namespaced Professional License Permissions Groups
         self.PROFESSIONAL_USER_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_U_PERMS)
+        self.PROFESSIONAL_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_R_PERMS)
         self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_A_PERMS)
+
+        # Namespaced Enterprise License Permissions Groups
         self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_U_PERMS)
+        self.ENTERPRISE_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_R_PERMS)
         self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_A_PERMS)
+
+        # Namespaced Global Permissions Groups
         self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.APP_A_PERMS)
 
         self.NAMESPACED_PERMISSIONS_GROUP_MAP = {
             self.LICENSES.STANDARD: {
                 self.ROLES.ORG_USER: self.STANDARD_USER_PERMS,
+                self.ROLES.ORG_REVIEWER: self.STANDARD_REVIEWER_PERMS,
                 self.ROLES.ORG_ADMIN: self.STANDARD_ADMIN_PERMS,
             },
             self.LICENSES.ADVANCED: {
                 self.ROLES.ORG_USER: self.ADVANCED_USER_PERMS,
+                self.ROLES.ORG_REVIEWER: self.ADVANCED_REVIEWER_PERMS,
                 self.ROLES.ORG_ADMIN: self.ADVANCED_ADMIN_PERMS,
             },
             self.LICENSES.PROFESSIONAL: {
                 self.ROLES.ORG_USER: self.PROFESSIONAL_USER_PERMS,
+                self.ROLES.ORG_REVIEWER: self.PROFESSIONAL_REVIEWER_PERMS,
                 self.ROLES.ORG_ADMIN: self.PROFESSIONAL_ADMIN_PERMS,
             },
             self.LICENSES.ENTERPRISE: {
                 self.ROLES.ORG_USER: self.ENTERPRISE_USER_PERMS,
+                self.ROLES.ORG_REVIEWER: self.ENTERPRISE_REVIEWER_PERMS,
                 self.ROLES.ORG_ADMIN: self.ENTERPRISE_ADMIN_PERMS,
             }
         }
@@ -99,8 +133,8 @@ class AppPermissionsManager:
 
         for enabled_license in enabled_licenses:
             for enabled_role in enabled_roles:
-                # Skip global roles
-                if enabled_role in self.ROLES.global_roles:
+                # Skip non-organizational roles
+                if enabled_role in self.ROLES.get_no_organization_roles():
                     continue
                 permissions_groups.append(permissions_group_map[enabled_license][enabled_role])
 
@@ -131,6 +165,16 @@ class AppPermissionsManager:
             elif license == self.LICENSES.ENTERPRISE:
                 return self.ENTERPRISE_USER_PERMS
 
+        elif role == self.ROLES.ORG_REVIEWER:
+            if license == self.LICENSES.STANDARD:
+                return self.STANDARD_REVIEWER_PERMS
+            elif license == self.LICENSES.ADVANCED:
+                return self.STANDARD_REVIEWER_PERMS
+            elif license == self.LICENSES.PROFESSIONAL:
+                return self.PROFESSIONAL_REVIEWER_PERMS
+            elif license == self.LICENSES.ENTERPRISE:
+                return self.ENTERPRISE_REVIEWER_PERMS
+
         elif role == self.ROLES.ORG_ADMIN:
             if license == self.LICENSES.STANDARD:
                 return self.STANDARD_ADMIN_PERMS
@@ -153,24 +197,29 @@ class AppPermissionsManager:
         Returns:
             str: Display name for the given custom_permissions group.
         """
-        if permissions_group == self.STANDARD_USER_PERMS:
-            return 'Standard User'
-        elif permissions_group == self.STANDARD_ADMIN_PERMS:
-            return 'Standard Admin'
-        elif permissions_group == self.ADVANCED_USER_PERMS:
-            return 'Advanced User'
-        elif permissions_group == self.ADVANCED_ADMIN_PERMS:
-            return 'Advanced Admin'
-        elif permissions_group == self.PROFESSIONAL_USER_PERMS:
-            return 'Professional User'
-        elif permissions_group == self.PROFESSIONAL_ADMIN_PERMS:
-            return 'Professional Admin'
-        elif permissions_group == self.ENTERPRISE_USER_PERMS:
-            return 'Enterprise User'
-        elif permissions_group == self.ENTERPRISE_ADMIN_PERMS:
-            return 'Enterprise Admin'
-        elif permissions_group == self.APP_ADMIN_PERMS:
-            return 'App Admin'
+        display_name_map = {
+            self.STANDARD_USER_PERMS: 'Standard User',
+            self.STANDARD_REVIEWER_PERMS: 'Standard Reviewer',
+            self.STANDARD_ADMIN_PERMS: 'Standard Admin',
+
+            self.ADVANCED_USER_PERMS: 'Advanced User',
+            self.ADVANCED_REVIEWER_PERMS: 'Advanced Reviewer',
+            self.ADVANCED_ADMIN_PERMS: 'Advanced Admin',
+
+            self.PROFESSIONAL_USER_PERMS: 'Professional User',
+            self.PROFESSIONAL_REVIEWER_PERMS: 'Professional Reviewer',
+            self.PROFESSIONAL_ADMIN_PERMS: 'Professional Admin',
+
+            self.ENTERPRISE_USER_PERMS: 'Enterprise User',
+            self.ENTERPRISE_REVIEWER_PERMS: 'Enterprise Reviewer',
+            self.ENTERPRISE_ADMIN_PERMS: 'Enterprise Admin',
+
+            self.APP_ADMIN_PERMS: 'App Admin',
+        }
+
+        if permissions_group in display_name_map:
+            return display_name_map[permissions_group]
+
         return ''
 
     def get_rank_for(self, permissions_group):
@@ -182,24 +231,29 @@ class AppPermissionsManager:
         Returns:
             int: Rank for given permission group.
         """
-        if permissions_group == self.STANDARD_USER_PERMS:
-            return 100.0
-        elif permissions_group == self.STANDARD_ADMIN_PERMS:
-            return 200.0
-        elif permissions_group == self.ADVANCED_USER_PERMS:
-            return 300.0
-        elif permissions_group == self.ADVANCED_ADMIN_PERMS:
-            return 400.0
-        elif permissions_group == self.PROFESSIONAL_USER_PERMS:
-            return 500.0
-        elif permissions_group == self.PROFESSIONAL_ADMIN_PERMS:
-            return 600.0
-        elif permissions_group == self.ENTERPRISE_USER_PERMS:
-            return 700.0
-        elif permissions_group == self.ENTERPRISE_ADMIN_PERMS:
-            return 800.0
-        elif permissions_group == self.APP_ADMIN_PERMS:
-            return 1000.0
+        rank_map = {
+            self.STANDARD_USER_PERMS: 1100.0,
+            self.STANDARD_REVIEWER_PERMS: 1200.0,
+            self.STANDARD_ADMIN_PERMS: 1300.0,
+
+            self.ADVANCED_USER_PERMS: 2100.0,
+            self.ADVANCED_REVIEWER_PERMS: 2200.0,
+            self.ADVANCED_ADMIN_PERMS: 2300.0,
+
+            self.PROFESSIONAL_USER_PERMS: 3100.0,
+            self.PROFESSIONAL_REVIEWER_PERMS: 3200.0,
+            self.PROFESSIONAL_ADMIN_PERMS: 3400.0,
+
+            self.ENTERPRISE_USER_PERMS: 4100.0,
+            self.ENTERPRISE_REVIEWER_PERMS: 4200.0,
+            self.ENTERPRISE_ADMIN_PERMS: 4300.0,
+
+            self.APP_ADMIN_PERMS: 10000.0,
+        }
+
+        if permissions_group in rank_map:
+            return rank_map[permissions_group]
+
         return -1.0
 
     @staticmethod
