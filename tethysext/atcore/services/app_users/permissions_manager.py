@@ -11,18 +11,37 @@ from tethysext.atcore.services.app_users.licenses import Licenses
 
 
 class AppPermissionsManager:
-    _STD_U_PERMS = 'standard_user_perms'
-    _STD_A_PERMS = 'standard_admin_perms'
-    _ADV_U_PERMS = 'advanced_user_perms'
-    _ADV_A_PERMS = 'advanced_admin_perms'
-    _PRO_U_PERMS = 'professional_user_perms'
-    _PRO_A_PERMS = 'professional_admin_perms'
-    _ENT_U_PERMS = 'enterprise_user_perms'
-    _ENT_A_PERMS = 'enterprise_admin_perms'
-    _APP_A_PERMS = 'app_admin_perms'
-
     ROLES = Roles()
     LICENSES = Licenses()
+
+    STD_U_PERMS = 'standard_user_perms'
+    STD_A_PERMS = 'standard_admin_perms'
+    ADV_U_PERMS = 'advanced_user_perms'
+    ADV_A_PERMS = 'advanced_admin_perms'
+    PRO_U_PERMS = 'professional_user_perms'
+    PRO_A_PERMS = 'professional_admin_perms'
+    ENT_U_PERMS = 'enterprise_user_perms'
+    ENT_A_PERMS = 'enterprise_admin_perms'
+    APP_A_PERMS = 'app_admin_perms'
+
+    PERMISSIONS_GROUP_MAP = {
+        LICENSES.STANDARD: {
+            ROLES.ORG_USER: STD_U_PERMS,
+            ROLES.ORG_ADMIN: STD_A_PERMS,
+        },
+        LICENSES.ADVANCED: {
+            ROLES.ORG_USER: ADV_U_PERMS,
+            ROLES.ORG_ADMIN: ADV_A_PERMS,
+        },
+        LICENSES.PROFESSIONAL: {
+            ROLES.ORG_USER: PRO_U_PERMS,
+            ROLES.ORG_ADMIN: PRO_A_PERMS,
+        },
+        LICENSES.ENTERPRISE: {
+            ROLES.ORG_USER: ENT_U_PERMS,
+            ROLES.ORG_ADMIN: ENT_A_PERMS,
+        }
+    }
 
     def __init__(self, app_namespace):
         """
@@ -32,15 +51,34 @@ class AppPermissionsManager:
         """
         self.app_namespace = app_namespace
 
-        self.STANDARD_USER_PERMS = '{}:{}'.format(self.app_namespace, self._STD_U_PERMS)
-        self.STANDARD_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._STD_A_PERMS)
-        self.ADVANCED_USER_PERMS = '{}:{}'.format(self.app_namespace, self._ADV_U_PERMS)
-        self.ADVANCED_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._ADV_A_PERMS)
-        self.PROFESSIONAL_USER_PERMS = '{}:{}'.format(self.app_namespace, self._PRO_U_PERMS)
-        self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._PRO_A_PERMS)
-        self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self._ENT_U_PERMS)
-        self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._ENT_A_PERMS)
-        self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self._APP_A_PERMS)
+        self.STANDARD_USER_PERMS = '{}:{}'.format(self.app_namespace, self.STD_U_PERMS)
+        self.STANDARD_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.STD_A_PERMS)
+        self.ADVANCED_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_U_PERMS)
+        self.ADVANCED_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ADV_A_PERMS)
+        self.PROFESSIONAL_USER_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_U_PERMS)
+        self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_A_PERMS)
+        self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_U_PERMS)
+        self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_A_PERMS)
+        self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.APP_A_PERMS)
+
+        self.NAMESPACED_PERMISSIONS_GROUP_MAP = {
+            self.LICENSES.STANDARD: {
+                self.ROLES.ORG_USER: self.STANDARD_USER_PERMS,
+                self.ROLES.ORG_ADMIN: self.STANDARD_ADMIN_PERMS,
+            },
+            self.LICENSES.ADVANCED: {
+                self.ROLES.ORG_USER: self.ADVANCED_USER_PERMS,
+                self.ROLES.ORG_ADMIN: self.ADVANCED_ADMIN_PERMS,
+            },
+            self.LICENSES.PROFESSIONAL: {
+                self.ROLES.ORG_USER: self.PROFESSIONAL_USER_PERMS,
+                self.ROLES.ORG_ADMIN: self.PROFESSIONAL_ADMIN_PERMS,
+            },
+            self.LICENSES.ENTERPRISE: {
+                self.ROLES.ORG_USER: self.ENTERPRISE_USER_PERMS,
+                self.ROLES.ORG_ADMIN: self.ENTERPRISE_ADMIN_PERMS,
+            }
+        }
 
     def list(self, with_namespace=False):
         """
@@ -48,30 +86,28 @@ class AppPermissionsManager:
         Returns:
             list<str>: names of all the custom_permissions groups.
         """
+        enabled_licenses = self.LICENSES.list()
+        enabled_roles = self.ROLES.list()
+        permissions_groups = []
+
         if with_namespace:
-            return [
-                self.STANDARD_USER_PERMS,
-                self.STANDARD_ADMIN_PERMS,
-                self.ADVANCED_USER_PERMS,
-                self.ADVANCED_ADMIN_PERMS,
-                self.PROFESSIONAL_USER_PERMS,
-                self.PROFESSIONAL_ADMIN_PERMS,
-                self.ENTERPRISE_USER_PERMS,
-                self.ENTERPRISE_ADMIN_PERMS,
-                self.APP_ADMIN_PERMS
-            ]
+            permissions_group_map = self.NAMESPACED_PERMISSIONS_GROUP_MAP
+            app_admin_group = self.APP_ADMIN_PERMS
         else:
-            return [
-                self._STD_U_PERMS,
-                self._STD_A_PERMS,
-                self._ADV_U_PERMS,
-                self._ADV_A_PERMS,
-                self._PRO_U_PERMS,
-                self._PRO_A_PERMS,
-                self._ENT_U_PERMS,
-                self._ENT_A_PERMS,
-                self._APP_A_PERMS
-            ]
+            permissions_group_map = self.PERMISSIONS_GROUP_MAP
+            app_admin_group = self.APP_A_PERMS
+
+        for enabled_license in enabled_licenses:
+            for enabled_role in enabled_roles:
+                # Skip global roles
+                if enabled_role in self.ROLES.global_roles:
+                    continue
+                permissions_groups.append(permissions_group_map[enabled_license][enabled_role])
+
+        if self.ROLES.APP_ADMIN in enabled_roles:
+            permissions_groups.append(app_admin_group)
+
+        return permissions_groups
 
     def get_permissions_group_for(self, role, license=None, **kwargs):
         """
