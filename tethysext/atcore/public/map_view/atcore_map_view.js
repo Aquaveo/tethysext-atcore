@@ -154,7 +154,6 @@ var ATCORE_MAP_VIEW = (function() {
     // Sync layer visibility
     sync_layer_visibility = function() {
         let layer_tab_panel = $('#layers-tab-panel');
-        let layer_group_visibility_controls = $('#layers-tab-panel').children().find('.layer-group-visibility-control');
         let layer_groups = layer_tab_panel.find('.layer-group-item')
         let i;
         let check_status;
