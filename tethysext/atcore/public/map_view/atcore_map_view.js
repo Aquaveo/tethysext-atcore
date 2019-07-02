@@ -53,7 +53,7 @@ var ATCORE_MAP_VIEW = (function() {
  	*                    PRIVATE FUNCTION DECLARATIONS
  	*************************************************************************/
  	// Config
- 	var parse_attributes, parse_permissions, setup_ajax, setup_map, csrf_token;
+ 	var parse_attributes, parse_permissions, setup_ajax, setup_map, csrf_token, sync_layer_visibility;
 
  	// Map management
  	var remove_layer_from_map, get_layer_name_from_feature, get_feature_id_from_feature;
@@ -147,9 +147,34 @@ var ATCORE_MAP_VIEW = (function() {
 	        }
 	    });
 
-	    // Setup feature selection
+        // Setup feature selection
 	    init_feature_selection();
     };
+
+    // Sync layer visibility
+    sync_layer_visibility = function() {
+        let layer_tab_panel = $('#layers-tab-panel');
+        let layer_group_visibility_controls = $('#layers-tab-panel').children().find('.layer-group-visibility-control');
+        let layer_groups = layer_tab_panel.find('.layer-group-item')
+        let i;
+        let check_status;
+        $.each(layer_groups, function(index, content) {
+            // Get Group check status
+            check_status = $('#' + content.id).find('.layer-group-visibility-control')[0].checked
+
+            // Do not show any layers associated with unchecked layer groups
+            if (check_status == false) {
+                // Get all layers in this group
+                let layer_list_id = $('#' + content.id).next()[0].id
+                let layer_lists =  $('#' + layer_list_id).children()
+                $.each(layer_lists, function(layer_index, layer_content) {
+                    let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
+                    m_layers[layer_id].setVisible(false)
+                })
+            }
+
+        });
+    }
 
     // Map Management
     remove_layer_from_map = function(layer_name) {
@@ -489,19 +514,8 @@ var ATCORE_MAP_VIEW = (function() {
                 let layer_name = $item.data('layer-id');
                 let layer_checked = $item.is(':checked');
                 let layer_variable = $item.data('layer-variable');
-                if (layer_group_checked == false) {
-                    m_layers[layer_name].setVisible(false);
-                    }
-                else {
-                    if (index == 0) {
-                        // Turn on first layer radio check
-                        $item[0].checked = true
-                        m_layers[layer_name].setVisible(true)
-                        }
-                    else {
-                        m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
-                        }
-                }
+                m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
+
                 if (layer_group_checked && layer_checked) {
                     $("#legend-" + layer_variable).removeClass('hidden')
                 } else {
@@ -1504,6 +1518,7 @@ var ATCORE_MAP_VIEW = (function() {
         init_geocode();
         init_plot();
         init_draw_controls();
+        sync_layer_visibility();
 	});
 
 	return m_public_interface;
