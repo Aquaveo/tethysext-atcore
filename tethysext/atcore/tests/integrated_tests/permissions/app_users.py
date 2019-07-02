@@ -34,4 +34,4 @@ class PermissionsGeneratorTests(TethysTestCase):
 
     def test_generate(self):
         perms = self.pg.generate()
-        self.assertEqual(9, len(perms))
+        self.assertEqual(13, len(perms))
