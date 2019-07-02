@@ -3,7 +3,7 @@ from tethysext.atcore.tests.unit_tests.mixins.options_mixin import OptionsMixinT
 from tethysext.atcore.tests.unit_tests.mixins.results_mixin import ResultMixinTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.model_types.guid_tests import GuidTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.app_users.licenses import LicensesTests  # noqa: F401
-from tethysext.atcore.tests.unit_tests.services.app_users.user_roles import AppUserRoleTests  # noqa: F401
+from tethysext.atcore.tests.unit_tests.services.app_users.user_roles_tests import AppUserRoleTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.paginate import PaginateTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.spatial_reference import SpatialReferenceServiceTests  # noqa: F401
 from tethysext.atcore.tests.unit_tests.services.model_database_connection_base import ModelDatabaseConnectionBaseTests  # noqa: F401, E501
