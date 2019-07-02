@@ -4,6 +4,7 @@ from tethysext.atcore.urls import app_users
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, UserAccount, \
     ModifyOrganization, ManageOrganizationMembers, ManageOrganizations, ManageResources, ModifyResource, \
     ResourceDetails, ResourceStatus
+from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
 
 
@@ -63,7 +64,15 @@ class CustomUserAccount(UserAccount):
     pass
 
 
+class CustomPermissionsManager(AppPermissionsManager):
+    pass
+
+
 class InvalidController:
+    pass
+
+
+class InvalidPermissionsManager:
     pass
 
 
@@ -208,6 +217,26 @@ class AppUserUrlsTests(TethysTestCase):
         mock_db_name = "foo"
         self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
                           custom_controllers=['not-a-class'])
+
+    def test_custom_permissions_manager(self):
+        url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_permissions_manager=CustomPermissionsManager)
+        self.assertEqual(len(url_maps), self.num_urls)
+
+        for url_map in url_maps:
+            _PermissionsManager = url_map.controller.view_initkwargs['_PermissionsManager']
+            self.assertEqual(CustomPermissionsManager, _PermissionsManager)
+
+    def test_invalid_custom_permissions_manager_not_a_class(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          custom_permissions_manager='not-a-class')
+
+    def test_invalid_custom_permissions_manager_not_permissions_manager(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          custom_permissions_manager=InvalidPermissionsManager)
 
     def test_custom_base_url_path_and_models(self):
         mockapp = object()
