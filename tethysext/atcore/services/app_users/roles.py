@@ -21,6 +21,15 @@ class Roles:
     def __contains__(self, item):
         return item in self.list()
 
+    @property
+    def global_roles(self):
+        """
+        Get a list of roles that are global (not affected by license).
+        Returns:
+            tuple: All global roles.
+        """
+        return self.APP_ADMIN, self.DEVELOPER
+
     def list(self):
         """
         Get a list of all roles.
