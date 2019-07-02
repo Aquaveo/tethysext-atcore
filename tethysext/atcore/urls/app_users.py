@@ -13,10 +13,11 @@ from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddE
     ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources, ModifyResource, ResourceDetails, \
     ResourceStatus
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
+from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 
 
 def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html',
-         custom_controllers=(), custom_models=()):
+         custom_controllers=(), custom_models=(), custom_permissions_manager=None):
     """
     Generate UrlMap objects for app_users extension. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
@@ -32,7 +33,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
         base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful to add navigation to ManageUsers, ManageOrganizations, ManageResources, and UserAccount views.
         custom_controllers(list<TethysController>): Any number of TethysController subclasses to override default controller classes.
-        custom_models(cls): custom subclasses of AppUser, Organization, or Resource models.
+        custom_models(list<cls>): custom subclasses of AppUser, Organization, or Resource models.
+        custom_permissions_manager(cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
 
     Url Map Names:
         app_users_manage_users
@@ -78,6 +80,9 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     _Organization = Organization
     _Resource = Resource
 
+    # Default permissions manager
+    _PermissionsManager = AppPermissionsManager
+
     # Handle controller classes
     for custom_controller in custom_controllers:
         if not inspect.isclass(custom_controller) or not issubclass(custom_controller, TethysController):
@@ -105,6 +110,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         elif issubclass(custom_controller, ResourceStatus):
             _ResourceStatus = custom_controller
 
+    # Handle custom model classes
     for custom_model in custom_models:
         if inspect.isclass(custom_model) and issubclass(custom_model, AppUser):
             _AppUser = custom_model
@@ -114,6 +120,14 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             _Resource = custom_model
         else:
             raise ValueError('custom_models must contain only subclasses of AppUser, Resources, or Organization.')
+
+    # Handle custom permissions manager
+    if custom_permissions_manager is not None:
+        if inspect.isclass(custom_permissions_manager) and \
+           issubclass(custom_permissions_manager, AppPermissionsManager):
+            _PermissionsManager = custom_permissions_manager
+        else:
+            raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
 
     # Url Patterns
     users_url =                         'users'  # noqa: E222
@@ -141,6 +155,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _AppUser=_AppUser,
                 _Organization=_Organization,
                 _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
         ),
@@ -152,7 +167,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -163,7 +179,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -174,7 +191,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -186,6 +204,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _AppUser=_AppUser,
                 _Organization=_Organization,
                 _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
         ),
@@ -198,6 +217,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _AppUser=_AppUser,
                 _Organization=_Organization,
                 _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
         ),
@@ -209,7 +229,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -220,7 +241,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -231,7 +253,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -243,6 +266,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _AppUser=_AppUser,
                 _Organization=_Organization,
                 _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
         ),
@@ -254,7 +278,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -265,7 +290,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resource
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
             )
         ),
         url_map_maker(
@@ -277,6 +303,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _AppUser=_AppUser,
                 _Organization=_Organization,
                 _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
         ),
@@ -289,6 +316,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _AppUser=_AppUser,
                 _Organization=_Organization,
                 _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
         )
