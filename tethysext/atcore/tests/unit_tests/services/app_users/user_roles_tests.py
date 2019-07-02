@@ -12,13 +12,6 @@ class AppUserRoleTests(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_global_roles(self):
-        ret = self.user_roles.global_roles
-        self.assertIn(Roles.APP_ADMIN, ret)
-        self.assertIn(Roles.DEVELOPER, ret)
-        self.assertNotIn(Roles.ORG_USER, ret)
-        self.assertNotIn(Roles.ORG_ADMIN, ret)
-
     def test_roles(self):
         self.assertEqual('user_role_org_user', Roles.ORG_USER)
         self.assertEqual('user_role_org_admin', Roles.ORG_ADMIN)
