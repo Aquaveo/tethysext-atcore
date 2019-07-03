@@ -31,7 +31,7 @@
 .layer-group-item .flatmark {
     display: inline-block;
     font-weight: 700;
-    max-width: 315px;
+    max-width: 292px;
     overflow: hidden;
 }
 
@@ -47,7 +47,7 @@
 
 .layer-list-item .flatmark {
     display: inline-block;
-    max-width: 310px;
+    max-width: 292px;
     overflow: hidden;
 }
 
