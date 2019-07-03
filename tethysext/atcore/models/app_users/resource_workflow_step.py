@@ -56,6 +56,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     _options = Column(PickleType, default={})
     _attributes = Column(String)
     _parameters = Column(PickleType, default={})
+    _active_roles = Column(PickleType, default=[])
 
     _controller = relationship(
         'ControllerMetadata',
@@ -100,6 +101,9 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         else:
             self._options = self.default_options
 
+        if 'active_roles' in kwargs:
+            self.active_roles = kwargs['active_roles']
+
         self._controller = ControllerMetadata(path=self.CONTROLLER)
 
     def __str__(self):
@@ -107,6 +111,16 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def active_roles(self):
+        return self._active_roles
+
+    @active_roles.setter
+    def active_roles(self, value):
+        if not isinstance(value, list) or not all(isinstance(elem, str) for elem in value):
+            raise ValueError(f'Property "active_roles" must be a list of strings. Got "{value}" instead.')
+        self._active_roles = value
 
     @property
     def controller(self):
