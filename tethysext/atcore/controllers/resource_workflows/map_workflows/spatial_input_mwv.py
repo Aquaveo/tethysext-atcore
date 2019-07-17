@@ -252,23 +252,39 @@ class SpatialInputMWV(MapWorkflowView):
 
             # Convert shapes to geojson
             features = []
+            projection_found = False
+            shapefile_found = False
+
             for f in os.listdir(workdir):
-                if '.shp' not in f or '.shp.' in f:
-                    continue
+                if '.shp' in f and '.shp.' not in f:
+                    shapefile_found = True
+                    path = os.path.join(workdir, f)
+                    reader = shp.Reader(path)
+                    fields = reader.fields[1:]
+                    field_names = [field[0] for field in fields]
 
-                path = os.path.join(workdir, f)
-                reader = shp.Reader(path)
-                fields = reader.fields[1:]
-                field_names = [field[0] for field in fields]
+                    for sr in reader.shapeRecords():
+                        attributes = dict(zip(field_names, sr.record))
+                        geometry = sr.shape.__geo_interface__
+                        features.append({
+                            'type': 'Feature',
+                            'geometry': geometry,
+                            'properties': attributes
+                        })
+                elif '.prj' in f:
+                    # Check the projection
+                    projection_found = True
+                    path = os.path.join(workdir, f)
 
-                for sr in reader.shapeRecords():
-                    attributes = dict(zip(field_names, sr.record))
-                    geometry = sr.shape.__geo_interface__
-                    features.append({
-                        'type': 'Feature',
-                        'geometry': geometry,
-                        'properties': attributes
-                    })
+                    with open(path, 'r') as prj:
+                        proj_str = prj.read()
+                        self.validate_projection(proj_str)
+
+            if not shapefile_found:
+                raise ValueError('No shapefile found in given files.')
+
+            if not projection_found:
+                raise ValueError('Unable to determine projection of the given shapefile. Please include a .prj file.')
 
             geojson_dicts = {
                 'type': 'FeatureCollection',
@@ -283,8 +299,8 @@ class SpatialInputMWV(MapWorkflowView):
             if not geojson_objs.is_valid:
                 raise RuntimeError('Invalid geojson from "shapefile" parameter: {}'.format(geojson_dicts))
 
-        except shp.ShapefileException as e:
-            raise ValueError(f'Invalid shapefile provided: {e}.')
+        except (ValueError, shp.ShapefileException) as e:
+            raise ValueError(f'Invalid shapefile provided: {e}')
         except Exception as e:
             raise RuntimeError('An error has occurred while parsing the shapefile: {}'.format(e))
 
@@ -293,6 +309,25 @@ class SpatialInputMWV(MapWorkflowView):
             workdir and shutil.rmtree(workdir)
 
         return geojson_objs
+
+    def validate_projection(self, proj_str):
+        """
+        Validate the projection of uploaded shapefiles. Currently only support the WGS 1984 Geographic Projection (EPSG:4326).
+
+        Args:
+            proj_str(str): Well-Known-Text projection string.
+
+        Raises:
+            ValueError: unsupported projection systems.
+        """
+        # We don't support projected projections at this point
+        if 'PROJCS' in proj_str:
+            raise ValueError('Projected coordinate systems are not supported at this time. Please re-project '
+                             'the shapefile to the WGS 1984 Geographic Projection (EPSG:4326).')
+        # Only support the WGS 1984 geographic projection at this point
+        elif 'GEOGCS' not in proj_str or 'WGS' not in proj_str or '1984' not in proj_str:
+            raise ValueError('Only geographic projections are supported at this time. Please re-project shapefile to '
+                             'the WGS 1984 Geographic Projection (EPSG:4326).')
 
     @staticmethod
     def parse_drawn_geometry(geometry):
