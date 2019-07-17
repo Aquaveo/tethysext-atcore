@@ -253,7 +253,7 @@ class SpatialInputMWV(MapWorkflowView):
             # Convert shapes to geojson
             features = []
             for f in os.listdir(workdir):
-                if '.shp' not in f:
+                if '.shp' not in f or '.shp.' in f:
                     continue
 
                 path = os.path.join(workdir, f)
@@ -283,10 +283,10 @@ class SpatialInputMWV(MapWorkflowView):
             if not geojson_objs.is_valid:
                 raise RuntimeError('Invalid geojson from "shapefile" parameter: {}'.format(geojson_dicts))
 
-        except shp.ShapefileException:
-            raise ValueError('Invalid shapefile provided.')
+        except shp.ShapefileException as e:
+            raise ValueError(f'Invalid shapefile provided: {e}.')
         except Exception as e:
-            raise RuntimeError('An error has occured while parsing the shapefile: {}'.format(e))
+            raise RuntimeError('An error has occurred while parsing the shapefile: {}'.format(e))
 
         finally:
             # Clean up
@@ -310,9 +310,19 @@ class SpatialInputMWV(MapWorkflowView):
 
         geojson_objs = geojson.loads(geometry)
 
+        features = []
+
+        for geometry in geojson_objs.geometries:
+            properties = geometry.pop('properties', [])
+            features.append({
+                'type': 'Feature',
+                'geometry': geometry,
+                'properties': properties
+            })
+
         geojson_objs = {
             'type': 'FeatureCollection',
-            'features': geojson_objs.geometries
+            'features': features
         }
 
         # Convert to geojson objects
@@ -370,17 +380,19 @@ class SpatialInputMWV(MapWorkflowView):
             return geojson
 
         # Sort the features for consistent ID'ing
-        s_features = sorted(geojson['features'], key=lambda f: f.coordinates)
+        s_features = sorted(geojson['features'], key=lambda f: f['geometry']['coordinates'])
 
         for i, feature in enumerate(s_features):
-            if 'type' not in feature or 'coordinates' not in feature:
+            if 'geometry' not in feature or \
+               'coordinates' not in feature['geometry'] or \
+               'type' not in feature['geometry']:
                 continue
 
             processed_feature = {
                 'type': 'Feature',
                 'geometry': {
-                    'type': feature['type'],
-                    'coordinates': feature['coordinates']
+                    'type': feature['geometry']['type'],
+                    'coordinates': feature['geometry']['coordinates']
                 },
                 'properties': feature['properties'] if 'properties' in feature else {}
             }
