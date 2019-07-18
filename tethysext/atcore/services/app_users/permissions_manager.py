@@ -222,6 +222,62 @@ class AppPermissionsManager:
 
         return ''
 
+    def get_has_role_permission_for(self, role, license=None):
+        """
+        Get name of the permission that can be tested to see if a user has the given role.
+        Args:
+            role(str): Role of user.
+            license(str): License of organization to which user belongs (optional).
+
+        Returns:
+            str: name of the "has role" permission.
+        """
+        has_role_permission = None
+
+        if role == self.ROLES.ORG_USER:
+            if license is not None:
+                if license == self.LICENSES.STANDARD:
+                    has_role_permission = 'has_standard_user_role'
+                elif license == self.LICENSES.ADVANCED:
+                    has_role_permission = 'has_advanced_user_role'
+                elif license == self.LICENSES.PROFESSIONAL:
+                    has_role_permission = 'has_professional_user_role'
+                elif license == self.LICENSES.ENTERPRISE:
+                    has_role_permission = 'has_enterprise_user_role'
+            else:
+                has_role_permission = 'has_org_user_role'
+
+        if role == self.ROLES.ORG_REVIEWER:
+            if license is not None:
+                if license == self.LICENSES.STANDARD:
+                    has_role_permission = 'has_standard_reviewer_role'
+                elif license == self.LICENSES.ADVANCED:
+                    has_role_permission = 'has_advanced_reviewer_role'
+                elif license == self.LICENSES.PROFESSIONAL:
+                    has_role_permission = 'has_professional_reviewer_role'
+                elif license == self.LICENSES.ENTERPRISE:
+                    has_role_permission = 'has_enterprise_reviewer_role'
+            else:
+                has_role_permission = 'has_org_reviewer_role'
+
+        if role == self.ROLES.ORG_ADMIN:
+            if license is not None:
+                if license == self.LICENSES.STANDARD:
+                    has_role_permission = 'has_standard_admin_role'
+                elif license == self.LICENSES.ADVANCED:
+                    has_role_permission = 'has_advanced_admin_role'
+                elif license == self.LICENSES.PROFESSIONAL:
+                    has_role_permission = 'has_professional_admin_role'
+                elif license == self.LICENSES.ENTERPRISE:
+                    has_role_permission = 'has_enterprise_admin_role'
+            else:
+                has_role_permission = 'has_org_admin_role'
+
+        if role == self.ROLES.APP_ADMIN:
+            has_role_permission = 'has_app_admin_role'
+
+        return has_role_permission
+
     def get_rank_for(self, permissions_group):
         """
         Get the rank for the given permission group.

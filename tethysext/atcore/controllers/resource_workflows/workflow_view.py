@@ -181,6 +181,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             HttpResponse: A Django response.
         """
+
         previous_step, next_step = workflow.get_adjacent_steps(step)
 
         # Create for previous, next, and current steps

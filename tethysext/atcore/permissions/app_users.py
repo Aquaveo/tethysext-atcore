@@ -341,18 +341,41 @@ class PermissionsGenerator:
             app_admin_perms += self.custom_permissions[self.permission_manager.APP_A_PERMS]
 
         # 3. Create Permission Groups/Roles ---------------------------------------------------------------------------#
+        has_org_user_role = Permission(
+            name=self.permission_manager.get_has_role_permission_for(
+                role=self.permission_manager.ROLES.ORG_USER
+            ),
+            description='Has Organization User role.'
+        )
+
+        has_org_reviewer_role = Permission(
+            name=self.permission_manager.get_has_role_permission_for(
+                role=self.permission_manager.ROLES.ORG_REVIEWER
+            ),
+            description='Has Organization Reviewer role.'
+        )
+
+        has_org_admin_role = Permission(
+            name=self.permission_manager.get_has_role_permission_for(
+                role=self.permission_manager.ROLES.ORG_ADMIN
+            ),
+            description='Has Organization Admin role.'
+        )
 
         # Standard User Role ------------------------------------------------------------------------------------------#
         if self.permission_manager.STD_U_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_standard_user_role = Permission(
-                name='has_standard_user_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_USER,
+                    license=self.permission_manager.LICENSES.STANDARD
+                ),
                 description='Has Standard User role'
             )
 
             standard_user_role = PermissionGroup(
                 name=self.permission_manager.STD_U_PERMS,
-                permissions=standard_user_perms + [has_standard_user_role]
+                permissions=standard_user_perms + [has_standard_user_role, has_org_user_role]
             )
 
             # Save for later use
@@ -364,13 +387,16 @@ class PermissionsGenerator:
         if self.permission_manager.STD_R_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_standard_reviewer_role = Permission(
-                name='has_standard_reviewer_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_REVIEWER,
+                    license=self.permission_manager.LICENSES.STANDARD
+                ),
                 description='Has Standard Reviewer role'
             )
 
             standard_reviewer_role = PermissionGroup(
                 name=self.permission_manager.STD_R_PERMS,
-                permissions=standard_reviewer_perms + [has_standard_reviewer_role]
+                permissions=standard_reviewer_perms + [has_standard_reviewer_role, has_org_reviewer_role]
             )
 
             # Save for later use
@@ -382,13 +408,16 @@ class PermissionsGenerator:
         if self.permission_manager.STD_A_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_standard_admin_role = Permission(
-                name='has_standard_admin_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_ADMIN,
+                    license=self.permission_manager.LICENSES.STANDARD
+                ),
                 description='Has Standard Admin role'
             )
 
             standard_admin_role = PermissionGroup(
                 name=self.permission_manager.STD_A_PERMS,
-                permissions=standard_admin_perms + [has_standard_admin_role]
+                permissions=standard_admin_perms + [has_standard_admin_role, has_org_admin_role]
             )
 
             # Save for later use
@@ -400,13 +429,16 @@ class PermissionsGenerator:
         if self.permission_manager.ADV_U_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_advanced_user_role = Permission(
-                name='has_advanced_user_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_USER,
+                    license=self.permission_manager.LICENSES.ADVANCED
+                ),
                 description='Has Advanced User role'
             )
 
             advanced_user_role = PermissionGroup(
                 name=self.permission_manager.ADV_U_PERMS,
-                permissions=advanced_user_perms + [has_advanced_user_role]
+                permissions=advanced_user_perms + [has_advanced_user_role, has_org_user_role]
             )
 
             # Save for later use
@@ -418,13 +450,16 @@ class PermissionsGenerator:
         if self.permission_manager.ADV_R_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_advanced_reviewer_role = Permission(
-                name='has_advanced_reviewer_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_REVIEWER,
+                    license=self.permission_manager.LICENSES.ADVANCED
+                ),
                 description='Has Advanced Reviewer role'
             )
 
             advanced_reviewer_role = PermissionGroup(
                 name=self.permission_manager.ADV_R_PERMS,
-                permissions=advanced_reviewer_perms + [has_advanced_reviewer_role]
+                permissions=advanced_reviewer_perms + [has_advanced_reviewer_role, has_org_reviewer_role]
             )
 
             # Save for later use
@@ -436,13 +471,16 @@ class PermissionsGenerator:
         if self.permission_manager.ADV_A_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_advanced_admin_role = Permission(
-                name='has_advanced_admin_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_ADMIN,
+                    license=self.permission_manager.LICENSES.ADVANCED
+                ),
                 description='Has Advanced Admin role'
             )
 
             advanced_admin_role = PermissionGroup(
                 name=self.permission_manager.ADV_A_PERMS,
-                permissions=advanced_admin_perms + [has_advanced_admin_role]
+                permissions=advanced_admin_perms + [has_advanced_admin_role, has_org_admin_role]
             )
 
             # Save for later use
@@ -454,13 +492,16 @@ class PermissionsGenerator:
         if self.permission_manager.PRO_U_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_professional_user_role = Permission(
-                name='has_professional_user_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_USER,
+                    license=self.permission_manager.LICENSES.PROFESSIONAL
+                ),
                 description='Has Professional User role'
             )
 
             professional_user_role = PermissionGroup(
                 name=self.permission_manager.PRO_U_PERMS,
-                permissions=professional_user_perms + [has_professional_user_role]
+                permissions=professional_user_perms + [has_professional_user_role, has_org_user_role]
             )
 
             # Save for later use
@@ -472,13 +513,16 @@ class PermissionsGenerator:
         if self.permission_manager.PRO_R_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_professional_reviewer_role = Permission(
-                name='has_professional_reviewer_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_REVIEWER,
+                    license=self.permission_manager.LICENSES.PROFESSIONAL
+                ),
                 description='Has Professional Reviewer role'
             )
 
             professional_reviewer_role = PermissionGroup(
                 name=self.permission_manager.PRO_R_PERMS,
-                permissions=professional_reviewer_perms + [has_professional_reviewer_role]
+                permissions=professional_reviewer_perms + [has_professional_reviewer_role, has_org_reviewer_role]
             )
 
             # Save for later use
@@ -490,13 +534,16 @@ class PermissionsGenerator:
         if self.permission_manager.PRO_A_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_professional_admin_role = Permission(
-                name='has_professional_admin_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_ADMIN,
+                    license=self.permission_manager.LICENSES.PROFESSIONAL
+                ),
                 description='Has Professional Admin role'
             )
 
             professional_admin_role = PermissionGroup(
                 name=self.permission_manager.PRO_A_PERMS,
-                permissions=professional_admin_perms + [has_professional_admin_role]
+                permissions=professional_admin_perms + [has_professional_admin_role, has_org_admin_role]
             )
 
             # Save for later use
@@ -508,13 +555,16 @@ class PermissionsGenerator:
         if self.permission_manager.ENT_U_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_enterprise_user_role = Permission(
-                name='has_enterprise_user_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_USER,
+                    license=self.permission_manager.LICENSES.ENTERPRISE
+                ),
                 description='Has Enterprise User role'
             )
 
             enterprise_user_role = PermissionGroup(
                 name=self.permission_manager.ENT_U_PERMS,
-                permissions=enterprise_user_perms + [has_enterprise_user_role]
+                permissions=enterprise_user_perms + [has_enterprise_user_role, has_org_user_role]
             )
 
             # Save for later use
@@ -526,13 +576,16 @@ class PermissionsGenerator:
         if self.permission_manager.ENT_R_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_enterprise_reviewer_role = Permission(
-                name='has_enterprise_reviewer_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_REVIEWER,
+                    license=self.permission_manager.LICENSES.ENTERPRISE
+                ),
                 description='Has Enterprise Reviewer role'
             )
 
             enterprise_reviewer_role = PermissionGroup(
                 name=self.permission_manager.ENT_R_PERMS,
-                permissions=enterprise_reviewer_perms + [has_enterprise_reviewer_role]
+                permissions=enterprise_reviewer_perms + [has_enterprise_reviewer_role, has_org_reviewer_role]
             )
 
             # Save for later use
@@ -544,13 +597,16 @@ class PermissionsGenerator:
         if self.permission_manager.ENT_A_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_enterprise_admin_role = Permission(
-                name='has_enterprise_admin_role',
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.ORG_ADMIN,
+                    license=self.permission_manager.LICENSES.ENTERPRISE
+                ),
                 description='Has Enterprise Admin role'
             )
 
             enterprise_admin_role = PermissionGroup(
                 name=self.permission_manager.ENT_A_PERMS,
-                permissions=enterprise_admin_perms + [has_enterprise_admin_role]
+                permissions=enterprise_admin_perms + [has_enterprise_admin_role, has_org_admin_role]
             )
 
             # Save for later use
@@ -562,8 +618,10 @@ class PermissionsGenerator:
         if self.permission_manager.APP_A_PERMS in enabled_permissions_groups:
             # Define role/permissions group
             has_app_admin_role = Permission(
-                name='has_app_admin_role',
-                description='Has app admin role'
+                name=self.permission_manager.get_has_role_permission_for(
+                    role=self.permission_manager.ROLES.APP_ADMIN
+                ),
+                description='Has App Admin role'
             )
 
             app_admin_role = PermissionGroup(
