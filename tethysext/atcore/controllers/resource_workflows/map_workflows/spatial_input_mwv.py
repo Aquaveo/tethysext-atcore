@@ -47,7 +47,15 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             dict: key-value pairs to add to context.
         """
-        return {'allow_shapefile': current_step.options['allow_shapefile']}
+        # Determine if user has an active role
+        user_has_active_role = self.user_has_active_role(request, current_step)
+
+        if user_has_active_role:
+            allow_shapefile_uploads = current_step.options['allow_shapefile']
+        else:
+            allow_shapefile_uploads = False
+
+        return {'allow_shapefile': allow_shapefile_uploads}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
@@ -72,23 +80,30 @@ class SpatialInputMWV(MapWorkflowView):
         # Get Map View
         map_view = context['map_view']
 
+        # Determine if user has an active role
+        user_has_active_role = self.user_has_active_role(request, current_step)
+
         # Turn off feature selection
         self.set_feature_selection(map_view=map_view, enabled=False)
 
-        # Add layer for current geometry
-        enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
-        if current_step.options['allow_drawing']:
-            for elem in current_step.options['shapes']:
-                if elem == 'points':
-                    enabled_controls.append('Point')
-                elif elem == 'lines':
-                    enabled_controls.append('LineString')
-                elif elem == 'polygons':
-                    enabled_controls.append('Polygon')
-                elif elem == 'extents':
-                    enabled_controls.append('Box')
-                else:
-                    raise ValueError('Invalid shapes defined: {}.'.format(elem))
+        if user_has_active_role:
+            enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
+
+            # Add layer for current geometry
+            if current_step.options['allow_drawing']:
+                for elem in current_step.options['shapes']:
+                    if elem == 'points':
+                        enabled_controls.append('Point')
+                    elif elem == 'lines':
+                        enabled_controls.append('LineString')
+                    elif elem == 'polygons':
+                        enabled_controls.append('Polygon')
+                    elif elem == 'extents':
+                        enabled_controls.append('Box')
+                    else:
+                        raise RuntimeError('Invalid shapes defined: {}.'.format(elem))
+        else:
+            enabled_controls = ['Pan']
 
         # Load the currently saved geometry, if any.
         current_geometry = current_step.get_parameter('geometry')
