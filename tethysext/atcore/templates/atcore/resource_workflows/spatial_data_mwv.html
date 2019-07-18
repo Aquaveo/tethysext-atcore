@@ -1,8 +1,13 @@
 {% extends "atcore/resource_workflows/map_workflow_view.html" %}
-{% load static %}
+{% load tethys_gizmos static %}
 
 {% block after_app_content %}
   {{ block.super }}
+
+  <div id="spatial-data-attributes"
+       data-enable-spatial-data-popup="{{ enable_spatial_data_popup|jsonify }}"
+       style="display: none;"
+  ></div>
 
   {# Spatial Data Pop-up #}
   <div id="spatial-data-popup" class="ol-popup">
