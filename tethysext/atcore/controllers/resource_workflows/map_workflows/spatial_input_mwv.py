@@ -319,7 +319,7 @@ class SpatialInputMWV(MapWorkflowView):
 
         Raises:
             ValueError: unsupported projection systems.
-        """
+        """  # noqa: E501
         # We don't support projected projections at this point
         if 'PROJCS' in proj_str:
             raise ValueError('Projected coordinate systems are not supported at this time. Please re-project '
