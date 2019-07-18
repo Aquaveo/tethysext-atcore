@@ -17,7 +17,7 @@ Edit_Tethys_Settings_File_(INSTALLED_APPS)_Atcore:
 
 Migrate_Database_Atcore:
   cmd.run:
-    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && {{ TETHYS_BIN_DIR }}/tethys manage syncdb
+    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && tethys manage syncdb
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "/usr/lib/tethys/setup_complete" ];"
 
