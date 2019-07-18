@@ -17,6 +17,7 @@ RUN mkdir -p "${TETHYSAPP_DIR}" \
 # Speed up APT installs and Install APT packages
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
   ; echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache \
+  ; echo "Acquire::Check-Valid-Until false;" > /etc/apt/apt.conf.d/no-check-valid \
   ; apt-get update && apt-get -y install gcc libgdal-dev g++ libhdf5-dev
 
 ###########
