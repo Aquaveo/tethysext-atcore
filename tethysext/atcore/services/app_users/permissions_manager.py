@@ -247,7 +247,7 @@ class AppPermissionsManager:
             else:
                 has_role_permission = 'has_org_user_role'
 
-        if role == self.ROLES.ORG_REVIEWER:
+        elif role == self.ROLES.ORG_REVIEWER:
             if license is not None:
                 if license == self.LICENSES.STANDARD:
                     has_role_permission = 'has_standard_reviewer_role'
@@ -260,7 +260,7 @@ class AppPermissionsManager:
             else:
                 has_role_permission = 'has_org_reviewer_role'
 
-        if role == self.ROLES.ORG_ADMIN:
+        elif role == self.ROLES.ORG_ADMIN:
             if license is not None:
                 if license == self.LICENSES.STANDARD:
                     has_role_permission = 'has_standard_admin_role'
@@ -273,7 +273,7 @@ class AppPermissionsManager:
             else:
                 has_role_permission = 'has_org_admin_role'
 
-        if role == self.ROLES.APP_ADMIN:
+        elif role == self.ROLES.APP_ADMIN:
             has_role_permission = 'has_app_admin_role'
 
         return has_role_permission

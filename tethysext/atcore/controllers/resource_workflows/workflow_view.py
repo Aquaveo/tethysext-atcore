@@ -10,6 +10,7 @@ import abc
 from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from tethys_apps.utilities import get_active_app
+from tethys_sdk.permissions import has_permission
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
@@ -189,6 +190,12 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         step_url_name = self.get_step_url_name(request, workflow)
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
+        if not self.user_has_active_role(request, step) \
+           and step.get_status(step.ROOT_STATUS_KEY != step.STATUS_COMPLETE):
+            response = redirect(current_url)
+            messages.warning(request, 'You do not have the permission to complete this step.')
+            return response
+
         # Get Managers Hook
         model_db = self.get_model_db(
             request=request,
@@ -217,6 +224,26 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         )
 
         return response
+
+    def user_has_active_role(self, request, step):
+        """
+        Checks if the request user has active role for step.
+
+        Args:
+            request(HttpRequest): The request.
+            step(ResourceWorkflowStep): the step.
+
+        Returns:
+            bool: True if user has active role.
+        """
+        pm = self.get_permissions_manager()
+        has_active_role = False
+        for role in step.active_roles:
+            permission_name = pm.get_has_role_permission_for(role)
+            has_active_role = has_permission(request, permission_name)
+            if has_active_role:
+                break
+        return has_active_role
 
     def validate_step(self, request, session, current_step, previous_step, next_step):
         """
