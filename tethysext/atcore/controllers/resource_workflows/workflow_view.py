@@ -191,7 +191,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
         if not self.user_has_active_role(request, step) \
-           and step.get_status(step.ROOT_STATUS_KEY != step.STATUS_COMPLETE):
+           and step.get_status(step.ROOT_STATUS_KEY) != step.STATUS_COMPLETE:
             response = redirect(current_url)
             messages.warning(request, 'You do not have the permission to complete this step.')
             return response
@@ -238,6 +238,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """
         pm = self.get_permissions_manager()
         has_active_role = False
+
         for role in step.active_roles:
             permission_name = pm.get_has_role_permission_for(role)
             has_active_role = has_permission(request, permission_name)
