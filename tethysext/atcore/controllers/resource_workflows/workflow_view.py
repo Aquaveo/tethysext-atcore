@@ -190,12 +190,6 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         step_url_name = self.get_step_url_name(request, workflow)
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
-        if not self.user_has_active_role(request, step) \
-           and step.get_status(step.ROOT_STATUS_KEY) != step.STATUS_COMPLETE:
-            response = redirect(current_url)
-            messages.warning(request, 'You do not have the permission to complete this step.')
-            return response
-
         # Get Managers Hook
         model_db = self.get_model_db(
             request=request,
@@ -212,16 +206,23 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         if previous_step:
             previous_url = reverse(step_url_name, args=(resource.id, workflow.id, str(previous_step.id)))
 
-        # Hook for processing step data
-        response = self.process_step_data(
-            request=request,
-            session=session,
-            step=step,
-            model_db=model_db,
-            current_url=current_url,
-            previous_url=previous_url,
-            next_url=next_url
-        )
+        # Determine
+        user_has_active_role = self.user_has_active_role(request, step)
+
+        if user_has_active_role:
+            # Hook for processing step data when the user has the active role
+            response = self.process_step_data(
+                request=request,
+                session=session,
+                step=step,
+                model_db=model_db,
+                current_url=current_url,
+                previous_url=previous_url,
+                next_url=next_url
+            )
+        else:
+            # Hook for handling response when user does not have an active role
+            response = self.navigate_only(request, step, current_url, next_url, previous_url)
 
         return response
 
@@ -237,9 +238,15 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             bool: True if user has active role.
         """
         pm = self.get_permissions_manager()
-        has_active_role = False
+        active_roles = step.active_roles
 
-        for role in step.active_roles:
+        # All roles are considered "active" if no active roles are provided.
+        if len(active_roles) < 1:
+            return True
+
+        # Determine if user's role is one of the active ones.
+        has_active_role = False
+        for role in active_roles:
             permission_name = pm.get_has_role_permission_for(role)
             has_active_role = has_permission(request, permission_name)
             if has_active_role:
@@ -299,7 +306,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
-        Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
+        Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
 
         Args:
             request(HttpRequest): The request.
@@ -322,6 +329,41 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             step.dirty = False
             session.commit()
 
+        return self.next_or_previous_redirect(request, next_url, previous_url)
+
+    def navigate_only(self, request, step, current_url, next_url, previous_url):
+        """
+        Navigate to next or previous step without processing/saving data. Called instead of process_step_data when the user doesn't have an active role.
+
+        Args:
+            request(HttpRequest): The request.
+            step(ResourceWorkflowStep): The step to be updated.
+            current_url(str): URL to step.
+            previous_url(str): URL to the previous step.
+            next_url(str): URL to the next step.
+
+        Returns:
+            HttpResponse: A Django response.
+        """  # noqa: E501
+        if step.get_status(step.ROOT_STATUS_KEY) != step.STATUS_COMPLETE:
+            messages.warning(request, 'You do not have the permission to complete this step.')
+            response = redirect(current_url)
+        else:
+            response = self.next_or_previous_redirect(request, next_url, previous_url)
+
+        return response
+
+    def next_or_previous_redirect(self, request, next_url, previous_url):
+        """
+        Generate a redirect to either the next or previous step, depending on what button was pressed.
+        Args:
+            request(HttpRequest): The request.
+            previous_url(str): URL to the previous step.
+            next_url(str): URL to the next step.
+
+        Returns:
+            HttpResponse: A Django response.
+        """
         if 'next-submit' in request.POST:
             response = redirect(next_url)
         else:
