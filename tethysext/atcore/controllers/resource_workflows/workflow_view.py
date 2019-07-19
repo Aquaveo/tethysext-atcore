@@ -345,7 +345,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
-        if step.get_status(step.ROOT_STATUS_KEY) != step.STATUS_COMPLETE:
+        if step.get_status(step.ROOT_STATUS_KEY) != step.STATUS_COMPLETE and 'next-submit' in request.POST:
             messages.warning(request, 'You do not have the permission to complete this step.')
             response = redirect(current_url)
         else:
