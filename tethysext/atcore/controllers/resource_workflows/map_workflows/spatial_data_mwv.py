@@ -50,12 +50,17 @@ class SpatialDataMWV(MapWorkflowView):
             resource=resource
         )
 
+        if current_step.parent and 'singular_name' in current_step.parent.options:
+            title = current_step.parent.options['singular_name']
+        else:
+            title = current_step.options['dataset_title']
+
         geometry_layer = map_manager.build_geojson_layer(
             geojson=geometry,
             layer_name='_pop_up_features',
             layer_variable='pop_up_features',
             layer_title='Pop Up Features',
-            popup_title=current_step.options['dataset_title'],
+            popup_title=title,
             selectable=True
         )
 
