@@ -134,9 +134,13 @@ var SPATIAL_DATA_MWV = (function() {
             url:'',
             data: data,
         }).done(function(response){
-            console.log(response);
-            hide_spatial_data_pop_up();
-            TETHYS_MAP_VIEW.clearSelection();
+            if (response.success) {
+                hide_spatial_data_pop_up();
+                TETHYS_MAP_VIEW.clearSelection();
+            } else {
+                show_message_box('spatial-data-save-error', 'warning', response.error);
+                console.log(response);
+            }
         });
 
     };
