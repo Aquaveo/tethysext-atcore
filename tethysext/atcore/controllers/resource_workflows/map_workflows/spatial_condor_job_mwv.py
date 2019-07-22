@@ -299,6 +299,10 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Validate data if going to next step
         step = self.get_step(request, step_id, session)
 
+        if not self.user_has_active_role(request, step):
+            messages.warning(request, 'You do not have permission to run this workflow.')
+            return redirect(request.path)
+
         # Get options
         scheduler_name = step.options.get('scheduler', None)
         if not scheduler_name:
