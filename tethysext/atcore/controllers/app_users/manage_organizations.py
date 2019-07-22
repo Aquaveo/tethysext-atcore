@@ -133,8 +133,8 @@ class ManageOrganizations(AppUsersViewMixin):
             organization_cards[license_display].append(organization_card)
 
         session.close()
-
-        context = {
+        context = self.get_base_context(request)
+        context.update({
             'page_title': _Organization.DISPLAY_TYPE_PLURAL,
             'base_template': self.base_template,
             'organization_cards': organization_cards,
@@ -144,7 +144,7 @@ class ManageOrganizations(AppUsersViewMixin):
             'show_users_link': can_modify_users,
             'show_resources_link': has_permission(request, 'view_resources'),
             'show_organizations_link': has_permission(request, 'view_organizations')
-        }
+        })
 
         return render(request, self.template_name, context)
 
