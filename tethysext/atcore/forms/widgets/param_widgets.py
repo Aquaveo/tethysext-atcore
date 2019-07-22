@@ -162,7 +162,7 @@ def generate_django_form(parameterized_obj, set_options=None):
 
     for p in sorted(params, key=lambda p: p.precedence or 9999):
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
-        form_class.base_fields[p._attrib_name] = widget_map[type(p)](p, set_options.get(p._attrib_name))
-        form_class.base_fields[p._attrib_name].widget.attrs.update({'class': 'form-control'})
+        form_class.base_fields[p.name] = widget_map[type(p)](p, set_options.get(p.name))
+        form_class.base_fields[p.name].widget.attrs.update({'class': 'form-control'})
 
     return form_class
