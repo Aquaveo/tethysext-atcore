@@ -246,11 +246,13 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
         # Determine if user's role is one of the active ones.
         has_active_role = False
+
         for role in active_roles:
             permission_name = pm.get_has_role_permission_for(role)
             has_active_role = has_permission(request, permission_name)
             if has_active_role:
                 break
+
         return has_active_role
 
     def validate_step(self, request, session, current_step, previous_step, next_step):

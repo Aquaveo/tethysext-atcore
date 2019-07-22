@@ -48,9 +48,37 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Turn off feature selection on current layers
         self.set_feature_selection(map_view=map_view, enabled=False)
 
+        # Generate layers for review of previous steps
+        map_view, layer_groups = self.add_layers_for_previous_steps(
+            request=request,
+            resource=resource,
+            current_step=current_step,
+            map_view=map_view,
+            layer_groups=layer_groups
+        )
+
+        # Save changes to map view and layer groups
+        context.update({
+            'map_view': map_view,
+            'layer_groups': layer_groups,
+            'can_run_workflows': self.user_has_active_role(request, current_step)
+        })
+
+    def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups):
+        """
+        Create layers for previous steps that have a spatial component to them for review of the previous steps.
+        Args:
+            request(HttpRequest): The request.
+            resource(Resource): the resource for this request.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            map_view(MapView): The Tethys MapView object.
+            layer_groups(list<dict>): List of layer group dictionaries for new layers to add.
+
+        Returns:
+            MapView, list<dict>: The updated MapView and layer groups.
+        """
         # Process each previous step
         previous_steps = current_step.workflow.get_previous_steps(current_step)
-
         workflow_layers = []
         steps_to_skip = set()
         mappable_step_types = (SpatialInputRWS,)
@@ -110,11 +138,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
         layer_groups.insert(0, workflow_layer_group)
 
-        # Save changes to map view and layer groups
-        context.update({
-            'map_view': map_view,
-            'layer_groups': layer_groups
-        })
+        return map_view, layer_groups
 
     def _build_mv_layer(self, step, geojson, map_manager):
         """
@@ -210,7 +234,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'back_url': self.back_url,
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
-            'jobs_table': jobs_table
+            'jobs_table': jobs_table,
+            'can_run_workflows': self.user_has_active_role(request, current_step)
         }
 
         return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)
