@@ -55,7 +55,6 @@ class AppUsersViewMixin(TethysController):
         return base_context
 
 
-
 class ResourceViewMixin(AppUsersViewMixin):
     """
     Mixin for class-based views that adds convenience methods for working with resources.

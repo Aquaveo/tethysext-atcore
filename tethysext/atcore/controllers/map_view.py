@@ -8,7 +8,6 @@
 """
 import uuid
 import requests
-from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
