@@ -80,6 +80,17 @@ class SpatialDataMWV(MapWorkflowView):
             'enable_spatial_data_popup': not enable_properties
         })
 
+        # Note: new layer created by super().process_step_options will have feature selection enabled by default
+        super().process_step_options(
+            request=request,
+            session=session,
+            context=context,
+            resource=resource,
+            current_step=current_step,
+            previous_step=previous_step,
+            next_step=next_step
+        )
+
     @workflow_step_controller(is_rest_controller=True)
     def get_popup_form(self, request, session, resource, workflow, step, back_url, *args, **kwargs):
         """

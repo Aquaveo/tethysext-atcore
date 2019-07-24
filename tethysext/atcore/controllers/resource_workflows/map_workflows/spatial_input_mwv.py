@@ -133,6 +133,17 @@ class SpatialInputMWV(MapWorkflowView):
         # Save changes to map view
         context.update({'map_view': map_view})
 
+        # Note: new layer created by super().process_step_options will have feature selection enabled by default
+        super().process_step_options(
+            request=request,
+            session=session,
+            context=context,
+            resource=resource,
+            current_step=current_step,
+            previous_step=previous_step,
+            next_step=next_step
+        )
+
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
@@ -167,7 +178,9 @@ class SpatialInputMWV(MapWorkflowView):
             else:
                 step.set_parameter('geometry', None)
                 session.commit()
-                raise ValueError('You must either draw at least one shape or upload a shapefile.')
+                raise ValueError(f'You must either draw at least one '
+                                 f'{step.options.get("singular_name", "shape").lower()} or upload a shapefile of '
+                                 f'{step.options.get("plural_name", "shapes").lower()}.')
 
         # Handle File parameter
         shapefile_geojson = self.parse_shapefile(request, shapefile)

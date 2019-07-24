@@ -373,7 +373,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         return response
 
     @abc.abstractmethod
-    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step,
+                             **kwargs):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
 

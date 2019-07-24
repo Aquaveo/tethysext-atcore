@@ -52,8 +52,8 @@ class ControllerMetadata(AppUsersBase):
             # Import the function or class
             controller = getattr(module, controller_name)
 
-        except (ValueError, AttributeError, ImportError):
-            raise ImportError('Unable to import controller: {}'.format(self.path))
+        except (ValueError, AttributeError, ImportError) as e:
+            raise ImportError(f'Unable to import controller "{self.path}": {e}')
 
         # Get entry point for class based views
         if inspect.isclass(controller) and issubclass(controller, TethysController):
