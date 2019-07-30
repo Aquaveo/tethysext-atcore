@@ -31,6 +31,10 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
+# class NoTitleView(MapView):
+#     pass
+
+
 class MapViewTests(SqlAlchemyTestCase):
 
     def setUp(self):
@@ -102,6 +106,95 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('can_use_plot', context)
         self.assertIn('back_url', context)
         self.assertIn('plot_slide_sheet', context)
+        self.assertEqual(mock_render(), response)
+
+    # @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    # @mock.patch('tethysext.atcore.controllers.resource_view.render')
+    # @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    # def test_get_no_title(self, mock_has_permission, mock_render, _):
+    #     mock_request = self.request_factory.get('/foo/bar/map-view/')
+    #     mock_request.user = self.django_user
+    #
+    #     response = self.controller(request=mock_request, resource_id=None, back_url='/foo/bar')
+    #
+    #     mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
+    #     mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
+    #
+    #     render_call_args = mock_render.call_args_list
+    #     context = render_call_args[0][0][2]
+    #     self.assertIn('resource', context)
+    #     self.assertIn('map_view', context)
+    #     self.assertIn('map_extent', context)
+    #     self.assertIn('layer_groups', context)
+    #     self.assertIn('is_in_debug', context)
+    #     self.assertIn('nav_title', context)
+    #     self.assertIn('nav_subtitle', context)
+    #     self.assertIn('can_use_geocode', context)
+    #     self.assertIn('can_use_plot', context)
+    #     self.assertIn('back_url', context)
+    #     self.assertIn('plot_slide_sheet', context)
+    #     self.assertEqual(mock_render(), response)
+
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch('tethysext.atcore.controllers.resource_view.render')
+    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    def test_get_id_is_custom_layer(self, mock_has_permission, mock_render, _):
+        resource_id = '12345'
+        mock_request = self.request_factory.get('/foo/bar/map-view/')
+        mock_request.user = self.django_user
+        self.mock_map_manager().compose_map.return_value = (
+            mock.MagicMock(), mock.MagicMock(), [{'id': 'custom_layers'}]
+        )
+
+        response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
+
+        mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
+        mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
+
+        render_call_args = mock_render.call_args_list
+        context = render_call_args[0][0][2]
+        self.assertIn('resource', context)
+        self.assertIn('map_view', context)
+        self.assertIn('map_extent', context)
+        self.assertIn('layer_groups', context)
+        self.assertIn('is_in_debug', context)
+        self.assertIn('nav_title', context)
+        self.assertIn('nav_subtitle', context)
+        self.assertIn('can_use_geocode', context)
+        self.assertIn('can_use_plot', context)
+        self.assertIn('back_url', context)
+        self.assertIn('plot_slide_sheet', context)
+        self.assertEqual(mock_render(), response)
+
+    @mock.patch('django.conf.settings')
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch('tethysext.atcore.controllers.resource_view.render')
+    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    def test_get_layer_dropdown_toggle(self, mock_has_permission, mock_render, _, mock_settings):
+        resource_id = '12345'
+        mock_request = self.request_factory.get('/foo/bar/map-view/')
+        mock_request.user = self.django_user
+        setattr(mock_settings, 'ENABLE_OPEN_PORTAL', True)
+
+        response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
+
+        mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
+        mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
+
+        render_call_args = mock_render.call_args_list
+        context = render_call_args[0][0][2]
+        self.assertIn('resource', context)
+        self.assertIn('map_view', context)
+        self.assertIn('map_extent', context)
+        self.assertIn('layer_groups', context)
+        self.assertIn('is_in_debug', context)
+        self.assertIn('nav_title', context)
+        self.assertIn('nav_subtitle', context)
+        self.assertIn('can_use_geocode', context)
+        self.assertIn('can_use_plot', context)
+        self.assertIn('back_url', context)
+        self.assertIn('plot_slide_sheet', context)
+        self.assertIn('layer_dropdown_toggle', context)
         self.assertEqual(mock_render(), response)
 
     @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.request_to_method')
@@ -176,6 +269,11 @@ class MapViewTests(SqlAlchemyTestCase):
         self.controller(mock_request, resource_id=resource_id)
         mock_flaq.called_assert_with(mock_request, resource_id=resource_id)
 
+    def test_get_managers(self):
+        with self.assertRaises(RuntimeError) as e:
+            MapView().get_managers(None, None)
+            self.assertIn('A resource with database_id attribute is required: Resource', e.exception.message)
+
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url')
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_plot_data')
     def test_post_get_plot(self, mock_plot, _):
@@ -210,6 +308,74 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('can_use_plot', permissions)
         mock_hp.assert_any_call(mock_request, 'use_map_geocode')
         mock_hp.assert_any_call(mock_request, 'use_map_plot')
+
+    def test_save_custom_layers(self):
+        resource = Resource(
+            name='Foo',
+            description='Bar',
+            created_by='user1'
+        )
+        mock_request = mock.MagicMock(POST={'layer_name': 'foo',
+                                            'uuid': '012345',
+                                            'service_link': 'my_link',
+                                            'service_type': 'type',
+                                            'service_layer_name': 'sln',
+                                            'feature_id': '123'})
+        expected = [b'{"success": true}']
+
+        response = MapView().save_custom_layers(mock_request, self.session, resource)
+
+        self.assertEqual(expected, response.__dict__['_container'])
+
+    def test_remove_custom_layer(self):
+        resource = Resource(
+            name='Foo',
+            description='Bar',
+            created_by='user1'
+        )
+        resource.set_attribute('custom_layers', [{'layer_id': 'layer1'}, {'layer_id': 'layer2'}])
+        # resource.set_attribute('custom_layers', ['layer1', 'layer2'])
+        mock_request = mock.MagicMock(POST={'layer_id': 'layer2',
+                                            'layer_group_type': 'custom_layers'})
+        expected = [b'{"success": true}']
+
+        response = MapView().remove_custom_layer(mock_request, self.session, resource)
+        # import pdb; pdb.set_trace()
+
+        self.assertEqual(expected, response.__dict__['_container'])
+        self.assertEqual('{"custom_layers": [{"layer_id": "layer1"}]}', resource.__dict__['_attributes'])
+
+    def test_remove_custom_layer_zero_custom_layers(self):
+        resource = Resource(
+            name='Foo',
+            description='Bar',
+            created_by='user1'
+        )
+        resource.set_attribute('custom_layers', [{'layer_id': 'layer1'}])
+        mock_request = mock.MagicMock(POST={'layer_id': '2',
+                                            'layer_group_type': 'custom_layers'})
+        expected = [b'{"success": true}']
+
+        response = MapView().remove_custom_layer(mock_request, self.session, resource)
+
+        self.assertEqual(expected, response.__dict__['_container'])
+        self.assertEqual('{"custom_layers": [{"layer_id": "layer1"}]}', resource.__dict__['_attributes'])
+
+    def test_remove_custom_layer_not_custom(self):
+        resource = Resource(
+            name='Foo',
+            description='Bar',
+            created_by='user1'
+        )
+        resource.set_attribute('custom_layers', [{'layer_id': 'layer1'}])
+        mock_request = mock.MagicMock(POST={'layer_id': '2',
+                                            'layer_group_type': 'layer2'})
+        expected = [b'{"success": true}']
+
+        response = MapView().remove_custom_layer(mock_request, self.session, resource)
+
+        self.assertEqual(expected, response.__dict__['_container'])
+        self.assertEqual('{"custom_layers": [{"layer_id": "layer1"}]}', resource.__dict__['_attributes'])
 
     def test_get_plot_data(self):
         mock_request = mock.MagicMock(POST={'layer_name': 'foo', 'feature_id': '123'})
