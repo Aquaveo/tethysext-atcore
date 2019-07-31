@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: map_view.py
+* Name: map_view_tests.py
 * Author: nswain
 * Created On: November 15, 2018
 * Copyright: (c) Aquaveo 2018
@@ -31,8 +31,23 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-# class NoTitleView(MapView):
-#     pass
+class NoTitleView(MapView):
+    map_title = 'this_title'
+
+    def get_model_db(self, request, resource, *args, **kwargs):
+        """
+        Need to override this for now, b/c the default implementation does not allow for the resource being None.
+        """
+        return mock.MagicMock(spec=ModelDatabase)
+
+    def get_managers(self, request, resource, *args, **kwargs):
+        """
+        Need to override this for now, b/c the default implementation does not allow for the resource being None.
+        """
+        mock_map_manager = mock.MagicMock(spec=MapManagerBase)
+        mock_map_manager.compose_map.return_value = mock.MagicMock(), mock.MagicMock(), mock.MagicMock()
+
+        return mock.MagicMock(spec=ModelDatabase), mock_map_manager
 
 
 class MapViewTests(SqlAlchemyTestCase):
@@ -108,32 +123,44 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('plot_slide_sheet', context)
         self.assertEqual(mock_render(), response)
 
-    # @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
-    # @mock.patch('tethysext.atcore.controllers.resource_view.render')
-    # @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    # def test_get_no_title(self, mock_has_permission, mock_render, _):
-    #     mock_request = self.request_factory.get('/foo/bar/map-view/')
-    #     mock_request.user = self.django_user
-    #
-    #     response = self.controller(request=mock_request, resource_id=None, back_url='/foo/bar')
-    #
-    #     mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
-    #     mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
-    #
-    #     render_call_args = mock_render.call_args_list
-    #     context = render_call_args[0][0][2]
-    #     self.assertIn('resource', context)
-    #     self.assertIn('map_view', context)
-    #     self.assertIn('map_extent', context)
-    #     self.assertIn('layer_groups', context)
-    #     self.assertIn('is_in_debug', context)
-    #     self.assertIn('nav_title', context)
-    #     self.assertIn('nav_subtitle', context)
-    #     self.assertIn('can_use_geocode', context)
-    #     self.assertIn('can_use_plot', context)
-    #     self.assertIn('back_url', context)
-    #     self.assertIn('plot_slide_sheet', context)
-    #     self.assertEqual(mock_render(), response)
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch('tethysext.atcore.controllers.resource_view.render')
+    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    def test_get_no_title(self, mock_has_permission, mock_render, _):
+        mock_request = self.request_factory.get('/foo/bar/map-view/')
+        mock_request.user = self.django_user
+
+        controller = NoTitleView.as_controller(
+            _app=mock.MagicMock(spec=TethysAppBase),
+            _AppUser=mock.MagicMock(spec=AppUser),
+            _Organization=mock.MagicMock(spec=Organization),
+            _Resource=mock.MagicMock(spec=Resource),
+            _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
+            _MapManager=self.mock_map_manager,
+            _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
+            _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
+        )
+
+        response = controller(request=mock_request, resource_id=None, back_url='/foo/bar')
+
+        mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
+        mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
+
+        render_call_args = mock_render.call_args_list
+        context = render_call_args[0][0][2]
+        self.assertIn('resource', context)
+        self.assertIn('map_view', context)
+        self.assertIn('map_extent', context)
+        self.assertIn('layer_groups', context)
+        self.assertIn('is_in_debug', context)
+        self.assertIn('nav_title', context)
+        self.assertEqual(NoTitleView.map_title, context['nav_title'])
+        self.assertIn('nav_subtitle', context)
+        self.assertIn('can_use_geocode', context)
+        self.assertIn('can_use_plot', context)
+        self.assertIn('back_url', context)
+        self.assertIn('plot_slide_sheet', context)
+        self.assertEqual(mock_render(), response)
 
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')

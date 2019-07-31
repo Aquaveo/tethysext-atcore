@@ -5,7 +5,7 @@ from .controllers.app_users.mixins import ResourceViewMixinTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from .controllers.app_users.user_account import UserAccountTest  # noqa: F401
-from .controllers.map_view import MapViewTests  # noqa: F401
+from .controllers.map_view_tests import MapViewTests  # noqa: F401
 from .controllers.resource_workflows.mixins import WorkflowViewMixinTests  # noqa: F401
 from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
 from .controllers.resource_workflows.results_views.dataset_workflow_results_view_tests import DatasetWorkflowResultViewTests  # noqa: F401, E501

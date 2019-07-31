@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: map_view.py
+* Name: map_view_tests.py
 * Author: nswain
 * Created On: October 15, 2018
 * Copyright: (c) Aquaveo 2018
