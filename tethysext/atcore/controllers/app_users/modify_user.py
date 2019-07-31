@@ -232,8 +232,11 @@ class ModifyUser(AppUsersViewMixin):
                     target_app_user.organizations.append(organization)
 
                 # Persist changes
-                django_user.save()
+                # This order is important for post_save signal. We need to be able to check if appuser exists.
+                # Commit the modify session save the user in the AppUser which allows us to check where we need to add
+                # Another AppUser into the table.
                 modify_session.commit()
+                django_user.save()
 
                 # Update user custom_permissions
                 permissions_manager = self.get_permissions_manager()

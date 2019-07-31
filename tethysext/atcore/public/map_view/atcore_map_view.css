@@ -272,4 +272,5 @@
 .map-tabs .tab-content {
     max-height: 700px;
     overflow-y: auto;
+    height: 700px;
 }

@@ -130,10 +130,10 @@ class MapView(ResourceView):
         else:
             context.update({'nav_title': self.map_title})
 
-        open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
+        # open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
         show_rename = has_permission(request, 'rename_layers')
         show_remove = has_permission(request, 'remove_layers')
-        show_public_toggle = has_permission(request, 'toggle_public_layers') and open_portal_mode
+        show_public_toggle = has_permission(request, 'toggle_public_layers')
 
         context.update({
             'show_rename': show_rename,
@@ -141,7 +141,7 @@ class MapView(ResourceView):
             'show_public_toggle': show_public_toggle
         })
 
-        if open_portal_mode and show_public_toggle:
+        if show_public_toggle:
             layer_dropdown_toggle = ToggleSwitch(display_text='',
                                                  name='layer-dropdown-toggle',
                                                  on_label='Yes',

@@ -109,6 +109,9 @@ var ATCORE_MAP_VIEW = (function() {
         var $map_permissions = $('#atcore-map-permissions');
         p_can_geocode = $map_permissions.data('can-use-geocode');
         p_can_plot = $map_permissions.data('can-use-plot');
+        if (typeof p_can_plot !== "boolean") {
+            p_can_plot = false;
+        }
     };
 
     setup_ajax = function() {
