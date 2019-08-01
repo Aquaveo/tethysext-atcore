@@ -367,7 +367,6 @@ class MapViewTests(SqlAlchemyTestCase):
         expected = [b'{"success": true}']
 
         response = MapView().remove_custom_layer(mock_request, self.session, resource)
-        # import pdb; pdb.set_trace()
 
         self.assertEqual(expected, response.__dict__['_container'])
         self.assertEqual('{"custom_layers": [{"layer_id": "layer1"}]}', resource.__dict__['_attributes'])
