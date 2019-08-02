@@ -1,6 +1,6 @@
 from unittest import mock
-from django.http import HttpResponseRedirect, HttpRequest
-from tethysext.atcore.services.model_database import ModelDatabase
+from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
+from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -23,51 +23,115 @@ class InvalidStep(ResourceWorkflowView):
 
 
 class WorkflowViewTests(SqlAlchemyTestCase):
+    current_url = './current'
+    previous_url = './previous'
+    next_url = './next'
 
     def setUp(self):
-        self.workflow = mock.MagicMock(spec=ResourceWorkflow)
-        self.workflow.steps = [
-            ResourceWorkflowStep(
-                id=1,
-                help='help1',
-                name='name1',
-                type='type1'),
-            ResourceWorkflowStep(
-                id=2,
-                help='help2',
-                name='name2',
-                type='type2'
-            )]
+        super().setUp()
+        self.request = mock.MagicMock(spec=HttpRequest)
+        self.request.namespace = 'my_namespace'
+        self.request.path = 'apps/and/such'
+
+        self.workflow = ResourceWorkflow(name='foo')
+
+        self.step1 = ResourceWorkflowStep(
+            name='name1',
+            help='help1',
+        )
+
+        self.workflow.steps.append(self.step1)
+        self.step2 = ResourceWorkflowStep(
+            name='name2',
+            help='help2',
+        )
+
+        self.workflow.steps.append(self.step2)
+        self.step3 = ResourceWorkflowStep(
+            name='name3',
+            help='help3',
+        )
+
+        self.workflow.steps.append(self.step3)
+        self.session.add(self.workflow)
+        self.session.commit()
 
     def tearDown(self):
-        # super().tearDown()
-        pass
+        super().tearDown()
 
-    # def test_get_context(self):
-    #     request = mock.MagicMock(spec=HttpRequest)
-    #     session = mock.MagicMock()
-    #     resource = mock.MagicMock()
-    #     context = mock.MagicMock(spec=ModelDatabase)
-    #     model_db = mock.MagicMock(spec=ResourceWorkflowStep)
-    #     workflow_id = ''
-    #     step_id = ''
-    #     # In workflow_step_controller, self.get_sessionmaker method not implemented.
-    #     ret = ResourceWorkflowView().get_context(request, session, resource, context, model_db, workflow_id, step_id)
+    @mock.patch('tethys_apps.models.TethysApp')
+    def test_get_context(self, mock_app):
+        mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
+        resource = mock.MagicMock()
+        context = {}
+        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        workflow_id = str(self.workflow.id)
+        step_id = str(self.step1.id)
 
-    # def test_get_context_message(self):
-    #     # Or without message
-    #     # Fail, complete and other
-    #     pass
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+                                                 workflow_id, step_id)
+
+        self.assertEqual(self.workflow.id, ret['workflow'].id)
+        self.assertEqual(len(self.workflow.steps), len(ret['steps']))
+        self.assertEqual(None, ret['previous_step'])
+        self.assertEqual(self.step2.id, ret['next_step'].id)
+        self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
+        self.assertIn(self.workflow.name, ret['nav_title'])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
+    @mock.patch('tethys_apps.models.TethysApp')
+    def test_get_context_error_message(self, mock_app, mock_messages):
+        mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
+        resource = mock.MagicMock()
+        context = {}
+        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        self.step1.set_status(self.step1.ROOT_STATUS_KEY, 'Error')
+        msg = 'Some helpful error message'
+        self.step1.set_attribute(self.step1.ATTR_STATUS_MESSAGE, msg)
+
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+                                                 str(self.workflow.id), str(self.step1.id))
+
+        msg_call_args = mock_messages.error.call_args_list
+        self.assertEqual(msg, msg_call_args[0][0][1])
+        self.assertEqual(self.workflow.id, ret['workflow'].id)
+        self.assertEqual(len(self.workflow.steps), len(ret['steps']))
+        self.assertEqual(self.step3, ret['previous_step'])
+        self.assertEqual(None, ret['next_step'])
+        self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
+        self.assertIn(self.workflow.name, ret['nav_title'])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
+    @mock.patch('tethys_apps.models.TethysApp')
+    def test_get_context_success_message(self, mock_app, mock_messages):
+        mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
+        resource = mock.MagicMock()
+        context = {}
+        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        self.step1.set_status(self.step1.ROOT_STATUS_KEY, 'Complete')
+        msg = 'Some helpful success message'
+        self.step1.set_attribute(self.step1.ATTR_STATUS_MESSAGE, msg)
+
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+                                                 str(self.workflow.id), str(self.step1.id))
+
+        msg_call_args = mock_messages.success.call_args_list
+        self.assertEqual(msg, msg_call_args[0][0][1])
+        self.assertEqual(self.workflow.id, ret['workflow'].id)
+        self.assertEqual(len(self.workflow.steps), len(ret['steps']))
+        self.assertEqual(self.step3, ret['previous_step'])
+        self.assertEqual(None, ret['next_step'])
+        self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
+        self.assertIn(self.workflow.name, ret['nav_title'])
 
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_step_url_name(self, mock_app):
         mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
-        mock_request = mock.MagicMock(path='apps/and/such')
-        mock_workflow = mock.MagicMock(type='my_type')
+        self.request.path = 'apps/and/such'
 
-        ret = ResourceWorkflowView().get_step_url_name(mock_request, mock_workflow)
+        ret = ResourceWorkflowView().get_step_url_name(self.request, self.workflow)
 
-        self.assertEqual('my_workspace:my_type_workflow_step', ret)
+        self.assertEqual('my_workspace:generic_workflow_workflow_step', ret)
 
     def test_build_step_cards(self):
         self.workflow.steps.append(ResourceWorkflowStep())
@@ -97,24 +161,51 @@ class WorkflowViewTests(SqlAlchemyTestCase):
 
         self.assertEqual(workflow.steps, steps)
 
-    # def test_save_step_data(self):
-    #     request = mock.MagicMock(spec=HttpRequest)
-    #     session = mock.MagicMock()
-    #     resource = mock.MagicMock(spec=Resource)
-    #     workflow = mock.MagicMock(spec=ResourceWorkflow)
-    #     step = mock.MagicMock(spec=ResourceWorkflowStep)
-    #     # In workflow_step_controller, self.get_sessionmaker method not implemented.
-    #     ret = ResourceWorkflowView().save_step_data(request, session, resource, workflow, step)
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
+    @mock.patch('tethys_apps.models.TethysApp')
+    def test_save_step_data_with_active_role(self, mock_app, mock_reverse, mock_permission):
+        mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
+        mock_reverse.return_value = './mock_url'
+        mock_permission.return_value = None
+        resource = mock.MagicMock(spec=Resource)
+        self.step1.active_roles = []
+        self.request.POST = 'next-submit'
+        back_url = './back_url'
+
+        ret = ResourceWorkflowView().save_step_data(self.request, self.workflow.id, self.step1.id, back_url,
+                                                    resource.id, resource, self.session)
+
+        self.assertIsInstance(ret, HttpResponse)
+        self.assertEqual(back_url, ret['location'])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
+    @mock.patch('tethys_apps.models.TethysApp')
+    def test_save_step_data_without_active_role(self, mock_app, mock_reverse, mock_permission, mock_active_role):
+        mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
+        mock_reverse.return_value = './mock_url'
+        mock_permission.return_value = None
+        mock_active_role.return_value = False
+        resource = mock.MagicMock(spec=Resource)
+        self.request.POST = 'prev-submit'
+        back_url = './back_url'
+
+        ret = ResourceWorkflowView().save_step_data(self.request, self.workflow.id, self.step3.id, back_url,
+                                                    resource.id, resource, self.session)
+
+        self.assertIsInstance(ret, HttpResponse)
+        self.assertEqual('./mock_url', ret['location'])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     def test_user_has_active_role_active(self, mock_gpm, mock_permission):
         mock_gpm.return_value = mock.MagicMock(spec=AppPermissionsManager)
         mock_permission.return_value = True
-        mock_request = mock.MagicMock()
-        self.workflow.steps[0].active_roles = ['has_advanced_user_role']
+        self.step1.active_roles = ['has_advanced_user_role']
 
-        ret = ResourceWorkflowView().user_has_active_role(mock_request, self.workflow.steps[0])
+        ret = ResourceWorkflowView().user_has_active_role(self.request, self.step1)
 
         self.assertTrue(ret)
 
@@ -123,20 +214,18 @@ class WorkflowViewTests(SqlAlchemyTestCase):
     def test_user_has_active_role_not_active(self, mock_gpm, mock_permission):
         mock_gpm.return_value = mock.MagicMock(spec=AppPermissionsManager)
         mock_permission.return_value = False
-        mock_request = mock.MagicMock()
         self.workflow.steps[0].active_roles = ['has_advanced_user_role']
 
-        ret = ResourceWorkflowView().user_has_active_role(mock_request, self.workflow.steps[0])
+        ret = ResourceWorkflowView().user_has_active_role(self.request, self.workflow.steps[0])
 
         self.assertFalse(ret)
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     def test_user_has_active_role_not_defined(self, mock_gpm):
         mock_gpm.return_value = mock.MagicMock(spec=AppPermissionsManager)
-        mock_request = mock.MagicMock()
         self.workflow.steps[0].active_roles = []
 
-        ret = ResourceWorkflowView().user_has_active_role(mock_request, self.workflow.steps[0])
+        ret = ResourceWorkflowView().user_has_active_role(self.request, self.workflow.steps[0])
 
         self.assertTrue(ret)
 
@@ -144,7 +233,7 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         was_thrown = False
 
         try:
-            ResourceWorkflowView().validate_step(None, None, ResourceWorkflowStep(), None, None)
+            ResourceWorkflowView().validate_step(None, self.session, ResourceWorkflowStep(), None, None)
         except TypeError:
             was_thrown = True
 
@@ -152,76 +241,56 @@ class WorkflowViewTests(SqlAlchemyTestCase):
 
     def test_validate_step_invalid(self):
         with self.assertRaises(TypeError) as e:
-            ResourceWorkflowView().validate_step(None, None, InvalidStep(), None, None)
+            ResourceWorkflowView().validate_step(None, self.session, InvalidStep(), None, None)
         self.assertEqual(
             'Invalid step type for view: "InvalidStep". Must be one of "ResourceWorkflowStep".',
             str(e.exception))
 
-    # # mock_get_adj_step returns nothing instead of 2 mocks
-    # @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_adjacent_steps')
-    # @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_step')
-    # @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_workflow')
-    # def test_on_get(self, mock_get_workflow, mock_get_step, mock_get_adj_step):
-    #     mock_get_workflow.return_value = mock.MagicMock(spec=ResourceWorkflow)
-    #     mock_get_step.return_value = mock.MagicMock(spec=ResourceWorkflow)
-    #     mock_get_adj_step.return_value = mock.MagicMock(spec=ResourceWorkflowStep), \
-    #                                      mock.MagicMock(spec=ResourceWorkflowStep)
-    #     request = mock.MagicMock(spec=HttpRequest)
-    #     resource = mock.MagicMock()
-    #
-    #     ret = ResourceWorkflowView().on_get(request, None, resource, 'workflow_id', 'step_id')
+    def test_on_get(self):
+        resource = mock.MagicMock()
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.reset_next_steps')
-    def test_process_step_data_dirty(self, _):
-        mock_request = mock.MagicMock()
-        mock_request.POST = 'submit'
-        step = mock.MagicMock(dirty=True)
-        previous_url = './previous'
-        next_url = './next'
+        ret = ResourceWorkflowView().on_get(self.request, self.session, resource,
+                                            str(self.workflow.id), str(self.step2.id))
 
-        ret = ResourceWorkflowView().process_step_data(mock_request, mock.MagicMock(), step, None, None,
-                                                       previous_url, next_url)
+        self.assertEqual(None, ret)
+
+    def test_process_step_data_dirty(self):
+        self.request.POST = 'submit'
+        self.step1.dirty = True
+
+        ret = ResourceWorkflowView().process_step_data(self.request, mock.MagicMock(), self.step1, None,
+                                                       self.current_url, self.previous_url, self.next_url)
 
         self.assertIsInstance(ret, HttpResponseRedirect)
-        self.assertEqual(previous_url, ret['location'])
-        self.assertFalse(step.dirty)
+        self.assertEqual(self.previous_url, ret['location'])
+        self.assertFalse(self.step1.dirty)
 
     def test_process_step_data_not_dirty(self):
-        mock_request = mock.MagicMock()
-        mock_request.POST = 'next-submit'
-        step = mock.MagicMock(dirty=False)
-        previous_url = './previous'
-        next_url = './next'
+        self.request.POST = 'next-submit'
+        self.step1.dirty = False
 
-        ret = ResourceWorkflowView().process_step_data(mock_request, None, step, None, None, previous_url, next_url)
+        ret = ResourceWorkflowView().process_step_data(self.request, self.session, self.step1, None,
+                                                       self.current_url, self.previous_url, self.next_url)
 
         self.assertIsInstance(ret, HttpResponseRedirect)
-        self.assertEqual(next_url, ret['location'])
-        self.assertFalse(step.dirty)
+        self.assertEqual(self.next_url, ret['location'])
+        self.assertFalse(self.step1.dirty)
 
     def test_navigate_only_complete(self):
-        step = mock.MagicMock(spec=ResourceWorkflowStep)
-        step.get_status.return_value = step.STATUS_COMPLETE
-        request = mock.MagicMock(spec=HttpRequest)
-        request.POST = 'next-submit'
-        current_url = './current'
-        previous_url = './previous'
-        next_url = './next'
+        self.request.POST = 'submit'
+        self.step1.set_attribute(self.step1.ROOT_STATUS_KEY, self.step1.STATUS_COMPLETE)
 
-        response = ResourceWorkflowView().navigate_only(request, step, current_url, next_url, previous_url)
+        response = ResourceWorkflowView().navigate_only(self.request, self.step1, self.current_url,
+                                                        self.next_url, self.previous_url)
 
-        self.assertEqual(next_url, response['location'])
+        self.assertEqual(self.previous_url, response['location'])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
-    def test_navigate_only_not_complete_with_next_submit(self, mock_messages):
-        request = mock.MagicMock(spec=HttpRequest)
-        step = mock.MagicMock(spec=ResourceWorkflowStep)
-        request.POST = 'next-submit'
-        current_url = './current'
-        previous_url = './previous'
-        next_url = './next'
+    def test_navigate_only_not_complete(self, mock_messages):
+        self.request.POST = 'next-submit'
 
-        response = ResourceWorkflowView().navigate_only(request, step, current_url, next_url, previous_url)
+        response = ResourceWorkflowView().navigate_only(self.request, self.step1, self.current_url,
+                                                        self.next_url, self.previous_url)
 
-        mock_messages.warning.assert_called_with(request, 'You do not have the permission to complete this step.')
-        self.assertEqual(current_url, response['location'])
+        mock_messages.warning.assert_called_with(self.request, 'You do not have the permission to complete this step.')
+        self.assertEqual(self.current_url, response['location'])
