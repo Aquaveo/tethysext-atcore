@@ -43,6 +43,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
+        import pdb; pdb.set_trace()
         workflow = self.get_workflow(request, workflow_id, session=session)
         current_step = self.get_step(request, step_id=step_id, session=session)
         previous_step, next_step = workflow.get_adjacent_steps(current_step)

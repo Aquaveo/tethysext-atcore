@@ -1,3 +1,11 @@
+"""
+********************************************************************************
+* Name: resource_view_tests.py
+* Author: mlebaron
+* Created On: August 5, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+"""
 from unittest import mock
 from django.http import HttpResponse, HttpResponseNotFound
 from django.test import RequestFactory

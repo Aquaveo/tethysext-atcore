@@ -69,7 +69,7 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         step_id = str(self.step1.id)
 
         ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
-                                                 workflow_id, step_id)
+                                                 workflow_id=workflow_id, step_id=step_id)
 
         self.assertEqual(self.workflow.id, ret['workflow'].id)
         self.assertEqual(len(self.workflow.steps), len(ret['steps']))
