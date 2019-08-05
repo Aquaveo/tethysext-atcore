@@ -16,6 +16,7 @@ from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWor
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
+from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
@@ -87,6 +88,12 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
             _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
 
+        self.map_view = mock.MagicMock()
+        layer = SpatialInputRWS(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        layer.feature_selection = False
+        layer.editable = False
+        self.map_view.layers = [layer]
+
         self.resource_id = 'abc123'
         self.django_user = UserFactory()
         self.django_user.is_staff = True
@@ -107,24 +114,24 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_adjacent_steps')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_step_url_name')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.on_get')
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    def test_get_context(self, mock_has_permission, mock_render, _, mock_on_get, mock_get_adj_steps):
+    def test_get_context(self, mock_has_permission, mock_render, _, mock_on_get, mock_get_workflow,
+                         mock_get_step, mock_url):
         mock_on_get.return_value = None
-        mock_get_adj_steps.return_value = mock.MagicMock(), mock.MagicMock()
+        mock_get_workflow.return_value = self.workflow
+        mock_get_step.return_value = self.step2
+        mock_url.return_value = 'my_workspace:generic_workflow_step'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
-        resource = mock.MagicMock()
 
         response = self.controller(request=mock_request, resource_id=self.resource_id, back_url='./back_url',
                                    workflow_id=self.workflow.id, step_id=self.step1.id)
-        #
-        # response = self.controller(request=mock_request, session=self.session, resource=resource, context={},
-        #                            model_db=mock.MagicMock(), workflow_id=self.workflow.id, step_id=self.step1.id,
-        #                            back_url='./back_url')
 
         mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')
         mock_has_permission.assert_any_call(mock_request, 'use_map_plot')
@@ -142,4 +149,21 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.assertIn('can_use_plot', context)
         self.assertIn('back_url', context)
         self.assertIn('plot_slide_sheet', context)
+
+        render_calls = mock_render.call_args_list
+        self.assertEqual(1, len(render_calls))
         self.assertEqual(mock_render(), response)
+
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    def test_process_step_options(self, mock_get_managers):
+        mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
+        resource = mock.MagicMock()
+
+        MapWorkflowView().add_layers_for_previous_steps(self.request, resource, self.step3, self.map_view, [])
+
+    # @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep')
+    # def test_build_mv_layer(self, mock_srws):
+    #     mock_srws.options.get.return_value = 'My Plural Name'
+    #     map_manager = MapManagerBase(mock.MagicMock(), mock.MagicMock())
+    #
+    #     layer = MapWorkflowView()._build_mv_layer(self.step2, {}, map_manager)
