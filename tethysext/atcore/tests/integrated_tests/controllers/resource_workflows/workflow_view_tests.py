@@ -35,24 +35,30 @@ class WorkflowViewTests(SqlAlchemyTestCase):
 
         self.workflow = ResourceWorkflow(name='foo')
 
+        # Step 1
         self.step1 = ResourceWorkflowStep(
             name='name1',
             help='help1',
+            order=1
         )
-
         self.workflow.steps.append(self.step1)
+
+        # Step 2
         self.step2 = ResourceWorkflowStep(
             name='name2',
             help='help2',
+            order=2
         )
-
         self.workflow.steps.append(self.step2)
+
+        # Step 3
         self.step3 = ResourceWorkflowStep(
             name='name3',
             help='help3',
+            order=3
         )
-
         self.workflow.steps.append(self.step3)
+
         self.session.add(self.workflow)
         self.session.commit()
 
@@ -96,8 +102,8 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual(msg, msg_call_args[0][0][1])
         self.assertEqual(self.workflow.id, ret['workflow'].id)
         self.assertEqual(len(self.workflow.steps), len(ret['steps']))
-        self.assertEqual(self.step3, ret['previous_step'])
-        self.assertEqual(None, ret['next_step'])
+        self.assertEqual(None, ret['previous_step'])
+        self.assertEqual(self.step2, ret['next_step'])
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
@@ -119,8 +125,31 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual(msg, msg_call_args[0][0][1])
         self.assertEqual(self.workflow.id, ret['workflow'].id)
         self.assertEqual(len(self.workflow.steps), len(ret['steps']))
-        self.assertEqual(self.step3, ret['previous_step'])
-        self.assertEqual(None, ret['next_step'])
+        self.assertEqual(None, ret['previous_step'])
+        self.assertEqual(self.step2, ret['next_step'])
+        self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
+        self.assertIn(self.workflow.name, ret['nav_title'])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
+    @mock.patch('tethys_apps.models.TethysApp')
+    def test_get_context_info_message(self, mock_app, mock_messages):
+        mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
+        resource = mock.MagicMock()
+        context = {}
+        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        self.step1.set_status(self.step1.STATUS_WORKING, 'Complete')
+        msg = 'Some helpful info message'
+        self.step1.set_attribute(self.step1.ATTR_STATUS_MESSAGE, msg)
+
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+                                                 str(self.workflow.id), str(self.step1.id))
+
+        msg_call_args = mock_messages.info.call_args_list
+        self.assertEqual(msg, msg_call_args[0][0][1])
+        self.assertEqual(self.workflow.id, ret['workflow'].id)
+        self.assertEqual(len(self.workflow.steps), len(ret['steps']))
+        self.assertEqual(None, ret['previous_step'])
+        self.assertEqual(self.step2, ret['next_step'])
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
@@ -171,13 +200,12 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         resource = mock.MagicMock(spec=Resource)
         self.step1.active_roles = []
         self.request.POST = 'next-submit'
-        back_url = './back_url'
 
-        ret = ResourceWorkflowView().save_step_data(self.request, self.workflow.id, self.step1.id, back_url,
+        ret = ResourceWorkflowView().save_step_data(self.request, self.workflow.id, self.step1.id, './back_url',
                                                     resource.id, resource, self.session)
 
         self.assertIsInstance(ret, HttpResponse)
-        self.assertEqual(back_url, ret['location'])
+        self.assertEqual('./mock_url', ret['location'])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
@@ -190,9 +218,8 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         mock_active_role.return_value = False
         resource = mock.MagicMock(spec=Resource)
         self.request.POST = 'prev-submit'
-        back_url = './back_url'
 
-        ret = ResourceWorkflowView().save_step_data(self.request, self.workflow.id, self.step3.id, back_url,
+        ret = ResourceWorkflowView().save_step_data(self.request, self.workflow.id, self.step3.id, './back_url',
                                                     resource.id, resource, self.session)
 
         self.assertIsInstance(ret, HttpResponse)

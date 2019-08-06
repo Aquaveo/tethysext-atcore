@@ -17,6 +17,7 @@ from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS
+from tethysext.atcore.models.resource_workflow_steps.spatial_rws import SpatialResourceWorkflowStep
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
@@ -47,18 +48,21 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.step1 = ResourceWorkflowStep(
             name='name1',
             help='help1',
+            order=1
         )
 
         self.workflow.steps.append(self.step1)
         self.step2 = ResourceWorkflowStep(
             name='name2',
             help='help2',
+            order=2
         )
 
         self.workflow.steps.append(self.step2)
         self.step3 = ResourceWorkflowStep(
             name='name3',
             help='help3',
+            order=3
         )
         self.workflow.steps.append(self.step3)
 
@@ -154,6 +158,12 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual(1, len(render_calls))
         self.assertEqual(mock_render(), response)
 
+    def test_set_feature_selection(self):
+        MapWorkflowView().set_feature_selection(self.map_view)
+
+        self.assertTrue(self.map_view.layers[0].feature_selection)
+        self.assertTrue(self.map_view.layers[0].editable)
+
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     def test_process_step_options(self, mock_get_managers):
         mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
@@ -161,9 +171,143 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
 
         MapWorkflowView().add_layers_for_previous_steps(self.request, resource, self.step3, self.map_view, [])
 
-    # @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep')
-    # def test_build_mv_layer(self, mock_srws):
-    #     mock_srws.options.get.return_value = 'My Plural Name'
-    #     map_manager = MapManagerBase(mock.MagicMock(), mock.MagicMock())
-    #
-    #     layer = MapWorkflowView()._build_mv_layer(self.step2, {}, map_manager)
+    @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
+    def test_build_mv_layer(self, _):
+        self.step2.options['plural_name'] = 'My Plural Name'
+        self.step2.options['singular_name'] = 'single_name'
+
+        geo_json = {
+            'features': [{
+                'properties': {
+                    'layer_name': 'before'
+                }
+            }]
+        }
+        map_manager = MapManagerBase(mock.MagicMock(), mock.MagicMock())
+
+        layer = MapWorkflowView()._build_mv_layer(self.step2, geo_json, map_manager)
+
+        self.assertIn('source', layer)
+        self.assertIn('legend_title', layer)
+        self.assertIn('options', layer)
+        self.assertIn('editable', layer)
+        self.assertIn('layer_options', layer)
+        self.assertIn('legend_classes', layer)
+        self.assertIn('legend_extent', layer)
+        self.assertIn('legend_extent_projection', layer)
+        self.assertIn('feature_selection', layer)
+        self.assertIn('geometry_attribute', layer)
+        self.assertIn('data', layer)
+        layer_name = '{}_my_plural_name'.format(str(self.step2.id))
+        self.assertEqual(layer_name, layer.options['features'][0]['properties']['layer_name'])
+        self.assertTrue(layer.editable)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.log')
+    @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    def test_add_layers_for_previous_steps_no_child(self, mock_get_managers, _, __):
+        mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
+        resource = mock.MagicMock()
+        workflow = ResourceWorkflow(name='foo')
+        layer_groups = [{}]
+
+        step1 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='name1'
+        )
+        step1.child = None
+        workflow.steps.append(step1)
+
+        step2 = ResourceWorkflowStep(
+            name='name2',
+            help='help2'
+        )
+        workflow.steps.append(step2)
+
+        map_view, ret_layer_groups = MapWorkflowView().add_layers_for_previous_steps(self.request, resource, step2,
+                                                                                     self.map_view, layer_groups)
+
+        self.assertEqual(self.map_view, map_view)
+        self.assertEqual(layer_groups, ret_layer_groups)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.log')
+    @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    def test_add_layers_for_previous_steps_wrong_child_type(self, mock_get_managers, _, __):
+        mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
+        resource = mock.MagicMock()
+        workflow = ResourceWorkflow(name='foo')
+        layer_groups = [{}]
+
+        step1 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='name1',
+            order=1
+        )
+        workflow.steps.append(step1)
+
+        step2 = ResourceWorkflowStep(
+            name='name2',
+            help='help2',
+            order=2
+        )
+        workflow.steps.append(step2)
+        step1.child = step2
+
+        map_view, ret_layer_groups = MapWorkflowView().add_layers_for_previous_steps(self.request, resource, step2,
+                                                                                     self.map_view, layer_groups)
+
+        self.assertEqual(self.map_view, map_view)
+        self.assertEqual(layer_groups, ret_layer_groups)
+
+    @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.to_geojson')
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    def test_add_layers_for_previous_steps_with_child(self, mock_get_managers, mock_to_geojson, _):
+        mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
+        mock_to_geojson.return_value = {
+            'features': [{
+                'properties': {
+                    'layer_name': 'epicness'
+                }
+            }]
+        }
+        resource = mock.MagicMock()
+        workflow = ResourceWorkflow(name='foo')
+        layer_groups = [{}]
+
+        step1 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='name1',
+            order=1
+        )
+        workflow.steps.append(step1)
+
+        step2 = SpatialResourceWorkflowStep(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='name2',
+            order=2
+        )
+        workflow.steps.append(step2)
+        step1.child = step2
+
+        map_view, ret_layer_groups = MapWorkflowView().add_layers_for_previous_steps(self.request, resource, step2,
+                                                                                     self.map_view, layer_groups)
+
+        self.assertEqual(self.map_view, map_view)
+        self.assertEqual(2, len(ret_layer_groups))
+        self.assertIn('id', ret_layer_groups[0])
+        self.assertIn('display_name', ret_layer_groups[0])
+        self.assertIn('control', ret_layer_groups[0])
+        self.assertIn('layers', ret_layer_groups[0])
+        self.assertIn('visible', ret_layer_groups[0])
+        self.assertIn('toggle_status', ret_layer_groups[0])
+        self.assertEqual({}, ret_layer_groups[1])
