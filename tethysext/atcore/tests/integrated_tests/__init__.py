@@ -8,6 +8,7 @@ from .controllers.app_users.user_account import UserAccountTest  # noqa: F401
 from .controllers.map_view_tests import MapViewTests  # noqa: F401
 from .controllers.resource_workflows.mixins import WorkflowViewMixinTests  # noqa: F401
 from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
+from .controllers.resource_workflows.map_workflows.spatial_input_mwv_tests import MapWorkflowViewTests  # noqa: F401
 from .controllers.resource_workflows.results_views.dataset_workflow_results_view_tests import DatasetWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401
