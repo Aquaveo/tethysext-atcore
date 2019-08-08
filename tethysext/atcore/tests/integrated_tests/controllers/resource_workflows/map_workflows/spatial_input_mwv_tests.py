@@ -8,6 +8,8 @@
 """
 from unittest import mock
 from django.http import HttpRequest, HttpResponseRedirect
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv import SpatialInputMWV
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
@@ -24,6 +26,12 @@ def setUpModule():
 
 def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
+
+
+# class ChildResourceStep(ResourceWorkflowStep):
+#
+#     def init_parameters(self, *args, **kwargs):
+#         self._parameters = {}
 
 
 class MapWorkflowViewTests(SqlAlchemyTestCase):
@@ -151,15 +159,20 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.context['map_view'] = map_view
         self.context['layer_groups'] = [{}]
         self.step1.options['shapes'].append('unknown_shape')
+        response = None
 
-        with self.assertRaises(RuntimeError) as e:
-            SpatialInputMWV().process_step_options(self.request, self.session, self.context, resource, self.step1,
-                                                   None, self.step2)
-            self.assertEqual('Invalid shapes defined: unknown_shape.', e.exception.message)
+        try:
+            response = SpatialInputMWV().process_step_options(self.request, self.session, self.context, resource,
+                                                              self.step1, None, self.step2)
+        except RuntimeError as e:
+            self.assertEqual('Invalid shapes defined: unknown_shape.', str(e))
+        self.assertTrue(response is None)
 
+    # # Mock out the parse functions
     # def test_process_step_data(self):
     #     mock_db = mock.MagicMock(spec=ModelDatabase)
-    #     self.request.POST = {'geometry': 'something'}
+    #     self.request.POST = {'geometry': {'value': 'shapes'}}
+    #     self.request.FILES = {'shapefile': 'Det1_poly.shp'}
     #
     #     response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
     #                                                    './prev', './next')
@@ -177,20 +190,42 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./prev', response.url)
 
-    # def test_process_step_data_not_previous(self):
-    #     mock_db = mock.MagicMock(spec=ModelDatabase)
-    #     self.request.POST = {'geometry': None, 'next-submit': True}
-    #     self.request.FILES = {'shapefile': None}
-    #
-    #     response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-    #                                                    './prev', './next')
-    #
-    #     self.assertIsInstance(response, HttpResponseRedirect)
-    #     self.assertEqual('./prev', response.url)
+    def test_process_step_data_not_previous(self):
+        mock_db = mock.MagicMock(spec=ModelDatabase)
+        self.request.POST = {'geometry': None, 'next-submit': True}
+        self.request.FILES = {'shapefile': None}
+        self.step1._parameters = {'geometry': {'value': 'shapes'}}
+        response = None
+
+        try:
+            response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db,
+                                                           './current', './prev', './next')
+        except ValueError as e:
+            self.assertEqual('You must either draw at least one singular_name or upload a shapefile of my_plural_name.',
+                             str(e))
+            self.assertEqual({'geometry': {'value': None}}, self.step1._parameters)
+            self.assertTrue(self.step1.dirty)
+        self.assertTrue(response is None)
 
     def test_parse_shapefile_no_file(self):
-        in_memory_file = None
+        shapefile = None
 
-        ret = SpatialInputMWV().parse_shapefile(self.request, in_memory_file)
+        ret = SpatialInputMWV().parse_shapefile(self.request, shapefile)
 
         self.assertEqual(None, ret)
+
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    # def test_parse_shapefile(self, mock_get_app):
+    #     mock_app = mock.MagicMock(spec=TethysAppBase)
+    #     mock_app.get_user_workspace.return_value = mock.MagicMock()
+    #     mock_get_app.return_value = mock_app
+    #     shapefile = InMemoryUploadedFile(
+    #         file='/home/mlebaron/src/tethysext-atcore/tethysext/atcore/tests/files/shapefile/Det1poly.zip',
+    #         field_name='',
+    #         name='Det1poly.zip',
+    #         content_type='',
+    #         size=0,
+    #         charset=''
+    #     )
+    #
+    #     SpatialInputMWV().parse_shapefile(self.request, shapefile)
