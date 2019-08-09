@@ -491,7 +491,7 @@ class MapViewTests(SqlAlchemyTestCase):
         request = self.request_factory.post('/foo/bar/map-view/',
                                             data={'method': 'find-location-by-query',
                                                   'q': address,
-                                                  'extent': None},
+                                                  'extent': [1, 2, 3, 4]},
                                             )
 
         request.user = self.django_user
