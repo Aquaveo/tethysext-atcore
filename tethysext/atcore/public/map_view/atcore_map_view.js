@@ -31,7 +31,8 @@ var ATCORE_MAP_VIEW = (function() {
  	    m_workspace,                    // Workspace from SpatialManager
  	    m_extent,                       // Home extent for map
  	    m_enable_properties_popup,      // Show properties pop-up
- 	    m_select_interaction;           // TethysMap select interaction for vector layers
+ 	    m_select_interaction,           // TethysMap select interaction for vector layers
+ 	    m_drawing_layer;                // The drawing layer
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
@@ -56,7 +57,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var parse_attributes, parse_permissions, setup_ajax, setup_map, csrf_token, sync_layer_visibility;
 
  	// Map management
- 	var remove_layer_from_map, get_layer_name_from_feature, get_feature_id_from_feature;
+ 	var remove_layer_from_map, get_layer_name_from_feature, get_layer_id_from_layer, get_feature_id_from_feature;
 
  	// Action Button
  	var generate_action_button, bind_action_buttons, load_action
@@ -71,8 +72,9 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
-        reset_properties_pop_up, append_properties_pop_up_content, reset_ui, generate_properties_table_title,
-        generate_properties_table, generate_dataset_row;
+        close_properties_pop_up, reset_properties_pop_up, append_properties_pop_up_content, reset_ui,
+        generate_properties_table_title, generate_properties_table, generate_dataset_row,
+        generate_custom_properties_table_content, initialize_custom_content;
 
  	// Feature selection
  	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler,
@@ -139,14 +141,21 @@ var ATCORE_MAP_VIEW = (function() {
 
 	    // Setup layer map
 	    m_layers = {};
+	    m_drawing_layer = null;
 
 	    // Get id from tethys_data attribute
-	    m_map.getLayers().forEach(function(item, index, array) {
-	        if ('tethys_data' in item && 'layer_id' in item.tethys_data) {
-	           if (item.tethys_data.layer_id in m_layers) {
-	               console.log('Warning: layer_name already in layers map: "' + item.tethys_data.layer_id + '".');
+	    m_map.getLayers().forEach(function(layer, index, array) {
+	        // Handle normal layers (skip basemap layers)
+	        if ('tethys_data' in layer && 'layer_id' in layer.tethys_data) {
+	           if (layer.tethys_data.layer_id in m_layers) {
+	               console.log('Warning: layer_name already in layers map: "' + layer.tethys_data.layer_id + '".');
 	           }
-	           m_layers[item.tethys_data.layer_id] = item;
+	           m_layers[layer.tethys_data.layer_id] = layer;
+	        }
+	        // Handle drawing layer
+	        else if ('tethys_legend_title' in layer && layer.tethys_legend_title == 'Drawing Layer') {
+	            m_drawing_layer = layer;
+	            m_layers['drawing_layer'] = m_drawing_layer;
 	        }
 	    });
 
@@ -194,11 +203,35 @@ var ATCORE_MAP_VIEW = (function() {
         // Attempt to derive layer name from ID assigned by GeoServer to be able to map to features to layers in map (<layer_name>.<fid>)
         // e.g.: 0958cc07-c194-4af9-81c5-118a77d335ac_stream_links.fid--72787a80_169a16811e6_-7aa6
         if (!layer_name) {
-            let feature_id = feature.getId();
-            layer_name = m_workspace + ':' + feature_id.split('.')[0];
+            let feature_id = feature.getId() || feature.get('id');
+            layer_name = feature_id.split('.')[0];
+
+            // Prepend the workspace for everything except the drawing layer
+            if (layer_name !== 'drawing_layer') {
+                layer_name = m_workspace + ':' + layer_name;
+            }
         }
 
         return layer_name;
+    };
+
+    get_layer_id_from_layer = function(layer) {
+        // Skip if there is no tethys_data attribute on the layer
+        if (!layer || !layer.hasOwnProperty('tethys_data') || !layer.tethys_data) {
+            return '';
+        }
+
+        // Attempt to get layer_id property
+        if (layer.tethys_data.hasOwnProperty('layer_id')) {
+            return layer.tethys_data.layer_id;
+        }
+
+        // Fall back on the layer_name property
+        if (layer.tethys_data.hasOwnProperty('layer_name')) {
+            return layer.tethys_data.layer_name;
+        }
+
+        return '';
     };
 
     get_feature_id_from_feature = function(feature) {
@@ -273,16 +306,19 @@ var ATCORE_MAP_VIEW = (function() {
         });
     };
 
-    generate_plot_button = function(feature) {
+    generate_plot_button = function(feature, layer) {
         // Skip if no permission to use plot
         if (!p_can_plot) {
             return;
         }
-        let layer_name = get_layer_name_from_feature(feature);
+        let layer_id = get_layer_id_from_layer(layer);
         let fid = get_feature_id_from_feature(feature);
+
         // Check if layer is plottable
-        let layer = m_layers[layer_name];
-        if (!layer || !layer.tethys_data.plottable) {
+        if (!layer ||
+            !layer.hasOwnProperty('tethys_data') ||
+            !layer.tethys_data.hasOwnProperty('plottable') ||
+            !layer.tethys_data.plottable) {
             return;
         }
 
@@ -293,25 +329,27 @@ var ATCORE_MAP_VIEW = (function() {
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
-                    'data-layer-id="' + layer_name + '"' +
+                    'data-layer-id="' + layer_id + '"' +
                 '>Plot</a>' +
             '</div>';
 
         return plot_button;
     };
 
-    generate_action_button = function(feature) {
+    generate_action_button = function(feature, layer) {
         // Skip if no permission to use plot
         if (!p_can_plot) {
             return;
         }
 
-        let layer_name = get_layer_name_from_feature(feature);
+        let layer_id = get_layer_id_from_layer(layer);
         let fid = get_feature_id_from_feature(feature);
 
         // Check if layer is has action
-        let layer = m_layers[layer_name];
-        if (!layer || !layer.tethys_data.has_action) {
+        if (!layer ||
+            !layer.hasOwnProperty('tethys_data') ||
+            !layer.tethys_data.hasOwnProperty('has_action') ||
+            !layer.tethys_data.has_action) {
             return;
         }
 
@@ -322,7 +360,7 @@ var ATCORE_MAP_VIEW = (function() {
                     'href="javascript:void(0);" ' +
                     'role="button"' +
                     'data-feature-id="' + fid +'"' +
-                    'data-layer-id="' + layer_name + '"' +
+                    'data-layer-id="' + layer_id + '"' +
                 '>Action</a>' +
             '</div>';
 
@@ -345,10 +383,10 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     bind_action_buttons = function() {
-        // Reset click events on plot buttons
+        // Reset click events on action buttons
         $('.btn-action').off('click');
 
-        // Call load_plot when buttons are clicked
+        // Call load_action when buttons are clicked
         $('.btn-action').on('click', function(e) {
             let layer_name = $(e.target).data('layer-id');
             let feature_id = $(e.target).data('feature-id');
@@ -912,8 +950,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Handle closer click events
         m_$props_popup_closer.on('click', function() {
-            hide_properties_pop_up();
-            TETHYS_MAP_VIEW.clearSelection();
+            close_properties_pop_up();
             return false;
         });
 
@@ -936,12 +973,23 @@ var ATCORE_MAP_VIEW = (function() {
         if (coordinates instanceof ol.geom.Point) {
             c = coordinates.getCoordinates();
         }
+        m_$props_popup_container.trigger('show.atcore.popup');
         m_props_popup_overlay.setPosition(c);
+        m_$props_popup_container.trigger('shown.atcore.popup');
     };
 
     hide_properties_pop_up = function() {
+        m_$props_popup_container.trigger('hide.atcore.popup');
         m_props_popup_overlay.setPosition(undefined);
         m_$props_popup_closer.blur();
+        m_$props_popup_container.trigger('hidden.atcore.popup');
+    };
+
+    close_properties_pop_up = function() {
+        m_$props_popup_container.trigger('closing.atcore.popup');
+        hide_properties_pop_up();
+        TETHYS_MAP_VIEW.clearSelection();
+        m_$props_popup_container.trigger('closed.atcore.popup');
     };
 
     reset_properties_pop_up = function() {
@@ -995,25 +1043,31 @@ var ATCORE_MAP_VIEW = (function() {
             // Generate one table of properties for each node
             for (var j = 0; j < features.length; j++) {
                 let feature = features[j];
+                let layer_name = get_layer_name_from_feature(feature);
+                let layer = m_layers[layer_name];
 
                 // Generate Title
-                let title_markup = generate_properties_table_title(feature);
+                let title_markup = generate_properties_table_title(feature, layer);
                 append_properties_pop_up_content(title_markup);
 
                 // Generate properties table
-                let properties_table = generate_properties_table(feature);
+                let properties_table = generate_properties_table(feature, layer);
                 append_properties_pop_up_content(properties_table);
 
+                // Generate custom content
+                let custom_content = generate_custom_properties_table_content(feature, layer);
+                append_properties_pop_up_content(custom_content);
+                initialize_custom_content();
+
                 // Generate plot button
-                let plot_button = generate_plot_button(feature);
+                let plot_button = generate_plot_button(feature, layer);
                 append_properties_pop_up_content(plot_button);
                 bind_plot_buttons();
 
                 // Generate plot button
-                let action_button = generate_action_button(feature);
+                let action_button = generate_action_button(feature, layer);
                 append_properties_pop_up_content(action_button);
                 bind_action_buttons();
-                // TODO: Add hook to allow apps to customize properties table.
             }
         }
 
@@ -1041,9 +1095,7 @@ var ATCORE_MAP_VIEW = (function() {
         hide_plot();
     };
 
-    generate_properties_table_title = function(feature) {
-        let layer_name = get_layer_name_from_feature(feature);
-        let layer = m_layers[layer_name];
+    generate_properties_table_title = function(feature, layer) {
         let title = '';
 
         // Get custom title from layer data properties
@@ -1059,13 +1111,12 @@ var ATCORE_MAP_VIEW = (function() {
         return title_markup;
     };
 
-    generate_properties_table = function(feature) {
+    generate_properties_table = function(feature, layer) {
         let properties = feature.getProperties();
         let geometry = feature.getGeometry();
         let geometry_type = geometry.getType().toLowerCase();
         let feature_class = (('type' in properties) ? properties['type'] : geometry_type);
-        let layer_name = get_layer_name_from_feature(feature);
-        let layer_data = m_layers[layer_name].tethys_data;
+        let layer_data = layer.tethys_data || {};
         let excluded_properties = ['geometry', 'the_geom'];
         let extra_table_content = '';
 
@@ -1178,11 +1229,20 @@ var ATCORE_MAP_VIEW = (function() {
         return row;
     };
 
+    generate_custom_properties_table_content = function(feature, layer) {
+        // Use public API to override this method to add custom content to the properties popup for selected featuress.
+        return '';
+    };
+
+    initialize_custom_content = function() {
+        // Use public API to override this method with custom operations to perform after custom content has been rendered.
+    };
+
     // Generate UUID
     generate_uuid = function () {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
         });
     }
 
@@ -1477,6 +1537,14 @@ var ATCORE_MAP_VIEW = (function() {
 	        generate_properties_table = f;
 	    },
 
+	    custom_properties_generator: function(f) {
+	        generate_custom_properties_table_content = f;
+	    },
+
+	    custom_properties_initializer: function(f) {
+	        initialize_custom_content = f;
+	    },
+
 	    action_button_generator: function(f) {
 	        generate_action_button = f;
 	    },
@@ -1492,9 +1560,12 @@ var ATCORE_MAP_VIEW = (function() {
 	    action_loader: function(f) {
 	        load_action = f;
 	    },
-
         get_layer_name_from_feature: get_layer_name_from_feature,
+        get_layer_id_from_layer: get_layer_id_from_layer,
         get_feature_id_from_feature: get_feature_id_from_feature,
+        hide_properties_pop_up: hide_properties_pop_up,
+        reset_properties_pop_up: reset_properties_pop_up,
+        close_properties_pop_up: close_properties_pop_up,
         load_layers: load_layers,
         remove_layer_from_map: remove_layer_from_map,
         init_layers_tab: init_layers_tab,

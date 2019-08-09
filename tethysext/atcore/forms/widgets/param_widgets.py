@@ -18,6 +18,7 @@ widget_map = {
     param.Foldername:
         lambda p, initial: forms.FilePathField(
             initial=initial or p.default,
+            path=p.search_paths,
         ),
     param.Boolean:
         lambda p, initial: forms.BooleanField(
@@ -106,6 +107,7 @@ widget_map = {
     param.Path:
         lambda p, initial: forms.FilePathField(
             initial=initial or p.default,
+            path=p.search_paths,
         ),
     param.MultiFileSelector:
         lambda p, initial: forms.MultipleChoiceField(
@@ -140,7 +142,7 @@ widget_map = {
 }
 
 
-def generate_django_form(parameterized_obj, set_options):
+def generate_django_form(parameterized_obj, set_options=None):
     """
     Create a Django form from a Parameterized object.
 
@@ -151,6 +153,7 @@ def generate_django_form(parameterized_obj, set_options):
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
+    set_options = set_options or dict()
     class_name = '{}Form'.format(parameterized_obj.name.title())
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
@@ -159,7 +162,7 @@ def generate_django_form(parameterized_obj, set_options):
 
     for p in sorted(params, key=lambda p: p.precedence or 9999):
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
-        form_class.base_fields[p._attrib_name] = widget_map[type(p)](p, set_options.get(p._attrib_name))
-        form_class.base_fields[p._attrib_name].widget.attrs.update({'class': 'form-control'})
+        form_class.base_fields[p.name] = widget_map[type(p)](p, set_options.get(p.name))
+        form_class.base_fields[p.name].widget.attrs.update({'class': 'form-control'})
 
     return form_class
