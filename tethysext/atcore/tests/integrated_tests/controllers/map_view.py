@@ -102,6 +102,8 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('can_use_plot', context)
         self.assertIn('back_url', context)
         self.assertIn('plot_slide_sheet', context)
+        self.assertIn('layer_tab_name', context)
+        self.assertEqual('Layers', context['layer_tab_name'])
         self.assertEqual(mock_render(), response)
 
     @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.request_to_method')

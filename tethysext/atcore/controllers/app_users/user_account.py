@@ -64,8 +64,8 @@ class UserAccount(AppUsersViewMixin):
             request_app_user,
             as_display_name=True
         )
-
-        context = {
+        context = self.get_base_context(request)
+        context.update({
             'page_title': self.page_title,
             'base_template': self.base_template,
             'username': request_app_user.username,
@@ -76,7 +76,7 @@ class UserAccount(AppUsersViewMixin):
             'show_users_link': has_permission(request, 'modify_users'),
             'show_resources_link': has_permission(request, 'view_resources'),
             'show_organizations_link': has_permission(request, 'view_organizations')
-        }
+        })
 
         session.close()
 

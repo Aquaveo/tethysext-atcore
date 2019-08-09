@@ -8,7 +8,7 @@
 """
 import uuid
 import requests
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
@@ -16,6 +16,7 @@ from tethys_sdk.gizmos import ToggleSwitch
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
+import json
 
 
 class MapView(ResourceView):
@@ -38,6 +39,7 @@ class MapView(ResourceView):
     _MapManager = None
     _ModelDatabase = ModelDatabase
     _SpatialManager = None
+    layer_tab_name = 'Layers'
 
     def get_context(self, request, session, resource, context, model_db, *args, **kwargs):
         """
@@ -53,7 +55,6 @@ class MapView(ResourceView):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
-        from django.conf import settings
         scenario_id = request.GET.get('scenario-id', 1)
 
         # Load Primary Map View
@@ -120,6 +121,7 @@ class MapView(ResourceView):
             'workspace': self._SpatialManager.WORKSPACE,
             'back_url': self.back_url,
             'show_custom_layer': self.show_custom_layer,
+            'layer_tab_name': self.layer_tab_name,
         })
 
         if resource:
@@ -127,10 +129,10 @@ class MapView(ResourceView):
         else:
             context.update({'nav_title': self.map_title})
 
-        open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
+        # open_portal_mode = getattr(settings, 'ENABLE_OPEN_PORTAL', False)
         show_rename = has_permission(request, 'rename_layers')
         show_remove = has_permission(request, 'remove_layers')
-        show_public_toggle = has_permission(request, 'toggle_public_layers') and open_portal_mode
+        show_public_toggle = has_permission(request, 'toggle_public_layers')
 
         context.update({
             'show_rename': show_rename,
@@ -138,7 +140,7 @@ class MapView(ResourceView):
             'show_public_toggle': show_public_toggle
         })
 
-        if open_portal_mode and show_public_toggle:
+        if show_public_toggle:
             layer_dropdown_toggle = ToggleSwitch(display_text='',
                                                  name='layer-dropdown-toggle',
                                                  on_label='Yes',
@@ -229,6 +231,48 @@ class MapView(ResourceView):
                 resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()
         return JsonResponse({'success': True})
+
+    def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
+        """
+
+        status (create/append): create is create a whole new layer group with all the layer items associated with it
+                                append is append an associated layer into an existing layer group
+        :return:
+        """
+        # Get Managers Hook
+        model_db, map_manager = self.get_managers(
+            request=request,
+            resource=resource,
+            *args, **kwargs
+        )
+        status = request.POST.get('status', 'create')
+        layer_group_name = request.POST.get('layer_group_name')
+        layer_group_id = request.POST.get('layer_group_id')
+        layer_names = json.loads(request.POST.get('layer_names'))
+        layer_ids = json.loads(request.POST.get('layer_ids'))
+        layer_legends = json.loads(request.POST.get('layer_legends'))
+        show_rename = request.POST.get('show_rename', True)
+        show_remove = request.POST.get('show_remove', True)
+        layers = []
+
+        for i in range(len(layer_names)):
+            layers.append(map_manager._build_mv_layer("GeoJSON", layer_ids[i], layer_names[i], layer_legends[i],
+                                                      options=''))
+
+        # Build Layer groups
+        layer_group = map_manager.build_layer_group(layer_group_id, layer_group_name, layers=layers)
+        context = {'layer_group': layer_group, 'show_rename': show_rename, 'show_remove': show_remove}
+        if status == 'create':
+            html_link = 'atcore/components/layer_group_content.html'
+        else:
+            # Only works for one layer at a time for now.
+            html_link = 'atcore/components/layer_item_content.html'
+            context['layer'] = layers[0]
+
+        html = render(request, html_link, context)
+
+        response = str(html.content, 'utf-8')
+        return JsonResponse({'success': True, 'response': response})
 
     def should_disable_basemap(self, request, model_db, map_manager):
         """
