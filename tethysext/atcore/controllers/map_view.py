@@ -55,7 +55,6 @@ class MapView(ResourceView):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
-        from django.conf import settings
         scenario_id = request.GET.get('scenario-id', 1)
 
         # Load Primary Map View
