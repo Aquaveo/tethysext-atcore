@@ -54,7 +54,7 @@ var ATCORE_MAP_VIEW = (function() {
  	*                    PRIVATE FUNCTION DECLARATIONS
  	*************************************************************************/
  	// Config
- 	var parse_attributes, parse_permissions, setup_ajax, setup_map, csrf_token;
+ 	var parse_attributes, parse_permissions, setup_ajax, setup_map, csrf_token, sync_layer_visibility;
 
  	// Map management
  	var remove_layer_from_map, get_layer_name_from_feature, get_layer_id_from_layer, get_feature_id_from_feature;
@@ -93,8 +93,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
-
- 	var generate_uuid;
+ 	var generate_uuid, load_layers;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -112,6 +111,9 @@ var ATCORE_MAP_VIEW = (function() {
         var $map_permissions = $('#atcore-map-permissions');
         p_can_geocode = $map_permissions.data('can-use-geocode');
         p_can_plot = $map_permissions.data('can-use-plot');
+        if (typeof p_can_plot !== "boolean") {
+            p_can_plot = false;
+        }
     };
 
     setup_ajax = function() {
@@ -157,9 +159,33 @@ var ATCORE_MAP_VIEW = (function() {
 	        }
 	    });
 
-	    // Setup feature selection
+        // Setup feature selection
 	    init_feature_selection();
     };
+
+    // Sync layer visibility
+    sync_layer_visibility = function() {
+        let layer_tab_panel = $('#layers-tab-panel');
+        let layer_groups = layer_tab_panel.find('.layer-group-item')
+        let i;
+        let check_status;
+        $.each(layer_groups, function(index, content) {
+            // Get Group check status
+            check_status = $('#' + content.id).find('.layer-group-visibility-control')[0].checked
+
+            // Do not show any layers associated with unchecked layer groups
+            if (check_status == false) {
+                // Get all layers in this group
+                let layer_list_id = $('#' + content.id).next()[0].id
+                let layer_lists =  $('#' + layer_list_id).children()
+                $.each(layer_lists, function(layer_index, layer_content) {
+                    let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
+                    m_layers[layer_id].setVisible(false)
+                })
+            }
+
+        });
+    }
 
     // Map Management
     remove_layer_from_map = function(layer_name) {
@@ -568,7 +594,12 @@ var ATCORE_MAP_VIEW = (function() {
             m_layers[layer_name].setVisible(checked);
 
             // Set the visibility of legend
-             $("#legend-" + layer_variable).removeClass('hidden')
+            if (checked) {
+                $("#legend-" + layer_variable).removeClass('hidden')
+            }
+            else {
+                $("#legend-" + layer_variable).addClass('hidden')
+            }
 
             // TODO: Save state to resource - store in attributes?
         });
@@ -1447,7 +1478,49 @@ var ATCORE_MAP_VIEW = (function() {
         $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
     };
 
-
+    // Create new layer groups with layers
+    // This method allows user to create tree items and have them linked to the tree items created in this method.
+    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends) {
+        // layer_group_name: name of the layer group - Ex: My Layer Group
+        // layer_group_id: id of the layer group - Ex: my_layer_group_123456
+        // layer_data: list of openlayer layers
+        // layer_names: list of the name of the openlayer layers
+        // layer_ids: list of the id of the open layer layers
+        // layer_legends: list of the legend name of the open layer layers Ex: my-legend -> your legend id is going to be (#legend-my-legend)
+        // Add layers to map
+        var i = 0;
+        for (i = 0; i < layer_data.length; i++) {
+            m_layers[layer_ids[i]] = layer_data[i];
+            m_map.addLayer(layer_data[i]);
+        }
+        var status = 'create'
+        // If the layer group is already created, we will have the solution added to the same layer groups
+        if ($('#' + layer_group_id).length){
+            status = 'append'
+        }
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_layer_group_tree_item',
+                'status': status,
+                'layer_group_id': layer_group_id,
+                'layer_group_name': layer_group_name,
+                'layer_names': JSON.stringify(layer_names),
+                'layer_ids': JSON.stringify(layer_ids),
+                'layer_legends': JSON.stringify(layer_legends),
+            },
+        }).done(function(data){
+            if (status == 'create') {
+                $('#layers-tab-panel').prepend(data.response);
+            }
+            else {
+                $('#' + layer_group_id + '_associated_layers').prepend(data.response);
+            }
+        });
+        init_layers_tab();
+    }
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
  	*************************************************************************/
@@ -1494,7 +1567,10 @@ var ATCORE_MAP_VIEW = (function() {
         get_feature_id_from_feature: get_feature_id_from_feature,
         hide_properties_pop_up: hide_properties_pop_up,
         reset_properties_pop_up: reset_properties_pop_up,
-        close_properties_pop_up: close_properties_pop_up
+        close_properties_pop_up: close_properties_pop_up,
+        load_layers: load_layers,
+        remove_layer_from_map: remove_layer_from_map,
+        init_layers_tab: init_layers_tab,
 	};
 
 	/************************************************************************
@@ -1517,6 +1593,7 @@ var ATCORE_MAP_VIEW = (function() {
         init_geocode();
         init_plot();
         init_draw_controls();
+        sync_layer_visibility();
 	});
 
 	return m_public_interface;

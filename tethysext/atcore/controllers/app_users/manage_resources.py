@@ -175,8 +175,8 @@ class ManageResources(AppUsersViewMixin):
             sort_by_raw=sort_by_raw,
             sort_reversed=sort_reversed
         )
-
-        context = {
+        context = self.get_base_context(request)
+        context.update({
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
             'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
@@ -190,7 +190,7 @@ class ManageResources(AppUsersViewMixin):
             'show_users_link': has_permission(request, 'modify_users'),
             'show_resources_link': has_permission(request, 'view_resources'),
             'show_organizations_link': has_permission(request, 'view_organizations')
-        }
+        })
 
         session.close()
 

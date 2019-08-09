@@ -131,7 +131,9 @@ class ManageUsers(AppUsersViewMixin):
             result_name='users'
         )
 
-        context = {
+        context = self.get_base_context(request)
+
+        context.update({
             'page_title': self.page_title,
             'base_template': self.base_template,
             'user_cards': paginated_user_cards,
@@ -143,8 +145,8 @@ class ManageUsers(AppUsersViewMixin):
             'pagination_info': pagination_info,
             'show_users_link': has_permission(request, 'modify_users'),
             'show_resources_link': has_permission(request, 'view_resources'),
-            'show_organizations_link': has_permission(request, 'view_organizations')
-        }
+            'show_organizations_link': has_permission(request, 'view_organizations'),
+        })
 
         session.close()
 
