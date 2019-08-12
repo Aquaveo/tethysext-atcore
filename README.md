@@ -9,21 +9,36 @@
 
 # Installs
 
-### Development:
+### OS Dependencies
 
 ```bash
-$ python setup.py develop
+$ sudo apt update
+$ sudo apt install gcc libgdal-dev g++ libhdf5-dev
+```
+### Activate tethys environment
+
+```bash
+conda activate tethys
+```
+### Install for Development:
+
+Run the following command from the same directory as the setup.py
+
+```bash
+$ tethys install -d
 ```
 
-### Production:
+### Install for Production:
+
+Run the following command from the same directory as the setup.py
 
 ```bash
-$ python setup.py install
+$ tethys install
 ```
 
 ### settings.py
 
-Add the following to `INSTALLED_APPS` in your `settings.py`:
+Add the following to `INSTALLED_APPS` in your `settings.py` (tethys/tethys_portal/settings.py):
 
 ```python
 'datetimewidget',

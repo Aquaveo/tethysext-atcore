@@ -121,6 +121,8 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('can_use_plot', context)
         self.assertIn('back_url', context)
         self.assertIn('plot_slide_sheet', context)
+        self.assertIn('layer_tab_name', context)
+        self.assertEqual('Layers', context['layer_tab_name'])
         self.assertEqual(mock_render(), response)
 
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
@@ -489,7 +491,7 @@ class MapViewTests(SqlAlchemyTestCase):
         request = self.request_factory.post('/foo/bar/map-view/',
                                             data={'method': 'find-location-by-query',
                                                   'q': address,
-                                                  'extent': None},
+                                                  'extent': [1, 2, 3, 4]},
                                             )
 
         request.user = self.django_user

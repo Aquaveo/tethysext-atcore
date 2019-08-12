@@ -10,6 +10,7 @@ from django.shortcuts import reverse
 from django.conf import settings
 from tethys_apps.utilities import get_active_app
 from tethys_sdk.base import TethysController
+from tethys_sdk.permissions import has_permission
 from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
@@ -46,6 +47,12 @@ class AppUsersViewMixin(TethysController):
             raise NotImplementedError('get_sessionmaker method not implemented.')
 
         return self._app.get_persistent_store_database(self._persistent_store_name, as_sessionmaker=True)
+
+    def get_base_context(self, request):
+        base_context = {
+            'is_app_admin': has_permission(request, 'has_app_admin_role')
+        }
+        return base_context
 
 
 class ResourceViewMixin(AppUsersViewMixin):

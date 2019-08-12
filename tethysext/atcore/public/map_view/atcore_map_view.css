@@ -31,7 +31,7 @@
 .layer-group-item .flatmark {
     display: inline-block;
     font-weight: 700;
-    max-width: 315px;
+    max-width: 292px;
     overflow: hidden;
 }
 
@@ -47,7 +47,7 @@
 
 .layer-list-item .flatmark {
     display: inline-block;
-    max-width: 310px;
+    max-width: 292px;
     overflow: hidden;
 }
 
@@ -271,4 +271,10 @@
 .tab-content .form-group {
     margin-bottom: 0 !important;
     margin-left: 20px;
+}
+
+.map-tabs .tab-content {
+    max-height: 700px;
+    overflow-y: auto;
+    height: 700px;
 }
