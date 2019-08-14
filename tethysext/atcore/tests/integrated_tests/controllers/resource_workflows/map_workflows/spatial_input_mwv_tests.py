@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import pathlib as pl
 from unittest import mock
 from django.http import HttpRequest, HttpResponseRedirect
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -14,7 +15,9 @@ from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.models.app_users import AppUser
 from django.http import JsonResponse
 from tethys_sdk.base import TethysAppBase
+from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.controllers.map_view import MapView
+from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv import SpatialInputMWV
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
@@ -32,16 +35,18 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-# class ChildResourceStep(ResourceWorkflowStep):
-#
-#     def init_parameters(self, *args, **kwargs):
-#         self._parameters = {'geometry': {'value': None}}
-
-
 class MapWorkflowViewTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
+
+        tests_dir = pl.Path(__file__).parents[4]
+        self.shapefile_dir = tests_dir / 'files' / 'shapefile'
+        self.BadProjection_zip = self.shapefile_dir / 'BadProjection.zip'
+        self.Detpoly_zip = self.shapefile_dir / 'Detpoly.zip'
+        self.MissingPrj_zip = self.shapefile_dir / 'MissingPrj.zip'
+        self.MissingSHP_zip = self.shapefile_dir / 'MissingSHP.zip'
+        self.Det1poly4326_zip = self.shapefile_dir / 'Det1poly4326.zip'
 
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.namespace = 'my_namespace'
@@ -187,11 +192,13 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.assertTrue(response is None)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.set_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_drawn_geometry')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_shapefile')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_drawn_geometry')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_shapefile')  # noqa: E501
     def test_process_step_data(self, mock_parse_shp, mock_parse_geom, _):
-        mock_parse_shp.return_value = {'features': [{'geometry': {'coordinates': [0, 5], 'type': 'some_type'}, 'properties': {}}]}
-        mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'}, 'properties': {'id': 7}}]}
+        mock_parse_shp.return_value = {'features': [{'geometry': {'coordinates': [0, 5], 'type': 'some_type'},
+                                                     'properties': {}}]}
+        mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'},
+                                                      'properties': {'id': 7}}]}
         mock_db = mock.MagicMock(spec=ModelDatabase)
         self.request.POST = {'geometry': {'value': 'shapes'}}
         self.request.FILES = {'shapefile': 'Det1poly.shp'}
@@ -203,11 +210,13 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual('./current', response.url)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.set_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_drawn_geometry')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_shapefile')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_drawn_geometry')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_shapefile')  # noqa: E501
     def test_process_step_data_no_shapefile(self, mock_parse_shp, mock_parse_geom, _):
-        mock_parse_shp.return_value = {'features': [{'geometry': {'coordinates': [0, 5], 'type': 'some_type'}, 'properties': {}}]}
-        mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'}, 'properties': {'id': 7}}]}
+        mock_parse_shp.return_value = {'features': [{'geometry': {'coordinates': [0, 5], 'type': 'some_type'},
+                                                     'properties': {}}]}
+        mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'},
+                                                      'properties': {'id': 7}}]}
         mock_db = mock.MagicMock(spec=ModelDatabase)
         self.request.POST = {'geometry': {'value': 'shapes'}}
         self.request.FILES = {'shapefile': None}
@@ -246,14 +255,42 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
             self.assertTrue(self.step1.dirty)
         self.assertTrue(response is None)
 
-    # def test_validate_feature_attributes(self):
-    #     self.request.POST = mock.MagicMock()
-    #     # SpatialInputRWS steps
-    #
-    #     response = SpatialInputMWV().validate_feature_attributes(self.request, self.session, None, self.step1.id)
-    #
-    #     self.assertIsInstance(response, JsonResponse)
-    #     breakpoint()
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_input_rws.SpatialInputRWS.validate_feature_attributes')  # noqa: E501
+    def test_validate_feature_attributes_success(self, _, mock_get_step):
+        step = SpatialInputRWS(
+            'geo_server',
+            mock.MagicMock(spec=MapManagerBase),
+            mock.MagicMock()
+        )
+        workflow = ResourceWorkflow()
+        workflow.steps.append(step)
+        mock_get_step.return_value = step
+        self.request.POST = mock.MagicMock()
+
+        response = SpatialInputMWV().validate_feature_attributes(self.request, self.session, None, self.step1.id)
+
+        self.assertIsInstance(response, JsonResponse)
+        self.assertEqual([b'{"success": true}'], response.__dict__['_container'])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_input_rws.SpatialInputRWS.validate_feature_attributes')  # noqa: E501
+    def test_validate_feature_attributes_error(self, mock_valid_attrib, mock_get_step):
+        mock_valid_attrib.side_effect = ValueError('Error message')
+        step = SpatialInputRWS(
+            'geo_server',
+            mock.MagicMock(spec=MapManagerBase),
+            mock.MagicMock()
+        )
+        workflow = ResourceWorkflow()
+        workflow.steps.append(step)
+        mock_get_step.return_value = step
+        self.request.POST = mock.MagicMock()
+
+        response = SpatialInputMWV().validate_feature_attributes(self.request, self.session, None, self.step1.id)
+
+        self.assertIsInstance(response, JsonResponse)
+        self.assertEqual([b'{"success": false, "error": "Error message"}'], response.__dict__['_container'])
 
     def test_parse_shapefile_no_file(self):
         shapefile = None
@@ -262,34 +299,148 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
 
         self.assertEqual(None, ret)
 
-    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
-    # def test_parse_shapefile(self, mock_get_app):
-    #     mock_app = mock.MagicMock(spec=TethysAppBase)
-    #     mock_app_path = mock.MagicMock()
-    #     mock_app_path.path = '/home/mlebaron/src/tethysext-atcore/tethysext/atcore/tests/files/shapefile'
-    #     mock_app.get_user_workspace.return_value = mock_app_path
-    #     mock_get_app.return_value = mock_app
-    #     # shapefile = InMemoryUploadedFile(
-    #     #     file='/home/mlebaron/src/tethysext-atcore/tethysext/atcore/tests/files/shapefile/Det1poly.zip',
-    #     #     field_name='',
-    #     #     name='Det1poly.zip',
-    #     #     content_type='',
-    #     #     size=0,
-    #     #     charset=''
-    #     # )
-    #     shapefile = mock.MagicMock()
-    #     shapefile.file = '/home/mlebaron/src/tethysext-atcore/tethysext/atcore/tests/files/shapefile'
-    #     shapefile.name = 'Det1poly.zip'
-    #     shapefile.chunks.return_value = [b'stuff', b'more stuff']
-    #
-    #     SpatialInputMWV().parse_shapefile(self.request, shapefile)
-    #     # chunks and not a zip
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    def test_parse_shapefile_bad_projection(self, mock_get_app):
+        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_get_app.return_value = mock_app
+
+        try:
+            with open(self.BadProjection_zip, 'rb') as f:
+                shapefile = InMemoryUploadedFile(
+                    file=f,
+                    field_name='shapefile',
+                    name='BadProjection.zip',
+                    content_type='application/zip',
+                    size=955,
+                    charset=None
+                )
+
+                SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+                self.assertTrue(False)  # This line should not be reached
+        except ValueError as e:
+            self.assertEqual('Invalid shapefile provided: Projected coordinate systems are not supported at this time.'
+                             ' Please re-project the shapefile to the WGS 1984 Geographic Projection (EPSG:4326).',
+                             str(e))
+
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    def test_parse_shapefile_missing_shp(self, mock_get_app):
+        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_get_app.return_value = mock_app
+
+        try:
+            with open(self.MissingSHP_zip, 'rb') as f:
+                shapefile = InMemoryUploadedFile(
+                    file=f,
+                    field_name='shapefile',
+                    name='MissingSHP.zip',
+                    content_type='application/zip',
+                    size=955,
+                    charset=None
+                )
+
+                SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+                self.assertTrue(False)  # This line should not be hit
+        except ValueError as e:
+            self.assertEqual('Invalid shapefile provided: No shapefile found in given files.', str(e))
+
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    def test_parse_shapefile_missing_prj(self, mock_get_app):
+        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_get_app.return_value = mock_app
+
+        try:
+            with open(self.MissingPrj_zip, 'rb') as f:
+                shapefile = InMemoryUploadedFile(
+                    file=f,
+                    field_name='shapefile',
+                    name='MissingPrj.zip',
+                    content_type='application/zip',
+                    size=1040,
+                    charset=None
+                )
+
+                SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+                self.assertTrue(False)  # This line should not be hit
+        except ValueError as e:
+            self.assertEqual('Invalid shapefile provided: Unable to determine projection of the given shapefile. '
+                             'Please include a .prj file.', str(e))
+
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    def test_parse_shapefile_valid(self, mock_get_app):
+        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_get_app.return_value = mock_app
+
+        with open(self.Det1poly4326_zip, 'rb') as f:
+            shapefile = InMemoryUploadedFile(
+                file=f,
+                field_name='shapefile',
+                name='Det1poly4326.zip',
+                content_type='application/zip',
+                size=1040,
+                charset=None
+            )
+
+            geojson = SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+        self.assertIn('features', geojson)
+        self.assertIn('type', geojson)
+        self.assertEqual('FeatureCollection', geojson['type'])
+        self.assertEqual(1, len(geojson['features']))
+        self.assertIn('coordinates', geojson['features'][0]['geometry'])
+        self.assertEqual('Polygon', geojson['features'][0]['geometry']['type'])
+        self.assertIn('properties', geojson['features'][0])
+        self.assertIn('type', geojson['features'][0])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.geojson')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    def test_parse_shapefile_invalid_geojson(self, mock_get_app, mock_geojson):
+        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_get_app.return_value = mock_app
+        geojson_value = mock.MagicMock()
+        geojson_value.is_valid = False
+        mock_geojson.loads.return_value = geojson_value
+
+        try:
+            with open(self.Det1poly4326_zip, 'rb') as f:
+                shapefile = InMemoryUploadedFile(
+                    file=f,
+                    field_name='shapefile',
+                    name='Det1poly4326.zip',
+                    content_type='application/zip',
+                    size=1040,
+                    charset=None
+                )
+
+                SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+                self.assertTrue(False)  # This line should not be reached
+        except RuntimeError as e:
+            self.assertIn('An error has occurred while parsing the shapefile: '
+                          'Invalid geojson from "shapefile" parameter:', str(e))
 
     def test_parse_shapefile_generic_exception(self):
         shapefile = InMemoryUploadedFile(
-            file='/home/mlebaron/src/tethysext-atcore/tethysext/atcore/tests/files/shapefile/Det1poly.zip',
+            file='/home/mlebaron/src/tethysext-atcore/tethysext/atcore/tests/files/shapefile/BadProjection.zip',
             field_name='',
-            name='Det1poly.zip',
+            name='BadProjection.zip',
             content_type='',
             size=0,
             charset=''
@@ -297,32 +448,16 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
 
         try:
             SpatialInputMWV().parse_shapefile(self.request, shapefile)
-            self.assertTrue(False) # This should not be reached
+            self.assertTrue(False)  # This should not be reached
         except RuntimeError as e:
             self.assertIn('An error has occurred while parsing the shapefile:', str(e))
-
-    # def test_parse_shapefile_no_shapefile(self):
-    #     # Use files/shapefile/MissingSHP.zip
-    #     try:
-    #         SpatialInputMWV().parse_shapefile(self.request, shapefile)
-    #         self.assertTrue(False) # This should not be reached
-    #     except ValueError as e:
-    #         self.assertEqual('No shapefile found in given files.', str(e))
-
-    # def test_parse_shapefile_no_projection_file(self):
-    #     # Use files/shapefile/MissingPrj.zip
-    #     try:
-    #         SpatialInputMWV().parse_shapefile(self.request, shapefile)
-    #         self.assertTrue(False) # This should not be reached
-    #     except ValueError as e:
-    #         self.assertIn('Unable to determine projection of the given shapefile. Please include a .prj file.', str(e))
 
     def test_validate_projection_projcs(self):
         proj_str = 'data PROJCS data'
 
         try:
             SpatialInputMWV().validate_projection(proj_str)
-            self.assertTrue(False) # This should not be reached
+            self.assertTrue(False)  # This should not be reached
         except ValueError as e:
             self.assertEqual('Projected coordinate systems are not supported at this time. Please re-project '
                              'the shapefile to the WGS 1984 Geographic Projection (EPSG:4326).', str(e))
@@ -342,19 +477,36 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
 
         self.assertEqual(ret, None)
 
-    # def test_parse_drawn_geometry_valid(self):
-    #     geometry = '{"geometries":[{"properties":[]}]}'
-    #
-    #     ret = SpatialInputMWV().parse_drawn_geometry(geometry)
-    #     # geojson_objs.geometries doesn't exist
-    #     self.assertEqual(ret, None)
+    def test_parse_drawn_geometry_valid(self):
+        geometry_json = '{"type":"GeometryCollection","geometries":[{"type":"Polygon","coordinates":' \
+                        '[[[-87.8815269470215,30.646699678521756],[-87.86882400512695,30.644779755892927],' \
+                        '[-87.87517547607422,30.641235183209247],[-87.8815269470215,30.646699678521756]]],' \
+                        '"properties":{"id":"drawing_layer.2628c0cb-52f5-45ef-8cbe-b19f81c2a10d"},' \
+                        '"crs":{"type":"link","properties":' \
+                        '{"href":"http://spatialreference.org/ref/epsg/4326/proj4/","type":"proj4"}}}]}'
+        expected = {"features": [{"geometry": {"coordinates": [[[-87.881527, 30.6467], [-87.868824, 30.64478], [-87.875175, 30.641235], [-87.881527, 30.6467]]], "crs": {"properties": {"href": "http://spatialreference.org/ref/epsg/4326/proj4/", "type": "proj4"}, "type": "link"}, "type": "Polygon"}, "properties": {"id": "drawing_layer.2628c0cb-52f5-45ef-8cbe-b19f81c2a10d"}, "type": "Feature"}], "type": "FeatureCollection"}  # noqa: E501
 
-    # def test_parse_drawn_geometry_invalid(self):
-    #     geometry = '{"geometries":[{"properties":[]}]}'
-    #
-    #     ret = SpatialInputMWV().parse_drawn_geometry(geometry)
-    #     # geojson_objs.geometries doesn't exist
-    #     self.assertEqual(ret, None)
+        ret = SpatialInputMWV().parse_drawn_geometry(geometry_json)
+
+        self.assertEqual(expected, ret)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.geojson')
+    def test_parse_drawn_geometry_invalid(self, mock_geojson):
+        geometry_json = '{"type":"GeometryCollection","geometries":[{"type":"Polygon","coordinates":' \
+                        '[[[-87.8815269470215,30.646699678521756],[-87.86882400512695,30.644779755892927],' \
+                        '[-87.87517547607422,30.641235183209247],[-87.8815269470215,30.646699678521756]]],' \
+                        '"properties":{"id":"drawing_layer.2628c0cb-52f5-45ef-8cbe-b19f81c2a10d"},' \
+                        '"crs":{"type":"link","properties":' \
+                        '{"href":"http://spatialreference.org/ref/epsg/4326/proj4/","type":"proj4"}}}]}'
+        geojson_value = mock.MagicMock()
+        geojson_value.is_valid = False
+        mock_geojson.loads.return_value = geojson_value
+
+        try:
+            SpatialInputMWV().parse_drawn_geometry(geometry_json)
+            self.assertTrue(False)  # This line should not be reached
+        except RuntimeError as e:
+            self.assertIn('Invalid geojson from "geometry" parameter:', str(e))
 
     def test_combine_geojson_objects_shapefile_no_geometry(self):
         shapefile = ' '

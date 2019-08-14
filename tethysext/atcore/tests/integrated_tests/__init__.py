@@ -13,7 +13,6 @@ from .controllers.resource_workflows.results_views.dataset_workflow_results_view
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
-from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.map_workflows.map_workflow_view_tests import MapWorkflowViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewTests  # noqa: F401
 from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
