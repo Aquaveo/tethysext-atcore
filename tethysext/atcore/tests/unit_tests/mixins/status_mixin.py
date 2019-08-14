@@ -20,7 +20,9 @@ class StatusMixinTests(unittest.TestCase):
             StatusMixin.STATUS_RESET, StatusMixin.STATUS_NONE, StatusMixin.STATUS_SUCCESS,
             StatusMixin.STATUS_COMPLETE, StatusMixin.STATUS_PROCESSING, StatusMixin.STATUS_WAITING,
             StatusMixin.STATUS_OK, StatusMixin.STATUS_WORKING, StatusMixin.STATUS_UNKNOWN,
-            StatusMixin.STATUS_CONTINUE
+            StatusMixin.STATUS_CONTINUE, StatusMixin.STATUS_UNDER_REVIEW, StatusMixin.STATUS_SUBMITTED,
+            StatusMixin.STATUS_APPROVED, StatusMixin.STATUS_REJECTED, StatusMixin.STATUS_CHANGES_REQUESTED,
+            StatusMixin.STATUS_DIRTY
         ]
 
     def tearDown(self):
