@@ -37,11 +37,13 @@ class StatusMixin(object):
 
     ROOT_STATUS_KEY = 'root'
 
+    status = None
+
     def __init__(self, *args, **kwargs):
         super(StatusMixin, self).__init__(*args, **kwargs)
 
     @classmethod
-    def get_status_options_list(cls):
+    def valid_statuses(cls):
         return [cls.STATUS_AVAILABLE, cls.STATUS_PENDING, cls.STATUS_DELETING,
                 cls.STATUS_EMPTY, cls.STATUS_ERROR, cls.STATUS_FAILED,
                 cls.STATUS_RESET, cls.STATUS_NONE, cls.STATUS_SUCCESS,
@@ -51,8 +53,7 @@ class StatusMixin(object):
                 cls.STATUS_APPROVED, cls.STATUS_REJECTED, cls.STATUS_CHANGES_REQUESTED,
                 cls.STATUS_DIRTY]
 
-    # TODO: MAKE KEY OPTIONAL AND DEFAULT TO ROOT_STATUS_KEY
-    def get_status(self, key, default=None):
+    def get_status(self, key=ROOT_STATUS_KEY, default=None):
         """
         Get status for a given value.
         """
@@ -73,11 +74,13 @@ class StatusMixin(object):
 
         return status_result
 
-    # TODO: MAKE KEY OPTIONAL AND DEFAULT TO ROOT_STATUS_KEY
-    def set_status(self, key, status):
+    def set_status(self, key=ROOT_STATUS_KEY, status=None):
         """
         Set status for given key.
         """
+        if status not in self.valid_statuses() and status is not None:
+            raise ValueError(f'"{status}" is not a valid status.')
+
         if self.status is None:
             status_dict = {}
         else:

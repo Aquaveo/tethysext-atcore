@@ -32,6 +32,13 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     3. STATUS_ERROR = Workflow has steps with errors.test_get_status_options_list
     4. STATUS_FAILED = Workflow has steps that have failed.
     5. STATUS_COMPLETE = All steps are complete in workflow.
+
+    Review Workflow Status Progression (if applicable):
+    1. STATUS_SUBMITTED = Workflow submitted for review
+    2. STATUS_UNDER_REVIEW = Workflow currently being reviewed
+    3a. STATUS_APPROVED = Changes approved.
+    3b. STATUS_REJECTED = Changes disapproved.
+    3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
     """  # noqa: E501
     __tablename__ = 'app_users_resource_workflows'
 
@@ -45,6 +52,12 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     STATUS_COMPLETE = ResourceWorkflowStep.STATUS_COMPLETE
     STATUS_FAILED = ResourceWorkflowStep.STATUS_FAILED
     STATUS_ERROR = ResourceWorkflowStep.STATUS_ERROR
+
+    STATUS_SUBMITTED = ResourceWorkflowStep.STATUS_SUBMITTED
+    STATUS_UNDER_REVIEW = ResourceWorkflowStep.STATUS_UNDER_REVIEW
+    STATUS_APPROVED = ResourceWorkflowStep.STATUS_APPROVED
+    STATUS_REJECTED = ResourceWorkflowStep.STATUS_REJECTED
+    STATUS_CHANGES_REQUESTED = ResourceWorkflowStep.STATUS_CHANGES_REQUESTED
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     resource_id = Column(GUID, ForeignKey('app_users_resources.id'))

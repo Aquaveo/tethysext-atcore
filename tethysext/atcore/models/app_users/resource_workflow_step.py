@@ -32,6 +32,13 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     3. STATUS_ERROR = ValueError or ValidateError has occurred.
     4. STATUS_FAILED = Processing error has occurred.
     5. STATUS_COMPLETE = Step has been completed successfully.
+
+    Review Workflow Status Progression (if applicable):
+    1. STATUS_SUBMITTED = Workflow submitted for review
+    2. STATUS_UNDER_REVIEW = Workflow currently being reviewed
+    3a. STATUS_APPROVED = Changes approved.
+    3b. STATUS_REJECTED = Changes disapproved.
+    3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
     """
     __tablename__ = 'app_users_resource_workflow_steps'
     CONTROLLER = ''
@@ -133,6 +140,30 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         Returns:
             dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
         """
+
+    @classmethod
+    def valid_statuses(cls):
+        """
+        Primary Workflow Step Status Progression:
+        1. STATUS_PENDING = Step has not been started yet.
+        2. STATUS_WORKING = Processing on step has been started but not complete.
+        3. STATUS_ERROR = ValueError or ValidateError has occurred.
+        4. STATUS_FAILED = Processing error has occurred.
+        5. STATUS_COMPLETE = Step has been completed successfully.
+
+        Review Workflow Status Progression (if applicable):
+        1. STATUS_SUBMITTED = Workflow submitted for review
+        2. STATUS_UNDER_REVIEW = Workflow currently being reviewed
+        3a. STATUS_APPROVED = Changes approved.
+        3b. STATUS_REJECTED = Changes disapproved.
+        3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
+
+        Returns:
+            list: valid statuses.
+        """
+        return [cls.STATUS_PENDING, cls.STATUS_WORKING, cls.STATUS_ERROR, cls.STATUS_FAILED, cls.STATUS_COMPLETE,
+                cls.STATUS_SUBMITTED, cls.STATUS_UNDER_REVIEW, cls.STATUS_APPROVED, cls.STATUS_REJECTED,
+                cls.STATUS_CHANGES_REQUESTED]
 
     def to_dict(self):
         """
