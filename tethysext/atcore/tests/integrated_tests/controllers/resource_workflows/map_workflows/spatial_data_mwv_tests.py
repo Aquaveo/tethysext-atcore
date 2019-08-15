@@ -2,7 +2,7 @@
 ********************************************************************************
 * Name: spatial_data_mwv_tests.py
 * Author: mlebaron
-* Created On: August 15, 2016
+* Created On: August 15, 2019
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
@@ -41,11 +41,6 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
 
         self.workflow = ResourceWorkflow(name='foo')
 
-        # self.step = ResourceWorkflowStep(
-        #     name='name1',
-        #     help='help1',
-        #     order=1
-        # )
         self.step = SpatialResourceWorkflowStep(
             geoserver_name='geo_server',
             map_manager=mock.MagicMock(spec=MapManagerBase),
@@ -55,8 +50,6 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
             order=1
         )
 
-        # self.workflow.steps.append(self.step)
-        # self.session.add(self.workflow)
         self.session.commit()
 
     def tearDown(self):
