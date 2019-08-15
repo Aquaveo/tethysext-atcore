@@ -2,7 +2,7 @@
 ********************************************************************************
 * Name: spatial_input_mwv_tests.py
 * Author: mlebaron
-* Created On: August 6, 2016
+* Created On: August 6, 2019
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
@@ -35,7 +35,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class MapWorkflowViewTests(SqlAlchemyTestCase):
+class SpatialInputMwvTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
