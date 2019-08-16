@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: spatial_data_mwv_tests.py
+* Name: spatial_dataset_mwv_tests.py
 * Author: mlebaron
 * Created On: August 15, 2019
 * Copyright: (c) Aquaveo 2019
@@ -27,7 +27,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class SpatialDataMwvTests(SqlAlchemyTestCase):
+class SpatialDatasetMwvTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
