@@ -26,6 +26,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
     """
     template_name = 'atcore/resource_workflows/spatial_condor_job_mwv.html'
     valid_step_classes = [SpatialCondorJobRWS]
+    previous_steps_selectable = True
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
