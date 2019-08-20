@@ -170,7 +170,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
     @workflow_step_controller()
     def save_step_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs):
         """
-        Handle GET requests with method get-attributes-form.
+        Handle POST requests with input named "method" with value "save-step-data".
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.

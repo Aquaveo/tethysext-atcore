@@ -212,7 +212,15 @@ class SpatialInputMWV(MapWorkflowView):
 
         # Otherwise, go to the next step
         else:
-            response = super().process_step_data(request, session, step, model_db, current_url, previous_url, next_url)
+            response = super().process_step_data(
+                request=request,
+                session=session,
+                step=step,
+                model_db=model_db,
+                current_url=current_url,
+                previous_url=previous_url,
+                next_url=next_url
+            )
 
         return response
 

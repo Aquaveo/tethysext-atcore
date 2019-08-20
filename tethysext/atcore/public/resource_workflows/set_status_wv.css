@@ -1,0 +1,7 @@
+.read-only {
+    font-size: 18px;
+}
+
+.read-only.no-comments {
+    font-style: italic;
+}

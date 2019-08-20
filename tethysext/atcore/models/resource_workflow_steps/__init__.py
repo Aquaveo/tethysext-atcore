@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+from tethysext.atcore.models.resource_workflow_steps.set_status_rws import SetStatusRWS  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.spatial_rws import SpatialResourceWorkflowStep  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.results_rws import ResultsResourceWorkflowStep  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS  # noqa: F401, E501
