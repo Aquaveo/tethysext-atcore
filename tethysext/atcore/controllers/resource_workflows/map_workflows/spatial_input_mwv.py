@@ -55,7 +55,8 @@ class SpatialInputMWV(MapWorkflowView):
         else:
             allow_shapefile_uploads = False
 
-        return {'allow_shapefile': allow_shapefile_uploads}
+        return {'allow_shapefile': allow_shapefile_uploads,
+                'allow_edit_attributes': user_has_active_role}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """

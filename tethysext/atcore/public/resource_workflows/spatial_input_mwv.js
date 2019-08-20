@@ -40,7 +40,7 @@ var SPATIAL_INPUT_MWV = (function() {
  	var reset;
 
  	var generate_attributes_form, initialize_attributes_form, bind_attributes_ok,
- 	    bind_popup_shown_event, bind_popup_closed_event;
+ 	    bind_popup_shown_event, bind_popup_closed_event, parse_allow_edit_attributes;
 
  	var process_attributes_form;
 
@@ -134,6 +134,11 @@ var SPATIAL_INPUT_MWV = (function() {
         });
     };
 
+    parse_allow_edit_attributes = function() {
+        var $map_attributes = $('#atcore-spatial-input-attributes');
+        return $map_attributes.data('allow-edit-attributes');
+    };
+
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
  	*************************************************************************/
@@ -156,12 +161,16 @@ var SPATIAL_INPUT_MWV = (function() {
 	    // Init member variables
 	    reset();
 
-        // Override normal properties table
-	    ATCORE_MAP_VIEW.properties_table_generator(function(feature, layer) { return ''; });
+	    let allow_edit_attributes = parse_allow_edit_attributes();
 
-	    // Add attributes form to the properties pop-up
-        ATCORE_MAP_VIEW.custom_properties_generator(generate_attributes_form);
-        ATCORE_MAP_VIEW.custom_properties_initializer(initialize_attributes_form);
+	    if (allow_edit_attributes) {
+            // Override normal properties table
+            ATCORE_MAP_VIEW.properties_table_generator(function(feature, layer) { return ''; });
+
+            // Add attributes form to the properties pop-up
+            ATCORE_MAP_VIEW.custom_properties_generator(generate_attributes_form);
+            ATCORE_MAP_VIEW.custom_properties_initializer(initialize_attributes_form);
+	    }
 
         // Bind to various popup events
         bind_popup_shown_event();
