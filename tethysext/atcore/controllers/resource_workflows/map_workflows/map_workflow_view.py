@@ -22,6 +22,7 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
     """
     template_name = 'atcore/resource_workflows/map_workflow_view.html'
     valid_step_classes = [ResourceWorkflowStep]
+    previous_steps_selectable = False
 
     def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, *args, **kwargs):
         """
@@ -112,7 +113,7 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             'can_run_workflows': self.user_has_active_role(request, current_step)
         })
 
-    def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=True):
+    def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
         """
         Create layers for previous steps that have a spatial component to them for review of the previous steps.
         Args:
@@ -137,6 +138,10 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             request=request,
             resource=resource
         )
+
+        # Check if previous steps are selectable
+        if selectable is None:
+            selectable = self.previous_steps_selectable
 
         for step in previous_steps:
             # Skip these steps
