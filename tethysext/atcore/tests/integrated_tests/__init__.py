@@ -13,6 +13,7 @@ from .controllers.resource_workflows.map_workflows.spatial_condor_job_mwv_tests 
 from .controllers.resource_workflows.map_workflows.spatial_data_mwv_tests import SpatialDataMwvTests  # noqa: F401
 from .controllers.resource_workflows.map_workflows.spatial_dataset_mwv_tests import SpatialDatasetMwvTests  # noqa: F401
 from .controllers.resource_workflows.map_workflows.spatial_input_mwv_tests import SpatialInputMwvTests  # noqa: F401
+from .controllers.resource_workflows.workflow_views.set_status_wv_tests import SetStatusWVTests  # noqa: F401
 from .controllers.resource_workflows.results_views.dataset_workflow_results_view_tests import DatasetWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401

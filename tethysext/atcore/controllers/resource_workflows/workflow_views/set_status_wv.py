@@ -39,14 +39,16 @@ class SetStatusWV(ResourceWorkflowView):
         current_step.validate_statuses()
 
         # Status style
-        status = current_step.get_status(current_step.ROOT_STATUS_KEY)
+        status = current_step.get_status()
         status_style = self.get_style_for_status(status)
+        status_label = current_step.options.get('status_label', self.default_status_label) or self.default_status_label
+        form_title = current_step.options.get('form_title', current_step.name) or current_step.name
 
         # Save changes to map view and layer groups
         context.update({
             'read_only': not self.user_has_active_role(request, current_step),
-            'form_title': current_step.options.get('form_title', current_step.name),
-            'status_label': current_step.options.get('status_label', self.default_status_label),
+            'form_title': form_title,
+            'status_label': status_label,
             'statuses': current_step.options.get('statuses', []),
             'comments': current_step.get_parameter('comments'),
             'status': status,
@@ -75,13 +77,13 @@ class SetStatusWV(ResourceWorkflowView):
         """  # noqa: E501
         status = request.POST.get('status', None)
         comments = request.POST.get('comments', '')
+        status_label = step.options.get('status_label', self.default_status_label) or self.default_status_label
 
         if not status:
-            raise ValueError(f'The "{step.options.get("status_label", self.default_status_label)}" field '
-                             f'is required.')
+            raise ValueError(f'The "{status_label}" field is required.')
 
         if status not in step.valid_statuses():
-            raise RuntimeError(f'Invalid status given: "{status}"')
+            raise RuntimeError(f'Invalid status given: "{status}".')
 
         # Save parameters
         step.set_parameter('comments', comments)
@@ -91,7 +93,7 @@ class SetStatusWV(ResourceWorkflowView):
         step.validate()
 
         # Set the status
-        step.set_status(step.ROOT_STATUS_KEY, status)
+        step.set_status(status=status)
         step.set_attribute(step.ATTR_STATUS_MESSAGE, None)
         session.commit()
 
