@@ -18,12 +18,16 @@
 {% endblock %}
 
 {% block app_content %}
+  {% block before_workflow_form %}
+  {% endblock %}
   <form id="workflow-form" class="workflow-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input name="method" value="save-step-data" hidden>
     {% block workflow_form_content %}
     {% endblock %}
   </form>
+  {% block after_workflow_form %}
+  {% endblock %}
 {% endblock %}
 
 {% block app_actions %}
