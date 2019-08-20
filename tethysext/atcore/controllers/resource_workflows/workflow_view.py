@@ -152,6 +152,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
                 'name': workflow_step.name,
                 'type': workflow_step.type,
                 'status': step_status.lower(),
+                'style': self.get_style_for_status(step_status),
                 'link': create_link,
             }
 
@@ -225,6 +226,30 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             response = self.navigate_only(request, step, current_url, next_url, previous_url)
 
         return response
+
+    @staticmethod
+    def get_style_for_status(status):
+        """
+        Return appropriate style for given status.
+        Args:
+            status(str): One of StatusMixin statuses.
+
+        Returns:
+            str: style for the given status.
+        """
+        from tethysext.atcore.mixins import StatusMixin
+
+        if status in [StatusMixin.STATUS_COMPLETE, StatusMixin.STATUS_APPROVED]:
+            return 'success'
+
+        elif status in [StatusMixin.STATUS_SUBMITTED, StatusMixin.STATUS_UNDER_REVIEW,
+                        StatusMixin.STATUS_CHANGES_REQUESTED, StatusMixin.STATUS_WORKING]:
+            return 'warning'
+
+        elif status in [StatusMixin.STATUS_ERROR, StatusMixin.STATUS_FAILED, StatusMixin.STATUS_REJECTED]:
+            return 'danger'
+
+        return None
 
     def user_has_active_role(self, request, step):
         """

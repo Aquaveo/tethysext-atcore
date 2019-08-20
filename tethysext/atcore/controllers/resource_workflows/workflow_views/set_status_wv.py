@@ -40,7 +40,7 @@ class SetStatusWV(ResourceWorkflowView):
 
         # Status style
         status = current_step.get_status(current_step.ROOT_STATUS_KEY)
-        status_style = status.lower().replace(' ', '-')
+        status_style = self.get_style_for_status(status)
 
         # Save changes to map view and layer groups
         context.update({

@@ -46,57 +46,57 @@
     background-color: #0075CE!important;
 }
 
-/* Complete Status */
-.workflow-step.workflow-step-complete {
+/* Success Style */
+.workflow-status-success {
     color: #17A917!important;
 }
 
-.workflow-step.active.workflow-step-complete {
+.active.workflow-status-success {
     color: #ffffff!important;
     background-color: #17A917!important;
 }
 
-.workflow-step.active.workflow-step-complete:hover {
+.active.workflow-status-success:hover {
     background-color: #179917!important;
 }
 
-.workflow-step.workflow-step-complete i {
+.workflow-status-success i {
     color: #17A917;
 }
 
-/* Error Status */
-.workflow-step.workflow-step-error {
+/* Danger Style */
+.workflow-status-danger {
     color: #EF3737!important;
 }
 
-.workflow-step.active.workflow-step-error {
+.active.workflow-status-danger {
     color: #ffffff!important;
     background-color: #EF3737!important;
 }
 
-.workflow-step.active.workflow-step-error:hover {
+.active.workflow-status-danger:hover {
     background-color: #E23737!important;
 }
 
-.workflow-step.workflow-step-error i {
+.workflow-status-danger i {
     color: #EF3737;
 }
 
-/* Working Status */
-.workflow-step.workflow-step-working {
+/* Warning Style */
+.workflow-status-warning {
     color: #E67E22!important;
 }
 
-.workflow-step.active.workflow-step-working {
+.active.workflow-status-warning {
     color: #ffffff!important;
     background-color: #E67E22!important;
 }
 
-.workflow-step.active.workflow-step-working:hover {
+.active.workflow-status-warning:hover {
     background-color: #D35400!important;
 }
 
-.workflow-step.workflow-step-working i {
+.workflow-status-warning i {
     color: #E67E22;
 }
 
