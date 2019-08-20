@@ -52,19 +52,6 @@ class SetStatusRWS(ResourceWorkflowStep):
             },
         }
 
-    def validate(self):
-        """
-        Validates parameter values of this this step.
-
-        Returns:
-            bool: True if data is valid, else Raise exception.
-
-        Raises:
-            ValueError
-        """
-        # Run super validate method first to perform built-in checks (e.g.: Required)
-        super().validate()
-
     def validate_statuses(self):
         """
         Validate the status dictionaries given in the "statuses" option.
@@ -81,6 +68,6 @@ class SetStatusRWS(ResourceWorkflowStep):
                                    f'"statuses": {status_dict}')
 
             status = status_dict['status']
-            if status_dict['status'] not in valid_statuses:
+            if status not in valid_statuses:
                 raise RuntimeError(f'Status "{status}" is not a valid status for {self.__class__.__name__}. '
                                    f'Must be one of: {", ".join(valid_statuses)}')
