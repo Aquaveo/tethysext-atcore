@@ -124,7 +124,7 @@ class SpatialInputMWV(MapWorkflowView):
                 'layer_id': 'drawing_layer',
                 'layer_name': 'drawing_layer',
                 'popup_title': current_step.options.get('singular_name'),
-                'excluded_properties': ['type'],
+                'excluded_properties': ['id', 'type'],
             }
         )
 
