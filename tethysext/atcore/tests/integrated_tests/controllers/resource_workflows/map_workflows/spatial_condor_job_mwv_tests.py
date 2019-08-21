@@ -8,15 +8,18 @@
 """
 from unittest import mock
 from django.http import HttpRequest, HttpResponseRedirect
+from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv import SpatialCondorJobMWV
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
+from tethys_apps.base.workspace import TethysWorkspace
 
 
 def setUpModule():
@@ -44,6 +47,7 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
             'layer_groups': []
         }
         self.resource = mock.MagicMock(spec=Resource)
+        self.resource.id = 12345
         self.model_db = mock.MagicMock(spec=ModelDatabase)
         self.current_url = './current'
         self.next_url = './next'
@@ -99,6 +103,56 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
                                                 None, None)
 
         self.assertEqual(None, ret)
+
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_previous_steps')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.get_active_app')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    def test_on_get_step_not_pending(self, mock_get_app, mock_get_active_app, mock_render, mock_get_prev_steps):
+        app = mock.MagicMock()
+        job_manager = mock.MagicMock()
+        job_manager.get_job.return_value = mock.MagicMock()
+        app.get_job_manager.return_value = job_manager
+        mock_get_app.return_value = app
+
+        active_app = mock.MagicMock()
+        active_app.namespace = 'app_namespace'
+        mock_get_active_app.return_value = active_app
+
+        self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
+
+        previous_step = SpatialDatasetRWS(
+            geoserver_name='geo_server',
+            map_manager=mock.MagicMock(),
+            spatial_manager=mock.MagicMock(),
+            name='previous',
+            help='previous help',
+            order=0,
+            options={}
+        )
+        # self.workflow.steps.insert(0, previous_step)
+        mock_get_prev_steps.return_value = [previous_step]
+
+        SpatialCondorJobMWV().on_get_step(self.request, self.session, self.resource, self.workflow, self.step,
+                                          None, None)
+
+        arg_call_list = mock_render.call_args_list[0][0][2]
+        self.assertEqual(self.resource, arg_call_list['resource'])
+        self.assertEqual(self.workflow, arg_call_list['workflow'])
+        self.assertIn('steps', arg_call_list)
+        self.assertIn('current_step', arg_call_list)
+        self.assertIn('next_step', arg_call_list)
+        self.assertIn('previous_step', arg_call_list)
+        self.assertEqual('app_namespace:generic_workflow_workflow_step', arg_call_list['step_url_name'])
+        self.assertIn('next_title', arg_call_list)
+        self.assertIn('finish_title', arg_call_list)
+        self.assertIn('previous_title', arg_call_list)
+        self.assertIn('back_url', arg_call_list)
+        self.assertIn('nav_title', arg_call_list)
+        self.assertIn('nav_subtitle', arg_call_list)
+        self.assertIn('jobs_table', arg_call_list)
+        self.assertEqual(1, len(arg_call_list['jobs_table']['jobs']))
+        self.assertTrue(arg_call_list['can_run_workflows'])
 
     def test_process_step_data_not_next(self):
         self.request.POST = {}
@@ -186,3 +240,46 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
             self.assertTrue(False)  # This line should not be reached
         except RuntimeError as e:
             self.assertEqual('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.', str(e))
+
+    @mock.patch('tethysext.atcore.services.condor_workflow_manager.ResourceWorkflowCondorJobManager.run_job')
+    @mock.patch('tethysext.atcore.services.condor_workflow_manager.ResourceWorkflowCondorJobManager.prepare')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.SpatialCondorJobMWV.get_working_directory')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    def test_run_job(self, mock_get_managers, mock_get_working_dir, mock_prepare, mock_run_job):
+        mock_get_managers.return_value = mock.MagicMock(spec=ModelDatabase), None
+        mock_get_working_dir.return_value = 'working_dir'
+        mock_prepare.return_value = self.workflow.id
+        mock_run_job.return_value = str(self.workflow.id)
+
+        session = mock.MagicMock()
+        self.step.workflow = mock.MagicMock()
+        self.step.workflow.resource = self.resource
+        user = UserFactory()
+        self.request.user = user
+        self.request.POST['run-submit'] = True
+        self.request.POST['rerun-submit'] = True
+        self.step.options['scheduler'] = 'my_schedule'
+        job = {
+             'name': 'base_scenario',
+             'condorpy_template_name': 'vanilla_transfer_files',
+             'remote_input_files': [None],
+             'attributes': {
+                 'executable': 'run_base_scenario.py',
+                 'transfer_output_files': ['gssha_files', 'base_ohl_series.json']
+             }}
+        self.step.options['jobs'] = [job]
+
+        ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
+
+        self.assertIsInstance(ret, HttpResponseRedirect)
+        self.assertEqual(self.request.path, ret.url)
+
+    def test_get_working_directory(self):
+        user = UserFactory()
+        self.request.user = user
+        app = mock.MagicMock(spec=TethysAppBase)
+        app.get_user_workspace.return_value = TethysWorkspace('user_workspace')
+
+        path = SpatialCondorJobMWV().get_working_directory(self.request, app)
+
+        self.assertEqual('user_workspace', path)
