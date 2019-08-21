@@ -1,4 +1,5 @@
 from unittest import mock
+
 from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
@@ -6,6 +7,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_view import Resour
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
+from tethysext.atcore.mixins import StatusMixin
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 
@@ -321,3 +323,17 @@ class WorkflowViewTests(SqlAlchemyTestCase):
 
         mock_messages.warning.assert_called_with(self.request, 'You do not have the permission to complete this step.')
         self.assertEqual(self.current_url, response['location'])
+
+    def test_get_style_for_status(self):
+        rwv = ResourceWorkflowView()
+
+        self.assertEqual('success', rwv.get_style_for_status(StatusMixin.STATUS_COMPLETE))
+        self.assertEqual('success', rwv.get_style_for_status(StatusMixin.STATUS_APPROVED))
+        self.assertEqual('warning', rwv.get_style_for_status(StatusMixin.STATUS_SUBMITTED))
+        self.assertEqual('warning', rwv.get_style_for_status(StatusMixin.STATUS_UNDER_REVIEW))
+        self.assertEqual('warning', rwv.get_style_for_status(StatusMixin.STATUS_CHANGES_REQUESTED))
+        self.assertEqual('warning', rwv.get_style_for_status(StatusMixin.STATUS_WORKING))
+        self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_ERROR))
+        self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_FAILED))
+        self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_REJECTED))
+        self.assertIsNone(rwv.get_style_for_status('unsupported status'))

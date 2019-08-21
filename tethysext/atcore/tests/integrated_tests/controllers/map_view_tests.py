@@ -10,6 +10,7 @@ import json
 from unittest import mock
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from django.test import RequestFactory
+from django.http import JsonResponse
 from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
@@ -536,3 +537,419 @@ class MapViewTests(SqlAlchemyTestCase):
 
         self.assertFalse(content['success'])
         self.assertEqual('error in request', content['error'])
+
+    def init_expected_response_blgti(self):
+        """
+        Create variables with chunks of the expected response of the build_layer_group_tree_item method.
+        Returns:
+
+        """
+        self.layer_group_label = \
+            '<li id="123" class="layer-group-item">\n' \
+            '  \n' \
+            '  <label class="flatmark"><span class="display-name">Fake Layers</span>\n' \
+            '    <input type="checkbox"\n' \
+            '           class="layer-group-visibility-control"\n' \
+            '           checked="checked"\n' \
+            '           data-layer-group-id="123">\n' \
+            '    <span class="checkmark checkbox"></span>\n' \
+            '  </label>'
+
+        self.layer_1_label = \
+            '  <label class="flatmark"><span class="display-name">Layer 1</span>\n' \
+            '    <input type="checkbox"\n' \
+            '           class="layer-visibility-control"\n' \
+            '           checked="checked"\n' \
+            '           \n' \
+            '           data-layer-id="456"\n' \
+            '           data-layer-variable="layer-1-var"\n' \
+            '           name="123">\n' \
+            '    <span class="checkmark checkbox"></span>\n' \
+            '  </label>'
+
+        self.layer_2_label = \
+            '  <label class="flatmark"><span class="display-name">Layer 2</span>\n' \
+            '    <input type="checkbox"\n' \
+            '           class="layer-visibility-control"\n' \
+            '           checked="checked"\n' \
+            '           \n' \
+            '           data-layer-id="789"\n' \
+            '           data-layer-variable="layer-2-var"\n' \
+            '           name="123">\n' \
+            '    <span class="checkmark checkbox"></span>\n' \
+            '  </label>'
+
+        self.lg_dropdown_menu = \
+            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '      <a id="123--context-menu"\n' \
+            '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
+            '         data-toggle="dropdown" aria-haspopup="true"\n' \
+            '         aria-expanded="true">\n' \
+            '        <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      </a>\n' \
+            '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
+            '        \n' \
+            '          <li><a class="rename-action" href="javascript:void(0);">' \
+                        '<span class="glyphicon glyphicon-pencil"></span>' \
+                        '<span class="command-name">Rename</span>' \
+                        '</a></li>\n' \
+            '        \n' \
+            '        \n' \
+            '        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
+                        'data-layer-id="">' \
+                        '<span class="glyphicon glyphicon-remove"></span>' \
+                        '<span class="command-name">Remove</span>' \
+                        '</a></li>\n' \
+            '        \n' \
+            '        \n' \
+            '        \n' \
+            '      </ul>\n' \
+            '    </div>'  # noqa: E127
+
+        self.layer_1_dropdown_menu = \
+            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <a id="456--context-menu"\n' \
+            '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
+            '       data-toggle="dropdown"\n' \
+            '       aria-haspopup="true"\n' \
+            '       aria-expanded="true">\n' \
+            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '    </a>\n' \
+            '    <ul class="dropdown-menu dropdown-menu-right" ' \
+            'aria-labeledby="456--context-menu">\n' \
+            '      \n' \
+            '        <li><a class="rename-action" href="javascript:void(0);">' \
+            '<span class="glyphicon glyphicon-pencil"></span>' \
+            '<span class="command-name">Rename</span>' \
+            '</a></li>\n' \
+            '      \n' \
+            '      \n' \
+            '      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
+                    'data-layer-id="456">' \
+                    '<span class="glyphicon glyphicon-remove"></span>' \
+                    '<span class="command-name">Remove</span>' \
+                    '</a></li>'  # noqa: E127
+
+        self.layer_2_dropdown_menu = \
+            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <a id="789--context-menu"\n' \
+            '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
+            '       data-toggle="dropdown"\n' \
+            '       aria-haspopup="true"\n' \
+            '       aria-expanded="true">\n' \
+            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '    </a>\n' \
+            '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="789--context-menu">\n' \
+            '      \n' \
+            '        <li><a class="rename-action" href="javascript:void(0);">' \
+                    '<span class="glyphicon glyphicon-pencil"></span>' \
+                    '<span class="command-name">Rename</span>' \
+                    '</a></li>\n' \
+            '      \n' \
+            '      \n' \
+            '      <li><a class="remove-action" href="javascript:void(0);" ' \
+                    'data-remove-type="layer" data-layer-id="789">' \
+                    '<span class="glyphicon glyphicon-remove"></span>' \
+                    '<span class="command-name">Remove</span>' \
+                    '</a></li>'  # noqa: E127
+
+        self.lg_dropdown_menu_no_remove = \
+            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '      <a id="123--context-menu"\n' \
+            '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
+            '         data-toggle="dropdown" aria-haspopup="true"\n' \
+            '         aria-expanded="true">\n' \
+            '        <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      </a>\n' \
+            '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
+            '        \n' \
+            '          <li><a class="rename-action" href="javascript:void(0);">' \
+            '<span class="glyphicon glyphicon-pencil"></span>' \
+            '<span class="command-name">Rename</span>' \
+            '</a></li>\n' \
+            '        \n' \
+            '        \n' \
+            '        \n' \
+            '        \n' \
+            '      </ul>\n' \
+            '    </div>'
+
+        self.lg_dropdown_menu_no_rename = \
+            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '      <a id="123--context-menu"\n' \
+            '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
+            '         data-toggle="dropdown" aria-haspopup="true"\n' \
+            '         aria-expanded="true">\n' \
+            '        <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      </a>\n' \
+            '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
+            '        \n' \
+            '        \n' \
+            '        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
+            'data-layer-id="">' \
+            '<span class="glyphicon glyphicon-remove"></span>' \
+            '<span class="command-name">Remove</span>' \
+            '</a></li>\n' \
+            '        \n' \
+            '        \n' \
+            '        \n' \
+            '      </ul>\n' \
+            '    </div>'
+
+        self.layer_1_dropdown_menu_no_rr = \
+            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <a id="456--context-menu"\n' \
+            '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
+            '       data-toggle="dropdown"\n' \
+            '       aria-haspopup="true"\n' \
+            '       aria-expanded="true">\n' \
+            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '    </a>\n' \
+            '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="456--context-menu">\n'
+
+        self.layer_2_dropdown_menu_no_rr = \
+            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <a id="789--context-menu"\n' \
+            '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
+            '       data-toggle="dropdown"\n' \
+            '       aria-haspopup="true"\n' \
+            '       aria-expanded="true">\n' \
+            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '    </a>\n' \
+            '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="789--context-menu">\n'
+
+    def test_build_layer_group_tree_item_create(self):
+        data = {
+            'status': 'create',
+            'layer_group_name': 'Fake Layers',
+            'layer_group_id': '123',
+            'layer_names': '["Layer 1", "Layer 2"]',
+            'layer_ids': '["456", "789"]',
+            'layer_legends': '["layer-1-var", "layer-2-var"]'
+        }
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
+
+        self.assertIsInstance(response, JsonResponse)
+        response_dict = json.loads(response.content)
+        self.assertIn('success', response_dict)
+        self.assertTrue(response_dict['success'])
+        self.assertIn('response', response_dict)
+
+        self.init_expected_response_blgti()
+
+        self.assertIn(self.layer_group_label, response_dict['response'])
+        self.assertIn(self.layer_1_label, response_dict['response'])
+        self.assertIn(self.layer_2_label, response_dict['response'])
+        self.assertIn(self.lg_dropdown_menu, response_dict['response'])
+        self.assertIn(self.layer_1_dropdown_menu, response_dict['response'])
+        self.assertIn(self.layer_2_dropdown_menu, response_dict['response'])
+
+    def test_build_layer_group_tree_item_create_no_rename(self):
+        data = {
+            'status': 'create',
+            'layer_group_name': 'Fake Layers',
+            'layer_group_id': '123',
+            'layer_names': '["Layer 1", "Layer 2"]',
+            'layer_ids': '["456", "789"]',
+            'layer_legends': '["layer-1-var", "layer-2-var"]',
+            'show_rename': 'false',
+            'show_remove': 'true'
+        }
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
+
+        self.assertIsInstance(response, JsonResponse)
+        response_dict = json.loads(response.content)
+        self.assertIn('success', response_dict)
+        self.assertTrue(response_dict['success'])
+        self.assertIn('response', response_dict)
+
+        self.init_expected_response_blgti()
+
+        self.assertIn(self.layer_group_label, response_dict['response'])
+        self.assertIn(self.layer_1_label, response_dict['response'])
+        self.assertIn(self.layer_2_label, response_dict['response'])
+        self.assertIn(self.lg_dropdown_menu_no_rename, response_dict['response'])
+        self.assertIn(self.layer_1_dropdown_menu_no_rr, response_dict['response'])
+        self.assertIn(self.layer_2_dropdown_menu_no_rr, response_dict['response'])
+        self.assertNotIn('rename-action', response_dict['response'])
+
+    def test_build_layer_group_tree_item_create_no_remove(self):
+        data = {
+            'status': 'create',
+            'layer_group_name': 'Fake Layers',
+            'layer_group_id': '123',
+            'layer_names': '["Layer 1", "Layer 2"]',
+            'layer_ids': '["456", "789"]',
+            'layer_legends': '["layer-1-var", "layer-2-var"]',
+            'show_rename': 'true',
+            'show_remove': 'false'
+        }
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
+
+        self.assertIsInstance(response, JsonResponse)
+        response_dict = json.loads(response.content)
+        self.assertIn('success', response_dict)
+        self.assertTrue(response_dict['success'])
+        self.assertIn('response', response_dict)
+
+        self.init_expected_response_blgti()
+
+        self.assertIn(self.layer_group_label, response_dict['response'])
+        self.assertIn(self.layer_1_label, response_dict['response'])
+        self.assertIn(self.layer_2_label, response_dict['response'])
+        self.assertIn(self.lg_dropdown_menu_no_remove, response_dict['response'])
+        self.assertIn(self.layer_1_dropdown_menu_no_rr, response_dict['response'])
+        self.assertIn(self.layer_2_dropdown_menu_no_rr, response_dict['response'])
+        self.assertNotIn('remove-action', response_dict['response'])
+
+    def test_build_layer_group_tree_item_create_no_rename_or_remove(self):
+        data = {
+            'status': 'create',
+            'layer_group_name': 'Fake Layers',
+            'layer_group_id': '123',
+            'layer_names': '["Layer 1", "Layer 2"]',
+            'layer_ids': '["456", "789"]',
+            'layer_legends': '["layer-1-var", "layer-2-var"]',
+            'show_rename': 'false',
+            'show_remove': 'false'
+        }
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
+
+        self.assertIsInstance(response, JsonResponse)
+        response_dict = json.loads(response.content)
+        self.assertIn('success', response_dict)
+        self.assertTrue(response_dict['success'])
+        self.assertIn('response', response_dict)
+
+        self.init_expected_response_blgti()
+
+        self.assertIn(self.layer_group_label, response_dict['response'])
+        self.assertIn(self.layer_1_label, response_dict['response'])
+        self.assertIn(self.layer_2_label, response_dict['response'])
+        self.assertNotIn(self.lg_dropdown_menu, response_dict['response'])
+        self.assertIn(self.layer_1_dropdown_menu_no_rr, response_dict['response'])
+        self.assertIn(self.layer_2_dropdown_menu_no_rr, response_dict['response'])
+        self.assertNotIn('remove-action', response_dict['response'])
+        self.assertNotIn('rename-action', response_dict['response'])
+
+    def test_build_layer_group_tree_item_append(self):
+        data = {
+            'status': 'append',
+            'layer_group_name': 'Fake Layers',
+            'layer_group_id': '123',
+            'layer_names': '["Layer 1", "Layer 2"]',
+            'layer_ids': '["456", "789"]',
+            'layer_legends': '["layer-1-var", "layer-2-var"]',
+        }
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
+
+        self.assertIsInstance(response, JsonResponse)
+        response_dict = json.loads(response.content)
+        self.assertIn('success', response_dict)
+        self.assertTrue(response_dict['success'])
+        self.assertIn('response', response_dict)
+
+        self.init_expected_response_blgti()
+
+        self.assertNotIn(self.layer_group_label, response_dict['response'])
+        self.assertIn(self.layer_1_label, response_dict['response'])
+        self.assertNotIn(self.layer_2_label, response_dict['response'])
+        self.assertNotIn(self.lg_dropdown_menu, response_dict['response'])
+        self.assertIn(self.layer_1_dropdown_menu, response_dict['response'])
+        self.assertNotIn(self.layer_2_dropdown_menu, response_dict['response'])
+
+    def test_build_layer_group_tree_item_append_no_rename_or_remove(self):
+        data = {
+            'status': 'append',
+            'layer_group_name': 'Fake Layers',
+            'layer_group_id': '123',
+            'layer_names': '["Layer 1", "Layer 2"]',
+            'layer_ids': '["456", "789"]',
+            'layer_legends': '["layer-1-var", "layer-2-var"]',
+            'show_rename': 'false',
+            'show_remove': 'false'
+        }
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
+
+        self.assertIsInstance(response, JsonResponse)
+        response_dict = json.loads(response.content)
+        self.assertIn('success', response_dict)
+        self.assertTrue(response_dict['success'])
+        self.assertIn('response', response_dict)
+
+        self.init_expected_response_blgti()
+
+        self.assertNotIn(self.layer_group_label, response_dict['response'])
+        self.assertIn(self.layer_1_label, response_dict['response'])
+        self.assertNotIn(self.layer_2_label, response_dict['response'])
+        self.assertNotIn(self.lg_dropdown_menu, response_dict['response'])
+        self.assertIn(self.layer_1_dropdown_menu_no_rr, response_dict['response'])
+        self.assertNotIn(self.layer_2_dropdown_menu_no_rr, response_dict['response'])
+        self.assertNotIn('remove-action', response_dict['response'])
+        self.assertNotIn('rename-action', response_dict['response'])

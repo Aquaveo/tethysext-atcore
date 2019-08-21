@@ -234,10 +234,10 @@ class MapView(ResourceView):
 
     def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
         """
+        Render the HTML for a layer group tree item.
 
         status (create/append): create is create a whole new layer group with all the layer items associated with it
                                 append is append an associated layer into an existing layer group
-        :return:
         """
         # Get Managers Hook
         model_db, map_manager = self.get_managers(
@@ -251,8 +251,8 @@ class MapView(ResourceView):
         layer_names = json.loads(request.POST.get('layer_names'))
         layer_ids = json.loads(request.POST.get('layer_ids'))
         layer_legends = json.loads(request.POST.get('layer_legends'))
-        show_rename = request.POST.get('show_rename', True)
-        show_remove = request.POST.get('show_remove', True)
+        show_rename = json.loads(request.POST.get('show_rename', 'true'))
+        show_remove = json.loads(request.POST.get('show_remove', 'true'))
         layers = []
 
         for i in range(len(layer_names)):
