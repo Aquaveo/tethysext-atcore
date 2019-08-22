@@ -104,11 +104,10 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
 
         self.assertEqual(None, ret)
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_previous_steps')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.get_active_app')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
-    def test_on_get_step_not_pending(self, mock_get_app, mock_get_active_app, mock_render, mock_get_prev_steps):
+    def test_on_get_step_not_pending(self, mock_get_app, mock_get_active_app, mock_render):
         app = mock.MagicMock()
         job_manager = mock.MagicMock()
         job_manager.get_job.return_value = mock.MagicMock()
@@ -120,18 +119,6 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         mock_get_active_app.return_value = active_app
 
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
-
-        previous_step = SpatialDatasetRWS(
-            geoserver_name='geo_server',
-            map_manager=mock.MagicMock(),
-            spatial_manager=mock.MagicMock(),
-            name='previous',
-            help='previous help',
-            order=0,
-            options={}
-        )
-        # self.workflow.steps.insert(0, previous_step)
-        mock_get_prev_steps.return_value = [previous_step]
 
         SpatialCondorJobMWV().on_get_step(self.request, self.session, self.resource, self.workflow, self.step,
                                           None, None)
@@ -283,3 +270,12 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         path = SpatialCondorJobMWV().get_working_directory(self.request, app)
 
         self.assertEqual('user_workspace', path)
+
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_previous_steps')
+    def test_serialize_parameters(self, mock_get_prev_steps):
+        mock_get_prev_steps.return_value = [self.step]
+
+        ret = SpatialCondorJobMWV().serialize_parameters(self.step)
+
+        self.assertEqual('{"name1": {"type": "spatial_dataset_workflow_step", "name": "name1", "help": "help1", '
+                         '"parameters": {"datasets": {}}}}', ret)
