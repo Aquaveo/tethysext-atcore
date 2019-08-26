@@ -10,6 +10,7 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for
 from tethysext.atcore.mixins import StatusMixin
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
+from tethysext.atcore.services.app_users.roles import Roles
 
 
 def setUpModule():
@@ -67,8 +68,10 @@ class WorkflowViewTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     @mock.patch('tethys_apps.models.TethysApp')
-    def test_get_context(self, mock_app):
+    def test_get_context(self, mock_app, mock_uhar):
         mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
@@ -86,9 +89,11 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     @mock.patch('tethys_apps.models.TethysApp')
-    def test_get_context_error_message(self, mock_app, mock_messages):
+    def test_get_context_error_message(self, mock_app, mock_messages, mock_uhar):
         mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
@@ -109,9 +114,11 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     @mock.patch('tethys_apps.models.TethysApp')
-    def test_get_context_success_message(self, mock_app, mock_messages):
+    def test_get_context_success_message(self, mock_app, mock_messages, mock_uhar):
         mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
@@ -132,9 +139,11 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     @mock.patch('tethys_apps.models.TethysApp')
-    def test_get_context_info_message(self, mock_app, mock_messages):
+    def test_get_context_info_message(self, mock_app, mock_messages, mock_uhar):
         mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
@@ -164,10 +173,13 @@ class WorkflowViewTests(SqlAlchemyTestCase):
 
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret)
 
-    def test_build_step_cards(self):
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
+    def test_build_step_cards(self, mock_uhar):
+        mock_request = mock.MagicMock(spec=HttpRequest)
         self.workflow.steps.append(ResourceWorkflowStep())
 
-        steps = ResourceWorkflowView().build_step_cards(self.workflow)
+        steps = ResourceWorkflowView().build_step_cards(mock_request, self.workflow)
 
         self.assertEquals(len(self.workflow.steps), len(steps))
         self.assertEquals(self.workflow.steps[0].id, steps[0]['id'])
@@ -184,13 +196,18 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEquals('pending', steps[1]['status'])
         self.assertEquals(False, steps[1]['link'])
 
-    def test_build_step_cards_no_steps(self):
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
+    def test_build_step_cards_no_steps(self, mock_uhar):
+        mock_request = mock.MagicMock(spec=HttpRequest)
         workflow = mock.MagicMock(spec=ResourceWorkflow)
         workflow.steps = []
 
-        steps = ResourceWorkflowView().build_step_cards(workflow)
+        steps = ResourceWorkflowView().build_step_cards(mock_request, workflow)
 
         self.assertEqual(workflow.steps, steps)
+
+    # TODO: TEST USER DOES NOT HAVE ACTIVE ROLE
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
@@ -307,21 +324,25 @@ class WorkflowViewTests(SqlAlchemyTestCase):
 
     def test_navigate_only_complete(self):
         self.request.POST = 'submit'
-        self.step1.set_attribute(self.step1.ROOT_STATUS_KEY, self.step1.STATUS_COMPLETE)
+        self.step1.set_status(self.step1.ROOT_STATUS_KEY, self.step1.STATUS_COMPLETE)
 
         response = ResourceWorkflowView().navigate_only(self.request, self.step1, self.current_url,
                                                         self.next_url, self.previous_url)
 
         self.assertEqual(self.previous_url, response['location'])
 
+    # TODO: Test case where there are not roles...
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     def test_navigate_only_not_complete(self, mock_messages):
         self.request.POST = 'next-submit'
+        self.step1.active_roles = [Roles.ORG_REVIEWER]
 
         response = ResourceWorkflowView().navigate_only(self.request, self.step1, self.current_url,
                                                         self.next_url, self.previous_url)
 
-        mock_messages.warning.assert_called_with(self.request, 'You do not have the permission to complete this step.')
+        mock_messages.info.assert_called_with(self.request, 'You may not proceed until this step is completed by a '
+                                                            'user with one of the following roles: '
+                                                            'Organization Reviewer.')
         self.assertEqual(self.current_url, response['location'])
 
     def test_get_style_for_status(self):
@@ -336,4 +357,4 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_ERROR))
         self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_FAILED))
         self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_REJECTED))
-        self.assertIsNone(rwv.get_style_for_status('unsupported status'))
+        self.assertEqual('primary', rwv.get_style_for_status('unsupported status'))

@@ -109,32 +109,36 @@ class SpatialInputMwvTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
-    def test_get_step_specific_context_has_active_role(self, _):
+    def test_get_step_specific_context_has_active_role(self, _, __):
         self.step1.active_roles = []
         self.step1.options['allow_shapefile'] = False
 
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False}, ret)
+        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': True}, ret)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
+    # TODO: Test user does not have active role
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=False)
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
-    def test_get_step_specific_context_no_active_role(self, _, mock_user_has_active_role):
-        mock_user_has_active_role.return_value = False
+    def test_get_step_specific_context_no_active_role(self, _, __):
         self.step1.options['allow_shapefile'] = True
 
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False}, ret)
+        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': False}, ret)
 
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=False)
     def test_process_step_options_no_attributes_nor_active_role(self, mock_user_role, mock_params, mock_get_managers):
-        mock_user_role.return_value = False
         mock_params.return_value = {'geometry': 'shapes and such'}
         mock_get_managers.return_value = None, MapView()
 
@@ -150,10 +154,10 @@ class SpatialInputMwvTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.generate_django_form')
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     def test_process_step_options_with_attributes_and_active_role(self, mock_user_role, mock_params, mock_get_managers,
                                                                   mock_form):
-        mock_user_role.return_value = True
         mock_params.return_value = {'geometry': 'shapes and such'}
         mock_get_managers.return_value = None, MapView()
         mock_form.return_view = {}
@@ -170,9 +174,9 @@ class SpatialInputMwvTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
     def test_process_step_options_unknown_shape(self, mock_user_role, mock_params, mock_get_managers):
-        mock_user_role.return_value = True
         mock_params.return_value = {'geometry': 'shapes and such'}
         mock_get_managers.return_value = None, MapView()
 
