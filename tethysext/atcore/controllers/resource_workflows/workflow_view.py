@@ -145,7 +145,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         for workflow_step in workflow.steps:
             step_status = workflow_step.get_status(workflow_step.ROOT_STATUS_KEY)
             step_in_progress = step_status != workflow_step.STATUS_PENDING and step_status is not None
-            create_link = previous_status == workflow_step.STATUS_COMPLETE \
+            create_link = previous_status in workflow_step.COMPLETE_STATUSES \
                 or previous_status is None \
                 or step_in_progress
 
@@ -155,12 +155,13 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
             # Determine appropriate help text to show
             help_text = workflow_step.help
+            active_roles = workflow_step.active_roles if workflow_step.active_roles else []
 
             if show_lock:
                 if step_locked:
                     _AppUser = self.get_app_user_model()
                     user_friendly_roles = \
-                        [_AppUser.ROLES.get_display_name_for(role) for role in workflow_step.active_roles]
+                        [_AppUser.ROLES.get_display_name_for(role) for role in active_roles]
                     grammatically_correct_list = grammatically_correct_join(user_friendly_roles, conjunction='or')
                     help_text = f'A user with one of the following roles needs to complete this ' \
                                 f'step: {grammatically_correct_list}.'
@@ -176,7 +177,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
                 'style': self.get_style_for_status(step_status),
                 'link': create_link,
                 'display_as_inactive': not user_has_active_role,
-                'active_roles': workflow_step.active_roles,
+                'active_roles': active_roles,
                 'show_lock': show_lock,
                 'is_locked': step_locked
             }
