@@ -19,13 +19,20 @@ Required CSS:
   <ul class="workflow-steps">
     {% for step in steps %}
     <li>
-      <a class="workflow-step {% if step.id == current_step.id %}active {% endif %}workflow-status-{{ step.style }}"
-         title="{{ step.help }}"
+      <a class="workflow-step {% if step.id == current_step.id %}active {% endif %}workflow-status-{{ step.style }}{% if step.display_as_inactive %} workflow-status-inactive{% endif %}"
+         title="{{ step.status|title }}"
          {% if step.link %}href="{% url step_url_name resource.id workflow.id step.id %}"{% endif %}>
         {% with lower_status=step.status.lower %}
           {% include "atcore/resource_workflows/components/status_icons.html" %}
         {% endwith %}
         <span class="workflow-step-title">{{ step.name }}</span>
+        {% if step.show_lock %}
+          {% if step.is_locked %}
+          <span class="workflow-step-lock pull-right"><i class="fa fa-lock" aria-hidden="true" title="Locked"></i></span>
+          {% else %}
+          <span class="workflow-step-lock pull-right"><i class="fa fa-unlock" aria-hidden="true" title="Unlocked"></i></span>
+          {% endif %}
+        {% endif %}
       </a>
       {% if step.id == current_step.id and step.help %}
       <p class="help-block">{{ step.help }}</p>

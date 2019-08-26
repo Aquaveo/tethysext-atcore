@@ -102,3 +102,8 @@ def strip_list(l, *args):
         l.pop(-1)
 
     return l
+
+
+def grammatically_correct_join(strings, conjunction="and"):
+    join_strings = ', '.join(strings[:-2] + [f" {conjunction} ".join(strings[-2:])])
+    return join_strings

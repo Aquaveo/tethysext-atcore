@@ -101,7 +101,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         )
 
         # Build step cards
-        steps = self.build_step_cards(workflow)
+        steps = self.build_step_cards(request, workflow)
 
         # Get the current app
         step_url_name = self.get_step_url_name(request, workflow)

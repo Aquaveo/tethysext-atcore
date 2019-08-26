@@ -59,6 +59,8 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     STATUS_REJECTED = ResourceWorkflowStep.STATUS_REJECTED
     STATUS_CHANGES_REQUESTED = ResourceWorkflowStep.STATUS_CHANGES_REQUESTED
 
+    COMPLETE_STATUSES = ResourceWorkflowStep.COMPLETE_STATUSES
+
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     resource_id = Column(GUID, ForeignKey('app_users_resources.id'))
     creator_id = Column(GUID, ForeignKey('app_users_app_users.id'))

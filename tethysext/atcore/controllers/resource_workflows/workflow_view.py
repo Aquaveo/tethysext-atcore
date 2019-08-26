@@ -7,10 +7,12 @@
 ********************************************************************************
 """
 import abc
+
 from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from tethys_apps.utilities import get_active_app
 from tethys_sdk.permissions import has_permission
+from tethysext.atcore.utilities import grammatically_correct_join
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
@@ -79,7 +81,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         )
 
         # Build step cards
-        steps = self.build_step_cards(workflow)
+        steps = self.build_step_cards(request, workflow)
 
         # Get the current app
         step_url_name = self.get_step_url_name(request, workflow)
@@ -127,10 +129,11 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         url_map_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
         return url_map_name
 
-    def build_step_cards(self, workflow):
+    def build_step_cards(self, request, workflow):
         """
         Build cards used by template to render the list of steps for the workflow.
         Args:
+            request (HttpRequest): The request.
             workflow(ResourceWorkflow): the workflow with the steps to render.
 
         Returns:
@@ -146,14 +149,36 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
                 or previous_status is None \
                 or step_in_progress
 
+            user_has_active_role = self.user_has_active_role(request, workflow_step)
+            show_lock = not user_has_active_role
+            step_locked = not user_has_active_role and step_status not in workflow_step.COMPLETE_STATUSES
+
+            # Determine appropriate help text to show
+            help_text = workflow_step.help
+
+            if show_lock:
+                if step_locked:
+                    _AppUser = self.get_app_user_model()
+                    user_friendly_roles = \
+                        [_AppUser.ROLES.get_display_name_for(role) for role in workflow_step.active_roles]
+                    grammatically_correct_list = grammatically_correct_join(user_friendly_roles, conjunction='or')
+                    help_text = f'A user with one of the following roles needs to complete this ' \
+                                f'step: {grammatically_correct_list}.'
+                else:
+                    help_text = step_status
+
             card_dict = {
                 'id': workflow_step.id,
-                'help': workflow_step.help,
+                'help': help_text,
                 'name': workflow_step.name,
                 'type': workflow_step.type,
                 'status': step_status.lower(),
                 'style': self.get_style_for_status(step_status),
                 'link': create_link,
+                'display_as_inactive': not user_has_active_role,
+                'active_roles': workflow_step.active_roles,
+                'show_lock': show_lock,
+                'is_locked': step_locked
             }
 
             # Hook to allow subclasses to extend the step card attributes
@@ -249,7 +274,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         elif status in [StatusMixin.STATUS_ERROR, StatusMixin.STATUS_FAILED, StatusMixin.STATUS_REJECTED]:
             return 'danger'
 
-        return None
+        return 'primary'
 
     def user_has_active_role(self, request, step):
         """
@@ -372,8 +397,12 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
-        if step.get_status(step.ROOT_STATUS_KEY) != step.STATUS_COMPLETE and 'next-submit' in request.POST:
-            messages.warning(request, 'You do not have the permission to complete this step.')
+        if step.get_status(step.ROOT_STATUS_KEY) not in step.COMPLETE_STATUSES and 'next-submit' in request.POST:
+            _AppUser = self.get_app_user_model()
+            user_friendly_roles = [_AppUser.ROLES.get_display_name_for(role) for role in step.active_roles]
+            grammatically_correct_list = grammatically_correct_join(user_friendly_roles, conjunction='or')
+            messages.info(request, f'You may not proceed until this step is completed by a user with '
+                                   f'one of the following roles: {grammatically_correct_list}.')
             response = redirect(current_url)
         else:
             response = self.next_or_previous_redirect(request, next_url, previous_url)
