@@ -54,8 +54,8 @@ class UtilitiesTests(DjangoTestCase):
         request_factory = RequestFactory()
         request = request_factory.post('/foo/bar', data={'method': 'val', 'foo': 'bar'})
         ret = utilities.clean_request(request)
-        self.assertNotIn('method', ret.GET)
-        self.assertEqual('bar', ret.GET.get('foo'))
+        self.assertNotIn('method', ret.POST)
+        self.assertEqual('bar', ret.POST.get('foo'))
 
     def test_strip_list(self):
         the_list = ['foo', '', 'bar', '', '']
