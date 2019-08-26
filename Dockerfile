@@ -29,7 +29,7 @@ ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; tethys install -q"
+  ; tethys install --quiet --only-dependencies"
 
 #########
 # CHOWN #

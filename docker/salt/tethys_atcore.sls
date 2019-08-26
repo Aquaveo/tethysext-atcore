@@ -30,9 +30,9 @@ Migrate_Database_Atcore:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
-Sync_Atcore:
+Install_Atcore:
   cmd.run:
-    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && tethys db sync
+    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && cd {{ TETHYSEXT_DIR }}/tethysext-atcore && tethys install --quiet --without-dependencies
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
