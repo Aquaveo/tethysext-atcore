@@ -27,9 +27,12 @@ ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
+# Generate temporary settings.py to be able to install the extension, then remove it.
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
+  ; tethys gen settings --overwrite \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; tethys install --quiet --only-dependencies"
+  ; tethys install --quiet --only-dependencies \
+  ; rm $(tethys list -s)"
 
 #########
 # CHOWN #
