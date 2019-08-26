@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v3.0.0b-r21
+FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r22
 
 #####################
 # Default Variables #
@@ -30,9 +30,6 @@ ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
   ; tethys install -q"
-
-# Overwrite default Tethys Stylesheet
-ADD tethysext/atcore/public/css/tethys_main.css ${TETHYS_HOME}/src/static/tethys_portal/css/tethys_main.css
 
 #########
 # CHOWN #
