@@ -58,7 +58,7 @@ def clean_request(request):
     Returns:
         HttpRequest: the modified request
     """
-    # Save mutablility of GET and POST
+    # Save mutability of GET and POST
     get_mutable = request.GET._mutable
     post_mutable = request.POST._mutable
 
@@ -70,7 +70,7 @@ def clean_request(request):
     request.GET.pop('method', None)
     request.POST.pop('method', None)
 
-    # Restore mutabilility
+    # Restore mutability
     request.GET._mutable = get_mutable
     request.POST._mutable = post_mutable
 
