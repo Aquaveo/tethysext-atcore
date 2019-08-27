@@ -74,8 +74,6 @@ Test:
   script:
     # Import build
     - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
-    # Setup
-    - docker rm -f tethys_atcore tethys_postgis || true
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
@@ -101,15 +99,17 @@ Test:
     - echo "Python Environment:"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys; conda list"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys; pip list"
-    # Clean coverage data
-    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && rm -f .coverage || true"
+    # Reinstall Extension Using Develop to Run Tests
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && pip uninstall tethysext-atcore && python setup.py develop"
     # Unit Tests
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5432/atcore_tests' coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
     # Intermediate Tests
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /usr/lib/tethys/tethys_portal && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5432/atcore_tests' coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
     # Coverage Report
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini"
-    # Clean up
+  before_script:
+    - docker rm -f tethys_atcore tethys_postgis || true
+  after_script:
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
     - docker
@@ -121,8 +121,6 @@ Test:
   script:
     # Import build
     - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
-    # Setup
-    - docker rm -f tethys_atcore tethys_postgis || true
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
@@ -141,7 +139,9 @@ Test:
         -e TETHYS_DB_PORT='5432'
         $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
         bash test-docker.sh
-    # Clean up
+  before_script:
+    - docker rm -f tethys_atcore tethys_postgis || true
+  after_script:
     - docker rm -f tethys_atcore tethys_postgis || true
   tags:
     - docker
