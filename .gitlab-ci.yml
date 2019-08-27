@@ -100,7 +100,7 @@ Test:
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys; conda list"
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys; pip list"
     # Reinstall Extension Using Develop to Run Tests
-    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && pip uninstall tethysext-atcore && python setup.py develop"
+    - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && pip uninstall -y tethysext-atcore && python setup.py develop"
     # Unit Tests
     - docker exec tethys_atcore /bin/bash -c ". $CONDA_HOME/bin/activate tethys && cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE='postgresql://postgres:pass@172.17.0.1:5432/atcore_tests' coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
     # Intermediate Tests
