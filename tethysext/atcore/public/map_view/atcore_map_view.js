@@ -93,7 +93,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers;
+ 	var generate_uuid, load_layers, hide_layers, show_layers;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1519,6 +1519,24 @@ var ATCORE_MAP_VIEW = (function() {
         });
         init_layers_tab();
     }
+
+    hide_layers = function(layer_ids) {
+        for (var i=0; i < layer_ids.length; i++) {
+            // Set layer to be visible first
+            m_layers[layer_ids[i]].setVisible(false)
+            // Find the correct layer-list-item and add hidden class
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden")
+
+        }
+    }
+
+    show_layers = function(layer_ids) {
+        for (var i=0; i < layer_ids.length; i++) {
+            // Find the correct layer-list-item and add hidden class
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("hidden")
+
+        }
+    }
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
  	*************************************************************************/
@@ -1567,6 +1585,8 @@ var ATCORE_MAP_VIEW = (function() {
         reset_properties_pop_up: reset_properties_pop_up,
         close_properties_pop_up: close_properties_pop_up,
         load_layers: load_layers,
+        hide_layers: hide_layers,
+        show_layers: show_layers,
         remove_layer_from_map: remove_layer_from_map,
         init_layers_tab: init_layers_tab,
 	};
