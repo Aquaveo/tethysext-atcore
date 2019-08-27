@@ -109,8 +109,9 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
         # serialize the dataframe parameters
         datasets = {}
 
-        for feature_id, dataframe in d['parameters']['datasets'].items():
-            datasets.update({feature_id: dataframe.to_dict(orient='list')})
+        if d['parameters']['datasets']:
+            for feature_id, dataframe in d['parameters']['datasets'].items():
+                datasets.update({feature_id: dataframe.to_dict(orient='list')})
 
         d['parameters']['datasets'] = datasets
 

@@ -10,7 +10,9 @@
   </form>
 {% endblock %}
 {% block app_actions %}
+  {% if can_run_workflows %}
   <button class="btn btn-success" type="submit" form="run-job-form" name="run-submit">Run</button>
+  {% endif %}
   {{ block.super }}
 {% endblock %}
 

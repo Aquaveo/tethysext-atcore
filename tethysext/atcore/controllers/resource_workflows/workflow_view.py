@@ -7,9 +7,12 @@
 ********************************************************************************
 """
 import abc
+
 from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from tethys_apps.utilities import get_active_app
+from tethys_sdk.permissions import has_permission
+from tethysext.atcore.utilities import grammatically_correct_join
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
@@ -78,7 +81,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         )
 
         # Build step cards
-        steps = self.build_step_cards(workflow)
+        steps = self.build_step_cards(request, workflow)
 
         # Get the current app
         step_url_name = self.get_step_url_name(request, workflow)
@@ -126,10 +129,11 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         url_map_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
         return url_map_name
 
-    def build_step_cards(self, workflow):
+    def build_step_cards(self, request, workflow):
         """
         Build cards used by template to render the list of steps for the workflow.
         Args:
+            request (HttpRequest): The request.
             workflow(ResourceWorkflow): the workflow with the steps to render.
 
         Returns:
@@ -141,17 +145,41 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         for workflow_step in workflow.steps:
             step_status = workflow_step.get_status(workflow_step.ROOT_STATUS_KEY)
             step_in_progress = step_status != workflow_step.STATUS_PENDING and step_status is not None
-            create_link = previous_status == workflow_step.STATUS_COMPLETE \
+            create_link = previous_status in workflow_step.COMPLETE_STATUSES \
                 or previous_status is None \
                 or step_in_progress
 
+            user_has_active_role = self.user_has_active_role(request, workflow_step)
+            show_lock = not user_has_active_role
+            step_locked = not user_has_active_role and step_status not in workflow_step.COMPLETE_STATUSES
+
+            # Determine appropriate help text to show
+            help_text = workflow_step.help
+            active_roles = workflow_step.active_roles if workflow_step.active_roles else []
+
+            if show_lock:
+                if step_locked:
+                    _AppUser = self.get_app_user_model()
+                    user_friendly_roles = \
+                        [_AppUser.ROLES.get_display_name_for(role) for role in active_roles]
+                    grammatically_correct_list = grammatically_correct_join(user_friendly_roles, conjunction='or')
+                    help_text = f'A user with one of the following roles needs to complete this ' \
+                                f'step: {grammatically_correct_list}.'
+                else:
+                    help_text = step_status
+
             card_dict = {
                 'id': workflow_step.id,
-                'help': workflow_step.help,
+                'help': help_text,
                 'name': workflow_step.name,
                 'type': workflow_step.type,
                 'status': step_status.lower(),
+                'style': self.get_style_for_status(step_status),
                 'link': create_link,
+                'display_as_inactive': not user_has_active_role,
+                'active_roles': active_roles,
+                'show_lock': show_lock,
+                'is_locked': step_locked
             }
 
             # Hook to allow subclasses to extend the step card attributes
@@ -169,7 +197,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
     @workflow_step_controller()
     def save_step_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs):
         """
-        Handle GET requests with method get-attributes-form.
+        Handle POST requests with input named "method" with value "save-step-data".
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
@@ -181,6 +209,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             HttpResponse: A Django response.
         """
+
         previous_step, next_step = workflow.get_adjacent_steps(step)
 
         # Create for previous, next, and current steps
@@ -204,18 +233,78 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         if previous_step:
             previous_url = reverse(step_url_name, args=(resource.id, workflow.id, str(previous_step.id)))
 
-        # Hook for processing step data
-        response = self.process_step_data(
-            request=request,
-            session=session,
-            step=step,
-            model_db=model_db,
-            current_url=current_url,
-            previous_url=previous_url,
-            next_url=next_url
-        )
+        # Determine
+        user_has_active_role = self.user_has_active_role(request, step)
+
+        if user_has_active_role:
+            # Hook for processing step data when the user has the active role
+            response = self.process_step_data(
+                request=request,
+                session=session,
+                step=step,
+                model_db=model_db,
+                current_url=current_url,
+                previous_url=previous_url,
+                next_url=next_url
+            )
+        else:
+            # Hook for handling response when user does not have an active role
+            response = self.navigate_only(request, step, current_url, next_url, previous_url)
 
         return response
+
+    @staticmethod
+    def get_style_for_status(status):
+        """
+        Return appropriate style for given status.
+        Args:
+            status(str): One of StatusMixin statuses.
+
+        Returns:
+            str: style for the given status.
+        """
+        from tethysext.atcore.mixins import StatusMixin
+
+        if status in [StatusMixin.STATUS_COMPLETE, StatusMixin.STATUS_APPROVED]:
+            return 'success'
+
+        elif status in [StatusMixin.STATUS_SUBMITTED, StatusMixin.STATUS_UNDER_REVIEW,
+                        StatusMixin.STATUS_CHANGES_REQUESTED, StatusMixin.STATUS_WORKING]:
+            return 'warning'
+
+        elif status in [StatusMixin.STATUS_ERROR, StatusMixin.STATUS_FAILED, StatusMixin.STATUS_REJECTED]:
+            return 'danger'
+
+        return 'primary'
+
+    def user_has_active_role(self, request, step):
+        """
+        Checks if the request user has active role for step.
+
+        Args:
+            request(HttpRequest): The request.
+            step(ResourceWorkflowStep): the step.
+
+        Returns:
+            bool: True if user has active role.
+        """
+        pm = self.get_permissions_manager()
+        active_roles = step.active_roles
+
+        # All roles are considered "active" if no active roles are provided.
+        if len(active_roles) < 1:
+            return True
+
+        # Determine if user's role is one of the active ones.
+        has_active_role = False
+
+        for role in active_roles:
+            permission_name = pm.get_has_role_permission_for(role)
+            has_active_role = has_permission(request, permission_name)
+            if has_active_role:
+                break
+
+        return has_active_role
 
     def validate_step(self, request, session, current_step, previous_step, next_step):
         """
@@ -270,7 +359,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
-        Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
+        Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
 
         Args:
             request(HttpRequest): The request.
@@ -293,6 +382,45 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             step.dirty = False
             session.commit()
 
+        return self.next_or_previous_redirect(request, next_url, previous_url)
+
+    def navigate_only(self, request, step, current_url, next_url, previous_url):
+        """
+        Navigate to next or previous step without processing/saving data. Called instead of process_step_data when the user doesn't have an active role.
+
+        Args:
+            request(HttpRequest): The request.
+            step(ResourceWorkflowStep): The step to be updated.
+            current_url(str): URL to step.
+            previous_url(str): URL to the previous step.
+            next_url(str): URL to the next step.
+
+        Returns:
+            HttpResponse: A Django response.
+        """  # noqa: E501
+        if step.get_status(step.ROOT_STATUS_KEY) not in step.COMPLETE_STATUSES and 'next-submit' in request.POST:
+            _AppUser = self.get_app_user_model()
+            user_friendly_roles = [_AppUser.ROLES.get_display_name_for(role) for role in step.active_roles]
+            grammatically_correct_list = grammatically_correct_join(user_friendly_roles, conjunction='or')
+            messages.info(request, f'You may not proceed until this step is completed by a user with '
+                                   f'one of the following roles: {grammatically_correct_list}.')
+            response = redirect(current_url)
+        else:
+            response = self.next_or_previous_redirect(request, next_url, previous_url)
+
+        return response
+
+    def next_or_previous_redirect(self, request, next_url, previous_url):
+        """
+        Generate a redirect to either the next or previous step, depending on what button was pressed.
+        Args:
+            request(HttpRequest): The request.
+            previous_url(str): URL to the previous step.
+            next_url(str): URL to the next step.
+
+        Returns:
+            HttpResponse: A Django response.
+        """
         if 'next-submit' in request.POST:
             response = redirect(next_url)
         else:
@@ -300,7 +428,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         return response
 
     @abc.abstractmethod
-    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
+    def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step,
+                             **kwargs):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
 

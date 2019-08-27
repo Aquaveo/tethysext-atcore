@@ -47,7 +47,16 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             dict: key-value pairs to add to context.
         """
-        return {'allow_shapefile': current_step.options['allow_shapefile']}
+        # Determine if user has an active role
+        user_has_active_role = self.user_has_active_role(request, current_step)
+
+        if user_has_active_role:
+            allow_shapefile_uploads = current_step.options['allow_shapefile']
+        else:
+            allow_shapefile_uploads = False
+
+        return {'allow_shapefile': allow_shapefile_uploads,
+                'allow_edit_attributes': user_has_active_role}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
@@ -72,23 +81,30 @@ class SpatialInputMWV(MapWorkflowView):
         # Get Map View
         map_view = context['map_view']
 
+        # Determine if user has an active role
+        user_has_active_role = self.user_has_active_role(request, current_step)
+
         # Turn off feature selection
         self.set_feature_selection(map_view=map_view, enabled=False)
 
-        # Add layer for current geometry
-        enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
-        if current_step.options['allow_drawing']:
-            for elem in current_step.options['shapes']:
-                if elem == 'points':
-                    enabled_controls.append('Point')
-                elif elem == 'lines':
-                    enabled_controls.append('LineString')
-                elif elem == 'polygons':
-                    enabled_controls.append('Polygon')
-                elif elem == 'extents':
-                    enabled_controls.append('Box')
-                else:
-                    raise ValueError('Invalid shapes defined: {}.'.format(elem))
+        if user_has_active_role:
+            enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
+
+            # Add layer for current geometry
+            if current_step.options['allow_drawing']:
+                for elem in current_step.options['shapes']:
+                    if elem == 'points':
+                        enabled_controls.append('Point')
+                    elif elem == 'lines':
+                        enabled_controls.append('LineString')
+                    elif elem == 'polygons':
+                        enabled_controls.append('Polygon')
+                    elif elem == 'extents':
+                        enabled_controls.append('Box')
+                    else:
+                        raise RuntimeError('Invalid shapes defined: {}.'.format(elem))
+        else:
+            enabled_controls = ['Pan']
 
         # Load the currently saved geometry, if any.
         current_geometry = current_step.get_parameter('geometry')
@@ -108,7 +124,7 @@ class SpatialInputMWV(MapWorkflowView):
                 'layer_id': 'drawing_layer',
                 'layer_name': 'drawing_layer',
                 'popup_title': current_step.options.get('singular_name'),
-                'excluded_properties': ['type'],
+                'excluded_properties': ['id', 'type'],
             }
         )
 
@@ -117,6 +133,17 @@ class SpatialInputMWV(MapWorkflowView):
 
         # Save changes to map view
         context.update({'map_view': map_view})
+
+        # Note: new layer created by super().process_step_options will have feature selection enabled by default
+        super().process_step_options(
+            request=request,
+            session=session,
+            context=context,
+            resource=resource,
+            current_step=current_step,
+            previous_step=previous_step,
+            next_step=next_step
+        )
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
@@ -152,7 +179,9 @@ class SpatialInputMWV(MapWorkflowView):
             else:
                 step.set_parameter('geometry', None)
                 session.commit()
-                raise ValueError('You must either draw at least one shape or upload a shapefile.')
+                raise ValueError(f'You must either draw at least one '
+                                 f'{step.options.get("singular_name", "shape").lower()} or upload a shapefile of '
+                                 f'{step.options.get("plural_name", "shapes").lower()}.')
 
         # Handle File parameter
         shapefile_geojson = self.parse_shapefile(request, shapefile)
@@ -184,7 +213,15 @@ class SpatialInputMWV(MapWorkflowView):
 
         # Otherwise, go to the next step
         else:
-            response = super().process_step_data(request, session, step, model_db, current_url, previous_url, next_url)
+            response = super().process_step_data(
+                request=request,
+                session=session,
+                step=step,
+                model_db=model_db,
+                current_url=current_url,
+                previous_url=previous_url,
+                next_url=next_url
+            )
 
         return response
 

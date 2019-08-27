@@ -13,6 +13,7 @@ class Roles:
     Container and methods for user roles.
     """
     ORG_USER = 'user_role_org_user'
+    ORG_REVIEWER = 'user_role_org_reviewer'
     ORG_ADMIN = 'user_role_org_admin'
     APP_ADMIN = 'user_role_app_admin'
     DEVELOPER = 'user_role_developer'
@@ -26,7 +27,7 @@ class Roles:
         Returns:
             tuple: All available roles.
         """
-        all_roles = (self.ORG_USER, self.ORG_ADMIN, self.APP_ADMIN, self.DEVELOPER)
+        all_roles = (self.ORG_USER, self.ORG_REVIEWER, self.ORG_ADMIN, self.APP_ADMIN, self.DEVELOPER)
         return all_roles
 
     def is_valid(self, role):
@@ -53,8 +54,10 @@ class Roles:
 
         if role == self.ORG_USER:
             return 100
-        elif role == self.ORG_ADMIN:
+        elif role == self.ORG_REVIEWER:
             return 200
+        elif role == self.ORG_ADMIN:
+            return 300
         elif role == self.APP_ADMIN:
             return 1000
         elif role == self.DEVELOPER:
@@ -75,6 +78,8 @@ class Roles:
 
         if role == self.ORG_USER:
             return 'Organization User'
+        elif role == self.ORG_REVIEWER:
+            return 'Organization Reviewer'
         elif role == self.ORG_ADMIN:
             return 'Organization Admin'
         elif role == self.APP_ADMIN:
@@ -96,7 +101,9 @@ class Roles:
             raise ValueError('Invalid role given: {}.'.format(role))
 
         if role == self.ORG_USER:
-            return 'assign_org_users_role'
+            return 'assign_org_user_role'
+        if role == self.ORG_REVIEWER:
+            return 'assign_org_reviewer_role'
         elif role == self.ORG_ADMIN:
             return 'assign_org_admin_role'
         elif role == self.APP_ADMIN:
@@ -131,7 +138,7 @@ class Roles:
         Returns:
             list: organization roles.
         """
-        return [self.ORG_USER, self.ORG_ADMIN]
+        return [self.ORG_USER, self.ORG_REVIEWER, self.ORG_ADMIN]
 
     def get_no_organization_roles(self):
         """

@@ -58,7 +58,7 @@ def clean_request(request):
     Returns:
         HttpRequest: the modified request
     """
-    # Save mutablility of GET and POST
+    # Save mutability of GET and POST
     get_mutable = request.GET._mutable
     post_mutable = request.POST._mutable
 
@@ -70,7 +70,7 @@ def clean_request(request):
     request.GET.pop('method', None)
     request.POST.pop('method', None)
 
-    # Restore mutabilility
+    # Restore mutability
     request.GET._mutable = get_mutable
     request.POST._mutable = post_mutable
 
@@ -102,3 +102,8 @@ def strip_list(l, *args):
         l.pop(-1)
 
     return l
+
+
+def grammatically_correct_join(strings, conjunction="and"):
+    join_strings = ', '.join(strings[:-2] + [f" {conjunction} ".join(strings[-2:])])
+    return join_strings

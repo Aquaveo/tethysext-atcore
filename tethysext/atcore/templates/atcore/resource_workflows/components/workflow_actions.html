@@ -13,13 +13,17 @@ Required Context:
 {% endcomment %}
 
 {% block workflow_actions %}
-  {% if previous_step %}
-  <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="workflow-form">{{ previous_title }}</button>
-  {% endif %}
+  {% block previous_step_button %}
+    {% if previous_step %}
+    <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="workflow-form">{{ previous_title }}</button>
+    {% endif %}
+  {% endblock %}
 
-  {% if next_step %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="workflow-form">{{ next_title }}</button>
-  {% else %}
-  <button class="btn btn-default btn-next" name="next-submit" type='submit' form="workflow-form">{{ finish_title }}</button>
-  {% endif %}
+  {% block next_step_button %}
+    {% if next_step %}
+    <button class="btn btn-default btn-next" name="next-submit" type='submit' form="workflow-form">{{ next_title }}</button>
+    {% else %}
+    <button class="btn btn-default btn-next" name="next-submit" type='submit' form="workflow-form">{{ finish_title }}</button>
+    {% endif %}
+  {% endblock %}
 {% endblock %}

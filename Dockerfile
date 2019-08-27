@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys/tethyscore:v3.0.0b-r17
+FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r23
 
 #####################
 # Default Variables #
@@ -23,18 +23,16 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
 ###########
 # INSTALL #
 ###########
-RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
-  ; pip install filelock"
-
 ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
+ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
+# Generate temporary settings.py to be able to install the extension, then remove it.
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
+  ; tethys gen settings --overwrite \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; python setup.py install"
-
-# Overwrite default Tethys Stylesheet
-ADD tethysext/atcore/public/css/tethys_main.css ${TETHYS_HOME}/src/static/tethys_portal/css/tethys_main.css
+  ; tethys install --quiet --only-dependencies \
+  ; rm ${TETHYS_HOME}/tethys/tethys_portal/settings.py"
 
 #########
 # CHOWN #

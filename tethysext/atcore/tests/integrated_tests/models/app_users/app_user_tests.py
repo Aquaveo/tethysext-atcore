@@ -530,7 +530,7 @@ class AppUserTests(SqlAlchemyTestCase):
         )
         rank = self.user.get_rank(apm)
         apm.get_all_permissions_groups_for.assert_called()
-        self.assertEqual(100.0, rank)
+        self.assertEqual(1100.0, rank)
 
     def test_get_rank_multiple_permissions_groups(self):
         apm = AppPermissionsManager("foo")
@@ -539,7 +539,7 @@ class AppUserTests(SqlAlchemyTestCase):
         )
         rank = self.user.get_rank(apm)
         apm.get_all_permissions_groups_for.assert_called()
-        self.assertEqual(200.0, rank)
+        self.assertEqual(1300.0, rank)
 
     def _init_settings_same_keys(self):
         setting1 = UserSetting(

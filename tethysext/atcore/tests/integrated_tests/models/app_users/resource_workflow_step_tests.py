@@ -216,3 +216,41 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.assertEqual(ResourceWorkflowStep.STATUS_PENDING,
                          q_instance.get_status(ResourceWorkflowStep.ROOT_STATUS_KEY))
         self.assertDictEqual({}, q_instance.get_parameters())
+
+    def test_active_roles_constructor(self):
+        baseline = ['foo', 'bar']
+        instance = ResourceWorkflowStep(name='foo', help='step_0', order=1, active_roles=baseline)
+        self.session.add(instance)
+        self.session.commit()
+        self.assertListEqual(baseline, instance.active_roles)
+
+    def test_active_roles_getter(self):
+        baseline = ['foo', 'bar']
+        self.instance._active_roles = baseline
+        ret = self.instance.active_roles
+        self.assertListEqual(baseline, ret)
+
+    def test_active_roles_setter(self):
+        baseline = ['foo', 'bar']
+        self.instance.active_roles = baseline
+        self.assertListEqual(baseline, self.instance._active_roles)
+
+    def test_active_roles_setter_not_list(self):
+        value_error_raised = False
+
+        try:
+            self.instance.active_roles = 'not-a-list'
+        except ValueError as e:
+            value_error_raised = True
+            self.assertEqual('Property "active_roles" must be a list of strings. Got "not-a-list" instead.', str(e))
+        self.assertTrue(value_error_raised)
+
+    def test_active_roles_setter_not_list_of_strings(self):
+        value_error_raised = False
+
+        try:
+            self.instance.active_roles = [1, 2, 3]
+        except ValueError as e:
+            value_error_raised = True
+            self.assertEqual('Property "active_roles" must be a list of strings. Got "[1, 2, 3]" instead.', str(e))
+        self.assertTrue(value_error_raised)
