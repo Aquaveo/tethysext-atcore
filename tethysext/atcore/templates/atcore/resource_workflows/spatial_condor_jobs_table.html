@@ -11,7 +11,9 @@
 {% endblock %}
 
 {% block app_actions %}
+  {% if can_run_workflows %}
   <button class="btn btn-warning" type="submit" form="run-job-form" name="rerun-submit">Rerun</button>
+  {% endif %}
   {{ block.super }}
 {% endblock %}
 

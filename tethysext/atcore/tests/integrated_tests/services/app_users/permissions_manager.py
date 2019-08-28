@@ -57,7 +57,7 @@ class AppPermissionsManagerTests(SqlAlchemyTestCase):
         # Permissions manager setup
         self.namespace = 'foo'
         self.apm = AppPermissionsManager(self.namespace)
-        self.num_permissions_groups = 9
+        self.num_permissions_groups = 13
 
         # Create one of the groups for testing
         self.group = Group.objects.get_or_create(name=self.apm.STANDARD_USER_PERMS)

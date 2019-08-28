@@ -1,5 +1,5 @@
 import os
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 
 def find_resource_files(directory):
@@ -13,25 +13,6 @@ def find_resource_files(directory):
 # -- Extension Definition -- #
 ext_package = 'atcore'
 release_package = 'tethysext-' + ext_package
-ext_class = 'atcore.ext:Atcore'
-ext_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tethysext', ext_package)
-
-# -- Python Dependencies -- #
-dependencies = [
-    'sqlalchemy',
-    'factory_boy',
-    'jinja2',
-    'requests',
-    'param',
-    'geojson',
-    'pyshp',
-    'django-datetime-widget',
-    'django-select2',
-    'django-taggit',
-    'filelock',
-    'pandas',
-    'django'
-]
 
 # -- Get Resource File -- #
 resource_files = find_resource_files('tethysext/' + ext_package + '/templates')
@@ -48,13 +29,14 @@ setup(
     author_email='',
     url='',
     license='',
-    packages=find_packages(
-        exclude=['ez_setup', 'examples', 'tethysext/' + ext_package + '/tests', 'tethysext/' + ext_package + '/tests.*']
+    packages=find_namespace_packages(
+        exclude=['ez_setup', 'examples', 'docker',
+                 'tethysext/' + ext_package + '/tests',
+                 'tethysext/' + ext_package + '/tests.*']
     ),
     package_data={'': resource_files},
-    namespace_packages=['tethysext', 'tethysext.' + ext_package],
     include_package_data=True,
     zip_safe=False,
-    install_requires=dependencies,
+    install_requires=[],  # IMPORTANT: LIST DEPENDENCIES IN install.yml INSTEAD OF HERE
     test_suite='tethysext.atcore.tests'
 )

@@ -21,17 +21,17 @@ class PermissionsGeneratorTests(TethysTestCase):
         pass
 
     def test_add_permissions_for(self):
-        self.pg.add_permissions_for(self.apm._APP_A_PERMS, ['fake-permission', 'another-fake-permission'])
-        self.assertIn(self.apm._APP_A_PERMS, self.pg.custom_permissions)
-        self.assertIn('fake-permission', self.pg.custom_permissions[self.apm._APP_A_PERMS])
-        self.assertIn('another-fake-permission', self.pg.custom_permissions[self.apm._APP_A_PERMS])
+        self.pg.add_permissions_for(self.apm.APP_A_PERMS, ['fake-permission', 'another-fake-permission'])
+        self.assertIn(self.apm.APP_A_PERMS, self.pg.custom_permissions)
+        self.assertIn('fake-permission', self.pg.custom_permissions[self.apm.APP_A_PERMS])
+        self.assertIn('another-fake-permission', self.pg.custom_permissions[self.apm.APP_A_PERMS])
 
     def test_add_permissions_for_invalid_permission_group(self):
         self.assertRaises(ValueError, self.pg.add_permissions_for, 'not-a-valid-perm-group', [])
 
     def test_add_permissions_for_invalid_permissions(self):
-        self.assertRaises(ValueError, self.pg.add_permissions_for, self.apm._APP_A_PERMS, 'not-a-list')
+        self.assertRaises(ValueError, self.pg.add_permissions_for, self.apm.APP_A_PERMS, 'not-a-list')
 
     def test_generate(self):
         perms = self.pg.generate()
-        self.assertEqual(9, len(perms))
+        self.assertEqual(13, len(perms))

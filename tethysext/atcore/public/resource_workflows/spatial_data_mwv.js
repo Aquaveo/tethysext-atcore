@@ -134,9 +134,13 @@ var SPATIAL_DATA_MWV = (function() {
             url:'',
             data: data,
         }).done(function(response){
-            console.log(response);
-            hide_spatial_data_pop_up();
-            TETHYS_MAP_VIEW.clearSelection();
+            if (response.success) {
+                hide_spatial_data_pop_up();
+                TETHYS_MAP_VIEW.clearSelection();
+            } else {
+                show_message_box('spatial-data-save-error', 'warning', response.error);
+                console.log(response);
+            }
         });
 
     };
@@ -169,8 +173,11 @@ var SPATIAL_DATA_MWV = (function() {
 	$(function() {
 	    // Silence warning about leaving the page during ajax requests
 	    window.onbeforeunload = null;
-	    setup_map();
-        init_data_popup();
+	    var enable_spatial_data = $('#spatial-data-attributes').data('enable-spatial-data-popup');
+	    if (enable_spatial_data) {
+	        setup_map();
+            init_data_popup();
+	    }
 	});
 
 	return m_public_interface;

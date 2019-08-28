@@ -6,7 +6,6 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-from tethys_sdk.gizmos import MVLayer
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialDatasetRWS, SpatialAttributesRWS
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
@@ -39,39 +38,58 @@ class SpatialDataMWV(MapWorkflowView):
             raise RuntimeError('The geometry option is required.')
 
         # Get geometry from option
-        geometry = current_step.resolve_option('geometry_source')
+        geometry = current_step.to_geojson()
 
         # Turn off feature selection
         map_view = context['map_view']
         self.set_feature_selection(map_view=map_view, enabled=False)
 
-        # Create new layer for geometry
-        geometry_layer = MVLayer(
-            source='GeoJSON',
-            options=geometry,
-            legend_title='_pop_up_features',
-            layer_options={
-                # 'style': {
-                #     'fill': {
-                #         'color': 'rbga(255,0,0,0.5)'
-                #     },
-                #     'stroke': {
-                #         'color': 'rbga(0,255,0,1.0)',
-                #         'width': 3
-                #     }
-                # },
-            },
-            feature_selection=True,
-            editable=False,
-            data={}
+        # Get managers
+        _, map_manager = self.get_managers(
+            request=request,
+            resource=resource
+        )
+
+        if current_step.parent and 'singular_name' in current_step.parent.options:
+            title = current_step.parent.options['singular_name']
+        else:
+            title = current_step.options['dataset_title']
+
+        geometry_layer = map_manager.build_geojson_layer(
+            geojson=geometry,
+            layer_name='_pop_up_features',
+            layer_variable='pop_up_features',
+            layer_title='Pop Up Features',
+            popup_title=title,
+            selectable=True
         )
 
         map_view.layers.insert(0, geometry_layer)
 
+        # Disable the default properties popup for users that can edit
+        has_active_role = self.user_has_active_role(request, current_step)
+        if has_active_role:
+            enable_properties = False
+        else:
+            enable_properties = True
+
         # Save changes to map view
         context.update({
             'map_view': map_view,
+            'enable_properties_popup': enable_properties,
+            'enable_spatial_data_popup': not enable_properties
         })
+
+        # Note: new layer created by super().process_step_options will have feature selection enabled by default
+        super().process_step_options(
+            request=request,
+            session=session,
+            context=context,
+            resource=resource,
+            current_step=current_step,
+            previous_step=previous_step,
+            next_step=next_step
+        )
 
     @workflow_step_controller(is_rest_controller=True)
     def get_popup_form(self, request, session, resource, workflow, step, back_url, *args, **kwargs):

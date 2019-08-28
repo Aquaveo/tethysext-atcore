@@ -1089,7 +1089,9 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         // Reset popup
-        reset_properties_pop_up();
+        if (m_enable_properties_popup) {
+            reset_properties_pop_up();
+        }
 
         // Hide plot slide sheet
         hide_plot();

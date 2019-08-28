@@ -101,3 +101,16 @@
   border-radius: 50%;
   background: white;
 }
+
+.flatmark-group {
+    padding: 10px;
+    background: #f5f5f5;
+}
+
+.flatmark-group .flatmark {
+    margin-bottom: 7px;
+}
+
+.flatmark-group .flatmark:last-child {
+    margin-bottom: 0;
+}

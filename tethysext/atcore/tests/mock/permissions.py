@@ -17,4 +17,4 @@ def mock_has_permission_true(*args, **kwargs):
 
 
 def mock_has_permission_assignable_roles(request, permission, *args, **kwargs):
-    return permission in ['assign_org_users_role', 'assign_org_admin_role']
+    return permission in ['assign_org_user_role', 'assign_org_admin_role']

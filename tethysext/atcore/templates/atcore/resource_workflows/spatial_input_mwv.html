@@ -63,4 +63,10 @@
     <a class="btn btn-default spatial-attributes-ok" href="javscript:void(0)">Save</a>
   </div>
   {% endif %}
+
+  {# MAP ATTRIBUTES #}
+  <div id="atcore-spatial-input-attributes"
+       data-allow-edit-attributes="{{ allow_edit_attributes|jsonify }}"
+       style="display: none;"
+  ></div>
 {% endblock %}

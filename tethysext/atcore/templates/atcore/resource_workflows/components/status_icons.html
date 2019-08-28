@@ -1,0 +1,22 @@
+{# WORKFLOW TAB PANEL #}
+{% comment %}
+Include to add icons based on status of a step.
+
+Required Context Variables:
+  lower_status: The status of the step to lowercase.
+
+Required CSS:
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous" rel="stylesheet">
+{% endcomment %}
+
+{% if lower_status == 'pending' %}
+<i class="far fa-circle" aria-hidden="true"></i>
+{% elif lower_status == 'complete' or lower_status == 'approved'%}
+<i class="fas fa-check-circle" aria-hidden="true"></i>
+{% elif lower_status == 'error' or lower_status == 'failed' or lower_status == 'rejected' %}
+<i class="fas fa-times-circle" aria-hidden="true"></i>
+{% elif lower_status == 'working' or lower_status == 'under review' or lower_status == 'changes requested' or lower_status == 'submitted' %}
+<i class="fas fa-cogs" aria-hidden="true"></i>
+{% else %}
+<i class="fas fa-question-circle" aria-hidden="true"></i>
+{% endif %}

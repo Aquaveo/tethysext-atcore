@@ -50,7 +50,6 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         mock_build_result_cards.return_value = 'baz'
         mock_result_url.return_value = 'bar'
 
-        # import pdb; pdb.set_trace()
         # Function Call
         ret = self.instance.get_context(
             request=mock_request,

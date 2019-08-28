@@ -109,8 +109,8 @@ def resource_controller(is_rest_controller=False):
                 if session:
                     session.rollback()
 
-                messages.error(request, "We're sorry, an unexpected error has occurred.")
                 log.exception(str(e))
+                messages.error(request, "We're sorry, an unexpected error has occurred.")
                 if not is_rest_controller:
                     return redirect(self.back_url)
                 else:
