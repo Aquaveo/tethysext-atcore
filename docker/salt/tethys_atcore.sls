@@ -24,15 +24,15 @@ Edit_Tethys_Settings_File_(PUBLIC_HOST)_Atcore:
     - text: "PUBLIC_HOST = \"{{ TETHYS_PUBLIC_HOST }}\""
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
-Migrate_Database_Atcore:
-  cmd.run:
-    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && tethys db migrate
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
-
 Install_Atcore:
   cmd.run:
     - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && cd {{ TETHYSEXT_DIR }}/tethysext-atcore && tethys install --quiet --without-dependencies
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
+
+Migrate_Database_Atcore:
+  cmd.run:
+    - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && tethys db migrate
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
@@ -44,7 +44,7 @@ Collect_Static_Atcore:
 
 Overwrite_Tethys_CSS_Atcore:
   cmd.run:
-    - name: yes | cp {{ TETHYSEXT_DIR }}/tethysext-atcore/tethysext/atcore/public/css/tethys_main.css {{ STATIC_ROOT }}/tethys_portal/css/tethys_main.css
+    - name: rm {{ STATIC_ROOT }}/tethys_portal/css/tethys_main.css && cp {{ TETHYSEXT_DIR }}/tethysext-atcore/tethysext/atcore/public/css/tethys_main.css {{ STATIC_ROOT }}/tethys_portal/css/tethys_main.css
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 

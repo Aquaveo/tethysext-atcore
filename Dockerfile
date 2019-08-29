@@ -32,6 +32,7 @@ RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
   ; tethys gen settings --overwrite \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
   ; tethys install --quiet --only-dependencies \
+  ; python setup.py install \
   ; rm ${TETHYS_HOME}/tethys/tethys_portal/settings.py"
 
 #########
