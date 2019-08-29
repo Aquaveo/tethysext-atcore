@@ -24,6 +24,12 @@ Edit_Tethys_Settings_File_(PUBLIC_HOST)_Atcore:
     - text: "PUBLIC_HOST = \"{{ TETHYS_PUBLIC_HOST }}\""
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
+Edit_Tethys_Settings_File_(DATA_UPLOAD_MAX_MEMORY_SIZE)_Atcore:
+  file.append:
+    - name: {{ TETHYS_HOME }}/tethys/tethys_portal/settings.py
+    - text: "DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1048000  # 100 MB"
+    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
+
 Install_Atcore:
   cmd.run:
     - name: . {{ CONDA_HOME }}/bin/activate {{ CONDA_ENV_NAME }} && cd {{ TETHYSEXT_DIR }}/tethysext-atcore && tethys install --quiet --without-dependencies
