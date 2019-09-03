@@ -1142,6 +1142,52 @@ class MapManagerBaseTests(unittest.TestCase):
         self.assertEqual(expected_data, ret['data'])
         self.assertEqual(given_options, opts)
 
+    def test_build_mv_layer_w_geometry_attributes(self):
+        layer_source = 'GeoJSON'
+        given_options = {'type': 'FeatureCollection', 'features': []}
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+        geometry_attribute = 'geometry'
+        extent = [400, 300, 800, 100]
+
+        with mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.map_extent',
+                        new_callable=mock.PropertyMock) as mock_map_extent:
+            mock_map_extent.return_value = extent
+            map_manager = _MapManager(
+                spatial_manager=self.spatial_manager,
+                model_db=self.model_db
+            )
+
+            ret = map_manager._build_mv_layer(
+                layer_source=layer_source,
+                layer_name=layer_name,
+                layer_title=layer_title,
+                layer_variable=layer_variable,
+                options=given_options,
+                geometry_attribute=geometry_attribute
+            )
+
+        opts = ret['options']
+        expected_data = {
+            'excluded_properties': ['id', 'type', 'layer_name'],
+            'layer_name': layer_name,
+            'layer_id': layer_name,
+            'popup_title': layer_title,
+            'layer_variable': layer_variable,
+            'toggle_status': True
+        }
+
+        self.assertIsInstance(ret, MVLayer)
+        self.assertEqual(layer_source, ret['source'])
+        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual(layer_title, ret['legend_title'])
+        self.assertEqual(extent, ret['legend_extent'])
+        self.assertEqual(False, ret['feature_selection'])
+        self.assertEqual(expected_data, ret['data'])
+        self.assertEqual(given_options, opts)
+        self.assertEqual(geometry_attribute, ret['geometry_attribute'])
+
     def test_vector_style_map(self):
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,

@@ -1,3 +1,11 @@
+"""
+********************************************************************************
+* Name: workflow_view_tests.py
+* Author: mlebaron
+* Created On: August 21, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+"""
 from unittest import mock
 
 from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
