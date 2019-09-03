@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r23
+FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r24
 
 #####################
 # Default Variables #
@@ -12,7 +12,8 @@ ENV TETHYS_PUBLIC_HOST 'localhost'
 # SETUP #
 #########
 RUN mkdir -p "${TETHYSAPP_DIR}" \
-  ; mkdir -p "${TETHYSEXT_DIR}"
+  ; mkdir -p "${TETHYSEXT_DIR}" \
+  ; mkdir -p "${TETHYS_PERSIST}/keys"
 
 # Speed up APT installs and Install APT packages
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
@@ -32,6 +33,7 @@ RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
   ; tethys gen settings --overwrite \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
   ; tethys install --quiet --only-dependencies \
+  ; python setup.py install \
   ; rm ${TETHYS_HOME}/tethys/tethys_portal/settings.py"
 
 #########
