@@ -14,6 +14,7 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condo
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
+from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -233,7 +234,19 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.SpatialCondorJobMWV.get_working_directory')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     def test_run_job(self, mock_get_managers, mock_get_working_dir, mock_prepare, mock_run_job):
-        mock_get_managers.return_value = mock.MagicMock(spec=ModelDatabase), None
+        map_manager = mock.MagicMock(
+            spec=MapManagerBase,
+            spatial_manager=mock.MagicMock(
+                gs_engine=mock.MagicMock(
+                    username='Faxy',
+                    password='Bear',
+                    endpoint='http://localhost:8181/geoserver/rest',
+                    public_endpoint='http://localhost:8181/geoserver/rest'
+                )
+            )
+        )
+
+        mock_get_managers.return_value = mock.MagicMock(spec=ModelDatabase), map_manager
         mock_get_working_dir.return_value = 'working_dir'
         mock_prepare.return_value = self.workflow.id
         mock_run_job.return_value = str(self.workflow.id)

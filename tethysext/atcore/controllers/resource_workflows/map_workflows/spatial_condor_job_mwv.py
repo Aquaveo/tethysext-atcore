@@ -199,10 +199,13 @@ class SpatialCondorJobMWV(MapWorkflowView):
             raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.')
 
         # Get managers
-        model_db, _ = self.get_managers(
+        model_db, map_manager = self.get_managers(
             request=request,
             resource=resource
         )
+
+        # Get GeoServer Connection Information
+        gs_engine = map_manager.spatial_manager.gs_engine
 
         # Define the working directory
         app = self.get_app()
@@ -218,6 +221,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             working_directory=working_directory,
             app=app,
             scheduler_name=scheduler_name,
+            gs_engine=gs_engine,
         )
 
         # Serialize parameters from all previous steps into json

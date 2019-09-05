@@ -159,6 +159,8 @@ def workflow_step_job(job_func):
                     # allow sqlalchemy to resolve the polymorphic identity.
                     workflow=step.workflow,
                     step=step,
+                    gs_private_url=args.gs_private_url,
+                    gs_public_url=args.gs_public_url,
                     params_json=params_json,
                     params_file=args.workflow_params_file,
                     cmd_args=args
