@@ -4,7 +4,6 @@ from .mixins.results_mixin import ResultMixinTests  # noqa: F401
 from .model_types.guid_tests import GuidTests  # noqa: F401
 from .services.app_users.licenses import LicensesTests  # noqa: F401
 from .services.app_users.user_roles_tests import AppUserRoleTests  # noqa: F401
-from .services.condor_workflow_manager_tests import CondorWorkflowManagerTests  # noqa: F401
 from .services.paginate import PaginateTests  # noqa: F401
 from .services.spatial_reference import SpatialReferenceServiceTests  # noqa: F401
 from .services.model_database_connection_base import ModelDatabaseConnectionBaseTests  # noqa: F401, E501
