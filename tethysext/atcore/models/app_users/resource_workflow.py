@@ -98,7 +98,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
         for idx, step in enumerate(self.steps):
             step_status = step.get_status(step.ROOT_STATUS_KEY, step.STATUS_PENDING)
 
-            if step_status != ResourceWorkflowStep.STATUS_COMPLETE:
+            if step_status not in ResourceWorkflowStep.COMPLETE_STATUSES:
                 return idx, step
 
         # Return last step and index if none complete

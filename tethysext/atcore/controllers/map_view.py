@@ -55,7 +55,11 @@ class MapView(ResourceView):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
-        scenario_id = request.GET.get('scenario-id', 1)
+        # Use scenario id from the resource, if it is there
+        scenario_id = resource.get_attribute('scenario_id') or 1 if resource else 1
+
+        # If "scenario-id" is passed in via the GET parameters, use that instead of the one given by the resource
+        scenario_id = request.GET.get('scenario-id', scenario_id)
 
         # Load Primary Map View
         resource_id = None
