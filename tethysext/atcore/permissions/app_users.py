@@ -249,6 +249,13 @@ class PermissionsGenerator:
         )
         self.all_permissions.append(toggle_public_layers)
 
+        # Lock permissions
+        can_override_user_locks = Permission(
+            name='can_override_user_locks',
+            description='Can override user locks on workflows.'
+        )
+        self.all_permissions.append(can_override_user_locks)
+
         # Only add enabled permissions groups
         enabled_permissions_groups = self.permission_manager.list()
 
@@ -271,7 +278,8 @@ class PermissionsGenerator:
             create_resource, edit_resource, delete_resource,
             view_users, modify_users, modify_organization_members,
             assign_org_user_role, assign_org_reviewer_role, assign_org_admin_role,
-            remove_layers, rename_layers, toggle_public_layers
+            remove_layers, rename_layers, toggle_public_layers,
+            can_override_user_locks
         ]
 
         if self.permission_manager.STD_A_PERMS in self.custom_permissions:
