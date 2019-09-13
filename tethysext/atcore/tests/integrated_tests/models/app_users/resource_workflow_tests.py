@@ -283,6 +283,18 @@ class ResourceWorkflowLockTests(SqlAlchemyTestCase):
         mock_hp.assert_called_with(request, 'can_override_user_locks')
 
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)
+    def test_release_user_lock_locked_not_given_request_user_permissed_user(self, mock_hp):
+        request = self.rf.get('/foo/bar')
+        request.user = self.django_user
+        self.workflow._user_lock = 'otheruser'
+
+        ret = self.workflow.release_user_lock(request)
+
+        self.assertFalse(ret)
+        self.assertEqual('otheruser', self.workflow._user_lock)
+        mock_hp.assert_called_with(request, 'can_override_user_locks')
+
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)
     def test_release_user_lock_locked_for_all_users_permissed_user(self, mock_hp):
         request = self.rf.get('/foo/bar')
         request.user = self.django_user
