@@ -48,6 +48,34 @@ def parse_url(url):
         raise ValueError('Invalid url given: {}'.format(url))
 
 
+def generate_geoserver_urls(gs_engine):
+    username = gs_engine.username
+    password = gs_engine.password
+    endpoint = gs_engine.endpoint
+    public_endpoint = gs_engine.public_endpoint
+
+    parts = endpoint.split('://')
+    if len(parts) > 1:
+        protocol = parts[0]
+        endpoint_no_protocol = parts[1]
+    else:
+        protocol = ''
+        endpoint_no_protocol = parts[0]
+
+    public_parts = public_endpoint.split('://')
+    if len(public_parts) > 1:
+        public_protocol = public_parts[0]
+        public_endpoint_no_protocol = public_parts[1]
+    else:
+        public_protocol = ''
+        public_endpoint_no_protocol = public_parts[0]
+
+    url = f'{protocol}://{username}:{password}@{endpoint_no_protocol}'
+    public_url = f'{public_protocol}://{username}:{password}@{public_endpoint_no_protocol}'
+
+    return url, public_url
+
+
 def clean_request(request):
     """
     Strip the "method" variable from the GET and POST params of a request.

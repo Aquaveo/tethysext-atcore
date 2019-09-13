@@ -9,6 +9,7 @@
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
 from tethys_sdk.compute import get_scheduler
+from tethysext.atcore.utilities import generate_geoserver_urls
 
 
 class ResourceWorkflowCondorJobManager(object):
@@ -18,7 +19,7 @@ class ResourceWorkflowCondorJobManager(object):
     ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'resource_workflows')
 
     def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
-                 jobs=None, input_files=None, *args):
+                 jobs=None, input_files=None, gs_engine=None, *args):
         """
         Constructor.
 
@@ -42,6 +43,12 @@ class ResourceWorkflowCondorJobManager(object):
 
         # DB URL for database containing the model database
         self.model_db_url = model_db.db_url
+
+        # Serialize GeoServer Connection
+        self.gs_private_url = ''
+        self.gs_public_url = ''
+        if gs_engine is not None:
+            self.gs_private_url, self.gs_public_url = generate_geoserver_urls(gs_engine)
 
         # Important IDs
         self.resource_id = str(resource_workflow_step.workflow.resource.id)
@@ -75,6 +82,8 @@ class ResourceWorkflowCondorJobManager(object):
             self.resource_id,
             self.resource_workflow_id,
             self.resource_workflow_step_id,
+            self.gs_private_url,
+            self.gs_public_url,
         ]
 
         # Add custom args

@@ -9,7 +9,7 @@ variables:
   CONDA_HOME: '/opt/conda'
 
 Lint:
-  image: python:3.6
+  image: python:3.7
   stage: Lint
   script:
     - pip install flake8
@@ -84,7 +84,6 @@ Test:
     # Run
     - >
         docker run -d --name tethys_atcore
-        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\""
         -e TETHYS_PUBLIC_HOST='172.17.0.1'
         -e TETHYS_DB_USERNAME='postgres'
         -e TETHYS_DB_PASSWORD='pass'
@@ -131,7 +130,6 @@ Test:
     # Run test script
     - >
         docker run --name tethys_atcore
-        -e ALLOWED_HOSTS="\"['localhost', '127.0.0.1']\""
         -e TETHYS_PUBLIC_HOST='172.17.0.1'
         -e TETHYS_DB_USERNAME='postgres'
         -e TETHYS_DB_PASSWORD='pass'
