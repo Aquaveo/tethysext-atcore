@@ -9,7 +9,7 @@
 import uuid
 import logging
 import datetime as dt
-from sqlalchemy import Column, ForeignKey, String, DateTime
+from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin, ResultsMixin
@@ -70,6 +70,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
 
     name = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
+    lock_when_finished = Column(Boolean, default=False)
     _attributes = Column(String)
     _user_lock = Column(String)
 

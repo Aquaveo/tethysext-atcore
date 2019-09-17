@@ -306,6 +306,20 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
         return has_active_role
 
+    def is_read_only(self, request, step):
+        """
+        Determine if the view is read only.
+
+        Args:
+            request(HttpRequest): The request.
+            step(ResourceWorkflowStep): the step.
+
+        Returns:
+            bool: True if the view should be rendered in read-only mode.
+        """
+        user_has_active_role = self.user_has_active_role(request, step)
+        return not user_has_active_role
+
     def validate_step(self, request, session, current_step, previous_step, next_step):
         """
         Validate the step being used for this view. Raises TypeError if current_step is invalid.

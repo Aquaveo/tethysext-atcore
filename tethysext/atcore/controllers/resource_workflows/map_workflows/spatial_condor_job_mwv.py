@@ -106,6 +106,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Get the current app
         step_url_name = self.get_step_url_name(request, workflow)
 
+        # Can run workflows if not readonly
+        can_run_workflows = not self.is_read_only(request, current_step)
+
         context = {
             'resource': resource,
             'workflow': workflow,
@@ -121,7 +124,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
             'jobs_table': jobs_table,
-            'can_run_workflows': self.user_has_active_role(request, current_step)
+            'can_run_workflows': can_run_workflows
         }
 
         return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)
@@ -185,7 +188,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Validate data if going to next step
         step = self.get_step(request, step_id, session)
 
-        if not self.user_has_active_role(request, step):
+        if self.is_read_only(request, step):
             messages.warning(request, 'You do not have permission to run this workflow.')
             return redirect(request.path)
 

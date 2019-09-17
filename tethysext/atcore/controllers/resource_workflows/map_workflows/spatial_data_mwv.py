@@ -67,17 +67,13 @@ class SpatialDataMWV(MapWorkflowView):
         map_view.layers.insert(0, geometry_layer)
 
         # Disable the default properties popup for users that can edit
-        has_active_role = self.user_has_active_role(request, current_step)
-        if has_active_role:
-            enable_properties = False
-        else:
-            enable_properties = True
+        enable_readonly_properties = self.is_read_only(request, current_step)
 
         # Save changes to map view
         context.update({
             'map_view': map_view,
-            'enable_properties_popup': enable_properties,
-            'enable_spatial_data_popup': not enable_properties
+            'enable_properties_popup': enable_readonly_properties,
+            'enable_spatial_data_popup': not enable_readonly_properties
         })
 
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
