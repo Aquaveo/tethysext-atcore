@@ -45,6 +45,14 @@ class SpatialCondorJobMWV(MapWorkflowView):
         map_view = context['map_view']
         self.set_feature_selection(map_view=map_view, enabled=False)
 
+        # Can run workflows if not readonly
+        can_run_workflows = not self.is_read_only(request, current_step)
+
+        # Save changes to map view and layer groups
+        context.update({
+            'can_run_workflows': can_run_workflows
+        })
+
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
         super().process_step_options(
             request=request,
