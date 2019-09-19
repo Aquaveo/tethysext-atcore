@@ -27,9 +27,13 @@ class SpatialAttributesRWSTests(SqlAlchemyTestCase):
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):
-        baseline = {'geometry_source': None,
-                    'attributes': {}
-                    }
+        baseline = {
+            'geometry_source': None,
+            'attributes': {},
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
+        }
         self.assertDictEqual(baseline, self.instance.default_options)
 
     def test_init_parameters(self):

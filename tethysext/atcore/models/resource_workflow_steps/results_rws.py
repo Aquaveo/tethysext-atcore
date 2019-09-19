@@ -33,7 +33,8 @@ class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, Results
         """
         Returns default options dictionary for the result.
         """
-        return {}
+        default_options = super().default_options
+        return default_options
 
     def init_parameters(self, *args, **kwargs):
         """

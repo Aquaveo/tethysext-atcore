@@ -49,8 +49,7 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
             help='help1',
             order=1
         )
-
-        self.session.commit()
+        self.workflow.steps.append(self.step)
 
     def tearDown(self):
         super().tearDown()
@@ -88,7 +87,6 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
         self.assertIn('layer_groups', context)
         self.assertIn('enable_properties_popup', context)
         self.assertIn('enable_spatial_data_popup', context)
-        self.assertIn('can_run_workflows', context)
         self.assertEqual(self.step.options['dataset_title'],
                          context['map_view'].__dict__['layers'][0]['data']['popup_title'])
 
@@ -119,7 +117,6 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
         self.assertIn('layer_groups', context)
         self.assertIn('enable_properties_popup', context)
         self.assertIn('enable_spatial_data_popup', context)
-        self.assertIn('can_run_workflows', context)
         self.assertEqual(step1.options['singular_name'],
                          context['map_view'].__dict__['layers'][0]['data']['popup_title'])
 

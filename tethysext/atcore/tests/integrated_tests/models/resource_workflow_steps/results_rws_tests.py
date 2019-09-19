@@ -26,7 +26,12 @@ class ResultsResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):
-        self.assertDictEqual({}, self.instance.default_options)
+        baseline_options = {
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
+        }
+        self.assertDictEqual(baseline_options, self.instance.default_options)
 
     def test_init_parameters(self):
         self.assertDictEqual({}, self.instance.init_parameters())
