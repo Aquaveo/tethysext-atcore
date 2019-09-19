@@ -50,7 +50,10 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             'read_only_columns': [],
             'plot_columns': [],
             'max_rows': self.instance.DEFAULT_MAX_ROWS,
-            'empty_rows': self.instance.DEFAULT_EMPTY_ROWS
+            'empty_rows': self.instance.DEFAULT_EMPTY_ROWS,
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 

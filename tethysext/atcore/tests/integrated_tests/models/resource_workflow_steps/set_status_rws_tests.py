@@ -80,6 +80,9 @@ class SetStatusRWSTests(SqlAlchemyTestCase):
                 {'status': SetStatusRWS.STATUS_COMPLETE,
                  'label': None}
             ],
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
         }
         self.assertDictEqual(default_options, ret)
 

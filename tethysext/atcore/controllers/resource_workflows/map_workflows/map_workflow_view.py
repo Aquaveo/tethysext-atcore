@@ -110,7 +110,6 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
         context.update({
             'map_view': map_view,
             'layer_groups': layer_groups,
-            'can_run_workflows': self.user_has_active_role(request, current_step)
         })
 
     def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):

@@ -47,7 +47,10 @@ class SpatialInputRWSTests(SqlAlchemyTestCase):
             'snapping_enabled': True,
             'snapping_layer': {},
             'snapping_options': {},
-            'attributes': None
+            'attributes': None,
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 

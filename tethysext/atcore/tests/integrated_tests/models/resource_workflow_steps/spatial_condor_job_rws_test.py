@@ -32,7 +32,10 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
             'jobs': [],
             'working_message': '',
             'error_message': '',
-            'pending_message': ''
+            'pending_message': '',
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 

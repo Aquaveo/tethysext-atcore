@@ -33,7 +33,8 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
 
     @property
     def default_options(self):
-        return {
+        default_options = super().default_options
+        default_options.update({
             'shapes': ['points', 'lines', 'polygons', 'extents'],
             'singular_name': 'Feature',
             'plural_name': 'Features',
@@ -43,7 +44,8 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             'snapping_layer': {},
             'snapping_options': {},
             'attributes': None
-        }
+        })
+        return default_options
 
     def init_parameters(self, *args, **kwargs):
         """

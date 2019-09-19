@@ -120,6 +120,26 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         return self.__str__()
 
     @property
+    def default_options(self):
+        """
+        Returns default options dictionary for the object.
+
+        Options:
+            user_lock_required(bool): This step requires a user lock to be performed (to prevent conflicts). Defaults to False.
+            release_user_lock_on_completion(bool): Attempt to release a user lock when the view is initialized. Defaults to True.
+            release_user_lock_on_init(bool): Attempt to release a user lock when the step is completed. Ignored if user_lock_required is True. Defaults to False.
+        """  # noqa: E501
+        return {
+            'user_lock_required': False,
+            'release_user_lock_on_completion': True,
+            'release_user_lock_on_init': False,
+        }
+
+    @property
+    def complete(self):
+        return self.get_status(default=self.STATUS_PENDING) in self.COMPLETE_STATUSES
+
+    @property
     def active_roles(self):
         return self._active_roles
 
