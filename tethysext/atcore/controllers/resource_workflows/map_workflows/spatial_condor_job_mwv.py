@@ -117,6 +117,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Can run workflows if not readonly
         can_run_workflows = not self.is_read_only(request, current_step)
 
+        # Configure workflow lock display
+        workflow_lock = self.build_workflow_lock_display_options(request, workflow)
+
         context = {
             'resource': resource,
             'workflow': workflow,
@@ -132,7 +135,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
             'jobs_table': jobs_table,
-            'can_run_workflows': can_run_workflows
+            'can_run_workflows': can_run_workflows,
+            'workflow_lock': workflow_lock
         }
 
         return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)

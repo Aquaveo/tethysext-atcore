@@ -89,6 +89,10 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     def __repr__(self):
         return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}">'
 
+    @property
+    def complete(self):
+        return self.get_status() in self.COMPLETE_STATUSES
+
     def get_next_step(self):
         """
         Return the next step object, based on the status of the steps.
@@ -100,9 +104,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
         step = None
 
         for idx, step in enumerate(self.steps):
-            step_status = step.get_status(step.ROOT_STATUS_KEY, step.STATUS_PENDING)
-
-            if step_status not in ResourceWorkflowStep.COMPLETE_STATUSES:
+            if not step.complete:
                 return idx, step
 
         # Return last step and index if none complete
@@ -289,3 +291,20 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
             bool: True if the workflow is user locked for all users, False if not.
         """  # noqa: E501
         return self._user_lock == self.LOCKED_FOR_ALL_USERS
+
+    def is_locked_for_request_user(self, request):
+        """
+        Determine if the lock is locked for the request user.
+
+        Args:
+            request(django.http.HttpRequest): The Django Request.
+
+        Returns:
+            bool: True if workflow is locked for request user.
+        """
+        from tethys_sdk.permissions import has_permission
+
+        if has_permission(request, 'can_override_user_locks'):
+            return False
+
+        return self.is_user_locked and self._user_lock != request.user.username

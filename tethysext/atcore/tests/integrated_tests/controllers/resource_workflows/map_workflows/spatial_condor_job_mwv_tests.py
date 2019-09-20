@@ -86,8 +86,10 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
-    def test_process_step_options(self, mock_get_managers):
+    def test_process_step_options(self, mock_get_managers, _):
         mock_get_managers.return_value = None, self.map_view
 
         SpatialCondorJobMWV().process_step_options(self.request, self.session, self.context, self.resource, self.step,
@@ -105,10 +107,12 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
 
         self.assertEqual(None, ret)
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.get_active_app')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
-    def test_on_get_step_not_pending(self, mock_get_app, mock_get_active_app, mock_render):
+    def test_on_get_step_not_pending(self, mock_get_app, mock_get_active_app, mock_render, _):
         app = mock.MagicMock()
         job_manager = mock.MagicMock()
         job_manager.get_job.return_value = mock.MagicMock()
@@ -194,8 +198,10 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
-    def test_run_job_no_active_role(self, mock_get_step):
+    def test_run_job_no_active_role(self, mock_get_step, _):
         mock_get_step.return_value = self.step
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
@@ -208,7 +214,9 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
-    def test_run_job_no_schedule_name(self):
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
+    def test_run_job_no_schedule_name(self, _):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
 
@@ -218,7 +226,9 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         except RuntimeError as e:
             self.assertEqual('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.', str(e))
 
-    def test_run_job_no_jobs(self):
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
+    def test_run_job_no_jobs(self, _):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
         self.step.options['scheduler'] = 'my_schedule'

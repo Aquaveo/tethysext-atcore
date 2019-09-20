@@ -118,6 +118,8 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_step_url_name')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
@@ -126,7 +128,7 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_context(self, mock_has_permission, mock_render, _, mock_on_get, mock_get_workflow,
-                         mock_get_step, mock_url):
+                         mock_get_step, mock_url, __):
         mock_on_get.return_value = None
         mock_get_workflow.return_value = self.workflow
         mock_get_step.return_value = self.step2

@@ -85,8 +85,10 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
 
         self.assertIsInstance(ret, HttpResponse)
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
-    def test_save_spatial_data_no_active_role(self, mock_user_role):
+    def test_save_spatial_data_no_active_role(self, mock_user_role, _):
         mock_user_role.return_value = False
 
         ret = SpatialDatasetMWV().save_spatial_data(self.request, self.workflow.id, self.step1.id,
@@ -97,8 +99,10 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
         expected = b'{"success": false, "error": "You do not have permission to save changes on this step."}'
         self.assertEqual(expected, ret.__dict__['_container'][0])
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
-    def test_save_spatial_data(self, mock_user_role):
+    def test_save_spatial_data(self, mock_user_role, _):
         mock_user_role.return_value = True
 
         ret = SpatialDatasetMWV().save_spatial_data(self.request, self.workflow.id, self.step1.id,
