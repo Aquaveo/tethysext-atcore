@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: workflow_view_tests.py
+* Name: base_methods_tests.py
 * Author: mlebaron
 * Created On: August 21, 2019
 * Copyright: (c) Aquaveo 2019
@@ -9,6 +9,7 @@
 from unittest import mock
 
 from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
+from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
@@ -33,7 +34,7 @@ class InvalidStep(ResourceWorkflowView):
     pass
 
 
-class WorkflowViewTests(SqlAlchemyTestCase):
+class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
     current_url = './current'
     previous_url = './previous'
     next_url = './next'
@@ -43,6 +44,9 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.namespace = 'my_namespace'
         self.request.path = 'apps/and/such'
+
+        self.django_user = UserFactory()
+        self.django_user.save()
 
         self.workflow = ResourceWorkflow(name='foo')
 
@@ -442,3 +446,99 @@ class WorkflowViewTests(SqlAlchemyTestCase):
         self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_FAILED))
         self.assertEqual('danger', rwv.get_style_for_status(StatusMixin.STATUS_REJECTED))
         self.assertEqual('primary', rwv.get_style_for_status('unsupported status'))
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
+    def test_is_read_only_active_user_not_locked(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=False)
+    def test_is_read_only_not_active_user_not_locked(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)
+    def test_is_read_only_active_user_locked(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = 'otheruser'  # locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=False)
+    def test_is_read_only_not_active_user_locked(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = 'otheruser'  # locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    def test_is_read_only_active_user_not_locked_permitted(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    def test_is_read_only_not_active_user_not_locked_permitted(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    def test_is_read_only_active_user_locked_permitted(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = 'otheruser'  # locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
+                '.user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    def test_is_read_only_not_active_user_locked_permitted(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = 'otheruser'  # locked
+
+        ret = ResourceWorkflowView().is_read_only(self.request, self.step1)
+
+        self.assertFalse(ret)

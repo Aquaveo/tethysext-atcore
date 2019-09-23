@@ -294,7 +294,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """
         workflow_lock = {
             'style': 'warning',
-            'message': 'The workflow is locked.',
+            'message': 'The workflow is not locked.',
             'show': False
         }
 
@@ -305,6 +305,10 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             if workflow.is_locked_for_all_users:
                 workflow_lock['message'] = 'The workflow is locked for editing for all users.'
                 workflow_lock['style'] = 'info'
+
+            # Request user has permission to override permissions
+            elif has_permission(request, 'can_override_user_locks'):
+                workflow_lock['message'] = f'The workflow is locked for editing for user: {workflow.user_lock}'
 
             # Different user possesses the user lock
             elif workflow.is_locked_for_request_user(request):
@@ -399,15 +403,15 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
         # Process lock options - only active users or permitted users can acquire user locks
         if user_has_active_role:
-            if step.options.get('user_lock_required') and not step.complete:
-                self.acquire_user_lock_and_log(request, session, step.workflow)
-
-            # Should not release locks on init when lock is required is set (otherwise it would be released immediately)
-            elif step.options.get('release_user_lock_on_init'):
+            # release locks before acquiring a new lock
+            if step.options.get('release_user_lock_on_init'):
                 self.release_user_lock_and_log(request, session, step.workflow)
 
+            if not step.complete and step.options.get('user_lock_required'):
+                self.acquire_user_lock_and_log(request, session, step.workflow)
+
             # Process lock when finished after releasing other locks - will be a lock for all users
-            if step.workflow.lock_when_finished and step.workflow.complete:
+            if step.workflow.complete and step.workflow.lock_when_finished:
                 self.acquire_user_lock_and_log(request, session, step.workflow, for_all_users=True)
 
     def process_lock_options_after_submission(self, request, session, step):
@@ -424,7 +428,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             self.release_user_lock_and_log(request, session, step.workflow)
 
         # Process lock when finished after releasing other locks - will be a lock for all users
-        if step.workflow.lock_when_finished and step.workflow.complete:
+        if step.workflow.complete and step.workflow.lock_when_finished:
             self.acquire_user_lock_and_log(request, session, step.workflow, for_all_users=True)
 
     @staticmethod
@@ -463,12 +467,11 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         # No check for active user b/c user locks can only be released by the users who acquired them
         lock_released = workflow.release_user_lock(request)
         if not lock_released:
-            if not lock_released:
-                log.error(f'User "{request.user.username}" attempted to release a user lock on workflow '
-                          f'"{workflow}", but was unsuccessful.')
-            else:
-                log.debug(f'User "{request.user.username}" successfully released a user lock on workflow '
-                          f'"{workflow}".')
+            log.warning(f'User "{request.user.username}" attempted to release a user lock on workflow '
+                        f'"{workflow}", but was unsuccessful.')
+        else:
+            log.debug(f'User "{request.user.username}" successfully released a user lock on workflow '
+                      f'"{workflow}".')
         session.commit()
 
     def validate_step(self, request, session, current_step, previous_step, next_step):

@@ -99,13 +99,16 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.map_view.layers = [layer]
 
         self.resource_id = 'abc123'
+        self.django_super_user = UserFactory()
+        self.django_super_user.is_staff = True
+        self.django_super_user.is_superuser = True
+        self.django_super_user.save()
+
         self.django_user = UserFactory()
-        self.django_user.is_staff = True
-        self.django_user.is_superuser = True
         self.django_user.save()
 
         self.app_user = AppUser(
-            username=self.django_user.username,
+            username=self.django_super_user.username,
             role=Roles.ORG_ADMIN,
             is_active=True,
         )
@@ -134,7 +137,7 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         mock_get_step.return_value = self.step2
         mock_url.return_value = 'my_workspace:generic_workflow_step'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
-        mock_request.user = self.django_user
+        mock_request.user = self.django_super_user
 
         response = self.controller(request=mock_request, resource_id=self.resource_id, back_url='./back_url',
                                    workflow_id=self.workflow.id, step_id=self.step1.id)
