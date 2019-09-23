@@ -66,9 +66,9 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_plot, generate_plot_button, bind_plot_buttons, load_plot, fit_plot, update_plot, show_plot, hide_plot;
 
  	// Layers tab
- 	var init_layers_tab, init_visibility_controls, init_opacity_controls, init_rename_controls, init_remove_controls,
- 	    init_zoom_to_controls, init_collapse_controls, init_add_layer_controls, init_download_layer_controls,
- 	    init_dropdown_layer_toggle_controls;
+ 	var init_layers_tab, init_new_layers_tab, init_visibility_controls, init_opacity_controls, init_rename_controls,
+ 	    init_remove_controls, init_zoom_to_controls, init_collapse_controls, init_collapse_control,
+ 	    init_add_layer_controls, init_download_layer_controls, init_dropdown_layer_toggle_controls;
 
     // Properties pop-up
     var init_properties_pop_up, display_properties, show_properties_pop_up, hide_properties_pop_up,
@@ -496,6 +496,18 @@ var ATCORE_MAP_VIEW = (function() {
         init_collapse_controls();
     };
 
+    init_new_layers_tab = function(group_id) {
+        // Init controls
+        init_action_modal();
+        init_visibility_controls();
+        init_opacity_controls();
+        init_rename_controls();
+        init_dropdown_layer_toggle_controls();
+        init_remove_controls();
+        init_zoom_to_controls();
+        init_collapse_control(group_id + '--collapse');
+    };
+
     init_visibility_controls = function() {
         // Setup deselect event on radio buttons in layers menu
         let selected_radios = {};
@@ -801,6 +813,30 @@ var ATCORE_MAP_VIEW = (function() {
             }
         });
     };
+    init_collapse_control = function(group_id) {
+        $('#' + group_id).on('click', function(e) {
+        let $action_button = $(e.target);
+
+        if (!$action_button.hasClass('collapse-action')) {
+            $action_button = $action_button.closest('.collapse-action');
+        }
+
+        let $layer_group_item = $action_button.closest('.layer-group-item');
+        let $layer_list = $layer_group_item.next('.layer-list');
+        let is_collapsed = $layer_list.data('collapsed') || false;
+
+        if (is_collapsed) {
+            expand_section($layer_list.get(0));
+            $layer_list.data('collapsed', false);
+            $action_button.data('collapsed', false);
+        }
+        else {
+            collapse_section($layer_list.get(0));
+            $layer_list.data('collapsed', true);
+            $action_button.data('collapsed', true);
+        }
+        });
+    }
 
     init_collapse_controls = function() {
         $('.collapse-action').on('click', function(e) {
@@ -905,7 +941,7 @@ var ATCORE_MAP_VIEW = (function() {
                 // Hide the modal
                 hide_action_modal();
                 m_map.addLayer(wms_layers);
-                init_layers_tab();
+                init_new_layers_tab(uuid);
 
                 // Save to resource
                 csrf_token = $('input[name=csrfmiddlewaretoken]').val()
@@ -1519,7 +1555,7 @@ var ATCORE_MAP_VIEW = (function() {
                 $('#' + layer_group_id + '_associated_layers').prepend(data.response);
             }
         });
-        init_layers_tab();
+        init_new_layers_tab(layer_group_id);
     }
 
     hide_layers = function(layer_ids) {
