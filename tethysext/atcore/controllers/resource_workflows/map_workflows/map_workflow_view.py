@@ -162,11 +162,6 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
 
             # Otherwise, get the geojson from this step directly
             else:
-                # Child step must be a SpatialResourceWorkflowStep
-                if not isinstance(step, SpatialResourceWorkflowStep):
-                    # The following line may not be reachable
-                    continue  # noqa
-
                 geometry = step.to_geojson()
 
             if not geometry:
