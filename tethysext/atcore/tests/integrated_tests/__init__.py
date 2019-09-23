@@ -29,8 +29,8 @@ from .models.app_users.resource_workflow_step_tests import ResourceWorkflowStepT
 from .models.app_users.organization_resource_tests import OrganizationResourceTests  # noqa: F401
 from .models.app_users.organization_tests import OrganizationTests  # noqa: F401
 from .models.app_users.resource_tests import ResourceTests  # noqa: F401
-from .models.app_users.resource_workflow_tests import ResourceWorkflowTests  # noqa: F401
-from .models.app_users.resource_workflow_tests import ResourceWorkflowLockTests  # noqa: F401
+from .models.app_users.resource_workflow_tests import ResourceWorkflowBaseMethodsTests  # noqa: F401
+from .models.app_users.resource_workflow_tests import ResourceWorkflowLockMethodsTests  # noqa: F401
 from .models.initializer import AppUserInitializerTests  # noqa: F401
 from .models.resource_workflow_results.dataset_workflow_result_tests import DatasetWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.spatial_workflow_result_tests import SpatialWorkflowResultTests  # noqa: F401

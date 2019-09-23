@@ -28,10 +28,10 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     Primary Workflow Status Progression:
     1. STATUS_PENDING = No steps have been started in workflow.
     2. STATUS_CONTINUE = Workflow has non-complete steps, has no steps with errors or failed, and no steps that are processing.
-    2. STATUS_WORKING = Workflow has steps that are processing.
-    3. STATUS_ERROR = Workflow has steps with errors.test_get_status_options_list
-    4. STATUS_FAILED = Workflow has steps that have failed.
-    5. STATUS_COMPLETE = All steps are complete in workflow.
+    3. STATUS_WORKING = Workflow has steps that are processing.
+    4. STATUS_ERROR = Workflow has steps with errors.test_get_status_options_list
+    5. STATUS_FAILED = Workflow has steps that have failed.
+    6. STATUS_COMPLETE = All steps are complete in workflow.
 
     Review Workflow Status Progression (if applicable):
     1. STATUS_SUBMITTED = Workflow submitted for review
