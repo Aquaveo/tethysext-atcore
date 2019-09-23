@@ -64,7 +64,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         # Handle any status message from previous requests
         status_message = current_step.get_attribute(current_step.ATTR_STATUS_MESSAGE)
         if status_message:
-            step_status = current_step.get_status(current_step.ROOT_STATUS_KEY)
+            step_status = current_step.get_status()
             if step_status in (current_step.STATUS_ERROR, current_step.STATUS_FAILED):
                 messages.error(request, status_message)
             elif step_status in (current_step.STATUS_COMPLETE,):
@@ -219,7 +219,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
             user_has_active_role = self.user_has_active_role(request, workflow_step)
             show_lock = not user_has_active_role or workflow_locked_for_user
-            step_locked = (not user_has_active_role or workflow_locked_for_user) and not workflow_step.complete
+            step_locked = show_lock and not workflow_step.complete
 
             # Determine appropriate help text to show
             help_text = workflow_step.help
@@ -227,9 +227,10 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
             if show_lock:
                 if not workflow_step.complete:
+                    # Locks take precedence over active role
                     if workflow_locked_for_user:
-                        help_text = f'Editing is not allowed at this time, because the workflow is locked by another ' \
-                                    f'user.'
+                        help_text = 'Editing is not allowed at this time, because the workflow is locked by another ' \
+                                    'user.'
                     elif not user_has_active_role:
                         _AppUser = self.get_app_user_model()
                         user_friendly_roles = \
@@ -573,17 +574,17 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             HttpResponse: A Django response.
         """  # noqa: E501
         if not step.complete and 'next-submit' in request.POST:
+            # Workflow is locked for request user
             if step.workflow.is_locked_for_request_user(request):
                 messages.warning(request, 'You man not proceed until this step is completed by the user who '
                                           'started it.')
+            # Request user is not the active user
             elif not self.user_has_active_role(request, step):
                 _AppUser = self.get_app_user_model()
                 user_friendly_roles = [_AppUser.ROLES.get_display_name_for(role) for role in step.active_roles]
                 grammatically_correct_list = grammatically_correct_join(user_friendly_roles, conjunction='or')
                 messages.warning(request, f'You may not proceed until this step is completed by a user with '
                                           f'one of the following roles: {grammatically_correct_list}.')
-            else:
-                messages.warning(request, f'You may not proceed until this step is completed.')
 
             response = redirect(current_url)
         else:
