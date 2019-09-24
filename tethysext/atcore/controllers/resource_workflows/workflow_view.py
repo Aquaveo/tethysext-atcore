@@ -405,10 +405,10 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         # Process lock options - only active users or permitted users can acquire user locks
         if user_has_active_role:
             # release locks before acquiring a new lock
-            if step.options.get('release_user_lock_on_init'):
+            if step.options.get('release_workflow_lock_on_init'):
                 self.release_user_lock_and_log(request, session, step.workflow)
 
-            if not step.complete and step.options.get('user_lock_required'):
+            if not step.complete and step.options.get('workflow_lock_required'):
                 self.acquire_user_lock_and_log(request, session, step.workflow)
 
             # Process lock when finished after releasing other locks - will be a lock for all users
@@ -425,7 +425,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             step(ResourceWorkflowStep): the step.
         """
         # Only release locks at the end of a step if the step is complete
-        if step.complete and step.options.get('release_user_lock_on_completion'):
+        if step.complete and step.options.get('release_workflow_lock_on_completion'):
             self.release_user_lock_and_log(request, session, step.workflow)
 
         # Process lock when finished after releasing other locks - will be a lock for all users

@@ -1,6 +1,7 @@
 from unittest import mock
 import json
 import pandas as pd
+from .common import RWS_DEFAULT_OPTIONS
 from tethysext.atcore.models.resource_workflow_steps import SpatialDatasetRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -51,9 +52,7 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             'plot_columns': [],
             'max_rows': self.instance.DEFAULT_MAX_ROWS,
             'empty_rows': self.instance.DEFAULT_EMPTY_ROWS,
-            'user_lock_required': False,
-            'release_user_lock_on_completion': True,
-            'release_user_lock_on_init': False,
+            **RWS_DEFAULT_OPTIONS
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 

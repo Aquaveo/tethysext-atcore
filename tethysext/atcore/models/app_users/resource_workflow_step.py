@@ -39,7 +39,15 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     3a. STATUS_APPROVED = Changes approved.
     3b. STATUS_REJECTED = Changes disapproved.
     3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
-    """
+
+    Options:
+        workflow_lock_required(bool): This step requires a workflow lock to be performed (to prevent conflicts). Defaults to False.
+        release_workflow_lock_on_completion(bool): Attempt to release a workflow lock when the view is initialized. Defaults to True.
+        release_workflow_lock_on_init(bool): Attempt to release a workflow lock when the step is completed. Ignored if `workflow_lock_required` is True. Defaults to False.
+        resource_lock_required(bool): This step requires a resource lock to be performed (to prevent conflicts). Defaults to False.
+        release_resource_lock_on_completion(bool): Attempt to release a resource lock when the view is initialized. Defaults to True.
+        release_resource_lock_on_init(bool): Attempt to release a resource lock when the step is completed. Ignored if `resource_lock_required` is True. Defaults to False.
+    """  # noqa: E501
     __tablename__ = 'app_users_resource_workflow_steps'
     CONTROLLER = ''
     TYPE = 'generic_workflow_step'
@@ -123,16 +131,14 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     def default_options(self):
         """
         Returns default options dictionary for the object.
-
-        Options:
-            user_lock_required(bool): This step requires a user lock to be performed (to prevent conflicts). Defaults to False.
-            release_user_lock_on_completion(bool): Attempt to release a user lock when the view is initialized. Defaults to True.
-            release_user_lock_on_init(bool): Attempt to release a user lock when the step is completed. Ignored if user_lock_required is True. Defaults to False.
         """  # noqa: E501
         return {
-            'user_lock_required': False,
-            'release_user_lock_on_completion': True,
-            'release_user_lock_on_init': False,
+            'workflow_lock_required': False,
+            'release_workflow_lock_on_completion': True,
+            'release_workflow_lock_on_init': False,
+            'resource_lock_required': False,
+            'release_resource_lock_on_completion': True,
+            'release_resource_lock_on_init': False
         }
 
     @property

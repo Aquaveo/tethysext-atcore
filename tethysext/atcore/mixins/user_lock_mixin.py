@@ -15,6 +15,36 @@ class UserLockMixin:
     _user_lock = None
     LOCKED_FOR_ALL_USERS = '__locked_for_all_users__'
 
+    @property
+    def user_lock(self):
+        """
+        Get the current value of the user lock.
+
+        Returns:
+            str or None: the username of the user that has read-write access, LOCKED_FOR_ALL_USERS if locked for all users, or None if the user lock is not locked.
+        """  # noqa: E501
+        return self._user_lock
+
+    @property
+    def is_user_locked(self):
+        """
+        Check if the workflow is user locked.
+
+        Returns:
+            bool: True if the workflow is user locked, False if not.
+        """
+        return self._user_lock is not None and self._user_lock != ''
+
+    @property
+    def is_locked_for_all_users(self):
+        """
+        Check if the workflow is user locked for all users.
+
+        Returns:
+            bool: True if the workflow is user locked for all users, False if not.
+        """  # noqa: E501
+        return self._user_lock == self.LOCKED_FOR_ALL_USERS
+
     def acquire_user_lock(self, request=None):
         """
         Acquire a user lock for the given request user. Only the given user will be able to access the workflow in read-write mode. All other users will have read-only access. If no user is provided, the workflow will be locked for all users.
@@ -95,33 +125,3 @@ class UserLockMixin:
             return False
 
         return self.is_user_locked and self._user_lock != request.user.username
-
-    @property
-    def user_lock(self):
-        """
-        Get the current value of the user lock.
-
-        Returns:
-            str or None: the username of the user that has read-write access, LOCKED_FOR_ALL_USERS if locked for all users, or None if the user lock is not locked.
-        """  # noqa: E501
-        return self._user_lock
-
-    @property
-    def is_user_locked(self):
-        """
-        Check if the workflow is user locked.
-
-        Returns:
-            bool: True if the workflow is user locked, False if not.
-        """
-        return self._user_lock is not None and self._user_lock != ''
-
-    @property
-    def is_locked_for_all_users(self):
-        """
-        Check if the workflow is user locked for all users.
-
-        Returns:
-            bool: True if the workflow is user locked for all users, False if not.
-        """  # noqa: E501
-        return self._user_lock == self.LOCKED_FOR_ALL_USERS
