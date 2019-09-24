@@ -12,6 +12,7 @@ from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from tethys_apps.utilities import get_active_app
 from tethys_sdk.permissions import has_permission
+from tethysext.atcore.mixins import UserLockMixin
 from tethysext.atcore.utilities import grammatically_correct_join
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 from tethysext.atcore.controllers.resource_view import ResourceView
@@ -87,7 +88,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         self.process_lock_options_on_init(
             request=request,
             session=session,
-            step=current_step,
+            resource=resource,
+            step=current_step
         )
 
         # Build step cards
@@ -190,6 +192,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         self.process_lock_options_after_submission(
             request=request,
             session=session,
+            resource=resource,
             step=step
         )
 
@@ -391,13 +394,14 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         readonly = not user_has_active_role or locked_for_request_user
         return readonly
 
-    def process_lock_options_on_init(self, request, session, step):
+    def process_lock_options_on_init(self, request, session, resource, step):
         """
         Process lock options when the view initializes.
 
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+            resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
         user_has_active_role = self.user_has_active_role(request, step)
@@ -405,74 +409,101 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         # Process lock options - only active users or permitted users can acquire user locks
         if user_has_active_role:
             # release locks before acquiring a new lock
+            # release workflow lock
             if step.options.get('release_workflow_lock_on_init'):
-                self.release_user_lock_and_log(request, session, step.workflow)
+                self.release_lock_and_log(request, session, step.workflow)
 
-            if not step.complete and step.options.get('workflow_lock_required'):
-                self.acquire_user_lock_and_log(request, session, step.workflow)
+            # release resource lock
+            if step.options.get('release_resource_lock_on_init'):
+                self.release_lock_and_log(request, session, resource)
+
+            # only acquire locks when the step is not completed
+            if not step.complete:
+                # acquire workflow lock
+                if step.options.get('workflow_lock_required'):
+                    self.acquire_lock_and_log(request, session, step.workflow)
+
+                # acquire resource lock
+                if step.options.get('resource_lock_required'):
+                    self.acquire_lock_and_log(request, session, resource)
 
             # Process lock when finished after releasing other locks - will be a lock for all users
             if step.workflow.complete and step.workflow.lock_when_finished:
-                self.acquire_user_lock_and_log(request, session, step.workflow, for_all_users=True)
+                self.acquire_lock_and_log(request, session, step.workflow, for_all_users=True)
 
-    def process_lock_options_after_submission(self, request, session, step):
+    def process_lock_options_after_submission(self, request, session, resource, step):
         """
         Process lock options after the step has been submitted and processed.
 
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+            resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
         # Only release locks at the end of a step if the step is complete
-        if step.complete and step.options.get('release_workflow_lock_on_completion'):
-            self.release_user_lock_and_log(request, session, step.workflow)
+        if step.complete:
+            # release workflow lock
+            if step.options.get('release_workflow_lock_on_completion'):
+                self.release_lock_and_log(request, session, step.workflow)
+
+            # release resource lock
+            if step.options.get('release_resource_lock_on_completion'):
+                self.release_lock_and_log(request, session, resource)
 
         # Process lock when finished after releasing other locks - will be a lock for all users
         if step.workflow.complete and step.workflow.lock_when_finished:
-            self.acquire_user_lock_and_log(request, session, step.workflow, for_all_users=True)
+            self.acquire_lock_and_log(request, session, step.workflow, for_all_users=True)
 
     @staticmethod
-    def acquire_user_lock_and_log(request, session, workflow, for_all_users=False):
+    def acquire_lock_and_log(request, session, lockable, for_all_users=False):
         """
-        Attempt to acquire the user lock on the workflow and log the outcome.
+        Attempt to acquire the lock on the lockable object and log the outcome.
 
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
-            workflow(ResourceWorkflow): The current workflow.
+            lockable(UserLockMixin): Object on which to acquire a lock.
             for_all_users(bool): Lock for all users when True.
         """
+        if not isinstance(lockable, UserLockMixin):
+            raise ValueError('Argument "lockable" must implement UserLockMixin.')
+
         if not for_all_users:
-            lock_acquired = workflow.acquire_user_lock(request)
+            lock_acquired = lockable.acquire_user_lock(request)
         else:
-            lock_acquired = workflow.acquire_user_lock()
+            lock_acquired = lockable.acquire_user_lock()
 
         if not lock_acquired:
-            log.warning(f'User "{request.user.username}" attempted to acquire a user lock on workflow "{workflow}", '
+            log.warning(f'User "{request.user.username}" attempted to acquire a lock on "{lockable}", '
                         f'but was unsuccessful.')
         else:
-            log.debug(f'User "{request.user.username}" successfully acquired a user lock on workflow "{workflow}".')
+            log.debug(f'User "{request.user.username}" successfully acquired a lock on "{lockable}".')
+
         session.commit()
 
     @staticmethod
-    def release_user_lock_and_log(request, session, workflow):
+    def release_lock_and_log(request, session, lockable):
         """
-        Attempt to release the user lock on the workflow and log the outcome.
+        Attempt to release the lock on the lockable object and log the outcome.
 
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
-            workflow(ResourceWorkflow): The current workflow.
+            lockable(UserLockMixin): Object to on which to release a lock.
         """
+        if not isinstance(lockable, UserLockMixin):
+            raise ValueError('Argument "lockable" must implement UserLockMixin.')
+
         # No check for active user b/c user locks can only be released by the users who acquired them
-        lock_released = workflow.release_user_lock(request)
+        lock_released = lockable.release_user_lock(request)
+
         if not lock_released:
-            log.warning(f'User "{request.user.username}" attempted to release a user lock on workflow '
-                        f'"{workflow}", but was unsuccessful.')
+            log.warning(f'User "{request.user.username}" attempted to release a lock on "{lockable}", '
+                        f'but was unsuccessful.')
         else:
-            log.debug(f'User "{request.user.username}" successfully released a user lock on workflow '
-                      f'"{workflow}".')
+            log.debug(f'User "{request.user.username}" successfully released a lock on "{lockable}".')
+
         session.commit()
 
     def validate_step(self, request, session, current_step, previous_step, next_step):

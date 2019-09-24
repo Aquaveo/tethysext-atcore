@@ -14,7 +14,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_view import Resour
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
-from tethysext.atcore.models.app_users import ResourceWorkflowStep
+from tethysext.atcore.models.app_users import ResourceWorkflowStep, Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 
 
@@ -44,7 +44,10 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.django_user = UserFactory()
         self.django_user.save()
 
+        self.resource = Resource(name='resource')
+
         self.workflow = ResourceWorkflow(name='foo')
+        self.workflow.resource = self.resource
 
         # Step 1
         self.step1 = ResourceWorkflowStep(
@@ -70,7 +73,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         )
         self.workflow.steps.append(self.step3)
 
-        self.session.add(self.workflow)
+        self.session.add(self.resource)
         self.session.commit()
 
     def tearDown(self):
@@ -91,7 +94,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         """
         mock_log.debug.assert_called()
         call_args = mock_log.debug.call_args_list
-        self.assertIn('successfully acquired a user lock', call_args[0][0][0])
+        self.assertIn('successfully acquired a lock', call_args[0][0][0])
 
     def assert_log_failed_to_release(self, mock_log):
         """
@@ -108,7 +111,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         """
         mock_log.debug.assert_called()
         call_args = mock_log.debug.call_args_list
-        self.assertIn('successfully released a user lock', call_args[0][0][0])
+        self.assertIn('successfully released a lock', call_args[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
     def test_build_workflow_lock_display_options_not_locked(self, _):
@@ -220,65 +223,65 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.assertDictEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=False)  # not active user
     def test_process_lock_options_on_init_not_active_user(self, _, mock_rulal, mock_aulal):
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step1)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_release_lock(self, _, mock_rulal, mock_aulal):
         self.step1.options['release_workflow_lock_on_init'] = True
 
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step1)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
 
         mock_rulal.assert_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_lock_required_step_not_complete(self, _, mock_rulal, mock_aulal):
         self.step1.options['workflow_lock_required'] = True
         self.step1.set_status(status=self.step1.STATUS_PENDING)
 
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step1)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_called_with(self.request, self.session, self.workflow)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_lock_required_step_complete(self, _, mock_rulal, mock_aulal):
         self.step1.options['workflow_lock_required'] = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
 
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step1)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_lock_when_finished_workflow_complete(self, _, mock_rulal, mock_aulal):
@@ -287,15 +290,15 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_COMPLETE)
 
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step3)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step3)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_called_with(self.request, self.session, self.workflow, for_all_users=True)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_lock_when_finished_workflow_not_complete(self, _, mock_rulal, mock_aulal):
@@ -304,15 +307,15 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_PENDING)
 
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step3)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step3)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_all_enabled(self, _, mock_rulal, mock_aulal):
@@ -323,72 +326,78 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_COMPLETE)
 
-        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.step3)
+        ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step3)
 
         mock_rulal.assert_called()
         mock_aulal.assert_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     def test_lock_options_after_submission_release_lock_step_complete(self, mock_rulal, mock_aulal):
         self.step1.options['release_workflow_lock_on_init'] = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
 
-        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.step1)
+        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
+                                                                     self.step1)
 
         mock_rulal.assert_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     def test_lock_options_after_submission_release_lock_step_not_complete(self, mock_rulal, mock_aulal):
         self.step1.options['release_workflow_lock_on_init'] = True
         self.step1.set_status(status=self.step1.STATUS_PENDING)
 
-        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.step1)
+        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
+                                                                     self.step1)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     def test_lock_options_after_submission_lock_when_finished_workflow_complete(self, mock_rulal, mock_aulal):
         self.workflow.lock_when_finished = True
         self.step3.options['release_workflow_lock_on_completion'] = False
+        self.step3.options['release_resource_lock_on_completion'] = False
+
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_COMPLETE)
 
-        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.step3)
+        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
+                                                                     self.step3)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_called_with(self.request, self.session, self.workflow, for_all_users=True)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     def test_lock_options_after_submission_lock_when_finished_workflow_not_complete(self, mock_rulal, mock_aulal):
         self.workflow.lock_when_finished = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_PENDING)
 
-        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.step3)
+        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
+                                                                     self.step3)
 
         mock_rulal.assert_not_called()
         mock_aulal.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'acquire_user_lock_and_log')
+                'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'release_user_lock_and_log')
+                'release_lock_and_log')
     def test_lock_options_after_submission_all_enabled(self, mock_rulal, mock_aulal):
         self.workflow.lock_when_finished = True
         self.step3.options['release_workflow_lock_on_init'] = True
@@ -396,155 +405,182 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_COMPLETE)
 
-        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.step3)
+        ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
+                                                                     self.step3)
 
         mock_rulal.assert_called()
         mock_aulal.assert_called_with(self.request, self.session, self.workflow, for_all_users=True)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
-    def test_acquire_user_lock_and_log_not_locked(self, mock_log):
+    def test_acquire_lock_and_log_invalid_lockable(self, _):
+        self.request.user = self.django_user
+        self.workflow._user_lock = None  # not locked
+        invalid_lockable = object()
+
+        with self.assertRaises(ValueError) as cm:
+            ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, invalid_lockable)
+
+        self.assertEqual('Argument "lockable" must implement UserLockMixin.', str(cm.exception))
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
+    def test_acquire_lock_and_log_not_locked(self, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # not locked
 
-        ResourceWorkflowView().acquire_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertEqual(self.django_user.username, self.workflow.user_lock)
         self.assert_log_successfully_acquired(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
-    def test_acquire_user_lock_and_log_locked_for_request_user(self, mock_log):
+    def test_acquire_lock_and_log_locked_for_request_user(self, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = self.django_user.username
 
-        ResourceWorkflowView().acquire_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertEqual(self.django_user.username, self.workflow.user_lock)
         self.assert_log_successfully_acquired(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
-    def test_acquire_user_lock_and_log_locked_for_other_user(self, mock_log):
+    def test_acquire_lock_and_log_locked_for_other_user(self, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = 'otheruser'
 
-        ResourceWorkflowView().acquire_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertEqual('otheruser', self.workflow.user_lock)
         self.assert_log_failed_to_acquire(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
-    def test_acquire_user_lock_and_log_all_users_not_locked(self, mock_log):
+    def test_acquire_lock_and_log_all_users_not_locked(self, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # not locked
 
-        ResourceWorkflowView().acquire_user_lock_and_log(self.request, self.session, self.workflow, for_all_users=True)
+        ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, self.workflow,
+                                                    for_all_users=True)
 
         self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, self.workflow.user_lock)
         self.assert_log_successfully_acquired(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
-    def test_acquire_user_lock_and_log_all_users_locked_for_request_user(self, mock_log):
+    def test_acquire_lock_and_log_all_users_locked_for_request_user(self, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = self.django_user.username
 
-        ResourceWorkflowView().acquire_user_lock_and_log(self.request, self.session, self.workflow, for_all_users=True)
+        ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, self.workflow,
+                                                    for_all_users=True)
 
         self.assertEqual(self.django_user.username, self.workflow.user_lock)
         self.assert_log_failed_to_acquire(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
-    def test_acquire_user_lock_and_log_all_users_locked_for_other_user(self, mock_log):
+    def test_acquire_lock_and_log_all_users_locked_for_other_user(self, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = 'otheruser'
 
-        ResourceWorkflowView().acquire_user_lock_and_log(self.request, self.session, self.workflow, for_all_users=True)
+        ResourceWorkflowView().acquire_lock_and_log(self.request, self.session, self.workflow,
+                                                    for_all_users=True)
 
         self.assertEqual('otheruser', self.workflow.user_lock)
         self.assert_log_failed_to_acquire(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_and_log_not_locked(self, _, mock_log):
+    def test_release_lock_and_log_invalid_lockable(self, _, __):
+        self.request.user = self.django_user
+        self.workflow._user_lock = None  # not locked
+        invalid_lockable = object()
+
+        with self.assertRaises(ValueError) as cm:
+            ResourceWorkflowView().release_lock_and_log(self.request, self.session, invalid_lockable)
+
+        self.assertEqual('Argument "lockable" must implement UserLockMixin.', str(cm.exception))
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    def test_release_lock_and_log_not_locked(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # not locked
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_and_log_locked_for_request_user(self, _, mock_log):
+    def test_release_lock_and_log_locked_for_request_user(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = self.django_user.username
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_and_log_locked_for_other_user(self, _, mock_log):
+    def test_release_lock_and_log_locked_for_other_user(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = 'otheruser'
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertEqual('otheruser', self.workflow.user_lock)
         self.assert_log_failed_to_release(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_and_log_locked_for_all_users(self, _, mock_log):
+    def test_release_lock_and_log_locked_for_all_users(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, self.workflow.user_lock)
         self.assert_log_failed_to_release(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # permitted user
-    def test_release_user_lock_and_log_not_locked_permitted(self, _, mock_log):
+    def test_release_lock_and_log_not_locked_permitted(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # not locked
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # permitted user
-    def test_release_user_lock_and_log_locked_for_request_user_permitted(self, _, mock_log):
+    def test_release_lock_and_log_locked_for_request_user_permitted(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = self.django_user.username
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # permitted user
-    def test_release_user_lock_and_log_locked_for_other_user_permitted(self, _, mock_log):
+    def test_release_lock_and_log_locked_for_other_user_permitted(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = 'otheruser'
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.log')
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # permitted user
-    def test_release_user_lock_and_log_locked_for_all_users_permitted(self, _, mock_log):
+    def test_release_lock_and_log_locked_for_all_users_permitted(self, _, mock_log):
         self.request.user = self.django_user
         self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
 
-        ResourceWorkflowView().release_user_lock_and_log(self.request, self.session, self.workflow)
+        ResourceWorkflowView().release_lock_and_log(self.request, self.session, self.workflow)
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
