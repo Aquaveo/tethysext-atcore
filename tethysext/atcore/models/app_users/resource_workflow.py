@@ -85,7 +85,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
     }
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}">'
+        return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}" locked={self.is_user_locked}>'
 
     @property
     def complete(self):

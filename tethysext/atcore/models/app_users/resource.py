@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import Column, Boolean, DateTime, String
 from sqlalchemy.orm import relationship
 from tethysext.atcore.models.types.guid import GUID
-from tethysext.atcore.mixins import StatusMixin, AttributesMixin
+from tethysext.atcore.mixins import StatusMixin, AttributesMixin, UserLockMixin
 
 from .app_user import AppUsersBase
 from .associations import organization_resource_association
@@ -12,7 +12,7 @@ from .associations import organization_resource_association
 __all__ = ['Resource']
 
 
-class Resource(StatusMixin, AttributesMixin, AppUsersBase):
+class Resource(StatusMixin, AttributesMixin, UserLockMixin, AppUsersBase):
     """
     Definition for the resources table.
     """
@@ -32,6 +32,7 @@ class Resource(StatusMixin, AttributesMixin, AppUsersBase):
     status = Column(String)
     public = Column(Boolean, default=False)
     _attributes = Column(String)
+    _user_lock = Column(String)
 
     # Relationships
     organizations = relationship('Organization',
@@ -45,4 +46,4 @@ class Resource(StatusMixin, AttributesMixin, AppUsersBase):
     }
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} name="{self.name}" description="{self.description}" id="{self.id}">'
+        return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}" locked={self.is_user_locked}>'

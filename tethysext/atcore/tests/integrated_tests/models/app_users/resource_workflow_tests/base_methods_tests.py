@@ -41,7 +41,7 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
 
     def test___str__(self):
         ret = str(self.workflow)
-        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}">', ret)
+        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}" locked=False>', ret)
 
     def test_complete(self):
         # All other steps complete
