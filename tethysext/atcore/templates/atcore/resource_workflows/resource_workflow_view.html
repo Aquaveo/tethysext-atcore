@@ -4,6 +4,8 @@
 {% block app_navigation_items %}
   {# NAV HEADER #}
   {% include 'atcore/components/nav_header.html' %}
+  {# WORKFLOW LOCKED STATUS #}
+  {% include 'atcore/resource_workflows/components/workflow_locked_status.html' %}
 
   <div class="workflow-tabs">
     <ul class="nav nav-tabs atcore-nav-tabs" role="tablist">
@@ -41,4 +43,5 @@
   <link href="{% static 'atcore/css/nav_header.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/resource_workflows/workflow_steps.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/workflow_locked_status.css' %}" rel="stylesheet"/>
 {% endblock %}

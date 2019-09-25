@@ -46,10 +46,12 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         """
         Returns default options dictionary for the object.
         """
-        return {
+        default_options = super().default_options
+        default_options.update({
             'layer_group_title': 'Results',
             'layer_group_control': 'checkbox'
-        }
+        })
+        return default_options
 
     @property
     def layers(self):

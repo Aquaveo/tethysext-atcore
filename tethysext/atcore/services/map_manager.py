@@ -287,6 +287,9 @@ class MapManagerBase(object):
         # Process excluded properties
         properties_to_exclude = copy.deepcopy(self._DEFAULT_POPUP_EXCLUDED_PROPERTIES)
 
+        if plottable:
+            properties_to_exclude.append('plot')
+
         if excluded_properties and isinstance(excluded_properties, (list, tuple)):
             for ep in excluded_properties:
                 if ep not in properties_to_exclude:

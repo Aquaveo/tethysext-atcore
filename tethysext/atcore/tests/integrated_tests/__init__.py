@@ -18,8 +18,10 @@ from .controllers.resource_workflows.results_views.dataset_workflow_results_view
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
-from .controllers.resource_workflows.workflow_view_tests import WorkflowViewTests  # noqa: F401
+from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBaseMethodsTests  # noqa: F401
+from .controllers.resource_workflows.workflow_view_tests import WorkflowViewLockMethodsTests  # noqa: F401
 from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
+from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401
 from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
@@ -28,7 +30,7 @@ from .models.app_users.resource_workflow_step_tests import ResourceWorkflowStepT
 from .models.app_users.organization_resource_tests import OrganizationResourceTests  # noqa: F401
 from .models.app_users.organization_tests import OrganizationTests  # noqa: F401
 from .models.app_users.resource_tests import ResourceTests  # noqa: F401
-from .models.app_users.resource_workflow_tests import ResourceWorkflowTests  # noqa: F401
+from .models.app_users.resource_workflow_tests import ResourceWorkflowBaseMethodsTests  # noqa: F401
 from .models.initializer import AppUserInitializerTests  # noqa: F401
 from .models.resource_workflow_results.dataset_workflow_result_tests import DatasetWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.spatial_workflow_result_tests import SpatialWorkflowResultTests  # noqa: F401

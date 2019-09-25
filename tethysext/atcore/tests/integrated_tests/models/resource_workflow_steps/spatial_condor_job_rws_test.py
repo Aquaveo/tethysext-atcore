@@ -1,4 +1,5 @@
 from unittest import mock
+from .common import RWS_DEFAULT_OPTIONS
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests,\
@@ -32,7 +33,8 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
             'jobs': [],
             'working_message': '',
             'error_message': '',
-            'pending_message': ''
+            'pending_message': '',
+            **RWS_DEFAULT_OPTIONS
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 

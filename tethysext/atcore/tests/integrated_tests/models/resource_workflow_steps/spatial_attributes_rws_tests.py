@@ -1,4 +1,5 @@
 from unittest import mock
+from .common import RWS_DEFAULT_OPTIONS
 from tethysext.atcore.models.resource_workflow_steps import SpatialAttributesRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests,\
@@ -27,9 +28,11 @@ class SpatialAttributesRWSTests(SqlAlchemyTestCase):
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):
-        baseline = {'geometry_source': None,
-                    'attributes': {}
-                    }
+        baseline = {
+            'geometry_source': None,
+            'attributes': {},
+            **RWS_DEFAULT_OPTIONS
+        }
         self.assertDictEqual(baseline, self.instance.default_options)
 
     def test_init_parameters(self):

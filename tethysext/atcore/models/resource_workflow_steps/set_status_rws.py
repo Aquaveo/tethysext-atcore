@@ -27,14 +27,16 @@ class SetStatusRWS(ResourceWorkflowStep):
 
     @property
     def default_options(self):
-        return {
+        default_options = super().default_options
+        default_options.update({
             'form_title': None,
             'status_label': None,
             'statuses': [
                 {'status': SetStatusRWS.STATUS_COMPLETE,
                  'label': None}
             ],
-        }
+        })
+        return default_options
 
     def init_parameters(self, *args, **kwargs):
         """

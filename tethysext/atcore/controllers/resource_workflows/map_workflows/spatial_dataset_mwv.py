@@ -95,9 +95,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
         Returns:
             HttpResponse: A Django response.
         """
-        user_has_active_role = self.user_has_active_role(request, step)
-
-        if not user_has_active_role:
+        if self.is_read_only(request, step):
             return JsonResponse({
                 'success': False,
                 'error': 'You do not have permission to save changes on this step.'

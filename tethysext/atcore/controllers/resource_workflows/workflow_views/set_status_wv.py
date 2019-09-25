@@ -46,7 +46,7 @@ class SetStatusWV(ResourceWorkflowView):
 
         # Save changes to map view and layer groups
         context.update({
-            'read_only': not self.user_has_active_role(request, current_step),
+            'read_only': self.is_read_only(request, current_step),
             'form_title': form_title,
             'status_label': status_label,
             'statuses': current_step.options.get('statuses', []),

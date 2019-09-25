@@ -39,7 +39,8 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
 
     @property
     def default_options(self):
-        return {
+        default_options = super().default_options
+        default_options.update({
             'geometry_source': None,
             'dataset_title': self.DEFAULT_DATASET_TITLE,
             'template_dataset': self.DEFAULT_DATASET,
@@ -47,7 +48,8 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
             'plot_columns': [],
             'max_rows': self.DEFAULT_MAX_ROWS,
             'empty_rows': self.DEFAULT_EMPTY_ROWS
-        }
+        })
+        return default_options
 
     def init_parameters(self, *args, **kwargs):
         """

@@ -39,14 +39,16 @@ class DatasetWorkflowResult(ResourceWorkflowResult):
         """
         Returns default options dictionary for the object.
         """
-        return {
+        default_options = super().default_options
+        default_options.update({
             'data_table_kwargs': {
                 'searching': False,
                 'paging': False,
                 'info': False
             },
             'no_dataset_message': 'No dataset found.'
-        }
+        })
+        return default_options
 
     @property
     def datasets(self):

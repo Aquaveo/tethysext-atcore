@@ -99,13 +99,16 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
         self.map_view.layers = [layer]
 
         self.resource_id = 'abc123'
+        self.django_super_user = UserFactory()
+        self.django_super_user.is_staff = True
+        self.django_super_user.is_superuser = True
+        self.django_super_user.save()
+
         self.django_user = UserFactory()
-        self.django_user.is_staff = True
-        self.django_user.is_superuser = True
         self.django_user.save()
 
         self.app_user = AppUser(
-            username=self.django_user.username,
+            username=self.django_super_user.username,
             role=Roles.ORG_ADMIN,
             is_active=True,
         )
@@ -118,6 +121,8 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_step_url_name')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
@@ -126,13 +131,13 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_context(self, mock_has_permission, mock_render, _, mock_on_get, mock_get_workflow,
-                         mock_get_step, mock_url):
+                         mock_get_step, mock_url, __):
         mock_on_get.return_value = None
         mock_get_workflow.return_value = self.workflow
         mock_get_step.return_value = self.step2
         mock_url.return_value = 'my_workspace:generic_workflow_step'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
-        mock_request.user = self.django_user
+        mock_request.user = self.django_super_user
 
         response = self.controller(request=mock_request, resource_id=self.resource_id, back_url='./back_url',
                                    workflow_id=self.workflow.id, step_id=self.step1.id)
