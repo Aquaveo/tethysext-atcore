@@ -27,6 +27,17 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
+class FakeController:
+    def __init__(self, request, resource_id, workflow_id, step_id, back_url, *args, **kwargs):
+        self.request = request
+        self.resource_id = resource_id
+        self.workflow_id = workflow_id
+        self.step_id = step_id
+        self.back_url = back_url
+        self.args = args
+        self.kwargs = kwargs
+
+
 class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
 
     def setUp(self):
@@ -63,9 +74,9 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
             help='Result help',
         )
 
-        # self.session.add(self.workflow)
-
-        # self.session.commit()
+        self.workflow.steps = [self.result_step]
+        self.session.add(self.workflow)
+        self.session.commit()
 
         messages_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.messages')
         self.mock_messages = messages_patcher.start()
@@ -111,14 +122,24 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
 
         get_step_mixins_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
         self.mock_get_step_mixins = get_step_mixins_patcher.start()
+        self.mock_get_step_mixins.return_value = self.result_step
         self.addCleanup(get_step_mixins_patcher.stop)
+
+        initiate_meta_patcher = mock.patch('tethysext.atcore.models.controller_metadata.ControllerMetadata.instantiate')
+        self.mock_initiate_meta = initiate_meta_patcher.start()
+        self.mock_initiate_meta.return_value = FakeController
+        self.addCleanup(initiate_meta_patcher.stop)
 
     def tearDown(self):
         super().tearDown()
 
     # @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
-    # def test_get_no_step_id(self, mock_get_workflow):
+    # def test_get_with_step_id(self, mock_get_workflow):
     #     mock_get_workflow.return_value = self.workflow
+    #     self.session.delete(self.workflow)
+    #     self.workflow.steps = [self.step1]
+    #     self.session.add(self.workflow)
+    #     self.session.commit()
     #
     #     self.workflow.steps = []
     #     self.request.method = 'get'
@@ -127,12 +148,14 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
     #     response = controller(
     #         request=self.request,
     #         resource_id=self.resource.id,
-    #         workflow_id=self.workflow.id
+    #         workflow_id=self.workflow.id,
+    #         step_id=self.step1.id
     #     )
     #
-    #     msg_call_args = self.mock_messages.warning.call_args_list
-    #     self.assertEqual('Could not identify next step.', msg_call_args[0][0][1])
-    #     self.mock_redirect.assert_called()
+    #     breakpoint()
+    #     # msg_call_args = self.mock_messages.warning.call_args_list
+    #     # self.assertEqual('Could not identify next step.', msg_call_args[0][0][1])
+    #     # self.mock_redirect.assert_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
     def test_get_no_optional_args(self, mock_get_workflow):
@@ -140,9 +163,6 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_last_result.return_value = mock.MagicMock(id=self.result_id)
 
         self.request.method = 'get'
-        self.workflow.steps = [self.result_step]
-        self.session.add(self.workflow)
-        self.session.commit()
         controller = ResourceWorkflowRouter.as_controller()
 
         response = controller(
@@ -162,28 +182,114 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         }
         self.assertEqual(url_kwargs, self.mock_reverse.call_args_list[0][1]['kwargs'])
 
-    # def test_post_no_optional_params(self):
-    #     self.request.method = 'post'
-    #     self.workflow.steps = [self.step1]
-    #     self.session.add(self.workflow)
-    #     self.session.commit()
-    #     controller = ResourceWorkflowRouter.as_controller()
-    #
-    #     response = controller(request=self.request, resource_id=self.resource.id, workflow_id=self.workflow.id,
-    #                           step_id=self.step1.id)
-
-    def test_post_with_result_id(self):
-        self.mock_get_step_mixins.return_value = self.result_step
-        self.request.method = 'post'
-        self.workflow.steps = [self.result_step]
+    def test_post_no_optional_params(self):
+        self.session.delete(self.workflow)
+        self.workflow.steps = [self.step1]
         self.session.add(self.workflow)
         self.session.commit()
+        self.request.method = 'post'
+        self.mock_get_step_mixins.return_value = self.step1
         controller = ResourceWorkflowRouter.as_controller()
 
         response = controller(request=self.request, resource_id=self.resource.id, workflow_id=self.workflow.id,
-                              step_id=self.result_step.id, result_id=self.result_id)
+                              step_id=self.step1.id)
 
-        breakpoint()
-        controller_call_args = response._mock_new_parent.call_args_list[0]
-        self.assertIn('back_url', controller_call_args)
-        self.assertEqual(self.request, controller_call_args['request'])
+        self.assertEqual(self.request, response.request)
+        self.assertEqual(self.resource.id, response.resource_id)
+        self.assertEqual(self.workflow.id, response.workflow_id)
+        self.assertEqual(self.step1.id, response.step_id)
+        self.assertTrue(hasattr(response, 'back_url'))
+        self.assertEqual((), response.args)
+        self.assertEqual({}, response.kwargs)
+
+    # def test_post_with_result_id(self):
+    #     self.request.method = 'post'
+    #     self.mock_get_result.controller.instantiate.return_value = FakeController
+    #     controller = ResourceWorkflowRouter.as_controller()
+    #
+    #     response = controller(request=self.request, resource_id=self.resource.id, workflow_id=self.workflow.id,
+    #                           step_id=self.result_step.id, result_id=self.result_id)
+    #
+    #     self.assertEqual(self.request, response.request)
+    #     self.assertEqual(self.resource.id, response.resource_id)
+    #     self.assertEqual(self.workflow.id, response.workflow_id)
+    #     self.assertEqual(self.step1.id, response.step_id)
+    #     self.assertTrue(hasattr(response, 'back_url'))
+    #     self.assertEqual((), response.args)
+    #     self.assertEqual({}, response.kwargs)
+
+    def test_delete_no_optional_params(self):
+        self.session.delete(self.workflow)
+        self.workflow.steps = [self.step1]
+        self.session.add(self.workflow)
+        self.session.commit()
+        self.request.method = 'delete'
+        self.mock_get_step_mixins.return_value = self.step1
+        controller = ResourceWorkflowRouter.as_controller()
+
+        response = controller(request=self.request, resource_id=self.resource.id, workflow_id=self.workflow.id,
+                              step_id=self.step1.id)
+
+        self.assertEqual(self.request, response.request)
+        self.assertEqual(self.resource.id, response.resource_id)
+        self.assertEqual(self.workflow.id, response.workflow_id)
+        self.assertEqual(self.step1.id, response.step_id)
+        self.assertTrue(hasattr(response, 'back_url'))
+        self.assertEqual((), response.args)
+        self.assertEqual({}, response.kwargs)
+
+    # def test_delete_with_result_id(self):
+    #     self.request.method = 'delete'
+    #     self.mock_get_result.controller.instantiate.return_value = FakeController
+    #     controller = ResourceWorkflowRouter.as_controller()
+    #
+    #     response = controller(request=self.request, resource_id=self.resource.id, workflow_id=self.workflow.id,
+    #                           step_id=self.result_step.id, result_id=self.result_id)
+    #
+    #     self.assertEqual(self.request, response.request)
+    #     self.assertEqual(self.resource.id, response.resource_id)
+    #     self.assertEqual(self.workflow.id, response.workflow_id)
+    #     self.assertEqual(self.step1.id, response.step_id)
+    #     self.assertTrue(hasattr(response, 'back_url'))
+    #     self.assertEqual((), response.args)
+    #     self.assertEqual({}, response.kwargs)
+
+    def test_route_to_step_controller_invalid_method(self):
+        self.request.method = 'do_the_thing'
+
+        try:
+            ResourceWorkflowRouter()._route_to_step_controller(self.request, self.resource.id,
+                                                               self.workflow.id, self.step1.id)
+            self.assertTrue(False)  # This line should not be reached
+        except RuntimeError as e:
+            self.assertEqual(f'An unexpected error has occurred: Method not allowed ({self.request.method}).', str(e))
+
+    def test_route_to_result_controller_wrong_step_type(self):
+        self.mock_get_step_mixins.return_value = self.step1
+
+        try:
+            ResourceWorkflowRouter()._route_to_result_controller(self.request, self.resource.id, self.workflow.id,
+                                                                 self.step1.id, str(self.result_id))
+            self.assertTrue(False)  # This line should not be reached
+        except RuntimeError as e:
+            self.assertEqual('Step must be a ResultsResourceWorkflowStep.', str(e))
+
+    def test_route_to_result_controller_invalid_method(self):
+        self.request.method = 'do_the_thing'
+
+        try:
+            ResourceWorkflowRouter()._route_to_result_controller(self.request, self.resource.id, self.workflow.id,
+                                                                 self.result_step.id, str(self.result_id))
+            self.assertTrue(False)  # This line should not be reached
+        except RuntimeError as e:
+            self.assertEqual(f'An unexpected error has occurred: Method not allowed ({self.request.method}).', str(e))
+
+    # @mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.messages')
+    # def test_route_to_result_controller_no_result(self, mock_messages):
+    #     self.request.method = 'get'
+    #     self.mock_get_result.return_value = None
+    #
+    #     ret = ResourceWorkflowRouter()._route_to_result_controller(self.request, self.resource.id, self.workflow.id,
+    #                                                                self.result_step.id, str(self.result_id))
+    #
+    #     breakpoint()
