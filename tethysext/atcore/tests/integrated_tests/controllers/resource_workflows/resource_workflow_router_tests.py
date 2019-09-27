@@ -11,6 +11,7 @@ from django.http import HttpRequest
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from tethys_apps.models import TethysApp
+from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
@@ -38,6 +39,30 @@ class FakeController:
         self.back_url = back_url
         self.args = args
         self.kwargs = kwargs
+
+
+class RaiseStatementError(ResourceWorkflowRouter):
+    def get_workflow(self, request=None, workflow_id=None, session=None):
+        raise StatementError(None, None, None, None)
+
+    def get_step(self, request=None, step_id=None, session=None):
+        raise StatementError(None, None, None, None)
+
+
+class RaiseNoResultFound(ResourceWorkflowRouter):
+    def get_workflow(self, request=None, workflow_id=None, session=None):
+        raise NoResultFound()
+
+    def get_step(self, request=None, step_id=None, session=None):
+        raise NoResultFound()
+
+
+class RaiseATCoreException(ResourceWorkflowRouter):
+    def get_workflow(self, request=None, workflow_id=None, session=None):
+        raise ATCoreException('This is the ATCore exception.')
+
+    def get_step(self, request=None, step_id=None, session=None):
+        raise ATCoreException('This is the ATCore exception.')
 
 
 class ChildResourceWorkflowRouter(ResourceWorkflowRouter):
@@ -77,11 +102,11 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.session.add(self.workflow)
         self.session.commit()
 
-        messages_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.messages')
+        messages_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.messages')  # noqa: E501
         self.mock_messages = messages_patcher.start()
         self.addCleanup(messages_patcher.stop)
 
-        redirect_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.redirect')
+        redirect_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.redirect')  # noqa: E501
         self.mock_redirect = redirect_patcher.start()
         self.addCleanup(redirect_patcher.stop)
 
@@ -110,7 +135,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_mixins_app.return_value = self.app
         self.addCleanup(get_app_mixins_patcher.stop)
 
-        get_app_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.get_active_app')
+        get_app_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.resource_workflow_router.get_active_app')  # noqa: E501
         self.mock_get_app = get_app_patcher.start()
         self.mock_get_app.return_value = self.app
         self.addCleanup(get_app_patcher.stop)
@@ -120,7 +145,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_session_maker.return_value = mock.MagicMock
         self.addCleanup(session_patcher.stop)
 
-        get_step_mixins_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+        get_step_mixins_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')  # noqa: E501
         self.mock_get_step_mixins = get_step_mixins_patcher.start()
         self.mock_get_step_mixins.return_value = self.result_step
         self.addCleanup(get_step_mixins_patcher.stop)
@@ -130,7 +155,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_initiate_meta.return_value = FakeController
         self.addCleanup(initiate_meta_patcher.stop)
 
-        get_workflow_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
+        get_workflow_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')  # noqa: E501
         self.mock_get_workflow = get_workflow_patcher.start()
         self.mock_get_workflow.return_value = self.workflow
         self.addCleanup(get_workflow_patcher.stop)
@@ -146,7 +171,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.request.method = 'get'
         controller = ResourceWorkflowRouter.as_controller()
 
-        response = controller(
+        controller(
             request=self.request,
             resource_id=self.resource.id,
             workflow_id=self.workflow.id,
@@ -164,11 +189,34 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         }
         self.assertEqual(url_kwargs, self.mock_reverse.call_args_list[0][1]['kwargs'])
 
-    def test_get_no_optional_args(self):
+    def test_get_last_return(self):
+        self.session.delete(self.workflow)
+        self.workflow.steps = [self.step1]
+        self.session.add(self.workflow)
+        self.session.commit()
         self.request.method = 'get'
         controller = ResourceWorkflowRouter.as_controller()
 
         response = controller(
+            request=self.request,
+            resource_id=self.resource.id,
+            workflow_id=self.workflow.id,
+            step_id=self.step1.id,
+            result_id=self.result_id
+        )
+
+        call_args = response._mock_new_parent._mock_call_args_list[0][1]
+        self.assertEqual(self.request, call_args['request'])
+        self.assertEqual(self.resource.id, call_args['resource_id'])
+        self.assertEqual(self.workflow.id, call_args['workflow_id'])
+        self.assertEqual(self.step1.id, call_args['step_id'])
+        self.assertIn('back_url', call_args)
+
+    def test_get_no_optional_args(self):
+        self.request.method = 'get'
+        controller = ResourceWorkflowRouter.as_controller()
+
+        controller(
             request=self.request,
             resource_id=self.resource.id,
             workflow_id=self.workflow.id
@@ -194,7 +242,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_step_mixins.return_value = self.step1
         controller = ResourceWorkflowRouter.as_controller()
 
-        response = controller(
+        controller(
             request=self.request,
             resource_id=self.resource.id,
             workflow_id=self.workflow.id
@@ -216,7 +264,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.request.method = 'get'
         controller = ChildResourceWorkflowRouter.as_controller()
 
-        response = controller(
+        controller(
             request=self.request,
             resource_id=self.resource.id,
             workflow_id=self.workflow.id
@@ -230,7 +278,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_last_result.return_value = None
         controller = ResourceWorkflowRouter.as_controller()
 
-        response = controller(
+        controller(
             request=self.request,
             resource_id=self.resource.id,
             workflow_id=self.workflow.id
@@ -241,17 +289,42 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
 
     def test_get_statement_error(self):
         self.request.method = 'get'
-        self.mock_get_workflow.side_effect = StatementError(None, None, None, None)
-        controller = ResourceWorkflowRouter.as_controller()
+        controller = RaiseStatementError.as_controller()
 
-        response = controller(
+        controller(
             request=self.request,
             resource_id=self.resource.id,
             workflow_id=self.workflow.id
         )
 
-        msg_error_args = self.mock_messages.error.call_args_list
-        self.assertEqual('The {} could not be found', msg_error_args[0][0][1])
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('The generic workflow could not be found.', msg_warning_args[0][0][1])
+
+    def test_get_no_result_found(self):
+        self.request.method = 'get'
+        controller = RaiseNoResultFound.as_controller()
+
+        controller(
+            request=self.request,
+            resource_id=self.resource.id,
+            workflow_id=self.workflow.id
+        )
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('The generic workflow could not be found.', msg_warning_args[0][0][1])
+
+    def test_get_atcore_exception(self):
+        self.request.method = 'get'
+        controller = RaiseATCoreException.as_controller()
+
+        controller(
+            request=self.request,
+            resource_id=self.resource.id,
+            workflow_id=self.workflow.id
+        )
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('This is the ATCore exception.', msg_warning_args[0][0][1])
 
     def test_post_no_optional_params(self):
         self.session.delete(self.workflow)
@@ -287,6 +360,48 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.assertEqual(self.workflow.id, call_args['workflow_id'])
         self.assertEqual(self.result_step.id, call_args['step_id'])
         self.assertIn('back_url', call_args)
+
+    def test_route_to_step_controller_statement_error(self):
+        RaiseStatementError()._route_to_step_controller(self.request, self.resource.id,
+                                                        self.workflow.id, self.step1.id)
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('Invalid step for workflow: generic workflow.', msg_warning_args[0][0][1])
+
+    def test_route_to_step_controller_no_result_found(self):
+        RaiseNoResultFound()._route_to_step_controller(self.request, self.resource.id,
+                                                       self.workflow.id, self.step1.id)
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('Invalid step for workflow: generic workflow.', msg_warning_args[0][0][1])
+
+    def test_route_to_step_controller_atcore_exception(self):
+        RaiseATCoreException()._route_to_step_controller(self.request, self.resource.id,
+                                                         self.workflow.id, self.step1.id)
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('This is the ATCore exception.', msg_warning_args[0][0][1])
+
+    def test_route_to_result_controller_statement_error(self):
+        RaiseStatementError()._route_to_result_controller(self.request, self.resource.id,
+                                                          self.workflow.id, self.step1.id, self.result_id)
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('Invalid step for workflow: generic workflow.', msg_warning_args[0][0][1])
+
+    def test_route_to_result_controller_no_result_found(self):
+        RaiseNoResultFound()._route_to_result_controller(self.request, self.resource.id,
+                                                         self.workflow.id, self.step1.id, self.result_id)
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('Invalid step for workflow: generic workflow.', msg_warning_args[0][0][1])
+
+    def test_route_to_result_controller_atcore_exception(self):
+        RaiseATCoreException()._route_to_result_controller(self.request, self.resource.id,
+                                                           self.workflow.id, self.step1.id, self.result_id)
+
+        msg_warning_args = self.mock_messages.warning.call_args_list
+        self.assertEqual('This is the ATCore exception.', msg_warning_args[0][0][1])
 
     def test_delete_no_optional_params(self):
         self.session.delete(self.workflow)
