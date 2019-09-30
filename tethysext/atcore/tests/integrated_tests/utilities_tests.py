@@ -10,6 +10,15 @@ from django.test import RequestFactory, TestCase as DjangoTestCase
 from tethysext.atcore import utilities
 
 
+class MockGeoServerEngine(object):
+
+    def __init__(self, endpoint, public_endpoint, username, password):
+        self.endpoint = endpoint
+        self.username = username
+        self.password = password
+        self.public_endpoint = public_endpoint
+
+
 class UtilitiesTests(DjangoTestCase):
 
     def setUp(self):
@@ -91,3 +100,8 @@ class UtilitiesTests(DjangoTestCase):
         strings = ['foo', 'bar', 'goo']
         ret = utilities.grammatically_correct_join(strings, conjunction='or')
         self.assertEqual('foo, bar or goo', ret)
+
+    def test_generate_geoserver_urls(self):
+        gs_engine = MockGeoServerEngine(username='admin', password='geoserver', endpoint='', public_endpoint='')
+
+        utilities.generate_geoserver_urls(gs_engine)
