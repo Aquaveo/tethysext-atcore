@@ -1,4 +1,5 @@
 from .controllers.app_users.add_existing_user import AddExistingUserTests  # noqa: F401
+from .controllers.app_users.manage_organizations import ManageOrganizationsTests  # noqa: F401
 from .controllers.app_users.manage_organization_members import ManageOrganizationMembersTest  # noqa: F401
 from .controllers.app_users.mixins import AppUsersViewMixinTests  # noqa: F401
 from .controllers.app_users.mixins import ResourceViewMixinTests  # noqa: F401
