@@ -274,12 +274,12 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             result = step.get_result(result_id=result_id)
 
             # Validate HTTP method
-            if request.method.lower() not in result.controller.http_methods:
-                raise RuntimeError('An unexpected error has occurred: Method not allowed ({}).'.format(request.method))
-
             if not result:
                 messages.error(request, 'Result not found.')
                 return redirect(self.back_url)
+
+            if request.method.lower() not in result.controller.http_methods:
+                raise RuntimeError('An unexpected error has occurred: Method not allowed ({}).'.format(request.method))
 
             controller = result.controller.instantiate(
                 _app=self._app,
