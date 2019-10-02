@@ -114,8 +114,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.assertIn('successfully released a lock', call_args[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
-    def test_build_workflow_lock_display_options_not_locked(self, _):
+    def test_build_lock_display_options_not_locked(self, _):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = None  # Not locked
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -128,11 +129,12 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
 
         self.assertDictEqual(expected, ret)
 
-    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
-    def test_build_workflow_lock_display_options_locked_for_request_user(self, _, __):
+    def test_build_lock_display_options_workflow_locked_for_request_user(self, _, __):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = self.django_user.username  # Locked for request user
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -145,11 +147,12 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
 
         self.assertDictEqual(expected, ret)
 
-    # to mock import in ResourceWofkflow.is_locked_for_request_user method
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
-    def test_build_workflow_lock_display_options_locked_for_other_user(self, _, __):
+    def test_build_lock_display_options_workflow_locked_for_other_user(self, _, __):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = 'some-other-username'  # Locked for a different user
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -163,8 +166,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.assertDictEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
-    def test_build_workflow_lock_display_options_locked_for_all_users(self, _):
+    def test_build_lock_display_options_workflow_locked_for_all_users(self, _):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -178,8 +182,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.assertDictEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
-    def test_build_workflow_lock_display_options_locked_for_request_user_permitted_user(self, _):
+    def test_build_lock_display_options_workflow_locked_for_request_user_permitted_user(self, _):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = self.django_user.username  # Locked for request user
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -193,8 +198,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.assertDictEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
-    def test_build_workflow_lock_display_options_locked_for_other_user_permitted_user(self, _):
+    def test_build_lock_display_options_workflow_locked_for_other_user_permitted_user(self, _):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = 'some-other-username'  # Locked for a different user
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -208,8 +214,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.assertDictEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
-    def test_build_workflow_lock_display_options_locked_for_all_users_permitted_user(self, _):
+    def test_build_lock_display_options_workflow_locked_for_all_users_permitted_user(self, _):
         self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
         self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
 
         ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
@@ -217,6 +224,112 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         expected = {
             'style': 'info',
             'message': 'The workflow is locked for editing for all users.',
+            'show': True
+        }
+
+        self.assertDictEqual(expected, ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_build_lock_display_options_resource_locked_for_request_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.django_user.username  # Locked for request user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
+
+        expected = {
+            'style': 'warning',
+            'message': 'The workflow is locked for editing for all other users, '
+                       'because the Resource is locked.',
+            'show': True
+        }
+
+        self.assertDictEqual(expected, ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_build_lock_display_options_resource_locked_for_other_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = 'some-other-username'  # Locked for a different user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
+
+        expected = {
+            'style': 'warning',
+            'message': 'The workflow is locked for editing by another user, '
+                       'because the Resource is locked.',
+            'show': True
+        }
+
+        self.assertDictEqual(expected, ret)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_build_lock_display_options_resource_locked_for_all_users(self, _):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
+
+        expected = {
+            'style': 'warning',
+            'message': 'The workflow is locked for editing for all users, '
+                       'because the Resource is locked.',
+            'show': True
+        }
+
+        self.assertDictEqual(expected, ret)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_build_lock_display_options_resource_locked_for_request_user_permitted_user(self, _):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.django_user.username  # Locked for request user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
+
+        expected = {
+            'style': 'warning',
+            'message': f'The workflow is locked for editing for user {self.django_user.username}, '
+                       'because the Resource is locked.',
+            'show': True
+        }
+
+        self.assertDictEqual(expected, ret)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_build_lock_display_options_resource_locked_for_other_user_permitted_user(self, _):
+        self.request.user = self.django_user
+        self.resource._user_lock = 'some-other-username'  # Locked for a different user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
+
+        expected = {
+            'style': 'warning',
+            'message': 'The workflow is locked for editing for user some-other-username, '
+                       'because the Resource is locked.',
+            'show': True
+        }
+
+        self.assertDictEqual(expected, ret)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_build_lock_display_options_resource_locked_for_all_users_permitted_user(self, _):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
+
+        expected = {
+            'style': 'warning',
+            'message': 'The workflow is locked for editing for all users, '
+                       'because the Resource is locked.',
             'show': True
         }
 
