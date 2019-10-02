@@ -242,6 +242,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_release_lock(self, _, mock_rulal, mock_aulal):
         self.step1.options['release_workflow_lock_on_init'] = True
+        self.step1.options['release_resource_lock_on_init'] = True
 
         ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
 
@@ -256,12 +257,14 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_lock_required_step_not_complete(self, _, mock_rulal, mock_aulal):
         self.step1.options['workflow_lock_required'] = True
+        self.step1.options['resource_lock_required'] = True
         self.step1.set_status(status=self.step1.STATUS_PENDING)
 
         ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
 
         mock_rulal.assert_not_called()
-        mock_aulal.assert_called_with(self.request, self.session, self.workflow)
+        mock_aulal.assert_any_call(self.request, self.session, self.workflow)
+        mock_aulal.assert_any_call(self.request, self.session, self.resource)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'acquire_lock_and_log')
@@ -271,6 +274,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_lock_required_step_complete(self, _, mock_rulal, mock_aulal):
         self.step1.options['workflow_lock_required'] = True
+        self.step1.options['resource_lock_required'] = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
 
         ResourceWorkflowView().process_lock_options_on_init(self.request, self.session, self.resource, self.step1)
@@ -320,7 +324,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 '.user_has_active_role', return_value=True)  # active user
     def test_process_lock_options_on_init_all_enabled(self, _, mock_rulal, mock_aulal):
         self.step3.options['workflow_lock_required'] = True
+        self.step3.options['resource_lock_required'] = True
         self.step3.options['release_workflow_lock_on_init'] = True
+        self.step3.options['release_resource_lock_on_init'] = True
         self.workflow.lock_when_finished = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
@@ -335,8 +341,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'release_lock_and_log')
-    def test_lock_options_after_submission_release_lock_step_complete(self, mock_rulal, mock_aulal):
-        self.step1.options['release_workflow_lock_on_init'] = True
+    def test_process_lock_options_after_submission_release_lock_step_complete(self, mock_rulal, mock_aulal):
+        self.step1.options['release_workflow_lock_on_completion'] = True
+        self.step1.options['release_resource_lock_on_completion'] = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
 
         ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
@@ -349,8 +356,9 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'release_lock_and_log')
-    def test_lock_options_after_submission_release_lock_step_not_complete(self, mock_rulal, mock_aulal):
-        self.step1.options['release_workflow_lock_on_init'] = True
+    def test_process_lock_options_after_submission_release_lock_step_not_complete(self, mock_rulal, mock_aulal):
+        self.step1.options['release_workflow_lock_on_completion'] = True
+        self.step1.options['release_resource_lock_on_completion'] = True
         self.step1.set_status(status=self.step1.STATUS_PENDING)
 
         ResourceWorkflowView().process_lock_options_after_submission(self.request, self.session, self.resource,
@@ -363,7 +371,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'release_lock_and_log')
-    def test_lock_options_after_submission_lock_when_finished_workflow_complete(self, mock_rulal, mock_aulal):
+    def test_process_lock_options_after_submission_lock_when_finished_workflow_complete(self, mock_rulal, mock_aulal):
         self.workflow.lock_when_finished = True
         self.step3.options['release_workflow_lock_on_completion'] = False
         self.step3.options['release_resource_lock_on_completion'] = False
@@ -382,7 +390,8 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'release_lock_and_log')
-    def test_lock_options_after_submission_lock_when_finished_workflow_not_complete(self, mock_rulal, mock_aulal):
+    def test_process_lock_options_after_submission_lock_when_finished_workflow_not_complete(self, mock_rulal,
+                                                                                            mock_aulal):
         self.workflow.lock_when_finished = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
@@ -398,9 +407,10 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
                 'acquire_lock_and_log')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'release_lock_and_log')
-    def test_lock_options_after_submission_all_enabled(self, mock_rulal, mock_aulal):
+    def test_process_lock_options_after_submission_all_enabled(self, mock_rulal, mock_aulal):
         self.workflow.lock_when_finished = True
-        self.step3.options['release_workflow_lock_on_init'] = True
+        self.step3.options['release_workflow_lock_on_completion'] = True
+        self.step3.options['release_resource_lock_on_completion'] = True
         self.step1.set_status(status=self.step1.STATUS_COMPLETE)
         self.step2.set_status(status=self.step2.STATUS_COMPLETE)
         self.step3.set_status(status=self.step3.STATUS_COMPLETE)
