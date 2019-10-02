@@ -6,6 +6,8 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import os
+import shutil
 from unittest import mock
 from django.http import HttpRequest, HttpResponseRedirect
 from tethys_sdk.base import TethysAppBase
@@ -35,6 +37,9 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
+
+        tests_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+        self.working_dir_path = os.path.join(tests_dir, 'files', 'working_dir')
 
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.GET = {}
@@ -85,6 +90,9 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
 
     def tearDown(self):
         super().tearDown()
+
+        if os.path.exists(self.working_dir_path):
+            shutil.rmtree(self.working_dir_path)
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
                 return_value=False)
@@ -327,7 +335,7 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         )
 
         mock_get_managers.return_value = mock.MagicMock(spec=ModelDatabase), map_manager
-        mock_get_working_dir.return_value = 'working_dir'
+        mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
         mock_prepare.return_value = self.workflow.id
         mock_run_job.return_value = str(self.workflow.id)
 
