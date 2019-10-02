@@ -6,9 +6,9 @@ from django.test import RequestFactory
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.models.app_users import AppUser, Resource
-from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.resource_workflow_steps import SetStatusRWS
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
+    WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.controllers.resource_workflows.workflow_views import SetStatusWV
@@ -22,7 +22,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class SetStatusWVTests(SqlAlchemyTestCase):
+class SetStatusWVTests(WorkflowViewTestCase):
     current_url = './current'
     previous_url = './previous'
     next_url = './next'
@@ -35,8 +35,6 @@ class SetStatusWVTests(SqlAlchemyTestCase):
         self.request.path = 'apps/and/such'
 
         self.context = {}
-
-        self.workflow = ResourceWorkflow(name='foo')
 
         self.ssrws_no_options = SetStatusRWS(
             name='ssrws_no_options',
@@ -110,7 +108,9 @@ class SetStatusWVTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
-    def test_process_step_options_ssrws_no_options(self, _):
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
+    def test_process_step_options_ssrws_no_options(self, _, __):
         request = self.request_factory.get('/foo/bar/set-status')
         request.user = self.django_user
 
@@ -144,7 +144,9 @@ class SetStatusWVTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
-    def test_process_step_options_ssrws_three_statuses(self, _):
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
+    def test_process_step_options_ssrws_three_statuses(self, _, __):
         request = self.request_factory.get('/foo/bar/set-status')
         request.user = self.django_user
 
@@ -181,7 +183,9 @@ class SetStatusWVTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
-    def test_process_step_options_ssrws_custom_titles(self, _):
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
+    def test_process_step_options_ssrws_custom_titles(self, _, __):
         request = self.request_factory.get('/foo/bar/set-status')
         request.user = self.django_user
 

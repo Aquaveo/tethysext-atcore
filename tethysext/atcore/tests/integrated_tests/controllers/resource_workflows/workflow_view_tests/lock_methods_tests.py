@@ -118,7 +118,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # Not locked
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'warning',
@@ -135,7 +135,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = self.django_user.username  # Locked for request user
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'warning',
@@ -152,7 +152,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = 'some-other-username'  # Locked for a different user
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'warning',
@@ -167,7 +167,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'info',
@@ -182,7 +182,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = self.django_user.username  # Locked for request user
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'warning',
@@ -197,7 +197,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = 'some-other-username'  # Locked for a different user
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'warning',
@@ -212,7 +212,7 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         self.request.user = self.django_user
         self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
 
-        ret = ResourceWorkflowView().build_workflow_lock_display_options(self.request, self.workflow)
+        ret = ResourceWorkflowView().build_lock_display_options(self.request, self.workflow)
 
         expected = {
             'style': 'info',

@@ -1,6 +1,6 @@
-{% if workflow_lock.show %}
-<div class="workflow-locked alert alert-{{ workflow_lock.style }}" role="alert">
+{% if lock_display_options.show %}
+<div class="workflow-locked alert alert-{{ lock_display_options.style }}" role="alert">
     <i class="fa fa-lock" aria-hidden="true" title="Locked"></i>
-    <span class="workflow-lock-message">{{ workflow_lock.message }}</span>
+    <span class="workflow-lock-message">{{ lock_display_options.message }}</span>
 </div>
 {% endif %}

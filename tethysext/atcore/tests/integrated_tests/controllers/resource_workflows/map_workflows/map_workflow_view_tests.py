@@ -23,7 +23,8 @@ from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialMan
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.services.model_database import ModelDatabase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
+    WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 
@@ -36,14 +37,13 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class MapWorkflowViewTests(SqlAlchemyTestCase):
+class MapWorkflowViewTests(WorkflowViewTestCase):
 
     def setUp(self):
         super().setUp()
 
         self.request = mock.MagicMock(spec=HttpRequest)
         self.model_db = mock.MagicMock(spec=ModelDatabase)
-        self.workflow = ResourceWorkflow(name='foo')
 
         self.step1 = ResourceWorkflowStep(
             name='name1',
@@ -113,7 +113,7 @@ class MapWorkflowViewTests(SqlAlchemyTestCase):
             is_active=True,
         )
 
-        self.session.add(self.workflow)
+        self.session.add(self.resource)
         self.session.add(self.app_user)
         self.session.commit()
         self.request_factory = RequestFactory()
