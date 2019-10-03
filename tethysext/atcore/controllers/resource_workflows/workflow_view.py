@@ -171,8 +171,9 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
         # User has active role?
         user_has_active_role = self.user_has_active_role(request, step)
+        workflow_locked_for_user = self.workflow_locked_for_request_user(request, workflow)
 
-        if user_has_active_role and not workflow.is_locked_for_request_user(request):
+        if user_has_active_role and not workflow_locked_for_user:
             # Hook for processing step data when the user has the active role
             response = self.process_step_data(
                 request=request,
@@ -211,7 +212,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """
         previous_status = None
         steps = []
-        workflow_locked_for_user = workflow.is_locked_for_request_user(request)
+        workflow_locked_for_user = self.workflow_locked_for_request_user(request, workflow)
 
         for workflow_step in workflow.steps:
             step_status = workflow_step.get_status(workflow_step.ROOT_STATUS_KEY)
@@ -376,6 +377,21 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
 
         return 'primary'
 
+    def workflow_locked_for_request_user(self, request, workflow):
+        """
+        Checks if the workflow is locked for the request user--either directly or via the resource being locked.
+
+        Args:
+            request(HttpRequest): The request.
+            workflow(ResourceWorkflow): the workflow.
+
+        Returns:
+            bool: True if the workflow is locked.
+        """
+        is_locked = workflow.is_locked_for_request_user(request) or \
+            workflow.resource.is_locked_for_request_user(request)
+        return is_locked
+
     def user_has_active_role(self, request, step):
         """
         Checks if the request user has active role for step.
@@ -416,11 +432,9 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             bool: True if the view should be rendered in read-only mode.
         """
-        resource = step.workflow.resource
         user_has_active_role = self.user_has_active_role(request, step)
-        locked_for_request_user = \
-            step.workflow.is_locked_for_request_user(request) or resource.is_locked_for_request_user(request)
-        readonly = not user_has_active_role or locked_for_request_user
+        workflow_locked_for_user = self.workflow_locked_for_request_user(request, step.workflow)
+        readonly = not user_has_active_role or workflow_locked_for_user
         return readonly
 
     def process_lock_options_on_init(self, request, session, resource, step):
@@ -635,7 +649,9 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """  # noqa: E501
         if not step.complete and 'next-submit' in request.POST:
             # Workflow is locked for request user
-            if step.workflow.is_locked_for_request_user(request):
+            workflow_locked_for_user = self.workflow_locked_for_request_user(request, step.workflow)
+
+            if workflow_locked_for_user:
                 messages.warning(request, 'You man not proceed until this step is completed by the user who '
                                           'started it.')
             # Request user is not the active user

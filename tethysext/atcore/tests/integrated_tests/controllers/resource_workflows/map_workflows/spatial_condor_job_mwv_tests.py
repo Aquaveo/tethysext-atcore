@@ -128,8 +128,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
         mock_rcjt.assert_called_with(self.request, self.resource, self.workflow, self.step, None, None)
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
                 return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')
@@ -169,8 +169,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertEqual(1, len(arg_call_list['jobs_table']['jobs']))
         self.assertTrue(arg_call_list['can_run_workflows'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
                 return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')

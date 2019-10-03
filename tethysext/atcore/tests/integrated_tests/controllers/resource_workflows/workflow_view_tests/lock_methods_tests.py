@@ -113,6 +113,162 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
         call_args = mock_log.debug.call_args_list
         self.assertIn('successfully released a lock', call_args[0][0][0])
 
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_not_locked(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_workflow_locked_for_request_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = self.django_user.username  # Locked for request user
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_workflow_locked_for_other_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = 'some-other-username'  # Locked for a different user
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_workflow_locked_for_all_users(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_workflow_locked_for_request_user_workflow_locked_for_request_user_permitted_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = self.django_user.username  # Locked for request user
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_workflow_locked_for_request_user_workflow_locked_for_other_user_permitted_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = 'some-other-username'  # Locked for a different user
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_workflow_locked_for_request_user_workflow_locked_for_all_users_permitted_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = None  # Not locked
+        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_resource_locked_for_request_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.django_user.username  # Locked for request user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_resource_locked_for_other_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = 'some-other-username'  # Locked for a different user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_resource_locked_for_all_users(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertTrue(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_workflow_locked_for_request_user_resource_locked_for_request_user_permitted_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.django_user.username  # Locked for request user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_workflow_locked_for_request_user_resource_locked_for_other_user_permitted_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = 'some-other-username'  # Locked for a different user
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
+    # to mock import in ResourceWorkflow.is_locked_for_request_user method
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # to mock import in model methods
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=True)
+    def test_workflow_locked_for_request_user_resource_locked_for_all_users_permitted_user(self, _, __):
+        self.request.user = self.django_user
+        self.resource._user_lock = self.workflow.LOCKED_FOR_ALL_USERS  # Locked for all users
+        self.workflow._user_lock = None  # Not locked
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertFalse(ret)
+
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
     def test_build_lock_display_options_not_locked(self, _):
         self.request.user = self.django_user
