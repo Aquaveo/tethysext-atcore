@@ -17,6 +17,5 @@ from .services.base_spatial_manager import BaseSpatialManagerTests  # noqa: F401
 from .services.model_db_spatial_manager import ModelDBSpatialManagerTests  # noqa: F401
 from .services.model_file_db_spatial_manager import ModelFileDBSpatialManagerTests  # noqa: F401, E501
 from .services.map_manager import MapManagerBaseTests  # noqa: F401
-from .forms.widgets.param_widgets_tests import ParamWidgetsTests  # noqa: F401
 from .gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
 from .gizmos.slide_sheet import SlideSheetTests  # noqa: F401

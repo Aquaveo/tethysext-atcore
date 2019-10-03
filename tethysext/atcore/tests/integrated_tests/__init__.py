@@ -4,6 +4,7 @@ from .controllers.app_users.manage_organization_members import ManageOrganizatio
 from .controllers.app_users.mixins import AppUsersViewMixinTests  # noqa: F401
 from .controllers.app_users.mixins import ResourceViewMixinTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
+from .controllers.app_users.resource_details_tests import ResourceDetailsTests  # noqa: F401
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from .controllers.app_users.user_account import UserAccountTest  # noqa: F401
 from .controllers.map_view_tests import MapViewTests  # noqa: F401
@@ -23,6 +24,7 @@ from .controllers.resource_workflows.workflow_results_view_tests import Workflow
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBaseMethodsTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewLockMethodsTests  # noqa: F401
+from .forms.widgets.param_widgets_tests import ParamWidgetsTests  # noqa: F401
 from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401
 from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
