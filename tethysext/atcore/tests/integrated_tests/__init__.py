@@ -3,6 +3,7 @@ from .controllers.app_users.manage_organizations import ManageOrganizationsTests
 from .controllers.app_users.manage_organization_members import ManageOrganizationMembersTest  # noqa: F401
 from .controllers.app_users.mixins import AppUsersViewMixinTests  # noqa: F401
 from .controllers.app_users.mixins import ResourceViewMixinTests  # noqa: F401
+from .controllers.app_users.modify_resource_tests import ModifyResourceTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
 from .controllers.app_users.resource_details_tests import ResourceDetailsTests  # noqa: F401
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
