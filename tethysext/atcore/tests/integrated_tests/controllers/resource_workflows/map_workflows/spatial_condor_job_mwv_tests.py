@@ -11,18 +11,17 @@ import shutil
 from unittest import mock
 from django.http import HttpRequest, HttpResponseRedirect
 from tethys_sdk.base import TethysAppBase
+from tethys_apps.base.workspace import TethysWorkspace
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv import SpatialCondorJobMWV
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
-from tethysext.atcore.models.app_users.resource import Resource
-from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
+    WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
-from tethys_apps.base.workspace import TethysWorkspace
 
 
 def setUpModule():
@@ -33,7 +32,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
+class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
     def setUp(self):
         super().setUp()
@@ -52,15 +51,12 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
             'map_view': self.map_view,
             'layer_groups': []
         }
-        self.resource = mock.MagicMock(spec=Resource)
-        self.resource.id = 12345
         self.model_db = mock.MagicMock(spec=ModelDatabase)
         self.current_url = './current'
         self.next_url = './next'
         self.prev_url = './prev'
 
-        self.workflow = ResourceWorkflow()
-
+        self.resource.id = 12345
         self.step = SpatialDatasetRWS(
             geoserver_name='geo_server',
             map_manager=mock.MagicMock(),
@@ -140,8 +136,8 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
 
         mock_rcjt.assert_called_with(self.request, self.resource, self.workflow, self.step, None, None)
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
                 return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')
@@ -181,8 +177,8 @@ class SpatialCondorJobMwvTests(SqlAlchemyTestCase):
         self.assertEqual(1, len(arg_call_list['jobs_table']['jobs']))
         self.assertTrue(arg_call_list['can_run_workflows'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
                 return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')

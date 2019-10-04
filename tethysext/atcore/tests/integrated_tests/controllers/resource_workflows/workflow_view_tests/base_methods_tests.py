@@ -7,19 +7,19 @@
 ********************************************************************************
 """
 from unittest import mock
-
 from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users.resource import Resource
-from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
-from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
-    tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.mixins import StatusMixin
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.services.app_users.roles import Roles
+from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
+from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
+    WorkflowViewTestCase
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
 
 
 def setUpModule():
@@ -34,7 +34,7 @@ class InvalidStep(ResourceWorkflowView):
     pass
 
 
-class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
+class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     current_url = './current'
     previous_url = './previous'
     next_url = './next'
@@ -47,8 +47,6 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
 
         self.django_user = UserFactory()
         self.django_user.save()
-
-        self.workflow = ResourceWorkflow(name='foo')
 
         # Step 1
         self.step1 = ResourceWorkflowStep(
@@ -74,14 +72,14 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
         )
         self.workflow.steps.append(self.step3)
 
-        self.session.add(self.workflow)
+        self.session.add(self.resource)
         self.session.commit()
 
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)
     @mock.patch('tethys_apps.models.TethysApp')
@@ -103,8 +101,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
@@ -130,8 +128,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
@@ -157,8 +155,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret['step_url_name'])
         self.assertIn(self.workflow.name, ret['nav_title'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
@@ -193,8 +191,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
 
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret)
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=True)
     def test_build_step_cards_active_role(self, _, __):
@@ -271,8 +269,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
 
         self.assertEqual(0, len(steps))
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
                 '.user_has_active_role', return_value=False)
     def test_build_step_cards_not_active_role(self, _, __):
@@ -325,8 +323,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
         self.assertTrue(steps_context[1]['show_lock'])
         self.assertTrue(steps_context[1]['is_locked'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
     @mock.patch('tethys_apps.models.TethysApp')
@@ -345,11 +343,13 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
         self.assertEqual('./mock_url', ret['location'])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'user_has_active_role', return_value=False)
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
     @mock.patch('tethys_apps.models.TethysApp')
-    def test_save_step_data_without_active_role(self, mock_app, mock_reverse, mock_permission, mock_active_role):
+    def test_save_step_data_without_active_role(self, mock_app, mock_reverse, mock_permission, mock_active_role, _):
         mock_app.objects.get.return_value = mock.MagicMock(namespace='my_workspace')
         mock_reverse.return_value = './mock_url'
         mock_permission.return_value = None
@@ -488,8 +488,8 @@ class WorkflowViewBaseMethodsTests(SqlAlchemyTestCase):
                                                                'the user who started it.')
         self.assertEqual(self.current_url, response['location'])
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
+                'workflow_locked_for_request_user', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
                 'user_has_active_role', return_value=False)  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
