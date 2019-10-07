@@ -225,17 +225,6 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertTrue(self.mock_render.called)
         self.assertTrue(self.mock_reverse.called)
 
-    # @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
-    # def test_handle_modify_resource_requests_cannot_find_resource(self, _):
-    #     self.request.GET = {'next': 'manage-organizations'}
-    #     self.get_resource_model.return_value = None
-    #
-    #     ModifyResource()._handle_modify_resource_requests(self.request, '4151451145')
-    #
-    #     msg_args = self.mock_messages.error.call_args_list
-    #     self.assertIn('Unable to find', msg_args[0][0][1])
-    #     self.assertIn('Unable to find', self.mock_log.exception.call_args_list[0][0][0])
-
     @mock.patch('traceback.print_exc')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.can_create_resource')
     def test_handle_modify_resource_requests_non_atcore_exception(self, mock_can_create, mock_print_exe):
@@ -302,13 +291,3 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         ret_context = ModifyResource().get_context(context)
 
         self.assertEqual(ret_context, context)
-
-    # @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.os.path.exists')
-    # def test_handle_file_upload(self, mock_os_path_exists):
-    #     mock_os_path_exists.return_value = False
-    #     modify_resource = ModifyResource()
-    #     modify_resource._app = mock.MagicMock()
-    #
-    #     modify_resource.handle_file_upload(self.session, self.request, mock.MagicMock(), ['file1.txt'], self.resource)
-    #
-    #     # self.assertEqual
