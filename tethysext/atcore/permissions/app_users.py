@@ -249,13 +249,32 @@ class PermissionsGenerator:
         )
         self.all_permissions.append(toggle_public_layers)
 
+        use_map_plot = Permission(
+            name='use_map_plot',
+            description='Can use the plotting feature on map views.'
+        )
+        self.all_permissions.append(use_map_plot)
+
+        use_map_geocode = Permission(
+            name='use_map_geocode',
+            description='Can use the geocoding feature on map views.'
+        )
+        self.all_permissions.append(use_map_geocode)
+
+        # Lock permissions
+        can_override_user_locks = Permission(
+            name='can_override_user_locks',
+            description='Can override user locks on workflows.'
+        )
+        self.all_permissions.append(can_override_user_locks)
+
         # Only add enabled permissions groups
         enabled_permissions_groups = self.permission_manager.list()
 
         # 2. Collect Permissions --------------------------------------------------------------------------------------#
 
         # Standard User -----------------------------------------------------------------------------------------------#
-        standard_user_perms = [view_resource_details, view_organizations, view_resources]
+        standard_user_perms = [view_resource_details, view_organizations, view_resources, use_map_plot, use_map_geocode]
 
         if self.permission_manager.STD_U_PERMS in self.custom_permissions:
             standard_user_perms += self.custom_permissions[self.permission_manager.STD_U_PERMS]
@@ -271,7 +290,8 @@ class PermissionsGenerator:
             create_resource, edit_resource, delete_resource,
             view_users, modify_users, modify_organization_members,
             assign_org_user_role, assign_org_reviewer_role, assign_org_admin_role,
-            remove_layers, rename_layers, toggle_public_layers
+            remove_layers, rename_layers, toggle_public_layers,
+            can_override_user_locks
         ]
 
         if self.permission_manager.STD_A_PERMS in self.custom_permissions:

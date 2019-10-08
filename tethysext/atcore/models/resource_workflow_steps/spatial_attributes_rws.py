@@ -26,10 +26,12 @@ class SpatialAttributesRWS(SpatialResourceWorkflowStep):
 
     @property
     def default_options(self):
-        return {
+        default_options = super().default_options
+        default_options.update({
             'geometry_source': None,
             'attributes': {}
-        }
+        })
+        return default_options
 
     def init_parameters(self, *args, **kwargs):
         """

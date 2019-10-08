@@ -13,7 +13,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class ResourceWorkflowTests(SqlAlchemyTestCase):
+class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
@@ -36,11 +36,39 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
         self.workflow.results = [self.result_1, self.result_2, self.result_3]
 
         self.session.add(self.workflow)
+
         self.session.commit()
 
     def test___str__(self):
         ret = str(self.workflow)
-        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}">', ret)
+        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}" locked=False>', ret)
+
+    def test_complete(self):
+        # All other steps complete
+        self.step_1.set_status(status=self.step_1.STATUS_COMPLETE)
+        self.step_2.set_status(status=self.step_2.STATUS_COMPLETE)
+
+        # Last step varies
+        self.step_3.set_status(status=self.step_3.STATUS_PENDING)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_WORKING)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_ERROR)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_FAILED)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_COMPLETE)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_SUBMITTED)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_UNDER_REVIEW)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_APPROVED)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_REJECTED)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_CHANGES_REQUESTED)
+        self.assertFalse(self.workflow.complete)
 
     def test_get_next_step_no_steps(self):
         self.workflow.steps = []
@@ -82,6 +110,14 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
         idx, ret = self.workflow.get_next_step()
         self.assertEqual(0, idx)
         self.assertEqual(self.step_1, ret)
+
+    def test_get_next_step_multiple_steps_non_COMPLETE_complete_statuses(self):
+        self.workflow.steps[0].set_status(self.step_1.ROOT_STATUS_KEY, self.step_1.STATUS_SUBMITTED)
+        self.workflow.steps[1].set_status(self.step_2.ROOT_STATUS_KEY, self.step_2.STATUS_APPROVED)
+        self.workflow.steps[2].set_status(self.step_3.ROOT_STATUS_KEY, self.step_3.STATUS_PENDING)
+        idx, ret = self.workflow.get_next_step()
+        self.assertEqual(2, idx)
+        self.assertEqual(self.step_3, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_next_step')
     def test_get_status_first_step_pending(self, mock_next_step):

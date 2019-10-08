@@ -9,10 +9,10 @@
 import uuid
 import logging
 import datetime as dt
-from sqlalchemy import Column, ForeignKey, String, DateTime
+from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
-from tethysext.atcore.mixins import AttributesMixin, ResultsMixin
+from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
@@ -21,17 +21,17 @@ log = logging.getLogger(__name__)
 __all__ = ['ResourceWorkflow']
 
 
-class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
+class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixin):
     """
     Data model for storing information about resource workflows.
 
     Primary Workflow Status Progression:
     1. STATUS_PENDING = No steps have been started in workflow.
     2. STATUS_CONTINUE = Workflow has non-complete steps, has no steps with errors or failed, and no steps that are processing.
-    2. STATUS_WORKING = Workflow has steps that are processing.
-    3. STATUS_ERROR = Workflow has steps with errors.test_get_status_options_list
-    4. STATUS_FAILED = Workflow has steps that have failed.
-    5. STATUS_COMPLETE = All steps are complete in workflow.
+    3. STATUS_WORKING = Workflow has steps that are processing.
+    4. STATUS_ERROR = Workflow has steps with errors.test_get_status_options_list
+    5. STATUS_FAILED = Workflow has steps that have failed.
+    6. STATUS_COMPLETE = All steps are complete in workflow.
 
     Review Workflow Status Progression (if applicable):
     1. STATUS_SUBMITTED = Workflow submitted for review
@@ -68,7 +68,9 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
 
     name = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
+    lock_when_finished = Column(Boolean, default=False)
     _attributes = Column(String)
+    _user_lock = Column(String)
 
     resource = relationship('Resource', backref=backref('workflows', cascade='all,delete'))
     creator = relationship('AppUser', backref='workflows')
@@ -83,7 +85,11 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
     }
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}">'
+        return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}" locked={self.is_user_locked}>'
+
+    @property
+    def complete(self):
+        return self.get_status() in self.COMPLETE_STATUSES
 
     def get_next_step(self):
         """
@@ -96,9 +102,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin):
         step = None
 
         for idx, step in enumerate(self.steps):
-            step_status = step.get_status(step.ROOT_STATUS_KEY, step.STATUS_PENDING)
-
-            if step_status != ResourceWorkflowStep.STATUS_COMPLETE:
+            if not step.complete:
                 return idx, step
 
         # Return last step and index if none complete

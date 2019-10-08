@@ -1,7 +1,7 @@
 """
 ********************************************************************************
 * Name: mixins.py
-* Author: Tanner
+* Author: Tanner, mlebaron
 * Created On: May 7, 2019
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
@@ -10,9 +10,24 @@ from unittest import mock
 import unittest
 from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
+from tethysext.atcore.controllers.resource_workflows.mixins import ResultViewMixin
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
+    tear_down_module_for_sqlalchemy_tests
+
+
+def setUpModule():
+    setup_module_for_sqlalchemy_tests()
+
+
+def tearDownModule():
+    tear_down_module_for_sqlalchemy_tests()
 
 
 class ClassWithWorkflowMixin(WorkflowViewMixin):
+    pass
+
+
+class ClassWithResultViewMixin(ResultViewMixin):
     pass
 
 

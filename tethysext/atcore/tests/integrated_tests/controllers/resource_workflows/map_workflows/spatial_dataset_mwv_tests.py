@@ -12,9 +12,9 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonRes
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_dataset_mwv import SpatialDatasetMWV
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
 from tethysext.atcore.models.app_users.resource import Resource
-from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.services.model_database import ModelDatabase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
+    WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 
@@ -27,7 +27,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class SpatialDatasetMwvTests(SqlAlchemyTestCase):
+class SpatialDatasetMwvTests(WorkflowViewTestCase):
 
     def setUp(self):
         super().setUp()
@@ -42,8 +42,6 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
         self.back_url = './back'
         self.next_url = './next'
         self.current_url = './current'
-
-        self.workflow = ResourceWorkflow()
 
         self.step1 = SpatialDatasetRWS(
             geoserver_name='geo_server',
@@ -60,7 +58,7 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
         )
         self.workflow.steps.append(self.step1)
 
-        # self.session.add(self.workflow)
+        # self.session.add(self.resource)
         self.session.commit()
 
         step_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
@@ -85,8 +83,12 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
 
         self.assertIsInstance(ret, HttpResponse)
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
-    def test_save_spatial_data_no_active_role(self, mock_user_role):
+    def test_save_spatial_data_no_active_role(self, mock_user_role, _, __):
         mock_user_role.return_value = False
 
         ret = SpatialDatasetMWV().save_spatial_data(self.request, self.workflow.id, self.step1.id,
@@ -97,8 +99,10 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
         expected = b'{"success": false, "error": "You do not have permission to save changes on this step."}'
         self.assertEqual(expected, ret.__dict__['_container'][0])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
-    def test_save_spatial_data(self, mock_user_role):
+    def test_save_spatial_data(self, mock_user_role, _):
         mock_user_role.return_value = True
 
         ret = SpatialDatasetMWV().save_spatial_data(self.request, self.workflow.id, self.step1.id,
@@ -108,7 +112,9 @@ class SpatialDatasetMwvTests(SqlAlchemyTestCase):
         self.assertIsInstance(ret, JsonResponse)
         self.assertEqual([b'{"success": true}'], ret.__dict__['_container'])
 
-    def test_process_step_data(self):
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
+                return_value=False)
+    def test_process_step_data(self, _):
         model_db = mock.MagicMock(spec=ModelDatabase)
 
         ret = SpatialDatasetMWV().process_step_data(self.request, self.session, self.step1, model_db, self.current_url,

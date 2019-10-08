@@ -44,10 +44,17 @@ def parse_workflow_step_args():
         help='ID of the ResourceWorkflowStep this job is associated with.'
     )
     parser.add_argument(
+        'gs_private_url',
+        help='Private url to GeoServer.'
+    )
+    parser.add_argument(
+        'gs_public_url',
+        help='Public url to GeoServer.'
+    )
+    parser.add_argument(
         'workflow_params_file',
         help='Path to a file containing the JSON-serialized parameters from the workflow.'
     )
-    # TODO: Pass in paths to workflow and resource classes so they can be imported dynamically?
     parser.add_argument(
         '-s', '--scenario_id',
         dest='scenario_id',

@@ -110,7 +110,6 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
         context.update({
             'map_view': map_view,
             'layer_groups': layer_groups,
-            'can_run_workflows': self.user_has_active_role(request, current_step)
         })
 
     def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
@@ -163,11 +162,6 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
 
             # Otherwise, get the geojson from this step directly
             else:
-                # Child step must be a SpatialResourceWorkflowStep
-                if not isinstance(step, SpatialResourceWorkflowStep):
-                    # The following line may not be reachable
-                    continue
-
                 geometry = step.to_geojson()
 
             if not geometry:

@@ -10,10 +10,10 @@ from unittest import mock
 from django.http import HttpRequest
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_data_mwv import SpatialDataMWV
-from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.resource_workflow_steps.spatial_rws import SpatialResourceWorkflowStep
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
+from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
+    WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 
@@ -26,7 +26,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class SpatialDataMwvTests(SqlAlchemyTestCase):
+class SpatialDataMwvTests(WorkflowViewTestCase):
 
     def setUp(self):
         super().setUp()
@@ -36,10 +36,7 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
         self.addCleanup(log_patcher.stop)
 
         self.request = mock.MagicMock(spec=HttpRequest)
-        self.resource = mock.MagicMock()
         self.resource.id = '12345'
-
-        self.workflow = ResourceWorkflow(name='foo')
 
         self.step = SpatialResourceWorkflowStep(
             geoserver_name='geo_server',
@@ -49,8 +46,7 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
             help='help1',
             order=1
         )
-
-        self.session.commit()
+        self.workflow.steps.append(self.step)
 
     def tearDown(self):
         super().tearDown()
@@ -66,12 +62,16 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
         except RuntimeError as e:
             self.assertEqual('The geometry option is required.', str(e))
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.add_layers_for_previous_steps')  # noqa: E501
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.user_has_active_role')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     def test_process_step_options_no_active_role_no_parent(self, mock_get_managers, mock_user_role,
-                                                           mock_get_param, mock_add_layers):
+                                                           mock_get_param, mock_add_layers, _, __):
         mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
         mock_user_role.return_value = False
         mock_get_param.return_value = {'features': []}
@@ -88,7 +88,6 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
         self.assertIn('layer_groups', context)
         self.assertIn('enable_properties_popup', context)
         self.assertIn('enable_spatial_data_popup', context)
-        self.assertIn('can_run_workflows', context)
         self.assertEqual(self.step.options['dataset_title'],
                          context['map_view'].__dict__['layers'][0]['data']['popup_title'])
 
@@ -119,7 +118,6 @@ class SpatialDataMwvTests(SqlAlchemyTestCase):
         self.assertIn('layer_groups', context)
         self.assertIn('enable_properties_popup', context)
         self.assertIn('enable_spatial_data_popup', context)
-        self.assertIn('can_run_workflows', context)
         self.assertEqual(step1.options['singular_name'],
                          context['map_view'].__dict__['layers'][0]['data']['popup_title'])
 

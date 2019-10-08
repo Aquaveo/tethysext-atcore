@@ -191,7 +191,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
         mock_make_session.commit.assert_called()
         mock_make_session.close.assert_called()
         self.assertEqual(200, ret.status_code)
-        self.assertEqual('true', ret.content.decode('utf-8')['success'])
+        self.assertEqual('{"success": true}', ret.content.decode('utf-8'))
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.HttpResponseForbidden')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
@@ -257,3 +257,6 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
 
         # test the results
         self.assertDictEqual(test_card, ret)
+
+    def test_preform_custom_delete_operations(self):
+        ManageOrganizations().perform_custom_delete_operations(None, None)

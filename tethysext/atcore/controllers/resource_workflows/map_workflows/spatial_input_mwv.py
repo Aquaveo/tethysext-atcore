@@ -48,15 +48,17 @@ class SpatialInputMWV(MapWorkflowView):
             dict: key-value pairs to add to context.
         """
         # Determine if user has an active role
-        user_has_active_role = self.user_has_active_role(request, current_step)
+        is_read_only = self.is_read_only(request, current_step)
 
-        if user_has_active_role:
-            allow_shapefile_uploads = current_step.options['allow_shapefile']
-        else:
+        if is_read_only:
             allow_shapefile_uploads = False
+            allow_edit_attributes = False
+        else:
+            allow_shapefile_uploads = current_step.options.get('allow_shapefile')
+            allow_edit_attributes = True
 
         return {'allow_shapefile': allow_shapefile_uploads,
-                'allow_edit_attributes': user_has_active_role}
+                'allow_edit_attributes': allow_edit_attributes}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
@@ -82,12 +84,12 @@ class SpatialInputMWV(MapWorkflowView):
         map_view = context['map_view']
 
         # Determine if user has an active role
-        user_has_active_role = self.user_has_active_role(request, current_step)
+        is_read_only = self.is_read_only(request, current_step)
 
         # Turn off feature selection
         self.set_feature_selection(map_view=map_view, enabled=False)
 
-        if user_has_active_role:
+        if not is_read_only:
             enabled_controls = ['Modify', 'Delete', 'Move', 'Pan']
 
             # Add layer for current geometry
