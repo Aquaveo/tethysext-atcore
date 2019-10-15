@@ -1549,7 +1549,14 @@ var ATCORE_MAP_VIEW = (function() {
             },
         }).done(function(data){
             if (status == 'create') {
-                $('#layers-tab-panel').prepend(data.response);
+                // if the first child has no id, it's something we want to keep in the top (ex: layer or stress period selector).
+                if (!$('#layers-tab-panel').children().first().id) {
+                    $('#layers-tab-panel div:eq(0)').after(data.response);
+                }
+                else {
+                    $('#layers-tab-panel').prepend(data.response);
+                }
+
             }
             else {
                 $('#' + layer_group_id + '_associated_layers').prepend(data.response);
