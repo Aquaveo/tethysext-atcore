@@ -1,0 +1,66 @@
+{% load static %}
+{# NOTE: The new workflow modal is loaded in the gssha_model_details.html #}
+<a class="btn btn-fab btn-primary"
+   data-tooltip="tooltip"
+   data-placement="left"
+   data-original-title="New Workflow"
+   data-toggle="modal"
+   data-target="#new-workflow-modal">
+  <span class="glyphicon glyphicon-plus"></span>
+</a>
+
+{% if workflow_cards %}
+<div class="row">
+  <div class="col-md-12">
+    <div id="workflows-table">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            {% if user.is_staff %}
+            <th class="name">Workflow ID</th>
+            {% endif %}
+            <th>Name</th>
+            <th>Type</th>
+            <th>Creator</th>
+            <th>Date Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for workflow_card in workflow_cards %}
+          <tr>
+            {% if user.is_staff %}
+            <td>{{ workflow_card.id }}</td>
+            {% endif %}
+            <td>{{ workflow_card.name }}</td>
+            <td>{{ workflow_card.type }}</td>
+            <td>{{ workflow_card.creator }}</td>
+            <td>{{ workflow_card.date_created }}</th>
+            <td class="btn-td">
+              <div class="btn-toolbar pull-right">
+                {% if workflow_card.can_delete %}
+                <a class="btn btn-default btn-delete-manage btn-delete btn-flat"
+                   href="javascript:void(0);"
+                   data-id="{{ workflow_card.id }}"
+                   data-toggle="tooltip"
+                   data-placement="top"
+                   title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+                {% endif %}
+                <a class="btn btn-flat btn-workflow btn-{{ workflow_card.status.style }} btn-workflow-{{ workflow_card.status.style }}"
+                   href="{{ workflow_card.status.href }}">{{ workflow_card.status.title }}</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="{% static 'atcore/app_users/js/app_users.js' %}" type="text/javascript"></script>
+{% else %}
+<div class="w-center-parent">
+  <h2 class="w-centered">Press the "+" button to begin a new workflow.</h2>
+</div>
+{% endif %}
+

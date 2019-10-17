@@ -9,6 +9,8 @@
 import uuid
 import logging
 import datetime as dt
+from abc import abstractmethod
+
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
@@ -195,3 +197,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             status = s.get_status(s.ROOT_STATUS_KEY)
             if status != s.STATUS_PENDING:
                 s.reset()
+
+    @abstractmethod
+    def get_url_name(self):
+        pass

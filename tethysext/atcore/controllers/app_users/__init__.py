@@ -8,4 +8,5 @@ from tethysext.atcore.controllers.app_users.manage_organization_members import M
 from tethysext.atcore.controllers.app_users.manage_resources import ManageResources  # noqa: F401
 from tethysext.atcore.controllers.app_users.modify_resource import ModifyResource  # noqa: F401
 from tethysext.atcore.controllers.app_users.resource_details import ResourceDetails  # noqa: F401
+from tethysext.atcore.controllers.app_users.resource_details_tab_content import ResourceDetailsTabContent  # noqa: F401
 from tethysext.atcore.controllers.app_users.resource_status import ResourceStatus  # noqa: F401
