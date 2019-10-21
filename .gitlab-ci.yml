@@ -46,7 +46,8 @@ Test:
   image: docker:git
   script:
     # Import build
-    - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
@@ -93,7 +94,8 @@ Test:
   image: docker:git
   script:
     # Import build
-    - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
