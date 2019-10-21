@@ -94,7 +94,14 @@ class ResourceDetailsTabContent(ResourceDetails):
         else:
             context['locked_by'] = 'N/A'
 
-        context['columns'] = self.get_summary_tab_info(request, database_id)
+        general_summary_tab_info = ('Description', {'Name': resource.name, 'Description': resource.description,
+                                    'Created By': resource.created_by, 'Date Created': resource.date_created})
+        summary_tab_info = self.get_summary_tab_info(request, database_id)
+        if len(summary_tab_info) == 0:
+            summary_tab_info = [[general_summary_tab_info]]
+        else:
+            summary_tab_info[0].insert(0, general_summary_tab_info)
+        context['columns'] = summary_tab_info
 
         return render(request, 'atcore/app_users/resource_details/summary.html', context)
 

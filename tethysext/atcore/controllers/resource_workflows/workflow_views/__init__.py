@@ -7,3 +7,4 @@
 ********************************************************************************
 """
 from tethysext.atcore.controllers.resource_workflows.workflow_views.set_status_wv import SetStatusWV  # noqa: F401, E501
+from tethysext.atcore.controllers.resource_workflows.workflow_views.form_input_wv import FormInputWV  # noqa: F401, E501

@@ -20,38 +20,6 @@
         </table>
       </div>
       {% endif %}
-      {# General Info #}
-      <div id="general-info">
-        <h6 class="resource-details table-header">Description</h6>
-        <table class="table table-hover">
-          <tbody>
-            <tr>
-              <td class="name">Name</td>
-              <td>{{ resource.name }}</td>
-            </tr>
-            <tr>
-              <td class="name">Description</td>
-              <td>{{ resource.description }}</td>
-            </tr>
-            <tr>
-              <td class="name">Created By</td>
-              <td>{{ resource.created_by }}</td>
-            </tr>
-            <tr>
-              <td class="name">Date Created</td>
-              <td>{{ resource.date_created }}</td>
-            </tr>
-            <tr>
-              <td class="name">Column Width</td>
-              <td>{{ column_width }}</td>
-            </tr>
-            <tr>
-              <td class="name">Columns</td>
-              <td>{{ columns|length }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     {% endif %}
 
     {% for table_name, table in column %}

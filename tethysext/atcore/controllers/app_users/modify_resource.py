@@ -9,6 +9,7 @@
 import os
 import traceback
 import logging
+import uuid
 # Django
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -162,6 +163,7 @@ class ModifyResource(AppUsersViewMixin):
                     # Otherwise create a new project
                     else:
                         resource = _Resource()
+                        resource.set_attribute('database_id', str(uuid.uuid4()))
 
                     # Assign name and description
                     resource.name = resource_name
