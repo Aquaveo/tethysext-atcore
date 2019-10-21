@@ -31,9 +31,28 @@ class ResourceDetailsTabContent(ResourceDetails):
     preview_image_title = "Preview"
 
     def preview_image(self, *args, **kwargs):
+        """
+        Preview image for summary tab
+
+        Override this to get an image back, return a URL
+        """
         return None
 
     def get_summary_tab_info(self, *args, **kwargs):
+        """
+        Get the summary tab info
+
+        Return Format
+        [
+            [
+                ('Section 1 Title', {'key1': value}),
+                ('Section 2 Title', {'key1': value, 'key2': value}),
+            ],
+            [
+                ('Section 3 Title', {'key1': value}),
+            ],
+        ]
+        """
         return []
 
     @active_user_required()
