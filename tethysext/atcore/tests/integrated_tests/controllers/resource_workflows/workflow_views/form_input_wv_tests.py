@@ -17,7 +17,8 @@ from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 
 
 class TestParam(param.Parameterized):
-    pass
+    int_value = param.Integer()
+    string_value = param.String()
 
 
 def setUpModule():
@@ -110,7 +111,8 @@ class FormInputWVTests(WorkflowViewTestCase):
 
     def test_process_step_data_ssrws_basic(self):
         data = {
-            'form-values': {'test': 1}
+            'param-form-integer_val': '1',
+            'param-form-string_val': 'string',
         }
 
         current_url = '/foo/bar/set-status'
@@ -134,4 +136,4 @@ class FormInputWVTests(WorkflowViewTestCase):
         self.assertEqual(self.mock_psd(), ret)
 
         step = self.session.query(FormInputRWS).filter(FormInputRWS.name == 'firws').one()
-        self.assertEqual({'test': 1}, step.get_parameter('form-values'))
+        self.assertEqual({'integer_val': '1', 'string_val': 'string',}, step.get_parameter('form-values'))
