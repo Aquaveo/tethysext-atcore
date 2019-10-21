@@ -1,0 +1,16 @@
+{% extends "atcore/resource_workflows/resource_workflow_view.html" %}
+{% load static %}
+
+{% block before_workflow_form %}
+  <h1>{{ form_title }}</h1>
+  {% if not read_only %}<p>{{ current_step.help }}</p>{% endif %}
+{% endblock %}
+
+{% block workflow_form_content %}
+{{ form }}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/css/flatmark.css' %}" rel="stylesheet"/>
+{% endblock %}

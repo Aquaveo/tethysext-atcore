@@ -44,13 +44,6 @@ class ResourceDetails(ResourceViewMixin):
         pass
 
     @abstractmethod
-    def get_resource_app(self):
-        """
-        App containing workflows
-        """
-        pass
-
-    @abstractmethod
     def get_model_spatial_manager(self):
         """
         Get model spatial manager
@@ -179,7 +172,7 @@ class ResourceDetails(ResourceViewMixin):
 
         try:
             WorkflowModel = self.resource_workflows[workflow_type]
-            workflow_app = self.get_resource_app()
+            workflow_app = self._app
             workflow = WorkflowModel.new(
                 app=workflow_app,
                 name=workflow_name,
