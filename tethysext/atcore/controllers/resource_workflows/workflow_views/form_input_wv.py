@@ -63,13 +63,14 @@ class FormInputWV(ResourceWorkflowView):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
-        status = step.STATUS_COMPLETE
         params = {}
         for p in request.POST:
             if p.startswith('param-form-'):
                 param_name = p[11:]
                 params[param_name] = request.POST.get(p, None)
         step.set_parameter('form-values', params)
+
+        status = step.STATUS_COMPLETE
 
         # Save parameters
         session.commit()
