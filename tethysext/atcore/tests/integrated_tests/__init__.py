@@ -12,6 +12,7 @@ from .controllers.map_view_tests import MapViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_mixins_tests import WorkflowViewMixinTests  # noqa: F401
 from .controllers.resource_workflows.result_view_mixins_tests import ResultViewMixinTests  # noqa: F401
 from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
+from .controllers.resource_workflows.workflow_views.form_input_wv_tests import FormInputWVTests  # noqa: F401
 from .controllers.resource_workflows.map_workflows.map_workflow_view_tests import MapWorkflowViewTests  # noqa: F401
 from .controllers.resource_workflows.map_workflows.spatial_condor_job_mwv_tests import SpatialCondorJobMwvTests  # noqa: F401, E501
 from .controllers.resource_workflows.map_workflows.spatial_data_mwv_tests import SpatialDataMwvTests  # noqa: F401

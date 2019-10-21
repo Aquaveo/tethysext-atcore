@@ -96,6 +96,8 @@ class ResourceDetailsTabContent(ResourceDetails):
 
         general_summary_tab_info = ('Description', {'Name': resource.name, 'Description': resource.description,
                                     'Created By': resource.created_by, 'Date Created': resource.date_created})
+
+        # Add general_summary_tab_info as first item in first columns
         summary_tab_info = self.get_summary_tab_info(request, database_id)
         if len(summary_tab_info) == 0:
             summary_tab_info = [[general_summary_tab_info]]
