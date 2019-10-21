@@ -142,14 +142,14 @@ widget_map = {
 }
 
 
-def generate_django_form(parameterized_obj, set_options=None):
+def generate_django_form(parameterized_obj, set_options=None, form_field_prefix=None):
     """
     Create a Django form from a Parameterized object.
 
     Args:
         parameterized_obj(Parameterized): the parameterized object.
         set_options(dict<attrib_name, initial_value>): Dictionary of initial value for one or more fields.
-
+        form_field_prefix(str): A prefix to prepend to form fields
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
@@ -162,7 +162,10 @@ def generate_django_form(parameterized_obj, set_options=None):
 
     for p in sorted(params, key=lambda p: p.precedence or 9999):
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
-        form_class.base_fields[p.name] = widget_map[type(p)](p, set_options.get(p.name))
-        form_class.base_fields[p.name].widget.attrs.update({'class': 'form-control'})
+        p_name = p.name
+        if form_field_prefix is not None:
+            p_name = form_field_prefix + p_name
+        form_class.base_fields[p_name] = widget_map[type(p)](p, set_options.get(p.name))
+        form_class.base_fields[p_name].widget.attrs.update({'class': 'form-control'})
 
     return form_class
