@@ -1,9 +1,15 @@
-image: docker:git
-
 stages:
   - Lint
   - Build
   - Test
+  - Cleanup
+
+
+include:
+  - project: 'tethys/kubernetes/gl-k8s-integration'
+    ref: 1.0.1
+    file: '/kaniko-build.yml'
+
 
 variables:
   CONDA_HOME: '/opt/conda'
@@ -24,56 +30,23 @@ Lint:
   before_script:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
 
-Build:
-  stage: Build
-  <<: *kaniko_prep
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/${CI_PROJECT_PATH_SLUG}.tar
-    expire_in: 1 hour
-  script:
-    - /kaniko/executor
-        --context $CI_PROJECT_DIR
-        --dockerfile $CI_PROJECT_DIR/Dockerfile
-        --destination $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
-        --tarPath $CI_PROJECT_DIR/${CI_PROJECT_PATH_SLUG}.tar
-        --cache true
-        --cache-repo $CI_REGISTRY_IMAGE/cache
-  except:
-    - tags
+### Build ###
+"Build Commit":
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
 
-"Build and Push":
-  stage: Build
-  <<: *kaniko_prep
-  script:
-    - /kaniko/executor
-        --context $CI_PROJECT_DIR
-        --dockerfile $CI_PROJECT_DIR/Dockerfile
-        --destination $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_TAG
-        --destination $CI_REGISTRY_IMAGE/atcore:latest
-        --cache true
-        --cache-repo $CI_REGISTRY_IMAGE/cache
-  only:
-    - tags
-
-"Dev Build and Push":
-  stage: Build
-  <<: *kaniko_prep
-  script:
-    - /kaniko/executor
-        --context $CI_PROJECT_DIR
-        --dockerfile $CI_PROJECT_DIR/Dockerfile
-        --destination $CI_REGISTRY_IMAGE/atcore:$CI_COMMIT_REF_NAME
-        --cache true
-        --cache-repo $CI_REGISTRY_IMAGE/cache
-  except:
-    - tags
-
+"Build Tag":
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    
+### Test ###
 Test:
   stage: Test
+  image: docker:git
   script:
     # Import build
-    - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
@@ -89,7 +62,7 @@ Test:
         -e TETHYS_DB_PASSWORD='pass'
         -e TETHYS_DB_HOST='172.17.0.1'
         -e TETHYS_DB_PORT='5432'
-        $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
+        $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
     - echo "wait for container to start up..."
     - sleep 300s
     - docker logs tethys_atcore
@@ -117,9 +90,11 @@ Test:
 
 "Salt Test":
   stage: Test
+  image: docker:git
   script:
     # Import build
-    - docker load -i ${CI_PROJECT_PATH_SLUG}.tar
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
@@ -135,7 +110,7 @@ Test:
         -e TETHYS_DB_PASSWORD='pass'
         -e TETHYS_DB_HOST='172.17.0.1'
         -e TETHYS_DB_PORT='5432'
-        $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
+        $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
         bash test-docker.sh
   before_script:
     - docker rm -f tethys_atcore tethys_postgis || true
