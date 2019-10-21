@@ -63,7 +63,7 @@ Test:
         -e TETHYS_DB_PASSWORD='pass'
         -e TETHYS_DB_HOST='172.17.0.1'
         -e TETHYS_DB_PORT='5432'
-        $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
+        $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
     - echo "wait for container to start up..."
     - sleep 300s
     - docker logs tethys_atcore
@@ -111,7 +111,7 @@ Test:
         -e TETHYS_DB_PASSWORD='pass'
         -e TETHYS_DB_HOST='172.17.0.1'
         -e TETHYS_DB_PORT='5432'
-        $CI_REGISTRY_IMAGE/atcore:${CI_COMMIT_REF_SLUG}-dev
+        $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_SHORT_SHA
         bash test-docker.sh
   before_script:
     - docker rm -f tethys_atcore tethys_postgis || true
