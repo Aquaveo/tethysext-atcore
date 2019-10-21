@@ -136,4 +136,4 @@ class FormInputWVTests(WorkflowViewTestCase):
         self.assertEqual(self.mock_psd(), ret)
 
         step = self.session.query(FormInputRWS).filter(FormInputRWS.name == 'firws').one()
-        self.assertEqual({'integer_val': '1', 'string_val': 'string',}, step.get_parameter('form-values'))
+        self.assertEqual({'integer_val': '1', 'string_val': 'string'}, step.get_parameter('form-values'))
