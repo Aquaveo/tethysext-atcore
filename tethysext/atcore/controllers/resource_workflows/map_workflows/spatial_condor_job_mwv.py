@@ -78,7 +78,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         Returns:
             None or HttpResponse: If an HttpResponse is returned, render that instead.
         """  # noqa: E501
-        step_status = current_step.get_status(current_step.ROOT_STATUS_KEY)
+        step_status = current_step.get_status()
         if step_status != current_step.STATUS_PENDING:
             return self.render_condor_jobs_table(request, resource, workflow, current_step, previous_step, next_step)
 
@@ -117,6 +117,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Can run workflows if not readonly
         can_run_workflows = not self.is_read_only(request, current_step)
 
+        # Configure workflow lock display
+        lock_display_options = self.build_lock_display_options(request, workflow)
+
         context = {
             'resource': resource,
             'workflow': workflow,
@@ -132,7 +135,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'nav_title': '{}: {}'.format(resource.name, workflow.name),
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
             'jobs_table': jobs_table,
-            'can_run_workflows': can_run_workflows
+            'can_run_workflows': can_run_workflows,
+            'lock_display_options': lock_display_options
         }
 
         return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)

@@ -836,7 +836,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         opts = ret['options']
         expected_data = {
-            'excluded_properties': ['id', 'type', 'layer_name'],
+            'excluded_properties': ['id', 'type', 'layer_name', 'plot'],
             'layer_id': layer_name,
             'layer_name': layer_name,
             'popup_title': layer_title,
@@ -851,7 +851,7 @@ class MapManagerBaseTests(unittest.TestCase):
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
-        self.assertEqual(expected_data, ret['data'])
+        self.assertDictEqual(expected_data, ret['data'])
         self.assertEqual(given_options, opts)
 
     def test_build_mv_layer_has_action(self):

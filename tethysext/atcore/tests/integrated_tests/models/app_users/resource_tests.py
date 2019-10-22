@@ -58,4 +58,4 @@ class ResourceTests(SqlAlchemyTestCase):
 
         ret = resource.__repr__()
 
-        self.assertEqual(f'<Resource name="A Resource" description="Bad Description" id="{resource.id}">', ret)
+        self.assertEqual(f'<Resource name="A Resource" id="{resource.id}" locked=False>', ret)

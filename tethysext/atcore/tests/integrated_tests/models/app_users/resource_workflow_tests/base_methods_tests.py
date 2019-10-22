@@ -1,8 +1,4 @@
 from unittest import mock
-
-from django.test import RequestFactory
-
-from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -17,7 +13,7 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class ResourceWorkflowTests(SqlAlchemyTestCase):
+class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
@@ -45,7 +41,34 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
 
     def test___str__(self):
         ret = str(self.workflow)
-        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}">', ret)
+        self.assertEqual(f'<ResourceWorkflow name="bar" id="{self.workflow.id}" locked=False>', ret)
+
+    def test_complete(self):
+        # All other steps complete
+        self.step_1.set_status(status=self.step_1.STATUS_COMPLETE)
+        self.step_2.set_status(status=self.step_2.STATUS_COMPLETE)
+
+        # Last step varies
+        self.step_3.set_status(status=self.step_3.STATUS_PENDING)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_WORKING)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_ERROR)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_FAILED)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_COMPLETE)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_SUBMITTED)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_UNDER_REVIEW)
+        self.assertFalse(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_APPROVED)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_REJECTED)
+        self.assertTrue(self.workflow.complete)
+        self.step_3.set_status(status=self.step_3.STATUS_CHANGES_REQUESTED)
+        self.assertFalse(self.workflow.complete)
 
     def test_get_next_step_no_steps(self):
         self.workflow.steps = []
@@ -170,207 +193,3 @@ class ResourceWorkflowTests(SqlAlchemyTestCase):
 
     def test_reset_next_steps_invalid_step(self):
         self.assertRaises(ValueError, self.workflow.reset_next_steps, self.step_4)
-
-
-class ResourceWorkflowLockTests(SqlAlchemyTestCase):
-
-    def setUp(self):
-        super().setUp()
-        # Custom setup here
-        self.workflow = ResourceWorkflow(name='bar')
-        self.session.add(self.workflow)
-        self.session.commit()
-
-        self.django_user = UserFactory()
-        self.django_user.save()
-
-        self.rf = RequestFactory()
-
-    def test_acquire_user_lock_django_user(self):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-
-        ret = self.workflow.acquire_user_lock(request)
-
-        self.assertTrue(ret)
-        self.assertEqual(self.django_user.username, self.workflow._user_lock)
-
-    def test_acquire_user_lock_django_user_already_locked_for_given_user(self):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = self.django_user.username
-
-        ret = self.workflow.acquire_user_lock(request)
-
-        self.assertTrue(ret)
-        self.assertEqual(self.django_user.username, self.workflow._user_lock)
-
-    def test_acquire_user_lock_django_user_already_locked_not_given_user(self):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = 'otheruser'
-
-        ret = self.workflow.acquire_user_lock(request)
-
-        self.assertFalse(ret)
-        self.assertEqual('otheruser', self.workflow._user_lock)
-
-    def test_acquire_user_lock_django_user_already_locked_for_all_users(self):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.acquire_user_lock(request)
-
-        self.assertFalse(ret)
-        self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, self.workflow._user_lock)
-
-    def test_acquire_user_lock_for_all_users(self):
-        ret = self.workflow.acquire_user_lock()
-
-        self.assertTrue(ret)
-        self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, self.workflow._user_lock)
-
-    def test_acquire_user_lock_for_all_users_already_locked_for_all_users(self):
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.acquire_user_lock()
-
-        self.assertTrue(ret)
-        self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, self.workflow._user_lock)
-
-    def test_acquire_user_lock_for_all_users_already_locked_for_specific_user(self):
-        self.workflow._user_lock = self.django_user.username
-
-        ret = self.workflow.acquire_user_lock()
-
-        self.assertFalse(ret)
-        self.assertEqual(self.django_user.username, self.workflow._user_lock)
-
-    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_not_locked(self, mock_hp):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-
-        ret = self.workflow.release_user_lock(request)
-
-        self.assertTrue(ret)
-        self.assertIsNone(self.workflow._user_lock)
-        mock_hp.assert_called_with(request, 'can_override_user_locks')
-
-    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_locked_with_given_request_user(self, mock_hp):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = self.django_user.username
-
-        ret = self.workflow.release_user_lock(request)
-
-        self.assertTrue(ret)
-        self.assertIsNone(self.workflow._user_lock)
-        mock_hp.assert_called_with(request, 'can_override_user_locks')
-
-    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_locked_not_given_request_user(self, mock_hp):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = 'otheruser'
-
-        ret = self.workflow.release_user_lock(request)
-
-        self.assertFalse(ret)
-        self.assertEqual('otheruser', self.workflow._user_lock)
-        mock_hp.assert_called_with(request, 'can_override_user_locks')
-
-    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)
-    def test_release_user_lock_locked_not_given_request_user_permitted_user(self, mock_hp):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = 'otheruser'
-
-        ret = self.workflow.release_user_lock(request)
-
-        self.assertTrue(ret)
-        self.assertIsNone(self.workflow._user_lock)
-        mock_hp.assert_called_with(request, 'can_override_user_locks')
-
-    @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)
-    def test_release_user_lock_locked_for_all_users_permitted_user(self, mock_hp):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.release_user_lock(request)
-
-        self.assertTrue(ret)
-        self.assertIsNone(self.workflow._user_lock)
-        mock_hp.assert_called_with(request, 'can_override_user_locks')
-
-    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
-    def test_release_user_lock_locked_for_all_users_not_admin_user(self, mock_hp):
-        request = self.rf.get('/foo/bar')
-        request.user = self.django_user
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.release_user_lock(request)
-
-        self.assertFalse(ret)
-        self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, self.workflow._user_lock)
-        mock_hp.assert_called_with(request, 'can_override_user_locks')
-
-    def test_user_lock_initial(self):
-        ret = self.workflow.user_lock
-
-        self.assertIsNone(ret)
-
-    def test_user_lock_set(self):
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.user_lock
-
-        self.assertEqual(self.workflow.LOCKED_FOR_ALL_USERS, ret)
-
-    def test_is_user_locked_initial(self):
-        ret = self.workflow.is_user_locked
-
-        self.assertFalse(ret)
-
-    def test_is_user_locked_empty_string(self):
-        self.workflow._user_lock = ''
-
-        ret = self.workflow.is_user_locked
-
-        self.assertFalse(ret)
-
-    def test_is_user_locked_user(self):
-        self.workflow._user_lock = self.django_user.username
-
-        ret = self.workflow.is_user_locked
-
-        self.assertTrue(ret)
-
-    def test_is_user_locked_for_all_users(self):
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.is_user_locked
-
-        self.assertTrue(ret)
-
-    def test_is_locked_for_all_users_initial(self):
-        ret = self.workflow.is_locked_for_all_users
-
-        self.assertFalse(ret)
-
-    def test_is_locked_for_all_users_locked(self):
-        self.workflow._user_lock = self.workflow.LOCKED_FOR_ALL_USERS
-
-        ret = self.workflow.is_locked_for_all_users
-
-        self.assertTrue(ret)
-
-    def test_is_locked_for_all_users_username(self):
-        self.workflow._user_lock = self.django_user.username
-
-        ret = self.workflow.is_locked_for_all_users
-
-        self.assertFalse(ret)
