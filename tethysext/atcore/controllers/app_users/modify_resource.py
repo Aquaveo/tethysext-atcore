@@ -9,7 +9,6 @@
 import os
 import traceback
 import logging
-import uuid
 # Django
 from django.contrib import messages
 from django.shortcuts import redirect, render
