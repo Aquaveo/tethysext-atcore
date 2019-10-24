@@ -37,14 +37,14 @@ class ResourceDetails(ResourceViewMixin):
     resource_workflows = None
 
     @abstractmethod
-    def get_resource_map_manager(self):
+    def get_map_manager(self):
         """
         Map manager for resource
         """
         pass
 
     @abstractmethod
-    def get_model_spatial_manager(self):
+    def get_spatial_manager(self):
         """
         Get model spatial manager
         """
@@ -179,8 +179,8 @@ class ResourceDetails(ResourceViewMixin):
                 resource_id=resource_id,
                 creator_id=request_app_user.id,
                 geoserver_name=workflow_app.GEOSERVER_NAME,
-                map_manager=self.get_resource_map_manager(),
-                spatial_manager=self.get_model_spatial_manager(),
+                map_manager=self.get_map_manager(),
+                spatial_manager=self.get_spatial_manager(),
             )
             session.add(workflow)
             session.commit()

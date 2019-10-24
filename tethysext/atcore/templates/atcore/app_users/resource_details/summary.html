@@ -8,12 +8,12 @@
       {# Preview Image #}
       {% if has_preview_image %}
       <div id="preview-map">
-        <h6 class="resource-details table-header">Map Preview</h6>
+        <h6 class="resource-details table-header">{{ preview_image_title }}</h6>
         <table class="table">
           <tbody>
             <tr>
               <td class="map-preview">
-                <img src="{% static 'agwa/images/loading.gif' %}" class="loading-gif centered">
+                <img src="{% static 'atcore/images/loading2.gif' %}" class="loading-gif centered">
               </td>
             </tr>
           </tbody>
@@ -37,41 +37,6 @@
         </table>
       </div>
     {% endfor %}
-    {% if forloop.last %}
-      {% if user.is_staff %}
-      <div id="debug-info">
-        <h6 class="resource-details table-header">Debugging Information</h6>
-        <table class="table table-hover">
-          <tbody>
-            <tr>
-              <td class="name">Resource ID</td>
-              <td>{{ resource.id }}</td>
-            </tr>
-            <tr>
-              <td class="name">Model Database ID</td>
-              <td>{{ model_db_id }}</td>
-            </tr>
-            <tr>
-              <td class="name">Current Base Model ID</td>
-              <td>{{ base_model_id }}</td>
-            </tr>
-            <tr>
-              <td class="name">Base Model History</td>
-              <td>{{ base_model_history|join:", " }}</td>
-            </tr>
-            <tr>
-              <td class="name">Locked Status</td>
-              <td>{% if is_locked %}Locked{% else %}Unlocked{% endif %}</td>
-            </tr>
-            <tr>
-              <td class="name">Locked By</td>
-              <td>{{ locked_by }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      {% endif %}
-    {% endif %}
   </div>
   {% endfor %}
 </div>

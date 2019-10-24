@@ -16,68 +16,68 @@ from taggit.forms import TagField
 
 widget_map = {
     param.Foldername:
-        lambda p, initial: forms.FilePathField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.FilePathField(
+            initial=po.inspect_value(name) or p.default,
             path=p.search_paths,
         ),
     param.Boolean:
-        lambda p, initial: forms.BooleanField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.BooleanField(
+            initial=po.inspect_value(name) or p.default, required=False
         ),
     # param.Array: ,
     # param.Dynamic: ,
     param.Filename:
-        lambda p, initial: forms.FileField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.FileField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Dict:
-        lambda p, initial: forms.CharField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.CharField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.XYCoordinates:
-        lambda p, initial: forms.MultiValueField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.MultiValueField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Selector:
-        lambda p, initial: forms.ChoiceField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.ChoiceField(
+            initial=po.inspect_value(name) or p.default,
         ),
     # param.HookList,
     # param.Action: ,
     param.parameterized.String:
-        lambda p, initial: forms.CharField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.CharField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Magnitude:
-        lambda p, initial: forms.FloatField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.FloatField(
+            initial=po.inspect_value(name) or p.default,
         ),
     # param.Composite,
     param.Color:
-        lambda p, initial: forms.CharField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.CharField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.ObjectSelector:
-        lambda p, initial: forms.ChoiceField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.ChoiceField(
+            initial=po.inspect_value(name) or p.default,
             widget=Select2Widget,
             choices=p.get_range().items(),
         ),
     param.Number:
-        lambda p, initial: forms.FloatField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.FloatField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Range:
-        lambda p, initial: forms.MultiValueField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.MultiValueField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.NumericTuple:
-        lambda p, initial: forms.MultiValueField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.MultiValueField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Date:
-        lambda p, initial: forms.DateTimeField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.DateTimeField(
+            initial=po.inspect_value(name) or p.default,
             widget=DateWidget(
                 options={
                     'startDate': p.bounds[0].strftime(
@@ -101,44 +101,48 @@ widget_map = {
             ),
         ),
     param.List:
-        lambda p, initial: TagField(
-            initial=initial or p.default,
+        lambda po, p, name: TagField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Path:
-        lambda p, initial: forms.FilePathField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.FilePathField(
+            initial=po.inspect_value(name) or p.default,
             path=p.search_paths,
         ),
     param.MultiFileSelector:
-        lambda p, initial: forms.MultipleChoiceField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.MultipleChoiceField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.ClassSelector:
-        lambda p, initial: forms.ChoiceField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.ChoiceField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.FileSelector:
-        lambda p, initial: forms.ChoiceField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.ChoiceField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.ListSelector:
-        lambda p, initial: forms.MultipleChoiceField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.MultipleChoiceField(
+            initial=po.inspect_value(name) or p.default,
         ),
     # param.Callable,
     param.Tuple:
-        lambda p, initial: forms.MultiValueField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.MultiValueField(
+            initial=po.inspect_value(name) or p.default,
         ),
     param.Integer:
-        lambda p, initial: forms.IntegerField(
-            initial=initial or p.default,
+        lambda po, p, name: forms.IntegerField(
+            initial=po.inspect_value(name) or p.default,
         ),
     # TODO: Implement DataFrameField someday...
     # param.DataFrame:
-    #     lambda p, initial: DataFrameField(
-    #         initial=initial is not None or p.default is not None
+    #     lambda po, p, name: DataFrameField(
+    #         initial=po.inspect_value(name) is not None or p.default is not None
     #     )
+}
+
+widget_converter = {
+
 }
 
 
@@ -165,7 +169,8 @@ def generate_django_form(parameterized_obj, set_options=None, form_field_prefix=
         p_name = p.name
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
-        form_class.base_fields[p_name] = widget_map[type(p)](p, set_options.get(p.name))
+        form_class.base_fields[p_name] = widget_map[type(p)](parameterized_obj, p, p.name)
+        form_class.base_fields[p_name].label = p.name.capitalize()
         form_class.base_fields[p_name].widget.attrs.update({'class': 'form-control'})
 
     return form_class

@@ -38,7 +38,9 @@ class FormInputWV(ResourceWorkflowView):
         form_title = current_step.options.get('form_title', current_step.name) or current_step.name
 
         p = current_step.options['param_class']
-        form = generate_django_form(p, form_field_prefix='param-form-')
+        for k, v in current_step.get_parameter('form-values'):
+            p.set_param(k, v)
+        form = generate_django_form(p, form_field_prefix='param-form-')()
 
         # Save changes to map view and layer groups
         context.update({
@@ -68,6 +70,12 @@ class FormInputWV(ResourceWorkflowView):
             if p.startswith('param-form-'):
                 param_name = p[11:]
                 params[param_name] = request.POST.get(p, None)
+
+        param_class = step.options['param_class']
+        param_values = dict(param_class.get_param_values())
+        for k, v in params.items():
+            params[k] = type(param_values[k])(v)
+
         step.set_parameter('form-values', params)
 
         status = step.STATUS_COMPLETE

@@ -163,7 +163,6 @@ class ModifyResource(AppUsersViewMixin):
                     # Otherwise create a new project
                     else:
                         resource = _Resource()
-                        resource.set_attribute('database_id', str(uuid.uuid4()))  # TODO: errors from simeon
 
                     # Assign name and description
                     resource.name = resource_name

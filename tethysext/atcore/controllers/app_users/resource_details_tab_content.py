@@ -28,17 +28,16 @@ class ResourceDetailsTabContent(ResourceDetails):
     template_name = None
     base_template = 'atcore/base.html'
     http_method_names = ['get']
-    preview_image_title = "Preview"
 
     def preview_image(self, *args, **kwargs):
         """
         Preview image for summary tab
 
-        Override this to get an image back, return a URL
+        Override this to get an image back, return a a tuple of (Image Title, URL)
         """
         return None
 
-    def get_summary_tab_info(self, *args, **kwargs):
+    def get_summary_tab_info(self, request, resource):
         """
         Get the summary tab info
 
@@ -99,29 +98,46 @@ class ResourceDetailsTabContent(ResourceDetails):
             HttpResponse: rendered template.
         """
         resource = context['resource']
-        context['has_preview_image'] = self.preview_image(request, context) is not None
-        database_id = resource.get_attribute('database_id')
+        preview_image = self.preview_image(request, context)
+        has_preview_image = preview_image is not None
+        context['has_preview_image'] = has_preview_image
+        if has_preview_image:
+            context['preview_image_title'] = preview_image[0]
 
-        context['model_db_id'] = database_id
-        # using scenario_id to store current base_model_id
-        context['base_model_id'] = resource.get_attribute('scenario_id')
-        context['base_model_history'] = resource.get_attribute('base_model_history')
-        context['is_locked'] = resource.is_user_locked
-
-        if resource.is_user_locked:
-            context['locked_by'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
-        else:
-            context['locked_by'] = 'N/A'
+        # database_id = resource.get_attribute('database_id')
+        #
+        # context['model_db_id'] = database_id
+        # # using scenario_id to store current base_model_id
+        # context['base_model_id'] = resource.get_attribute('scenario_id')
+        # context['base_model_history'] = resource.get_attribute('base_model_history')
+        # context['is_locked'] = resource.is_user_locked
+        #
+        # if resource.is_user_locked:
+        #     context['locked_by'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
+        # else:
+        #     context['locked_by'] = 'N/A'
 
         general_summary_tab_info = ('Description', {'Name': resource.name, 'Description': resource.description,
                                     'Created By': resource.created_by, 'Date Created': resource.date_created})
 
         # Add general_summary_tab_info as first item in first columns
-        summary_tab_info = self.get_summary_tab_info(request, database_id)
+        summary_tab_info = self.get_summary_tab_info(request, resource)
         if len(summary_tab_info) == 0:
             summary_tab_info = [[general_summary_tab_info]]
         else:
             summary_tab_info[0].insert(0, general_summary_tab_info)
+
+        # Debug Section
+        debug_atts = {x.replace("_", " ").title(): resource.get_attribute for x in resource.attributes
+                      if x != 'files'}
+        debug_atts['Locked'] = resource.is_user_locked
+        if resource.is_user_locked:
+            debug_atts['Locked By'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
+        else:
+            debug_atts['Locked By'] = 'N/A'
+        debug_summary_tab_info = ('Debug Info', debug_atts)
+        summary_tab_info[-1].append(debug_summary_tab_info)
+
         context['columns'] = summary_tab_info
 
         return render(request, 'atcore/app_users/resource_details/summary.html', context)
@@ -133,8 +149,7 @@ class ResourceDetailsTabContent(ResourceDetails):
         Returns:
             HttpResponse: rendered template.
         """
-        context['preview_map_url'] = self.preview_image(request, context)
-        context['preview_title'] = self.preview_image_title
+        context['preview_title'], context['preview_map_url'] = self.preview_image(request, context)
         return render(request, 'atcore/app_users/resource_details/summary_preview_image.html', context)
 
     def _handle_workflows_tab(self, request, resource_id, context, *args, **kwargs):
