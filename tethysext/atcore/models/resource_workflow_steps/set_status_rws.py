@@ -49,7 +49,6 @@ class SetStatusRWS(ResourceWorkflowStep):
             'comments': {
                 'help': 'Comments on reason for changing status to this status.',
                 'value': '',
-
                 'required': False
             },
         }
