@@ -741,7 +741,7 @@ a:hover {
 }
 .site-header .header-logo {
   float: left;
-  margin-top: 16.5px;
+  margin-top: 22px;
   font-size: 0;
 }
 .site-header .header-logo .logo-image {
@@ -758,7 +758,8 @@ a:hover {
   display: inline-block;
   line-height: 1;
   margin: 0;
-  font-size: 42px;
+  font-size: 38px;
+  vertical-align: top;
 }
 .site-header .header-logo .logo-title a {
   display: inline-block;
