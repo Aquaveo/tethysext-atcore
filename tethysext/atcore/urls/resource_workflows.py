@@ -77,11 +77,6 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         else:
             raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
 
-    # Url Patterns
-    workflow_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}'  # noqa: E222, E501
-    workflow_step_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}/step/{step_id}'  # noqa: E222, E501
-    workflow_step_result_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}/step/{step_id}/result/{result_id}'  # noqa: E222, E501
-
     url_maps = []
 
     for _ResourceWorkflow, _ResourceWorkflowRouter in workflow_pairs:
@@ -95,11 +90,18 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
             raise ValueError('Must provide a valid ResourceWorkflowRouter controller as the second item in the '
                              'workflow_pairs argument.')
 
+        slugged_name = slugify(_ResourceWorkflow.TYPE)
         workflow_name = '{}_workflow'.format(_ResourceWorkflow.TYPE)
         workflow_step_name = '{}_workflow_step'.format(_ResourceWorkflow.TYPE)
         workflow_step_result_name = '{}_workflow_step_result'.format(_ResourceWorkflow.TYPE)
 
-        url_maps.extend([
+        # Url Patterns
+        slugged_plural_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower())
+        workflow_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}'  # noqa: E222, E501
+        workflow_step_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}/step/{step_id}'  # noqa: E222, E501
+        workflow_step_result_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}/step/{step_id}/result/{result_id}'  # noqa: E222, E501
+
+        workflow_url_maps = [
             url_map_maker(
                 name=workflow_name,
                 url='/'.join([base_url_path, workflow_url]) if base_url_path else workflow_url,
@@ -139,6 +141,8 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _ResourceWorkflow=_ResourceWorkflow,
                 )
             )
-        ])
+        ]
+
+        url_maps.extend(workflow_url_maps)
 
     return url_maps
