@@ -56,7 +56,7 @@ Overwrite_Tethys_Main_CSS_Atcore:
 
 Overwrite_App_Library_CSS_Atcore:
   cmd.run:
-    - name: rm {{ STATIC_ROOT }}/tethys_portal/css/app_library.css && cp {{ TETHYSEXT_DIR }}/tethysext-atcore/tethysext/atcore/public/css/app_library.css {{ STATIC_ROOT }}/tethys_apps/css/app_library.css
+    - name: rm {{ STATIC_ROOT }}/tethys_apps/css/app_library.css && cp {{ TETHYSEXT_DIR }}/tethysext-atcore/tethysext/atcore/public/css/app_library.css {{ STATIC_ROOT }}/tethys_apps/css/app_library.css
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
