@@ -19,15 +19,6 @@ class FormInputRWS(ResourceWorkflowStep):
         param_class(dict): A param class to represent form fields
     """  # noqa: #501
 
-    def init_parameters(self, *args, **kwargs):
-        return {
-            'form-values': {
-                'help': 'Values from form',
-                'value': {},
-                'required': True
-            },
-        }
-
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.FormInputWV'
     TYPE = 'form_input_resource_workflow_step'
 
@@ -45,28 +36,11 @@ class FormInputRWS(ResourceWorkflowStep):
         })
         return default_options
 
-    def __init__(self, *args, **kwargs):
-        """
-        Constructor
-        """
-        super().__init__(*args, **kwargs)
-
-    # def validate_statuses(self):
-    #     """
-    #     Validate the status dictionaries given in the "statuses" option.
-    #
-    #     Raises:
-    #         RuntimeError: Invalid statuses or malformed status dictionaries.
-    #     """
-    #     # valid_statuses = self.valid_statuses()
-    #
-    #     # Validate the statuses
-    #     # for status_dict in self.options.get('statuses', []):
-    #     #     if 'status' not in status_dict.keys():
-    #     #         raise RuntimeError(f'Key "status" not found in status dict provided by option '
-    #     #                            f'"statuses": {status_dict}')
-    #     #
-    #     #     status = status_dict['status']
-    #     #     if status not in valid_statuses:
-    #     #         raise RuntimeError(f'Status "{status}" is not a valid status for {self.__class__.__name__}. '
-    #     #                            f'Must be one of: {", ".join(valid_statuses)}')
+    def init_parameters(self, *args, **kwargs):
+        return {
+            'form-values': {
+                'help': 'Values from form',
+                'value': {},
+                'required': True
+            },
+        }

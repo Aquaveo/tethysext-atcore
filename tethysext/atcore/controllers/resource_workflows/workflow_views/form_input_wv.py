@@ -71,21 +71,25 @@ class FormInputWV(ResourceWorkflowView):
         if not form.is_valid():
             raise RuntimeError('form is invalid')
 
+        # Get the form from the post
+        # loop through items and set the params
         for p in request.POST:
             if p.startswith('param-form-'):
                 try:
                     param_name = p[11:]
                     params[param_name] = request.POST.get(p, None)
-                except:
-                    raise RuntimeError('error setting param data')
+                except ValueError as e:
+                    raise RuntimeError('error setting param data: {e}')
 
+        # Get the param class and save the data from the from
+        # for the next time the form is loaded
         param_class = step.options['param_class']
         param_values = dict(param_class.get_param_values())
         for k, v in params.items():
             try:
                 params[k] = type(param_values[k])(v)
-            except:
-                raise ValueError('Invalid input to form')
+            except ValueError as e:
+                raise ValueError('Invalid input to form: {e}')
 
         step.set_parameter('form-values', params)
 
