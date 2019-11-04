@@ -40,7 +40,8 @@ class FormInputWV(ResourceWorkflowView):
         p = current_step.options['param_class']
         for k, v in current_step.get_parameter('form-values').items():
             p.set_param(k, v)
-        form = generate_django_form(p, form_field_prefix='param-form-', read_only=self.is_read_only(request, current_step))()
+        form = generate_django_form(p, form_field_prefix='param-form-',
+                                    read_only=self.is_read_only(request, current_step))()
 
         # Save changes to map view and layer groups
         context.update({
@@ -79,7 +80,7 @@ class FormInputWV(ResourceWorkflowView):
                     param_name = p[11:]
                     params[param_name] = request.POST.get(p, None)
                 except ValueError as e:
-                    raise RuntimeError('error setting param data: {e}')
+                    raise RuntimeError('error setting param data: {}'.format(e))
 
         # Get the param class and save the data from the from
         # for the next time the form is loaded
@@ -89,10 +90,9 @@ class FormInputWV(ResourceWorkflowView):
             try:
                 params[k] = type(param_values[k])(v)
             except ValueError as e:
-                raise ValueError('Invalid input to form: {e}')
+                raise ValueError('Invalid input to form: {}'.format(e))
 
         step.set_parameter('form-values', params)
-
 
         # Save parameters
         session.commit()
