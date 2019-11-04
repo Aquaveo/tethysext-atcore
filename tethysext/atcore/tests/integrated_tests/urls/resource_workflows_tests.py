@@ -48,9 +48,9 @@ class ResourceWorkflowsTests(unittest.TestCase):
         self.custom_models = [AppUserChild, OrganizationChild, ResourceChild]
 
         self.generic_urls = [
-            'resources/{resource_id}/workflows/{workflow_id}',
-            'resources/{resource_id}/workflows/{workflow_id}/step/{step_id}',
-            'resources/{resource_id}/workflows/{workflow_id}/step/{step_id}/result/{result_id}'
+            'resources/{resource_id}/generic_workflow/{workflow_id}',
+            'resources/{resource_id}/generic_workflow/{workflow_id}/step/{step_id}',
+            'resources/{resource_id}/generic_workflow/{workflow_id}/step/{step_id}/result/{result_id}'
         ]
 
     def tearDown(self):
@@ -133,9 +133,9 @@ class ResourceWorkflowsTests(unittest.TestCase):
                         base_url_path='/my/path/')
 
         expected_urls = [
-            'my/path/resources/{resource_id}/workflows/{workflow_id}',
-            'my/path/resources/{resource_id}/workflows/{workflow_id}/step/{step_id}',
-            'my/path/resources/{resource_id}/workflows/{workflow_id}/step/{step_id}/result/{result_id}'
+            'my/path/resources/{resource_id}/generic_workflow/{workflow_id}',
+            'my/path/resources/{resource_id}/generic_workflow/{workflow_id}/step/{step_id}',
+            'my/path/resources/{resource_id}/generic_workflow/{workflow_id}/step/{step_id}/result/{result_id}'
         ]
         self.verify_url_maps(url_maps, expected_urls)
 
