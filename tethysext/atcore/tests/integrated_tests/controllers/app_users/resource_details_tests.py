@@ -11,6 +11,7 @@ from django.http import HttpRequest, JsonResponse
 from django.contrib.auth.models import User
 from django.test import RequestFactory
 from tethysext.atcore.controllers.app_users.resource_details import ResourceDetails
+from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
