@@ -1,7 +1,7 @@
 """
 ********************************************************************************
-* Name: get_details_tab_content.py
-* Author: nswain
+* Name: resource_details_tab_content.py
+* Author: nswain, glarsen
 * Created On: August 09, 2018
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
@@ -60,7 +60,6 @@ class ResourceDetailsTabContent(ResourceDetails):
         """
         Handle get requests.
         """
-
         # Verifies permissions on resource
         resource = self.get_resource(request, resource_id)
 
@@ -104,19 +103,6 @@ class ResourceDetailsTabContent(ResourceDetails):
         if has_preview_image:
             context['preview_image_title'] = preview_image[0]
 
-        # database_id = resource.get_attribute('database_id')
-        #
-        # context['model_db_id'] = database_id
-        # # using scenario_id to store current base_model_id
-        # context['base_model_id'] = resource.get_attribute('scenario_id')
-        # context['base_model_history'] = resource.get_attribute('base_model_history')
-        # context['is_locked'] = resource.is_user_locked
-        #
-        # if resource.is_user_locked:
-        #     context['locked_by'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
-        # else:
-        #     context['locked_by'] = 'N/A'
-
         general_summary_tab_info = ('Description', {'Name': resource.name, 'Description': resource.description,
                                     'Created By': resource.created_by, 'Date Created': resource.date_created})
 
@@ -131,10 +117,12 @@ class ResourceDetailsTabContent(ResourceDetails):
         debug_atts = {x.replace("_", " ").title(): resource.get_attribute for x in resource.attributes
                       if x != 'files'}
         debug_atts['Locked'] = resource.is_user_locked
+
         if resource.is_user_locked:
             debug_atts['Locked By'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
         else:
             debug_atts['Locked By'] = 'N/A'
+
         debug_summary_tab_info = ('Debug Info', debug_atts)
         summary_tab_info[-1].append(debug_summary_tab_info)
 
