@@ -161,8 +161,8 @@ class ResourceDetailsTabContent(ResourceDetails):
 
             for workflow in workflows:
                 status = workflow.get_status()
-
-                url_name = workflow.get_url_name()
+                app_namespace = self.get_app().namespace
+                url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
                 href = reverse(url_name, args=(resource_id, str(workflow.id)))
 
                 status_style = ResourceWorkflowView.get_style_for_status(status)
