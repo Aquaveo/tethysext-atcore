@@ -61,11 +61,6 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         session_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
         self.mock_session_maker = session_patcher.start()
-        # one = mock.MagicMock(name='one')
-        # one.return_value = self.app_user
-        # filter = mock.MagicMock(name='filter')
-        # # filter.return_value = one
-        # self.mock_session_maker.query.return_value = filter
         self.mock_session_maker.return_value = mock.MagicMock()
         self.addCleanup(session_patcher.stop)
 
@@ -398,21 +393,19 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['organization_status_toggle']['disabled'])
         self.assertEqual('', context['organization_status_toggle']['error'])
 
-    # # mock.query
-    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    # def test_handle_modify_user_requests_exception(self, mock_get_organization):
-    #     mock_get_organization.LICENSES = mock.MagicMock()
-    #     mock_get_organization.LICENSES.list.return_value = []
-    #     self.request.GET = {'next': 'manage-resources'}
-    #     self.request.user = self.staff_user
-    #     self.mock_session_maker.query.side_effect = NoResultFound
-    #
-    #     ModifyOrganization()._handle_modify_user_requests(self.request, '123456')
-    #
-    #     self.assertEqual('The organization could not be found.', self.mock_messages.warning.call_args)
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    def test_handle_modify_user_requests_cannot_create_error(self, mock_get_org_model):
+        organization = mock.MagicMock()
+        organization.LICENSES = mock.MagicMock()
+        organization.LICENSES.list.return_value = []
+        mock_get_org_model.return_value = organization
 
-    # def test_handle_modify_user_requests_modify_organization(self):
-    #     self.request.GET = {'next': 'unknown'}
-    #     x = ModifyOrganization()
-    #
-    #     x._handle_modify_user_requests(self.request, '123456')
+        self.request.GET = {'next': 'unknown'}
+
+        ModifyOrganization()._handle_modify_user_requests(self.request)
+
+        msg_args = self.mock_messages.error.call_args_list
+        self.assertEqual("We're sorry, but you are unable to create new organizations at this time.", msg_args[0][0][1])
+        self.mock_reverse.assert_called()
+        self.assertEqual('app_namespace:app_users_manage_organizations', self.mock_reverse.call_args[0][0])
+        self.mock_redirect.assert_called()
