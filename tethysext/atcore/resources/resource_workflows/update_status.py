@@ -58,15 +58,15 @@ def main(args):
         sys.stderr.write(repr(e))
         sys.stderr.write(str(e))
     finally:
-        lock_on_submit = step.options.get('lock_on_submit', None)
-        unlock_on_submit = step.options.get('unlock_on_submit', None)
-        if lock_on_submit and unlock_on_submit:
-            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_success and unlock_on_success '
+        lock_on_complete = step.options.get('lock_on_complete', None)
+        unlock_on_complete = step.options.get('unlock_on_complete', None)
+        if lock_on_complete and unlock_on_complete:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_complete and unlock_on_complete '
                                'options are both set to True')
-        if lock_on_submit is True:
-            step.release_lock_and_log(None, model_db_session, None)
-        elif unlock_on_submit is True:
-            step.release_lock_and_log(None, model_db_session, None)
+        if lock_on_complete is True:
+            step.acquire_lock_and_log(None, model_db_session, step.workflow, True)
+        elif unlock_on_complete is True:
+            step.release_lock_and_log(None, model_db_session, step.workflow)
 
         model_db_session and model_db_session.close()
         resource_db_session and resource_db_session.close()

@@ -35,8 +35,8 @@ class SpatialCondorJobRWS(SpatialResourceWorkflowStep):
             'pending_message': '',
             'lock_on_submit': False,
             'unlock_on_submit': False,
-            'lock_on_success': False,
-            'unlock_on_success': False
+            'lock_on_complete': False,
+            'unlock_on_complete': False
         })
         return default_options
 
