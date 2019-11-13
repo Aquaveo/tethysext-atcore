@@ -252,7 +252,7 @@ class ModifyResource(AppUsersViewMixin):
             spatial_reference_select = SpatialReferenceSelect(
                 display_name='Spatial Reference System',
                 name='spatial-ref-select',
-                placeholder='No Basemap Available If Left Blank',
+                placeholder='Spatial Reference System',
                 min_length=2,
                 query_delay=500,
                 initial=srid_initial,

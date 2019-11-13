@@ -171,19 +171,20 @@ var ATCORE_MAP_VIEW = (function() {
         let check_status;
         $.each(layer_groups, function(index, content) {
             // Get Group check status
-            check_status = $('#' + content.id).find('.layer-group-visibility-control')[0].checked
+            if (content.id) {
+                check_status = $('#' + content.id).find('.layer-group-visibility-control')[0].checked
 
-            // Do not show any layers associated with unchecked layer groups
-            if (check_status == false) {
-                // Get all layers in this group
-                let layer_list_id = $('#' + content.id).next()[0].id
-                let layer_lists =  $('#' + layer_list_id).children()
-                $.each(layer_lists, function(layer_index, layer_content) {
-                    let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
-                    m_layers[layer_id].setVisible(false)
-                })
+                // Do not show any layers associated with unchecked layer groups
+                if (check_status == false) {
+                    // Get all layers in this group
+                    let layer_list_id = $('#' + content.id).next()[0].id
+                    let layer_lists =  $('#' + layer_list_id).children()
+                    $.each(layer_lists, function(layer_index, layer_content) {
+                        let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
+                        m_layers[layer_id].setVisible(false)
+                    })
+                }
             }
-
         });
     }
 
