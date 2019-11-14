@@ -17,6 +17,7 @@ class AddExistingUser(AppUsersViewMixin):
     """
     page_title = 'Add Existing User'
     template_name = 'atcore/app_users/add_existing_user.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
@@ -181,6 +182,7 @@ class AddExistingUser(AppUsersViewMixin):
             'role_select': role_select,
             'organization_select': organization_select,
             'next_controller': next_controller,
-            'no_organization_roles': no_organization_roles
+            'no_organization_roles': no_organization_roles,
+            'base_template': self.base_template
         }
         return render(request, 'atcore/app_users/add_existing_user.html', context)

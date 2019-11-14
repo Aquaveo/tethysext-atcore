@@ -18,6 +18,7 @@ class ModifyUser(AppUsersViewMixin):
     POST: Handle form submission to add/edit a new user.
     """
     template_name = 'atcore/app_users/modify_user.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
@@ -333,6 +334,7 @@ class ModifyUser(AppUsersViewMixin):
             'confirm_password_input': confirm_password_input,
             'role_select': role_select,
             'organization_select': organization_select,
-            'no_organization_roles': no_organization_roles
+            'no_organization_roles': no_organization_roles,
+            'base_template': self.base_template
         }
         return render(request, self.template_name, context)
