@@ -22,6 +22,7 @@ class ResourceView(ResourceViewMixin):
     view_title = ''
     view_subtitle = ''
     template_name = ''
+    base_template = 'atcore/base.html'
 
     @active_user_required()
     @resource_controller()
@@ -69,6 +70,7 @@ class ResourceView(ResourceViewMixin):
             'nav_subtitle': self.view_subtitle,
             'back_url': self.back_url,
             'open_portal_mode': open_portal_mode,
+            'base_template': self.base_template
         })
 
         if resource:

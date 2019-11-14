@@ -136,7 +136,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
             'nav_subtitle': workflow.DISPLAY_TYPE_SINGULAR,
             'jobs_table': jobs_table,
             'can_run_workflows': can_run_workflows,
-            'lock_display_options': lock_display_options
+            'lock_display_options': lock_display_options,
+            'base_template': self.base_template
         }
 
         return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)
