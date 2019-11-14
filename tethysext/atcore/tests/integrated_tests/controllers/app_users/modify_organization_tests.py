@@ -9,7 +9,6 @@
 from unittest import mock
 from django.http import HttpRequest, QueryDict
 from django.contrib.auth.models import User
-from sqlalchemy.orm.exc import NoResultFound
 from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users.organization import Organization
@@ -298,13 +297,6 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         x.get_app_user_from_request.return_value = app_user
         x.is_staff.return_value = False
         mock_get_app_user.return_value = x
-
-        # TODO: Need to get organization mock to return specific values. 141-149, 165, 284-295
-        # mock_get_app_user.clients = [mock.MagicMock()]
-        # mock_get_app_user.members = [mock.MagicMock()]
-        # self.organization.resources = [self.resource]
-        # self.organization.is_member.return_value = True
-        # self.organization.license = enterprise
 
         ModifyOrganization()._handle_modify_user_requests(self.request, '123456')
 
