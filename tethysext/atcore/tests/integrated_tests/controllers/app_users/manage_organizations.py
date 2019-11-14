@@ -12,7 +12,6 @@ from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.controllers.app_users.manage_organizations import ManageOrganizations
 from tethysext.atcore.models.app_users.organization import Organization
-
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -150,6 +149,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
         mock_app_user.is_staff.return_value = False
         mock_has_permissions.side_effect = [False, True, True, True, True, True, True, True, True]
 
+        self.organization.resources = [mock.MagicMock(DISPLAY_TYPE_PLURAL='RESOURCES')]
         mock_app_user.get_organizations.return_value = [self.organization]
 
         # call the method
@@ -177,6 +177,43 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
 
         mock_get_app_user().get_app_user_from_request.return_value = mock_app_user
 
+        mock_make_session.query().get.return_value = self.organization
+
+        # call the method
+        organization_id = 'O001'
+        manage_organizations = ManageOrganizations()
+        ret = manage_organizations._handle_delete(mock_request, organization_id)
+
+        # test the results
+        mock_perform_delete.assert_called_with(mock_request, self.organization)
+        mock_has_permission.assert_called_with(mock_request, 'delete_organizations')
+        mock_make_session.delete.assert_called_with(self.organization)
+        mock_make_session.commit.assert_called()
+        mock_make_session.close.assert_called()
+        self.assertEqual(200, ret.status_code)
+        self.assertEqual('{"success": true}', ret.content.decode('utf-8'))
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.'
+                'ManageOrganizations.perform_custom_delete_operations')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    def test_handle_delete_can_delete_organization(self, _, mock_get_app_user, mock_session,
+                                                   mock_perform_delete, mock_has_permission):
+        mock_request = mock.MagicMock()
+        mock_make_session = mock_session()()
+
+        consultant = mock.MagicMock()
+
+        role = mock.MagicMock(ORG_ADMIN=Roles.ORG_ADMIN)
+        app_user = mock.MagicMock(ROLES=role)
+        mock_get_app_user.return_value = app_user
+
+        mock_app_user = mock.MagicMock(organizations=[consultant], role=Roles.ORG_ADMIN)
+        app_user.get_app_user_from_request.return_value = mock_app_user
+
+        self.organization.consultant = consultant
         mock_make_session.query().get.return_value = self.organization
 
         # call the method

@@ -253,6 +253,17 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Prepare the job
         job_id = condor_job_manager.prepare()
 
+        # Deal with locking
+        lock_on_submit = step.options.get('lock_on_submit', None)
+        unlock_on_submit = step.options.get('unlock_on_submit', None)
+        if lock_on_submit and unlock_on_submit:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_submit and unlock_on_submit '
+                               'options are both set to True')
+        if lock_on_submit is True:
+            step.acquire_lock_and_log(request, session, step.workflow)
+        elif unlock_on_submit is True:
+            step.release_lock_and_log(request, session, step.workflow)
+
         # Submit job
         condor_job_manager.run_job()
 

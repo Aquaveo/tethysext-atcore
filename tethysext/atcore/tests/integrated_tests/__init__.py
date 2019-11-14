@@ -1,9 +1,12 @@
 from .controllers.app_users.add_existing_user import AddExistingUserTests  # noqa: F401
 from .controllers.app_users.manage_organizations import ManageOrganizationsTests  # noqa: F401
 from .controllers.app_users.manage_organization_members import ManageOrganizationMembersTest  # noqa: F401
+from .controllers.app_users.manage_resources import ManageResourcesTests  # noqa: F401
+from .controllers.app_users.manage_users_tests import ManageUsersTests  # noqa: F401
 from .controllers.app_users.mixins import AppUsersViewMixinTests  # noqa: F401
 from .controllers.app_users.mixins import ResourceViewMixinTests  # noqa: F401
 from .controllers.app_users.modify_resource_tests import ModifyResourceTests  # noqa: F401
+from .controllers.app_users.modify_organization_tests import ModifyOrganizationsTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
 from .controllers.app_users.resource_details_tests import ResourceDetailsTests  # noqa: F401
 from .controllers.app_users.resource_details_tab_content_tests import ResourceDetailsTabContentTests  # noqa: F401
