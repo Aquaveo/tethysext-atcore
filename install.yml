@@ -21,6 +21,7 @@ requirements:
       - pyshp
       - requests
       - sqlalchemy
+      - panel
   pip:
     - django-datetime-widget
     - django-select2
