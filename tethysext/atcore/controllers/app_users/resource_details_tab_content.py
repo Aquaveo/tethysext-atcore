@@ -114,8 +114,7 @@ class ResourceDetailsTabContent(ResourceDetails):
             summary_tab_info[0].insert(0, general_summary_tab_info)
 
         # Debug Section
-        debug_atts = {x.replace("_", " ").title(): resource.get_attribute for x in resource.attributes
-                      if x != 'files'}
+        debug_atts = {x.replace("_", " ").title(): y for x, y in resource.attributes.items() if x != 'files'}
         debug_atts['Locked'] = resource.is_user_locked
 
         if resource.is_user_locked:
