@@ -7,9 +7,12 @@
 ********************************************************************************
 """
 import logging
+
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps.form_input_rws import FormInputRWS
 from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
+
+from bokeh.embed import server_document
 
 log = logging.getLogger(__name__)
 
@@ -37,18 +40,26 @@ class FormInputWV(ResourceWorkflowView):
         # Status style
         form_title = current_step.options.get('form_title', current_step.name) or current_step.name
 
-        p = current_step.options['param_class']
-        for k, v in current_step.get_parameter('form-values').items():
-            p.set_param(k, v)
-        form = generate_django_form(p, form_field_prefix='param-form-',
-                                    read_only=self.is_read_only(request, current_step))()
+        if current_step.options['renderer'] == 'django':
+            p = current_step.options['param_class']
+            for k, v in current_step.get_parameter('form-values').items():
+                p.set_param(k, v)
+            form = generate_django_form(p, form_field_prefix='param-form-',
+                                        read_only=self.is_read_only(request, current_step))()
 
-        # Save changes to map view and layer groups
-        context.update({
-            'read_only': self.is_read_only(request, current_step),
-            'form_title': form_title,
-            'form': form,
-        })
+            # Save changes to map view and layer groups
+            context.update({
+                'read_only': self.is_read_only(request, current_step),
+                'form_title': form_title,
+                'form': form,
+            })
+        elif current_step.options['renderer'] == 'bokeh':
+            script = server_document(request.build_absolute_uri())
+            context.update({
+                'read_only': self.is_read_only(request, current_step),
+                'form_title': form_title,
+                'script': script
+            })
 
     def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
         """
