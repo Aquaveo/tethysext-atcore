@@ -814,6 +814,67 @@ var ATCORE_MAP_VIEW = (function() {
             }
         });
     };
+
+    var init_download_layer_action = function() {
+        // Zoom to layer
+        $('.download-layer').on('click', function(e) {
+            let $action_button = $(e.target);
+            // Only create href link when it's not there so we don't have to run the same thing again and again
+            if (!$action_button.attr('href') || $action_button.attr('href') === "javascript:void(0);") {
+                if (!$action_button.hasClass('download-layer')) {
+                    $action_button = $action_button.closest('.download-layer');
+                }
+                //Get File Name and replace spaces with underscore
+                let layer_name = $action_button.closest('.layer-list-item').find('.display-name').html()
+                if (typeof(layer_name) === 'string') {
+                    layer_name =  layer_name.split(' ').join('_');
+                }
+
+                // Get layer_id
+                let layer_id = $action_button.closest('.layer-list-item').find('.layer-visibility-control').data('layer-id');
+
+                // Get feature
+                let feature_layer = m_layers[layer_id];
+                let features = feature_layer.getSource().getFeatures()
+
+                // Write out feature to GeoJSON format
+                let format = new ol.format.GeoJSON({featureProjection: 'EPSG:3857'});
+                let json = format.writeFeatures(features);
+
+                // Convert GeoJSON to shapefile. Note that shapefile only allows one shape type (point, line or polygon).
+                // This method convert using the first shape type it finds.
+                csrf_token = $('input[name=csrfmiddlewaretoken]').val()
+                $.when($.ajax({
+                        type: 'POST',
+                        url: '',
+                        data: {'method': 'convert_geojson_to_shapefile',
+                               'id': layer_id,
+                               'data': json},
+                        xhrFields: {
+                            responseType: 'blob',
+                        },
+                        beforeSend: xhr => {
+                            xhr.setRequestHeader('X-CSRFToken', csrf_token);
+                        }
+                        }))
+                .done(function(data) {
+                    let url = window.URL || window.webkitURL;
+                    url = url.createObjectURL(data)
+                    // create a temporary element to put the href in and click on it on the first time.
+                    // I need to do this since for some reason $action_button.click() does not work here.
+                    let a = document.createElement('a');
+                    a.href = url;
+                    a.download = layer_name + '.zip';
+                    document.body.append(a);
+                    a.click();
+                    a.remove();
+                    $action_button.attr("download", layer_name + '.zip');
+                    $action_button.attr("href", url);
+                })
+            }
+        });
+    };
+
     init_collapse_control = function(group_id) {
         $('#' + group_id).on('click', function(e) {
         let $action_button = $(e.target);
@@ -1517,7 +1578,7 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Create new layer groups with layers
     // This method allows user to create tree items and have them linked to the tree items created in this method.
-    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends) {
+    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends, show_download) {
         // layer_group_name: name of the layer group - Ex: My Layer Group
         // layer_group_id: id of the layer group - Ex: my_layer_group_123456
         // layer_data: list of openlayer layers
@@ -1547,6 +1608,7 @@ var ATCORE_MAP_VIEW = (function() {
                 'layer_names': JSON.stringify(layer_names),
                 'layer_ids': JSON.stringify(layer_ids),
                 'layer_legends': JSON.stringify(layer_legends),
+                'show_download': show_download,
             },
         }).done(function(data){
             if (status == 'create') {
@@ -1635,6 +1697,7 @@ var ATCORE_MAP_VIEW = (function() {
         show_layers: show_layers,
         remove_layer_from_map: remove_layer_from_map,
         init_layers_tab: init_layers_tab,
+        init_download_layer_action: init_download_layer_action,
 	};
 
 	/************************************************************************
@@ -1657,6 +1720,7 @@ var ATCORE_MAP_VIEW = (function() {
         init_geocode();
         init_plot();
         init_draw_controls();
+        init_download_layer_action()
         sync_layer_visibility();
 	});
 
