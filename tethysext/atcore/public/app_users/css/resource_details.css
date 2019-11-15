@@ -1,0 +1,33 @@
+.loading-gif {
+    height: 100px;
+    width: 100px!important;
+    margin-top: 17.5%;
+}
+
+.resource-details.table-header {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 22px;
+    padding-top: 10px;
+    margin-right: 15px;
+}
+
+.map-preview {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.map-preview .no-preview {
+    display: inline-block;
+    height: 300px;
+    width: 100%;
+    background: #eeeeee;
+    color: #666666;
+    font-size: 16px;
+}
+
+.summary-col {
+    overflow: auto;
+}
+

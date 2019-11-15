@@ -1,0 +1,50 @@
+/* Workflows Table */
+#workflows-table {
+    margin-top: 15px;
+}
+
+#workflows-table th {
+    font-size: 18px;
+    font-weight: 400;
+    color: #555555;
+    letter-spacing: 1px;
+}
+
+/* Workflow Buttons */
+.btn-workflow {
+    min-width: 110px;
+    color: white;
+}
+
+.btn-workflow-success {
+    background-color: #27ae60;
+}
+
+.btn-workflow-warning {
+    background-color: #f0ad4e;
+}
+
+.btn-workflow-primary {
+    background-color: #42a7f4;
+}
+
+.btn-workflow-danger {
+    background-color: #d9534f;
+}
+
+/* New Workflow Modal */
+
+
+/* Misc. */
+.w-center-parent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 600px;
+}
+
+.w-centered {
+    display: block;
+    max-width: 400px;
+    text-align: center;
+}
