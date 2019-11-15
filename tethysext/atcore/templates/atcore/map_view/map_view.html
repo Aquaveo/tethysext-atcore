@@ -1,4 +1,4 @@
-{% extends "atcore/base.html" %}
+{% extends base_template %}
 {% load tethys_gizmos static %}
 
 {% block import_gizmos %}
@@ -30,14 +30,16 @@
         </li>
         {# LEGEND TAB #}
         {% block legend_tab %}
-        <li role="presentation" {% block disable_legend_tab %}{% endblock %}>
-          <a id="legend-tab-toggle"
-             href="#legend-tab-panel"
-             aria-controls="legend-tab-panel"
-             aria-selected="false"
-             role="tab"
-             data-toggle="tab">Legend</a>
-        </li>
+          {% if legends %}
+          <li role="presentation" {% block disable_legend_tab %}{% endblock %}>
+            <a id="legend-tab-toggle"
+               href="#legend-tab-panel"
+               aria-controls="legend-tab-panel"
+               aria-selected="false"
+               role="tab"
+               data-toggle="tab">Legend</a>
+          </li>
+          {% endif %}
         {% endblock %}
 
         {# CUSTOM TABS #}
@@ -161,28 +163,30 @@
 
         {# LEGEND TAB PANEL #}
         {% block legend_panel %}
-        <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
-          {% block legend_items %}
-          {% for legend in legends %}
-            <div id="legend-{{ legend.legend_id }}" class="hidden">
-                <li class="legend-group-item">
-                  <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
-                  </label>
-                </li>
-                <ul class="legend-list" data-collapsed="false">
-                  {% for value, color in legend.divisions.items  %}
-                    <div class="legend-item">
-                      <li class="legend-list-item">
-                        <p>{{ value }} </p>
-                        <div class="color-box" style="background-color: {{ color }};"></div>
-                      </li>
-                    </div>
-                  {% endfor %}
-                </ul>
-            </div>
-          {% endfor %}
-          {% endblock %}
-        </div>
+          {% if legends %}
+          <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
+            {% block legend_items %}
+            {% for legend in legends %}
+              <div id="legend-{{ legend.legend_id }}" class="hidden">
+                  <li class="legend-group-item">
+                    <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
+                    </label>
+                  </li>
+                  <ul class="legend-list" data-collapsed="false">
+                    {% for value, color in legend.divisions.items  %}
+                      <div class="legend-item">
+                        <li class="legend-list-item">
+                          <p>{{ value }} </p>
+                          <div class="color-box" style="background-color: {{ color }};"></div>
+                        </li>
+                      </div>
+                    {% endfor %}
+                  </ul>
+              </div>
+            {% endfor %}
+            {% endblock %}
+          </div>
+          {% endif %}
         {% endblock %}
 
         {# CUSTOM TAB PANELS #}

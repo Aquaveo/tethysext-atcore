@@ -14,7 +14,7 @@ from tethysext.atcore.services.app_users.permissions_manager import AppPermissio
 
 
 def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_path='', custom_models=(),
-         custom_permissions_manager=None):
+         custom_permissions_manager=None, base_template='atcore/base.html'):
     """
     Generate UrlMap objects for each workflow model-controller pair provided. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
@@ -34,6 +34,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
         custom_models(list<cls>): custom subclasses of AppUser, Organization, or Resource models.
         custom_permissions_manager(cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
+        base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
 
     Url Map Names:
         <workflow_type>_workflow <resource_id> <workflow_id>
@@ -113,6 +114,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
+                    base_template=base_template
                 )
             ),
             url_map_maker(
@@ -126,6 +128,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
+                    base_template=base_template
                 )
             ),
             url_map_maker(
@@ -139,6 +142,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
+                    base_template=base_template
                 )
             )
         ]
