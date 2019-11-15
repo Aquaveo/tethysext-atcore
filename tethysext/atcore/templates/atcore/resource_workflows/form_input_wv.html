@@ -9,7 +9,7 @@
 
 <div class="row">
   <div class="col-md-6">
-{{ form }}
+{% if form %}{{ form }}{% elif script %}{{ script|safe }}{% endif %}
   </div>
 </div>
 {% endblock %}

@@ -11,10 +11,16 @@ from django.utils.text import slugify
 from tethysext.atcore.controllers.resource_workflows import ResourceWorkflowRouter
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource, ResourceWorkflow
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
+from tethysext.atcore.handlers import panel_rws_handler
+
+DEFAULT_HANDLER = {
+    'handler': panel_rws_handler,
+    'type': 'bokeh'
+}
 
 
 def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_path='', custom_models=(),
-         custom_permissions_manager=None):
+         custom_permissions_manager=None, handler=DEFAULT_HANDLER['handler'], handler_type=DEFAULT_HANDLER['type']):
     """
     Generate UrlMap objects for each workflow model-controller pair provided. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
@@ -126,7 +132,10 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
-                )
+                ),
+                handler=handler,
+                handler_type=handler_type,
+                regex=['[0-9A-Za-z-_.]+', '[0-9A-Za-z-_.{}]+', '[0-9A-Za-z-_.]+']
             ),
             url_map_maker(
                 name=workflow_step_result_name,
