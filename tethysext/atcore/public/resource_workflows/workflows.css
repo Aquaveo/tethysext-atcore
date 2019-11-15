@@ -12,27 +12,41 @@
 
 /* Workflow Buttons */
 .btn-workflow {
-    min-width: 110px;
+    min-width: 120px;
     color: white;
 }
 
 .btn-workflow-success {
-    background-color: #27ae60;
+    background-color: #649967;
+}
+
+.btn-workflow-success:hover {
+    background-color: #4b734d;
 }
 
 .btn-workflow-warning {
-    background-color: #f0ad4e;
+    background-color: #b58f43;
+}
+
+.btn-workflow-warning:hover {
+    background-color: #886b32;
 }
 
 .btn-workflow-primary {
-    background-color: #42a7f4;
+    background-color: #4b72aa;
+}
+
+.btn-workflow-primary:hover {
+    background-color: #385680;
 }
 
 .btn-workflow-danger {
-    background-color: #d9534f;
+    background-color: #b85f5d;
 }
 
-/* New Workflow Modal */
+.btn-workflow-danger:hover {
+    background-color: #8a4746;
+}
 
 
 /* Misc. */
