@@ -77,33 +77,40 @@ class FormInputWV(ResourceWorkflowView):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
-        form = generate_django_form(step.options['param_class'], form_field_prefix='param-form-')(request.POST)
-        params = {}
+        if step.options['renderer'] == 'django':
+            form = generate_django_form(step.options['param_class'], form_field_prefix='param-form-')(request.POST)
+            params = {}
 
-        if not form.is_valid():
-            raise RuntimeError('form is invalid')
+            if not form.is_valid():
+                raise RuntimeError('form is invalid')
 
-        # Get the form from the post
-        # loop through items and set the params
-        for p in request.POST:
-            if p.startswith('param-form-'):
+            # Get the form from the post
+            # loop through items and set the params
+            for p in request.POST:
+                if p.startswith('param-form-'):
+                    try:
+                        param_name = p[11:]
+                        params[param_name] = request.POST.get(p, None)
+                    except ValueError as e:
+                        raise RuntimeError('error setting param data: {}'.format(e))
+
+            # Get the param class and save the data from the form
+            # for the next time the form is loaded
+            param_class = step.options['param_class']
+            param_values = dict(param_class.get_param_values())
+            for k, v in params.items():
                 try:
-                    param_name = p[11:]
-                    params[param_name] = request.POST.get(p, None)
+                    params[k] = type(param_values[k])(v)
                 except ValueError as e:
-                    raise RuntimeError('error setting param data: {}'.format(e))
+                    raise ValueError('Invalid input to form: {}'.format(e))
 
-        # Get the param class and save the data from the from
-        # for the next time the form is loaded
-        param_class = step.options['param_class']
-        param_values = dict(param_class.get_param_values())
-        for k, v in params.items():
-            try:
-                params[k] = type(param_values[k])(v)
-            except ValueError as e:
-                raise ValueError('Invalid input to form: {}'.format(e))
+            step.set_parameter('form-values', params)
 
-        step.set_parameter('form-values', params)
+        elif step.options['renderer'] == 'bokeh':
+            param_class = step.options['param_class']
+            param_values = dict(param_class.get_param_values())
+
+            step.set_parameter('form-values', param_values)
 
         # Save parameters
         session.commit()
