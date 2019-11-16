@@ -134,8 +134,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _ResourceWorkflow=_ResourceWorkflow,
                 ),
                 handler=handler,
-                handler_type=handler_type,
-                regex=['[0-9A-Za-z-_.]+', '[0-9A-Za-z-_.{}]+', '[0-9A-Za-z-_.]+']
+                handler_type=handler_type
             ),
             url_map_maker(
                 name=workflow_step_result_name,
