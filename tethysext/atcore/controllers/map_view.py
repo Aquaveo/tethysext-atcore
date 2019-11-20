@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: map_view_tests.py
+* Name: map_view.py
 * Author: nswain
 * Created On: October 15, 2018
 * Copyright: (c) Aquaveo 2018
@@ -40,6 +40,7 @@ class MapView(ResourceView):
     _ModelDatabase = ModelDatabase
     _SpatialManager = None
     layer_tab_name = 'Layers'
+    map_type = 'tethys_map_view'
 
     def get_context(self, request, session, resource, context, model_db, *args, **kwargs):
         """
@@ -97,7 +98,6 @@ class MapView(ResourceView):
             'FullScreen',
             {'ZoomToExtent': {
                 'projection': 'EPSG:4326',
-                'extent': model_extent
             }}
         ]
 
@@ -115,6 +115,11 @@ class MapView(ResourceView):
                                                           layer_control='checkbox', visible=True)
             layer_groups.append(custom_layers)
 
+        # Translate to Cesium if necessary..
+        if self.map_type == "cesium_map_view":
+            pass
+
+
         # Initialize context
         context.update({
             'map_view': map_view,
@@ -126,6 +131,7 @@ class MapView(ResourceView):
             'back_url': self.back_url,
             'show_custom_layer': self.show_custom_layer,
             'layer_tab_name': self.layer_tab_name,
+            'map_type': self.map_type,
         })
 
         if resource:
