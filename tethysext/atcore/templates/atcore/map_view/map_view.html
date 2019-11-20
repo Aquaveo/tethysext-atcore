@@ -56,7 +56,7 @@
           {% for layer_group in layer_groups %}
           {% if layer_group.id == 'custom_layers'%}
             {% if show_custom_layer %}
-              <li class="layer-group-item">
+              <li id="custom_layers" class="layer-group-item">
 
                 {# LAYER GROUP VISIBILITY CONTROL #}
                 <label class="flatmark"><span class="display-name">{{ layer_group.display_name }}</span>
@@ -223,6 +223,7 @@
        data-map-extent="{{ map_extent|jsonify }}"
        data-workspace="{{ workspace }}"
        data-enable-properties-popup="{% if enable_properties_popup %}true{% else %}false{% endif %}"
+       data-map-type={{ map_type|jsonify }}
        style="display: none;"
   ></div>
   <div id="atcore-map-permissions"
@@ -287,9 +288,13 @@
   <script src="{% static 'atcore/js/utilities.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/collapse.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/csrf.js' %}" type="text/javascript"></script>
-  {% if is_in_debug %}
-  <script src="{% static 'atcore/map_view/atcore_map_view.js' %}" type="text/javascript"></script>
+  {% if map_type == "cesium_map_view" %}
+    <script src="{% static 'atcore/map_view/atcore_cesium_map_view.js' %}" type="text/javascript"></script>
   {% else %}
-  <script src="{% static 'atcore/map_view/atcore_map_view.min.js' %}" type="text/javascript"></script>
+    {% if is_in_debug %}
+    <script src="{% static 'atcore/map_view/atcore_map_view.js' %}" type="text/javascript"></script>
+    {% else %}
+    <script src="{% static 'atcore/map_view/atcore_map_view.min.js' %}" type="text/javascript"></script>
+    {% endif %}
   {% endif %}
 {% endblock %}
