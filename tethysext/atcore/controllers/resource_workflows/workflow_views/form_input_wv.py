@@ -40,8 +40,11 @@ class FormInputWV(ResourceWorkflowView):
         # Status style
         form_title = current_step.options.get('form_title', current_step.name) or current_step.name
 
+        package, p_class = current_step.options['param_class'].rsplit('.', 1)
+        ParamClass = __import__(package, fromlist=[p_class])
+
         if current_step.options['renderer'] == 'django':
-            p = current_step.options['param_class']
+            p = ParamClass()
             for k, v in current_step.get_parameter('form-values').items():
                 p.set_param(k, v)
             form = generate_django_form(p, form_field_prefix='param-form-',
@@ -77,8 +80,12 @@ class FormInputWV(ResourceWorkflowView):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
+        package, p_class = step.options['param_class'].rsplit('.', 1)
+        mod = __import__(package, fromlist=[p_class])
+        ParamClass = getattr(mod, p_class)
         if step.options['renderer'] == 'django':
-            form = generate_django_form(step.options['param_class'], form_field_prefix='param-form-')(request.POST)
+            param_class_for_form = ParamClass()
+            form = generate_django_form(param_class_for_form, form_field_prefix='param-form-')(request.POST)
             params = {}
 
             if not form.is_valid():
@@ -96,7 +103,7 @@ class FormInputWV(ResourceWorkflowView):
 
             # Get the param class and save the data from the form
             # for the next time the form is loaded
-            param_class = step.options['param_class']
+            param_class = ParamClass()
             param_values = dict(param_class.get_param_values())
             for k, v in params.items():
                 try:
@@ -107,7 +114,8 @@ class FormInputWV(ResourceWorkflowView):
             step.set_parameter('form-values', params)
 
         elif step.options['renderer'] == 'bokeh':
-            param_class = step.options['param_class']
+            # get document from the request here...
+            param_class = ParamClass()
             param_values = dict(param_class.get_param_values())
 
             step.set_parameter('form-values', param_values)
