@@ -41,7 +41,8 @@ class FormInputWV(ResourceWorkflowView):
         form_title = current_step.options.get('form_title', current_step.name) or current_step.name
 
         package, p_class = current_step.options['param_class'].rsplit('.', 1)
-        ParamClass = __import__(package, fromlist=[p_class])
+        mod = __import__(package, fromlist=[p_class])
+        ParamClass = getattr(mod, p_class)
 
         if current_step.options['renderer'] == 'django':
             p = ParamClass()
@@ -115,10 +116,25 @@ class FormInputWV(ResourceWorkflowView):
 
         elif step.options['renderer'] == 'bokeh':
             # get document from the request here...
+            params = {}
+
+            for p in request.POST:
+                if p.startswith('param-form-'):
+                    try:
+                        param_name = p[11:]
+                        params[param_name] = request.POST.get(p, None)
+                    except ValueError as e:
+                        raise RuntimeError('error setting param data: {}'.format(e))
+
             param_class = ParamClass()
             param_values = dict(param_class.get_param_values())
+            for k, v in params.items():
+                try:
+                    params[k] = type(param_values[k])(v)
+                except ValueError as e:
+                    raise ValueError('Invalid input to form: {}'.format(e))
 
-            step.set_parameter('form-values', param_values)
+            step.set_parameter('form-values', params)
 
         # Save parameters
         session.commit()

@@ -26,6 +26,12 @@ def panel_rws_handler(document):
     ParamClass = getattr(mod, p_class)
 
     param_class = ParamClass()
+
+    form_values = current_step.get_parameter('form-values').items()
+    for k, v in form_values:
+        if k != 'name':
+            param_class.set_param(k, v)
+
     panel = pn.Row(param_class.param)
 
     panel.server_doc(document)
