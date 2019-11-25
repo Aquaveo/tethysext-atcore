@@ -21,7 +21,11 @@ def panel_rws_handler(document):
     current_step_id = document.request.url_route['kwargs']['step_id']
     current_step = session.query(ResourceWorkflowStep).get(current_step_id)
 
-    param_class = current_step.options['param_class']
+    package, p_class = current_step.options['param_class'].rsplit('.', 1)
+    mod = __import__(package, fromlist=[p_class])
+    ParamClass = getattr(mod, p_class)
+
+    param_class = ParamClass()
     panel = pn.Row(param_class.param)
 
     panel.server_doc(document)
