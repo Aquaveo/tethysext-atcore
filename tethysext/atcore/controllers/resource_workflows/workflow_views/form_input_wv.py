@@ -137,7 +137,8 @@ class FormInputWV(ResourceWorkflowView):
             step.set_parameter('form-values', params)
 
         elif step.options['renderer'] == 'bokeh':
-            param_class = step.options['param_class']
+            # get document from the request here...
+            param_class = ParamClass()
             param_values = dict(param_class.get_param_values())
 
             step.set_parameter('form-values', param_values)
