@@ -60,13 +60,32 @@ def main(args):
     finally:
         lock_on_complete = step.options.get('lock_on_complete', None)
         unlock_on_complete = step.options.get('unlock_on_complete', None)
+
         if lock_on_complete and unlock_on_complete:
             raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_complete and unlock_on_complete '
                                'options are both set to True')
+
         if lock_on_complete is True:
-            step.acquire_lock_and_log(None, model_db_session, step.workflow, True)
+            # Lock the resource
+            if step.options.get('resource_lock_required'):
+                raise ValueError('Acquiring resource locks on completion of jobs is not supported at this time.')
+                # Cannot load Resource subclasses b/c of polymorphic discriminator issues...
+                # step.acquire_lock_and_log(None, model_db_session, resource)
+
+            # Lock the workflow
+            elif step.options.get('workflow_lock_required'):
+                step.acquire_lock_and_log(None, model_db_session, step.workflow)
+
         elif unlock_on_complete is True:
-            step.release_lock_and_log(None, model_db_session, step.workflow)
+            # Unlock the resource
+            if step.options.get('resource_lock_required'):
+                raise ValueError('Releasing resource locks on completion of jobs is not supported at this time.')
+                # Cannot load Resource subclasses b/c of polymorphic discriminator issues...
+                # step.release_lock_and_log(None, model_db_session, resource)
+
+            # Unlock the workflow
+            elif step.options.get('workflow_lock_required'):
+                step.release_lock_and_log(None, model_db_session, step.workflow)
 
         model_db_session and model_db_session.close()
         resource_db_session and resource_db_session.close()
