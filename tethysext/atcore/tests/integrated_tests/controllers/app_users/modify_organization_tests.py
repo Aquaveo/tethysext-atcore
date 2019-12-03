@@ -198,7 +198,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['organization_type_select']['placeholder'])
         self.assertEqual('null', context['organization_type_select']['select2_options'])
         self.assertEqual([('Standard', 'standard'), ('Advanced', 'advanced'), ('Professional', 'professional'),
-                         ('Enterprise', 'enterprise')], context['organization_type_select']['options'])
+                         ('Consultant', 'enterprise')], context['organization_type_select']['options'])
         self.assertFalse(context['organization_type_select']['disabled'])
         self.assertEqual('', context['organization_type_select']['error'])
 

@@ -85,7 +85,7 @@ class Licenses:
         elif license == self.PROFESSIONAL:
             return 'Professional'
         elif license == self.ENTERPRISE:
-            return 'Enterprise'
+            return 'Consultant'
 
     def get_assign_permission_for(self, license):
         """

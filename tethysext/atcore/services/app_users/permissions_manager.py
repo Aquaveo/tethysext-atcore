@@ -210,9 +210,9 @@ class AppPermissionsManager:
             self.PROFESSIONAL_REVIEWER_PERMS: 'Professional Reviewer',
             self.PROFESSIONAL_ADMIN_PERMS: 'Professional Admin',
 
-            self.ENTERPRISE_USER_PERMS: 'Enterprise User',
-            self.ENTERPRISE_REVIEWER_PERMS: 'Enterprise Reviewer',
-            self.ENTERPRISE_ADMIN_PERMS: 'Enterprise Admin',
+            self.ENTERPRISE_USER_PERMS: 'Consultant User',
+            self.ENTERPRISE_REVIEWER_PERMS: 'Consultant Reviewer',
+            self.ENTERPRISE_ADMIN_PERMS: 'Consultant Admin',
 
             self.APP_ADMIN_PERMS: 'App Admin',
         }

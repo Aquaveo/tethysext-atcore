@@ -47,7 +47,7 @@ class LicensesTests(unittest.TestCase):
         self.assertEqual('Standard', self.licenses.get_display_name_for(Licenses.STANDARD))
         self.assertEqual('Advanced', self.licenses.get_display_name_for(Licenses.ADVANCED))
         self.assertEqual('Professional', self.licenses.get_display_name_for(Licenses.PROFESSIONAL))
-        self.assertEqual('Enterprise', self.licenses.get_display_name_for(Licenses.ENTERPRISE))
+        self.assertEqual('Consultant', self.licenses.get_display_name_for(Licenses.ENTERPRISE))
         self.assertRaises(ValueError, self.licenses.get_display_name_for, self.invalid_license)
 
     def test_get_assign_permission_for(self):
