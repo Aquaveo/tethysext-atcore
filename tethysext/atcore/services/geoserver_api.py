@@ -626,8 +626,16 @@ class GeoServerAPI(object):
                     contents.pop(0)
                 contents = header + contents
 
+                # Write the coverage to file
                 with open(tmp_coverage_path, 'w') as o:
                     for line in contents:
+                        # Clean up the line if needed
+                        if line[0] == ' ':
+                            line = line[1:]
+                        if line[-1] != '\n':
+                            line = line + '\n'
+                        line = line.replace('0.000000', '0')
+
                         o.write(line)
 
         # Prepare Files
