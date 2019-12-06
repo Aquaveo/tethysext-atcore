@@ -6,10 +6,13 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
 from tethys_sdk.compute import get_scheduler
 from tethysext.atcore.utilities import generate_geoserver_urls
+
+log = logging.getLogger(__name__)
 
 
 class ResourceWorkflowCondorJobManager(object):
@@ -42,7 +45,11 @@ class ResourceWorkflowCondorJobManager(object):
         self.resource_db_url = str(session.get_bind().url)
 
         # DB URL for database containing the model database
-        self.model_db_url = model_db.db_url
+        if model_db:
+            self.model_db_url = model_db.db_url
+        else:
+            log.warning('no model database provided')
+            self.model_db_url = None
 
         # Serialize GeoServer Connection
         self.gs_private_url = ''

@@ -46,6 +46,7 @@ class FormInputWV(ResourceWorkflowView):
 
         if current_step.options['renderer'] == 'django':
             p = ParamClass()
+            p.update_precedence()
             for k, v in current_step.get_parameter('form-values').items():
                 p.set_param(k, v)
             form = generate_django_form(p, form_field_prefix='param-form-',
