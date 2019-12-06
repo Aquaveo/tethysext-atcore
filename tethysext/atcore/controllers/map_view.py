@@ -122,7 +122,6 @@ class MapView(ResourceView):
         if self.map_type == "cesium_map_view":
             pass
 
-
         # Initialize context
         context.update({
             'map_view': map_view,
