@@ -11,7 +11,7 @@ requirements:
     channels:
       - conda-forge
     packages:
-      - django
+      - django=2.2.*
       - factory_boy
       - filelock
       - geojson
