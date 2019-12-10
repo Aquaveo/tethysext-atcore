@@ -157,6 +157,9 @@ class FormInputWV(ResourceWorkflowView):
                 except ValueError as e:
                     raise ValueError('Invalid input to form: {}'.format(e))
 
+
+            step.set_parameter('resource_name', step.workflow.resource.name)
+
             step.set_parameter('form-values', params)
 
         # Save parameters

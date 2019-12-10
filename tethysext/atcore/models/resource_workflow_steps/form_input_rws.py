@@ -45,4 +45,9 @@ class FormInputRWS(ResourceWorkflowStep):
                 'value': {},
                 'required': True
             },
+            'resource_name': {
+                'help': 'The name of the resource',
+                'value': '',
+                'required': True
+            }
         }
