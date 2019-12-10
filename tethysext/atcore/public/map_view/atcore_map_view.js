@@ -806,6 +806,11 @@ var ATCORE_MAP_VIEW = (function() {
                 // Zoom to layer extent
                 TETHYS_MAP_VIEW.zoomToExtent(extent);
             }
+            else if ('tethys_legend_extent' in m_layers[layer_name] && m_layers[layer_name].tethys_legend_extent)
+            {
+                // use tethys legend extent if it is part of the layer
+                TETHYS_MAP_VIEW.zoomToExtent(m_layers[layer_name].tethys_legend_extent);
+            }
             else {
                 // TODO: Query GeoServer to get layer extent?
                 // Zoom to map extent if layer has no extent
