@@ -853,10 +853,7 @@ var ATCORE_MAP_VIEW = (function() {
                         xhrFields: {
                             responseType: 'blob',
                         },
-                        beforeSend: xhr => {
-                            xhr.setRequestHeader('X-CSRFToken', csrf_token);
-                        }
-                        }))
+                }))
                 .done(function(data) {
                     let url = window.URL || window.webkitURL;
                     url = url.createObjectURL(data)
@@ -1608,7 +1605,7 @@ var ATCORE_MAP_VIEW = (function() {
                 'layer_names': JSON.stringify(layer_names),
                 'layer_ids': JSON.stringify(layer_ids),
                 'layer_legends': JSON.stringify(layer_legends),
-                'show_download': show_download,
+                'show_download': JSON.stringify(show_download),
             },
         }).done(function(data){
             if (status == 'create') {

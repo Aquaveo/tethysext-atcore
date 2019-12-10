@@ -17,6 +17,11 @@ from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
 import json
+import shapefile
+from django.http import HttpResponse
+from zipfile import ZipFile
+from io import BytesIO
+import os
 
 
 class MapView(ResourceView):
@@ -525,8 +530,6 @@ class MapView(ResourceView):
         Returns:
             JsonResponse: success.
         """
-        import shapefile
-
         json_data = json.loads(request.POST.get('data', ''))
         layer_id = request.POST.get('id', '0')
         json_type = json_data['features'][0]['geometry']['type']
@@ -565,8 +568,6 @@ class MapView(ResourceView):
             shpfile_obj.record(*attr)
 
         # write shapefile
-        from django.http import HttpResponse
-
         shp_file = layer_id + "_" + json_type
         prj_file = open(shp_file + '.prj', 'w')
         prj_str = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],' \
@@ -574,9 +575,6 @@ class MapView(ResourceView):
         prj_file.write(prj_str)
         prj_file.close()
         shpfile_obj.save(shp_file)
-
-        from zipfile import ZipFile
-        from io import BytesIO
 
         in_memory = BytesIO()
         shp_file_ext = ['prj', 'shp', 'dbf', 'shx']
@@ -586,7 +584,6 @@ class MapView(ResourceView):
                 my_zip.write(shp_file + "." + ext)
 
         # Clean up
-        import os
         for ext in shp_file_ext:
             if os.path.exists(shp_file + "." + ext):
                 os.remove(shp_file + "." + ext)
