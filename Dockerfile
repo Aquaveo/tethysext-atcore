@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r29
+FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r30
 
 #####################
 # Default Variables #
@@ -19,7 +19,7 @@ RUN mkdir -p "${TETHYSAPP_DIR}" \
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
   ; echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache \
   ; echo "Acquire::Check-Valid-Until false;" > /etc/apt/apt.conf.d/no-check-valid \
-  ; apt-get update && apt-get -y install gcc libgdal-dev g++ libhdf5-dev
+  ; rm -rf /var/lib/apt/lists/* && apt-get update && apt-get -y install gcc libgdal-dev g++ libhdf5-dev && rm -rf /var/lib/apt/lists/*
 
 ###########
 # INSTALL #

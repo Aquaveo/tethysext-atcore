@@ -14,7 +14,7 @@ from tethysext.atcore.services.app_users.permissions_manager import AppPermissio
 
 
 def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_path='', custom_models=(),
-         custom_permissions_manager=None):
+         custom_permissions_manager=None, base_template='atcore/base.html'):
     """
     Generate UrlMap objects for each workflow model-controller pair provided. To link to pages provided by the app_users extension use the name of the url with your app namespace:
 
@@ -34,6 +34,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
         custom_models(list<cls>): custom subclasses of AppUser, Organization, or Resource models.
         custom_permissions_manager(cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
+        base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
 
     Url Map Names:
         <workflow_type>_workflow <resource_id> <workflow_id>
@@ -77,11 +78,6 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         else:
             raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
 
-    # Url Patterns
-    workflow_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}'  # noqa: E222, E501
-    workflow_step_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}/step/{step_id}'  # noqa: E222, E501
-    workflow_step_result_url = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/workflows/{workflow_id}/step/{step_id}/result/{result_id}'  # noqa: E222, E501
-
     url_maps = []
 
     for _ResourceWorkflow, _ResourceWorkflowRouter in workflow_pairs:
@@ -95,11 +91,18 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
             raise ValueError('Must provide a valid ResourceWorkflowRouter controller as the second item in the '
                              'workflow_pairs argument.')
 
+        slugged_name = slugify(_ResourceWorkflow.TYPE)
         workflow_name = '{}_workflow'.format(_ResourceWorkflow.TYPE)
         workflow_step_name = '{}_workflow_step'.format(_ResourceWorkflow.TYPE)
         workflow_step_result_name = '{}_workflow_step_result'.format(_ResourceWorkflow.TYPE)
 
-        url_maps.extend([
+        # Url Patterns
+        slugged_plural_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower())
+        workflow_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}'  # noqa: E222, E501
+        workflow_step_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}/step/{step_id}'  # noqa: E222, E501
+        workflow_step_result_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}/step/{step_id}/result/{result_id}'  # noqa: E222, E501
+
+        workflow_url_maps = [
             url_map_maker(
                 name=workflow_name,
                 url='/'.join([base_url_path, workflow_url]) if base_url_path else workflow_url,
@@ -111,6 +114,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
+                    base_template=base_template
                 )
             ),
             url_map_maker(
@@ -124,6 +128,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
+                    base_template=base_template
                 )
             ),
             url_map_maker(
@@ -137,8 +142,11 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
                     _Resource=_Resource,
                     _PermissionsManager=_PermissionsManager,
                     _ResourceWorkflow=_ResourceWorkflow,
+                    base_template=base_template
                 )
             )
-        ])
+        ]
+
+        url_maps.extend(workflow_url_maps)
 
     return url_maps

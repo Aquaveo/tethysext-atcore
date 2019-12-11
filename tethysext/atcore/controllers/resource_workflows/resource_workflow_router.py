@@ -24,6 +24,7 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
     """
     Router for resource workflow views. Routes to appropriate step controller.
     """
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'post', 'delete']
 
     def get(self, request, resource_id, workflow_id, step_id=None, result_id=None, *args, **kwargs):
@@ -32,9 +33,9 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
 
         Controller for the following url patterns:
 
-        /resource/<resource_id>/workflow/<workflow_id>/
-        /resource/<resource_id>/workflow/<workflow_id>/step/<step_id>/
-        /resource/<resource_id>/workflow/<workflow_id>/step/<step_id>/result/<result_id>/
+        /resource/<resource_id>/my-custom-workflow/<workflow_id>/
+        /resource/<resource_id>/my-custom-workflow/<workflow_id>/step/<step_id>/
+        /resource/<resource_id>/my-custom-workflow/<workflow_id>/step/<step_id>/result/<result_id>/
 
         Args:
             request(HttpRequest): The request.
@@ -217,7 +218,8 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
                 _PermissionsManager=self._PermissionsManager,
                 _persistent_store_name=self._persistent_store_name,
                 _ResourceWorkflow=self._ResourceWorkflow,
-                _ResourceWorkflowStep=self._ResourceWorkflowStep
+                _ResourceWorkflowStep=self._ResourceWorkflowStep,
+                base_template=self.base_template
             )
 
             response = controller(
@@ -289,7 +291,8 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
                 _PermissionsManager=self._PermissionsManager,
                 _persistent_store_name=self._persistent_store_name,
                 _ResourceWorkflow=self._ResourceWorkflow,
-                _ResourceWorkflowStep=self._ResourceWorkflowStep
+                _ResourceWorkflowStep=self._ResourceWorkflowStep,
+                base_template=self.base_template
             )
 
             response = controller(

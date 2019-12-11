@@ -18,3 +18,11 @@ organization_resource_association = Table(
     Column('resource_id', GUID, ForeignKey('app_users_resources.id')),
     Column('organization_id', GUID, ForeignKey('app_users_organizations.id'))
 )
+
+step_result_association = Table(
+    'app_users_step_result_association',
+    AppUsersBase.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('resource_workflow_step_id', GUID, ForeignKey('app_users_resource_workflow_steps.id')),
+    Column('resource_workflow_result_id', GUID, ForeignKey('app_users_resource_workflow_results.id'))
+)

@@ -36,6 +36,7 @@ class ModifyResource(AppUsersViewMixin):
     """
     page_title = 'Add Resource'
     template_name = 'atcore/app_users/modify_resource.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'post']
 
     # Srid field options
@@ -306,7 +307,8 @@ class ModifyResource(AppUsersViewMixin):
             'file_upload_error': file_upload_error,
             'file_upload_label': self.file_upload_label,
             'file_upload_help': self.file_upload_help,
-            'file_upload_accept': self.file_upload_accept
+            'file_upload_accept': self.file_upload_accept,
+            'base_template': self.base_template
         }
 
         context = self.get_context(context)

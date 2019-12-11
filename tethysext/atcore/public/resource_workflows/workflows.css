@@ -1,0 +1,64 @@
+/* Workflows Table */
+#workflows-table {
+    margin-top: 15px;
+}
+
+#workflows-table th {
+    font-size: 18px;
+    font-weight: 400;
+    color: #555555;
+    letter-spacing: 1px;
+}
+
+/* Workflow Buttons */
+.btn-workflow {
+    min-width: 120px;
+    color: white;
+}
+
+.btn-workflow-success {
+    background-color: #649967;
+}
+
+.btn-workflow-success:hover {
+    background-color: #4b734d;
+}
+
+.btn-workflow-warning {
+    background-color: #b58f43;
+}
+
+.btn-workflow-warning:hover {
+    background-color: #886b32;
+}
+
+.btn-workflow-primary {
+    background-color: #4b72aa;
+}
+
+.btn-workflow-primary:hover {
+    background-color: #385680;
+}
+
+.btn-workflow-danger {
+    background-color: #b85f5d;
+}
+
+.btn-workflow-danger:hover {
+    background-color: #8a4746;
+}
+
+
+/* Misc. */
+.w-center-parent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 600px;
+}
+
+.w-centered {
+    display: block;
+    max-width: 400px;
+    text-align: center;
+}

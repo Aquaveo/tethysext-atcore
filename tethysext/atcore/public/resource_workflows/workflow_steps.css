@@ -38,66 +38,66 @@
 
 .workflow-step.active {
     color: #ffffff!important;
-    background-color: #42A7F4!important;
+    background-color: #4b72aa!important;
 }
 
 .workflow-step.active:hover {
     color: #ffffff!important;
-    background-color: #0075CE!important;
+    background-color: #385680!important;
 }
 
 /* Success Style */
 .workflow-status-success {
-    color: #17A917!important;
+    color: #649967!important;
 }
 
 .active.workflow-status-success {
     color: #ffffff!important;
-    background-color: #17A917!important;
+    background-color: #649967!important;
 }
 
 .active.workflow-status-success:hover {
-    background-color: #179917!important;
+    background-color: #4b734d!important;
 }
 
 .workflow-status-success i {
-    color: #17A917;
+    color: #649967;
 }
 
 /* Danger Style */
 .workflow-status-danger {
-    color: #EF3737!important;
+    color: #b85f5d!important;
 }
 
 .active.workflow-status-danger {
     color: #ffffff!important;
-    background-color: #EF3737!important;
+    background-color: #b85f5d!important;
 }
 
 .active.workflow-status-danger:hover {
-    background-color: #E23737!important;
+    background-color: #8a4746!important;
 }
 
 .workflow-status-danger i {
-    color: #EF3737;
+    color: #b85f5d;
 }
 
 /* Warning Style */
 .workflow-status-warning {
-    color: #E67E22!important;
+    color: #b58f43!important;
 }
 
 .active.workflow-status-warning {
     color: #ffffff!important;
-    background-color: #E67E22!important;
+    background-color: #b58f43!important;
 }
 
 .active.workflow-status-warning:hover {
-    background-color: #D35400!important;
+    background-color: #886b32!important;
 }
 
 .workflow-status-warning i {
-    color: #E67E22;
+    color: #b58f43;
 }
 
 /* Lock Styles */

@@ -9,6 +9,8 @@
 import uuid
 import logging
 import datetime as dt
+from abc import abstractmethod
+
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
@@ -117,7 +119,8 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         """
         index, next_step = self.get_next_step()
         # TODO: Handle when next step is None or all complete = show results
-        status = next_step.get_status(ResourceWorkflowStep.ROOT_STATUS_KEY)
+        status = next_step.get_status(ResourceWorkflowStep.ROOT_STATUS_KEY) \
+            if next_step else ResourceWorkflowStep.STATUS_NONE
 
         # If we are not on the first step and the status is pending, workflow status is continue
         if status == ResourceWorkflowStep.STATUS_PENDING and index > 0:
@@ -195,3 +198,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             status = s.get_status(s.ROOT_STATUS_KEY)
             if status != s.STATUS_PENDING:
                 s.reset()
+
+    @abstractmethod
+    def get_url_name(self):
+        pass
