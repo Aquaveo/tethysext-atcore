@@ -29,6 +29,7 @@ class ManageOrganizationMembers(AppUsersViewMixin):
 
     page_title = 'Members'
     template_name = 'atcore/app_users/manage_organization_members.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
@@ -158,7 +159,8 @@ class ManageOrganizationMembers(AppUsersViewMixin):
         context = {
             'members_select': members_select,
             'user_group_name': organization.name,
-            'next_controller': next_controller
+            'next_controller': next_controller,
+            'base_template': self.base_template
         }
         session.close()
 

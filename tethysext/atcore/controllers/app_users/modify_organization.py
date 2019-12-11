@@ -31,6 +31,7 @@ class ModifyOrganization(AppUsersViewMixin):
 
     page_title = 'Add Organization'
     template_name = 'atcore/app_users/modify_organization.html'
+    base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
@@ -339,7 +340,8 @@ class ModifyOrganization(AppUsersViewMixin):
             'next_controller': next_controller,
             'license_to_consultant_map': license_to_consultant_map,
             'hide_consultant_licenses': hide_consultant_licenses,
-            'organization_status_toggle': organization_status_toggle
+            'organization_status_toggle': organization_status_toggle,
+            'base_template': self.base_template
         }
 
         return render(request, self.template_name, context)

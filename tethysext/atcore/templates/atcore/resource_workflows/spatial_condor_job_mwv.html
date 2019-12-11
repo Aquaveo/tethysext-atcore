@@ -4,6 +4,16 @@
 
 {% block app_content %}
   {{ block.super }}
+  {% if has_tabular_data %}
+    <div class="tab-data">
+      {% for tab_data_title, tab_data in tabular_data.items %}
+      <h2>{{ tab_data_title }}</h2>
+      {% for k, v in tab_data.items %}
+      <p><b>{{ k|title }}:</b> {{ v }}</p>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
   <form id="run-job-form" method="post">
     {% csrf_token %}
     <input hidden name="method" value="run-job">
@@ -22,6 +32,20 @@
 
 {% block content_dependent_styles %}
   {{ block.super }}
+  {% if has_tabular_data %}
+    <style>
+      .map-form {
+        width: 500px;
+        height: 500px;
+        padding-left: 25px;
+        padding-top: 25px;
+      }
+      .tab-data {
+        padding-left: 25px;
+        padding-top: 25px;
+      }
+    </style>
+  {% endif %}
 {% endblock %}
 
 {% block after_app_content %}

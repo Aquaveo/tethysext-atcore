@@ -39,15 +39,23 @@ td, th {
 }
 
 .btn-resource-launch {
-    background-color: #42a7f4;
+    background-color: #4b72aa;
+}
+
+.btn-resource-launch:hover {
+    background-color: #385680;
 }
 
 .btn-resource-processing {
-    background-color: #f0ad4e;
+    background-color: #b58f43;
+}
+
+.btn-resource-processing:hover {
+    background-color: #886b32;
 }
 
 .btn-resource-error {
-    background-color: #d9534f;
+    background-color: #b85f5d;
 }
 
 .btn-resource-error:hover {
@@ -59,37 +67,49 @@ td, th {
 }
 
 .btn-users {
- margin-left: 0;
+    margin-left: 0;
 }
 
 .btn-users:hover {
-    background-color: #5cb85c;
-    border-color: #4cae4c;
+    background-color: #4b734d;
+    border-color: #4b734d;
+}
+
+.btn-import {
+    background-color: #649967;
+    border-color: #649967;
+    color: white;
 }
 
 .btn-import:hover {
-    background-color: #5cb85c;
-    border-color: #4cae4c;
+    background-color: #4b734d;
+    border-color: #4b734d;
+}
+
+.btn-new {
+    background-color: #649967;
+    border-color: #649967;
+    color: white;
 }
 
 .btn-new:hover {
-    background-color: #5cb85c;
-    border-color: #4cae4c;
+    background-color: #4b734d;
+    border-color: #4b734d;
 }
 
 .btn-edit:hover {
-    background-color: #f0ad4e;
-    border-color: #eea236;
+    background-color: #b58f43;
+    border-color: #b58f43;
 }
 
 .btn-delete:hover {
-    background-color: #d9534f;
-    border-color: #d43f3a;
+    background-color: #b85f5d;
+    border-color: #b85f5d;
 }
 
 .btn-remove:hover {
-    background-color: #d9534f;
-    border-color: #d43f3a;
+    background-color: #b85f5d;
+    border-color: #b85f5d;
 }
 
 .manage-panel-heading {
@@ -177,15 +197,15 @@ td, th {
 }
 
 .progress-bar {
-    background-color: #00787B;
+    background-color: #4b72aa;
 }
 
 .progress-bar-danger {
-    background-color: #D9534F;
+    background-color: #b85b5d;
 }
 
 .progress-bar-success {
-    background-color: #5cb85c;
+    background-color: #649967;
 }
 
 .storage-table {

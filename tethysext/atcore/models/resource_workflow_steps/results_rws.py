@@ -9,6 +9,7 @@
 from sqlalchemy.orm import relationship
 from tethysext.atcore.mixins import ResultsMixin, AttributesMixin
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
+from tethysext.atcore.models.app_users.associations import step_result_association
 
 
 class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, ResultsMixin):
@@ -23,9 +24,10 @@ class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, Results
 
     results = relationship(
         'ResourceWorkflowResult',
+        secondary=step_result_association,
         order_by='ResourceWorkflowResult.order',
         cascade='all,delete',
-        backref='step'
+        backref='steps'
     )
 
     @property

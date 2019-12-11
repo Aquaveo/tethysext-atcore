@@ -31,6 +31,10 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
         baseline = {
             'scheduler': '',
             'jobs': [],
+            'lock_on_complete': False,
+            'unlock_on_complete': False,
+            'lock_on_submit': False,
+            'unlock_on_submit': False,
             'working_message': '',
             'error_message': '',
             'pending_message': '',

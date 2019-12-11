@@ -6,8 +6,9 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import uuid
+import logging
 import requests
+import uuid
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
@@ -17,6 +18,8 @@ from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
 import json
+
+log = logging.getLogger(__name__)
 
 
 class MapView(ResourceView):
@@ -118,7 +121,6 @@ class MapView(ResourceView):
         # Translate to Cesium if necessary..
         if self.map_type == "cesium_map_view":
             pass
-
 
         # Initialize context
         context.update({
@@ -318,10 +320,12 @@ class MapView(ResourceView):
                 database_id = resource.get_attribute('database_id')
 
             if not database_id:
-                raise RuntimeError('A resource with database_id attribute is required: '
-                                   'Resource - {} Database ID - {}'.format(resource, database_id))
-
-            self._model_db = self._ModelDatabase(app=self._app, database_id=database_id)
+                log.warning('no model database provided')
+                self._model_db = None
+                # raise RuntimeError('A resource with database_id attribute is required: '
+                #                    'Resource - {} Database ID - {}'.format(resource, database_id))
+            else:
+                self._model_db = self._ModelDatabase(app=self._app, database_id=database_id)
             gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
             self._map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=self._model_db)

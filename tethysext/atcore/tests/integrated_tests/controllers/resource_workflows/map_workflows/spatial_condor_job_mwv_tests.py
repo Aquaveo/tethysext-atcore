@@ -313,8 +313,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only',
                 return_value=False)
-    @mock.patch('tethysext.atcore.services.condor_workflow_manager.ResourceWorkflowCondorJobManager.run_job')
-    @mock.patch('tethysext.atcore.services.condor_workflow_manager.ResourceWorkflowCondorJobManager.prepare')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ResourceWorkflowCondorJobManager.run_job')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ResourceWorkflowCondorJobManager.prepare')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.SpatialCondorJobMWV.get_working_directory')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     def test_run_job(self, mock_get_managers, mock_get_working_dir, mock_prepare, mock_run_job, _):

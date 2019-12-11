@@ -1,7 +1,10 @@
 import os
+import logging
 
 from tethys_compute.models import CondorWorkflowJobNode
 from tethysext.atcore.utilities import generate_geoserver_urls
+
+log = logging.getLogger(__name__)
 
 
 class BaseWorkflowManager(object):
@@ -31,7 +34,11 @@ class BaseWorkflowManager(object):
         self.resource_db_url = str(session.get_bind().url)
 
         # DB URL for database containing the model database
-        self.model_db_url = model_db.db_url
+        if model_db:
+            self.model_db_url = model_db.db_url
+        else:
+            log.warning('no model database provided')
+            self.model_db_url = None
 
         # Serialize GeoServer Connection
         self.gs_private_url = ''
