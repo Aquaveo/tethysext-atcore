@@ -10,12 +10,12 @@ import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
 from tethys_sdk.compute import get_scheduler
-from tethysext.atcore.utilities import generate_geoserver_urls
+from .base_workflow_manager import BaseWorkflowManager
 
 log = logging.getLogger(__name__)
 
 
-class ResourceWorkflowCondorJobManager(object):
+class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
     """
     Helper class that prepares and submits condor workflows/jobs for resource workflows.
     """
@@ -285,18 +285,3 @@ class ResourceWorkflowCondorJobManager(object):
             job.save()
 
         return jobs
-
-    def run_job(self):
-        """
-        Prepares and executes the job.
-
-        Returns:
-            str: UUID of the CondorWorkflow.
-        """
-        # Prepare
-        if not self.prepared:
-            self.prepare()
-
-        # Execute
-        self.workflow.execute()
-        return str(self.workflow.id)

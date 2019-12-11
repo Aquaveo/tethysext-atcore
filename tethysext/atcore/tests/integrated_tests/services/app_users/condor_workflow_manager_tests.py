@@ -10,7 +10,7 @@ import mock
 import pathlib as pl
 import tethys_apps.base.app_base as tethys_app_base
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager as Manager
+from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager as Manager
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.app_users import Resource
 from tethys_compute.models.condor.condor_workflow import CondorWorkflow
