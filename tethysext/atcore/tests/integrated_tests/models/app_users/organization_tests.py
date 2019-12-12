@@ -82,7 +82,7 @@ class OrganizationTests(SqlAlchemyTestCase):
         self.organization.license = Organization.LICENSES.STANDARD
         self.organization.license = Organization.LICENSES.ADVANCED
         self.organization.license = Organization.LICENSES.PROFESSIONAL
-        self.organization.license = Organization.LICENSES.ENTERPRISE
+        self.organization.license = Organization.LICENSES.CONSULTANT
         exception_raised = False
         try:
             self.organization.license = self.invalid_license
@@ -133,7 +133,7 @@ class OrganizationTests(SqlAlchemyTestCase):
                                                             Organization.LICENSES.PROFESSIONAL)
         self.assertFalse(out)
         out = self.organization.can_add_client_with_license(self.session, self.mock_request,
-                                                            Organization.LICENSES.ENTERPRISE)
+                                                            Organization.LICENSES.CONSULTANT)
         self.assertFalse(out)
 
     def test_can_add_client_with_license_advanced(self):
@@ -148,7 +148,7 @@ class OrganizationTests(SqlAlchemyTestCase):
                                                             Organization.LICENSES.PROFESSIONAL)
         self.assertFalse(out)
         out = self.organization.can_add_client_with_license(self.session, self.mock_request,
-                                                            Organization.LICENSES.ENTERPRISE)
+                                                            Organization.LICENSES.CONSULTANT)
         self.assertFalse(out)
 
     def test_can_add_client_with_license_professional(self):
@@ -163,11 +163,11 @@ class OrganizationTests(SqlAlchemyTestCase):
                                                             Organization.LICENSES.PROFESSIONAL)
         self.assertFalse(out)
         out = self.organization.can_add_client_with_license(self.session, self.mock_request,
-                                                            Organization.LICENSES.ENTERPRISE)
+                                                            Organization.LICENSES.CONSULTANT)
         self.assertFalse(out)
 
-    def test_can_add_client_with_license_enterprise(self):
-        self.organization.license = Organization.LICENSES.ENTERPRISE
+    def test_can_add_client_with_license_Consultant(self):
+        self.organization.license = Organization.LICENSES.CONSULTANT
         out = self.organization.can_add_client_with_license(self.session, self.mock_request,
                                                             Organization.LICENSES.STANDARD)
         self.assertTrue(out)
@@ -178,7 +178,7 @@ class OrganizationTests(SqlAlchemyTestCase):
                                                             Organization.LICENSES.PROFESSIONAL)
         self.assertTrue(out)
         out = self.organization.can_add_client_with_license(self.session, self.mock_request,
-                                                            Organization.LICENSES.ENTERPRISE)
+                                                            Organization.LICENSES.CONSULTANT)
         self.assertTrue(out)
 
     def test_can_add_client_with_license_invalid(self):
@@ -195,7 +195,7 @@ class OrganizationTests(SqlAlchemyTestCase):
         self.organization.license = Organization.LICENSES.PROFESSIONAL
         out = self.organization.can_have_clients()
         self.assertFalse(out)
-        self.organization.license = Organization.LICENSES.ENTERPRISE
+        self.organization.license = Organization.LICENSES.CONSULTANT
         out = self.organization.can_have_clients()
         self.assertTrue(out)
 
@@ -209,7 +209,7 @@ class OrganizationTests(SqlAlchemyTestCase):
         self.organization.license = Organization.LICENSES.PROFESSIONAL
         out = self.organization.can_have_consultant()
         self.assertTrue(out)
-        self.organization.license = Organization.LICENSES.ENTERPRISE
+        self.organization.license = Organization.LICENSES.CONSULTANT
         out = self.organization.can_have_consultant()
         self.assertFalse(out)
 
@@ -223,7 +223,7 @@ class OrganizationTests(SqlAlchemyTestCase):
         self.organization.license = Organization.LICENSES.PROFESSIONAL
         out = self.organization.must_have_consultant()
         self.assertFalse(out)
-        self.organization.license = Organization.LICENSES.ENTERPRISE
+        self.organization.license = Organization.LICENSES.CONSULTANT
         out = self.organization.must_have_consultant()
         self.assertFalse(out)
 
