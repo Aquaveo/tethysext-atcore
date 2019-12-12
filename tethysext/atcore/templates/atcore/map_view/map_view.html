@@ -199,7 +199,7 @@
 
 {% block app_content %}
   {# ADDRESS SEARCH/GEOCODE #}
-  {% if can_use_geocode %}
+  {% if geocode_enabled and can_use_geocode %}
   <div id="map-geocode-wrapper">
     <div class="row">
       <div class="col-sm-12">

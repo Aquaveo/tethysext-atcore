@@ -33,6 +33,7 @@ class MapView(ResourceView):
 
     default_disable_basemap = False
     geoserver_name = ''
+    geocode_enabled = False
     geocode_api_key = '449ce48a52689190cb913b284efea8e9'  # TODO: Set as controller arg
     geocode_endpoint = 'http://api.opencagedata.com/geocode/v1/geojson'
     mutiselect = False
@@ -134,6 +135,7 @@ class MapView(ResourceView):
             'show_custom_layer': self.show_custom_layer,
             'layer_tab_name': self.layer_tab_name,
             'map_type': self.map_type,
+            'geocode_enabled': self.geocode_enabled,
         })
 
         if resource:
