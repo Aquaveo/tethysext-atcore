@@ -4,6 +4,14 @@
 
 {% block app_content %}
   {{ block.super }}
+  <form id="run-job-form" method="post">
+    {% csrf_token %}
+    <input hidden name="method" value="run-job">
+  </form>
+{% endblock %}
+
+{% block map %}
+  {{ block.super }}
   {% if has_tabular_data %}
     <div class="tab-data">
       {% for tab_data_title, tab_data in tabular_data.items %}
@@ -14,11 +22,8 @@
       {% endfor %}
     </div>
   {% endif %}
-  <form id="run-job-form" method="post">
-    {% csrf_token %}
-    <input hidden name="method" value="run-job">
-  </form>
 {% endblock %}
+
 {% block app_actions %}
   {% if can_run_workflows %}
   <button class="btn btn-success" type="submit" form="run-job-form" name="run-submit">Run</button>
@@ -43,6 +48,7 @@
       .tab-data {
         padding-left: 25px;
         padding-top: 25px;
+        display: block;
       }
     </style>
   {% endif %}
