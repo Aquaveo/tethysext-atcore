@@ -11,7 +11,7 @@ Required CSS:
 
 {% if lower_status == 'pending' %}
 <i class="far fa-circle" aria-hidden="true"></i>
-{% elif lower_status == 'complete' or lower_status == 'approved'%}
+{% elif lower_status == 'complete' or lower_status == 'approved' or lower_status == 'reviewed' %}
 <i class="fas fa-check-circle" aria-hidden="true"></i>
 {% elif lower_status == 'error' or lower_status == 'failed' or lower_status == 'rejected' %}
 <i class="fas fa-times-circle" aria-hidden="true"></i>

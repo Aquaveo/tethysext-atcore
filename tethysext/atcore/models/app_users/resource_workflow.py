@@ -60,6 +60,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
     STATUS_APPROVED = ResourceWorkflowStep.STATUS_APPROVED
     STATUS_REJECTED = ResourceWorkflowStep.STATUS_REJECTED
     STATUS_CHANGES_REQUESTED = ResourceWorkflowStep.STATUS_CHANGES_REQUESTED
+    STATUS_REVIEWED = ResourceWorkflowStep.STATUS_REVIEWED
 
     COMPLETE_STATUSES = ResourceWorkflowStep.COMPLETE_STATUSES
 
