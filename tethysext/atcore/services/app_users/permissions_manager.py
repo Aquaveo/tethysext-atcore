@@ -29,10 +29,10 @@ class AppPermissionsManager:
     PRO_R_PERMS = 'professional_reviewer_perms'
     PRO_A_PERMS = 'professional_admin_perms'
 
-    # Enterprise License Permissions Groups
-    ENT_U_PERMS = 'enterprise_user_perms'
-    ENT_R_PERMS = 'enterprise_reviewer_perms'
-    ENT_A_PERMS = 'enterprise_admin_perms'
+    # Consultant License Permissions Groups
+    CON_U_PERMS = 'consultant_user_perms'
+    CON_R_PERMS = 'consultant_reviewer_perms'
+    CON_A_PERMS = 'consultant_admin_perms'
 
     # Global Permissions Groups
     APP_A_PERMS = 'app_admin_perms'
@@ -53,10 +53,10 @@ class AppPermissionsManager:
             ROLES.ORG_REVIEWER: PRO_R_PERMS,
             ROLES.ORG_ADMIN: PRO_A_PERMS,
         },
-        LICENSES.ENTERPRISE: {
-            ROLES.ORG_USER: ENT_U_PERMS,
-            ROLES.ORG_REVIEWER: ENT_R_PERMS,
-            ROLES.ORG_ADMIN: ENT_A_PERMS,
+        LICENSES.CONSULTANT: {
+            ROLES.ORG_USER: CON_U_PERMS,
+            ROLES.ORG_REVIEWER: CON_R_PERMS,
+            ROLES.ORG_ADMIN: CON_A_PERMS,
         }
     }
 
@@ -83,10 +83,10 @@ class AppPermissionsManager:
         self.PROFESSIONAL_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_R_PERMS)
         self.PROFESSIONAL_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.PRO_A_PERMS)
 
-        # Namespaced Enterprise License Permissions Groups
-        self.ENTERPRISE_USER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_U_PERMS)
-        self.ENTERPRISE_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_R_PERMS)
-        self.ENTERPRISE_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.ENT_A_PERMS)
+        # Namespaced Consultant License Permissions Groups
+        self.CONSULTANT_USER_PERMS = '{}:{}'.format(self.app_namespace, self.CON_U_PERMS)
+        self.CONSULTANT_REVIEWER_PERMS = '{}:{}'.format(self.app_namespace, self.CON_R_PERMS)
+        self.CONSULTANT_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.CON_A_PERMS)
 
         # Namespaced Global Permissions Groups
         self.APP_ADMIN_PERMS = '{}:{}'.format(self.app_namespace, self.APP_A_PERMS)
@@ -107,10 +107,10 @@ class AppPermissionsManager:
                 self.ROLES.ORG_REVIEWER: self.PROFESSIONAL_REVIEWER_PERMS,
                 self.ROLES.ORG_ADMIN: self.PROFESSIONAL_ADMIN_PERMS,
             },
-            self.LICENSES.ENTERPRISE: {
-                self.ROLES.ORG_USER: self.ENTERPRISE_USER_PERMS,
-                self.ROLES.ORG_REVIEWER: self.ENTERPRISE_REVIEWER_PERMS,
-                self.ROLES.ORG_ADMIN: self.ENTERPRISE_ADMIN_PERMS,
+            self.LICENSES.CONSULTANT: {
+                self.ROLES.ORG_USER: self.CONSULTANT_USER_PERMS,
+                self.ROLES.ORG_REVIEWER: self.CONSULTANT_REVIEWER_PERMS,
+                self.ROLES.ORG_ADMIN: self.CONSULTANT_ADMIN_PERMS,
             }
         }
 
@@ -162,8 +162,8 @@ class AppPermissionsManager:
                 return self.ADVANCED_USER_PERMS
             elif license == self.LICENSES.PROFESSIONAL:
                 return self.PROFESSIONAL_USER_PERMS
-            elif license == self.LICENSES.ENTERPRISE:
-                return self.ENTERPRISE_USER_PERMS
+            elif license == self.LICENSES.CONSULTANT:
+                return self.CONSULTANT_USER_PERMS
 
         elif role == self.ROLES.ORG_REVIEWER:
             if license == self.LICENSES.STANDARD:
@@ -172,8 +172,8 @@ class AppPermissionsManager:
                 return self.STANDARD_REVIEWER_PERMS
             elif license == self.LICENSES.PROFESSIONAL:
                 return self.PROFESSIONAL_REVIEWER_PERMS
-            elif license == self.LICENSES.ENTERPRISE:
-                return self.ENTERPRISE_REVIEWER_PERMS
+            elif license == self.LICENSES.CONSULTANT:
+                return self.CONSULTANT_REVIEWER_PERMS
 
         elif role == self.ROLES.ORG_ADMIN:
             if license == self.LICENSES.STANDARD:
@@ -182,8 +182,8 @@ class AppPermissionsManager:
                 return self.ADVANCED_ADMIN_PERMS
             elif license == self.LICENSES.PROFESSIONAL:
                 return self.PROFESSIONAL_ADMIN_PERMS
-            elif license == self.LICENSES.ENTERPRISE:
-                return self.ENTERPRISE_ADMIN_PERMS
+            elif license == self.LICENSES.CONSULTANT:
+                return self.CONSULTANT_ADMIN_PERMS
 
         elif role == self.ROLES.APP_ADMIN:
             return self.APP_ADMIN_PERMS
@@ -210,9 +210,9 @@ class AppPermissionsManager:
             self.PROFESSIONAL_REVIEWER_PERMS: 'Professional Reviewer',
             self.PROFESSIONAL_ADMIN_PERMS: 'Professional Admin',
 
-            self.ENTERPRISE_USER_PERMS: 'Enterprise User',
-            self.ENTERPRISE_REVIEWER_PERMS: 'Enterprise Reviewer',
-            self.ENTERPRISE_ADMIN_PERMS: 'Enterprise Admin',
+            self.CONSULTANT_USER_PERMS: 'Consultant User',
+            self.CONSULTANT_REVIEWER_PERMS: 'Consultant Reviewer',
+            self.CONSULTANT_ADMIN_PERMS: 'Consultant Admin',
 
             self.APP_ADMIN_PERMS: 'App Admin',
         }
@@ -242,8 +242,8 @@ class AppPermissionsManager:
                     has_role_permission = 'has_advanced_user_role'
                 elif license == self.LICENSES.PROFESSIONAL:
                     has_role_permission = 'has_professional_user_role'
-                elif license == self.LICENSES.ENTERPRISE:
-                    has_role_permission = 'has_enterprise_user_role'
+                elif license == self.LICENSES.CONSULTANT:
+                    has_role_permission = 'has_consultant_user_role'
             else:
                 has_role_permission = 'has_org_user_role'
 
@@ -255,8 +255,8 @@ class AppPermissionsManager:
                     has_role_permission = 'has_advanced_reviewer_role'
                 elif license == self.LICENSES.PROFESSIONAL:
                     has_role_permission = 'has_professional_reviewer_role'
-                elif license == self.LICENSES.ENTERPRISE:
-                    has_role_permission = 'has_enterprise_reviewer_role'
+                elif license == self.LICENSES.CONSULTANT:
+                    has_role_permission = 'has_consultant_reviewer_role'
             else:
                 has_role_permission = 'has_org_reviewer_role'
 
@@ -268,8 +268,8 @@ class AppPermissionsManager:
                     has_role_permission = 'has_advanced_admin_role'
                 elif license == self.LICENSES.PROFESSIONAL:
                     has_role_permission = 'has_professional_admin_role'
-                elif license == self.LICENSES.ENTERPRISE:
-                    has_role_permission = 'has_enterprise_admin_role'
+                elif license == self.LICENSES.CONSULTANT:
+                    has_role_permission = 'has_consultant_admin_role'
             else:
                 has_role_permission = 'has_org_admin_role'
 
@@ -300,9 +300,9 @@ class AppPermissionsManager:
             self.PROFESSIONAL_REVIEWER_PERMS: 3200.0,
             self.PROFESSIONAL_ADMIN_PERMS: 3400.0,
 
-            self.ENTERPRISE_USER_PERMS: 4100.0,
-            self.ENTERPRISE_REVIEWER_PERMS: 4200.0,
-            self.ENTERPRISE_ADMIN_PERMS: 4300.0,
+            self.CONSULTANT_USER_PERMS: 4100.0,
+            self.CONSULTANT_REVIEWER_PERMS: 4200.0,
+            self.CONSULTANT_ADMIN_PERMS: 4300.0,
 
             self.APP_ADMIN_PERMS: 10000.0,
         }

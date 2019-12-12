@@ -57,7 +57,7 @@ $('#organization-license').select2().on('change', function(e) {
 });
 
 $(function() {
-    // Hide owner if enterprise
+    // Hide owner if consultant
     hide_consultant_if_not_allowed();
     show_appropriate_owners();
 });

@@ -15,7 +15,7 @@ class Licenses:
     STANDARD = 'standard'
     ADVANCED = 'advanced'
     PROFESSIONAL = 'professional'
-    ENTERPRISE = 'enterprise'
+    CONSULTANT = 'consultant'
     NONE = 'no-license'
 
     def __contains__(self, item):
@@ -31,7 +31,7 @@ class Licenses:
             self.STANDARD,
             self.ADVANCED,
             self.PROFESSIONAL,
-            self.ENTERPRISE
+            self.CONSULTANT
         )
         return all_licenses
 
@@ -63,7 +63,7 @@ class Licenses:
             return 200
         elif license == self.PROFESSIONAL:
             return 300
-        elif license == self.ENTERPRISE:
+        elif license == self.CONSULTANT:
             return 400
 
     def get_display_name_for(self, license):
@@ -84,8 +84,8 @@ class Licenses:
             return 'Advanced'
         elif license == self.PROFESSIONAL:
             return 'Professional'
-        elif license == self.ENTERPRISE:
-            return 'Enterprise'
+        elif license == self.CONSULTANT:
+            return 'Consultant'
 
     def get_assign_permission_for(self, license):
         """
@@ -105,8 +105,8 @@ class Licenses:
             return 'assign_advanced_license'
         elif license == self.PROFESSIONAL:
             return 'assign_professional_license'
-        elif license == self.ENTERPRISE:
-            return 'assign_enterprise_license'
+        elif license == self.CONSULTANT:
+            return 'assign_consultant_license'
 
     def compare(self, left_license, right_license):
         """
@@ -147,7 +147,7 @@ class Licenses:
             return False
         elif license == self.PROFESSIONAL:
             return False
-        elif license == self.ENTERPRISE:
+        elif license == self.CONSULTANT:
             return True
 
     def can_have_consultant(self, license):
@@ -168,7 +168,7 @@ class Licenses:
             return True
         elif license == self.PROFESSIONAL:
             return True
-        elif license == self.ENTERPRISE:
+        elif license == self.CONSULTANT:
             return False
 
     def must_have_consultant(self, license):
@@ -189,5 +189,5 @@ class Licenses:
             return False
         elif license == self.PROFESSIONAL:
             return False
-        elif license == self.ENTERPRISE:
+        elif license == self.CONSULTANT:
             return False
