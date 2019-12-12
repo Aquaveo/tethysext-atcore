@@ -365,7 +365,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """
         from tethysext.atcore.mixins import StatusMixin
 
-        if status in [StatusMixin.STATUS_COMPLETE, StatusMixin.STATUS_APPROVED]:
+        if status in [StatusMixin.STATUS_COMPLETE, StatusMixin.STATUS_APPROVED, StatusMixin.STATUS_REVIEWED]:
             return 'success'
 
         elif status in [StatusMixin.STATUS_SUBMITTED, StatusMixin.STATUS_UNDER_REVIEW,

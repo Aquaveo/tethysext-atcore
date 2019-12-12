@@ -178,18 +178,19 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         5. STATUS_COMPLETE = Step has been completed successfully.
 
         Review Workflow Status Progression (if applicable):
-        1. STATUS_SUBMITTED = Workflow submitted for review
-        2. STATUS_UNDER_REVIEW = Workflow currently being reviewed
+        1. STATUS_SUBMITTED = Workflow submitted for review.
+        2. STATUS_UNDER_REVIEW = Workflow currently being reviewed.
         3a. STATUS_APPROVED = Changes approved.
         3b. STATUS_REJECTED = Changes disapproved.
-        3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
+        3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit.
+        4. STATUS_REVIEWED - Workflow has been reviewed.
 
         Returns:
             list: valid statuses.
         """
         return [cls.STATUS_PENDING, cls.STATUS_WORKING, cls.STATUS_ERROR, cls.STATUS_FAILED, cls.STATUS_COMPLETE,
                 cls.STATUS_SUBMITTED, cls.STATUS_UNDER_REVIEW, cls.STATUS_APPROVED, cls.STATUS_REJECTED,
-                cls.STATUS_CHANGES_REQUESTED]
+                cls.STATUS_CHANGES_REQUESTED, cls.STATUS_REVIEWED]
 
     def to_dict(self):
         """
