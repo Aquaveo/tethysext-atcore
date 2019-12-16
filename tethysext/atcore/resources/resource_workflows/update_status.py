@@ -46,14 +46,14 @@ def main(resource_db_session, model_db_session, resource, workflow, step, gs_pri
             unlock_workflow_on_complete = step.options.get('unlock_workflow_on_job_complete', None)
 
             if lock_resource_on_complete and unlock_resource_on_complete:
-                raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_complete and '
-                                   'unlock_resource_on_complete options are both enabled.')
+                raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_job_complete and '
+                                   'unlock_resource_on_job_complete options are mutually exclusive.')
 
             if lock_workflow_on_complete and unlock_workflow_on_complete:
-                raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_complete and '
-                                   'unlock_workflow_on_complete options are both enabled.')
+                raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_job_complete and '
+                                   'unlock_workflow_on_job_complete options are mutually exclusive.')
 
-            if lock_resource_on_complete is True:
+            if lock_resource_on_complete:
                 resource.acquire_user_lock()
 
             if lock_workflow_on_complete:

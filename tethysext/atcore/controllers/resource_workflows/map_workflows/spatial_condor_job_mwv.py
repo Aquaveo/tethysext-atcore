@@ -293,12 +293,12 @@ class SpatialCondorJobMWV(MapWorkflowView):
         unlock_resource_on_submit = step.options.get('unlock_resource_on_job_submit', False)
 
         if lock_workflow_on_submit and unlock_workflow_on_submit:
-            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_submit and '
-                               'unlock_workflow_on_job_submit options are both enabled.')
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_job_submit and '
+                               'unlock_workflow_on_job_submit options are mutually exclusive.')
 
         if lock_resource_on_submit and unlock_resource_on_submit:
-            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_submit and '
-                               'unlock_resource_on_submit options are both enabled.')
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_job_submit and '
+                               'unlock_resource_on_job_submit options are mutually exclusive.')
 
         if lock_resource_on_submit:
             self.acquire_lock_and_log(request, session, resource)
@@ -362,7 +362,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Process lock options - only active users or permitted users can acquire user locks
         if user_has_active_role:
             # Bypass locking when view loads if lock on submit is requested
-            if not step.options.get('lock_resource_on_submit') and not step.options.get('lock_workflow_on_submit'):
+            if not step.options.get('lock_resource_on_job_submit') \
+                    and not step.options.get('lock_workflow_on_job_submit'):
                 super().process_lock_options_on_init(request, session, resource, step)
 
     def process_lock_options_after_submission(self, request, session, resource, step):
@@ -375,5 +376,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
             resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
-        if not step.options.get('unlock_resource_on_complete') and not step.options.get('unlock_workflow_on_complete'):
+        if not step.options.get('unlock_resource_on_job_complete') \
+                and not step.options.get('unlock_workflow_on_job_complete'):
             super().process_lock_options_after_submission(request, session, resource, step)
