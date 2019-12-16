@@ -52,6 +52,14 @@ def parse_workflow_step_args():
         help='Public url to GeoServer.'
     )
     parser.add_argument(
+        'resource_class',
+        help='Dot path to resource class.'
+    )
+    parser.add_argument(
+        'workflow_class',
+        help='Dot path to workflow class.'
+    )
+    parser.add_argument(
         'workflow_params_file',
         help='Path to a file containing the JSON-serialized parameters from the workflow.'
     )

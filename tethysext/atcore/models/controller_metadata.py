@@ -12,7 +12,7 @@ import uuid
 from sqlalchemy import Column, String, PickleType
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users.base import AppUsersBase
-
+from tethysext.atcore.utilities import import_from_string
 
 __all__ = ['ControllerMetadata']
 
@@ -43,14 +43,7 @@ class ControllerMetadata(AppUsersBase):
         from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 
         try:
-            # Split into parts and extract function name
-            module_path, controller_name = self.path.rsplit('.', 1)
-
-            # Import module
-            module = __import__(module_path, fromlist=[str(controller_name)])
-
-            # Import the function or class
-            controller = getattr(module, controller_name)
+            controller = import_from_string(self.path)
 
         except (ValueError, AttributeError, ImportError) as e:
             raise ImportError(f'Unable to import controller "{self.path}": {e}')

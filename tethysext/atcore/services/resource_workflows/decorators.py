@@ -13,10 +13,11 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.services.resource_workflows.helpers import set_step_status, parse_workflow_step_args
-from tethysext.atcore.utilities import clean_request
-from tethysext.atcore.models.app_users import ResourceWorkflowStep, Resource
+from tethysext.atcore.utilities import clean_request, import_from_string
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
 # DO NOT REMOVE, need to import all the subclasses of ResourceWorkflowStep for the polymorphism to work.
 from tethysext.atcore.models.resource_workflow_steps import *  # noqa: F401, F403
+from tethysext.atcore.models.resource_workflow_results import *  # noqa: F401, F403
 # END DO NOT REMOVE
 
 
@@ -134,6 +135,10 @@ def workflow_step_job(job_func):
                 make_model_db_session = sessionmaker(bind=model_db_engine)
                 model_db_session = make_model_db_session()
 
+                # Import Resource and Workflow Classes
+                ResourceClass = import_from_string(args.resource_class)
+                WorkflowClass = import_from_string(args.workflow_class)
+
                 # Get the step
                 # NOTE: if you get an error related to polymorphic_identity not being found, it may be caused by import
                 # errors with a subclass of the ResourceWorkflowStep. It could also be caused indirectly if the subclass
@@ -142,7 +147,7 @@ def workflow_step_job(job_func):
 
                 # IMPORTANT: External Resource classes need to be imported at the top of the job file to
                 # allow sqlalchemy to resolve the polymorphic identity.
-                resource = resource_db_session.query(Resource).get(args.resource_id)
+                resource = resource_db_session.query(ResourceClass).get(args.resource_id)
 
                 # Process parameters from workflow steps
                 with open(args.workflow_params_file, 'r') as p:
@@ -155,12 +160,12 @@ def workflow_step_job(job_func):
                     resource_db_session=resource_db_session,
                     model_db_session=model_db_session,
                     resource=resource,
-                    # IMPORTANT: External ResourceWorkflow classes need to be imported at the top of the job file to
-                    # allow sqlalchemy to resolve the polymorphic identity.
                     workflow=step.workflow,
                     step=step,
                     gs_private_url=args.gs_private_url,
                     gs_public_url=args.gs_public_url,
+                    resource_class=ResourceClass,
+                    workflow_class=WorkflowClass,
                     params_json=params_json,
                     params_file=args.workflow_params_file,
                     cmd_args=args
