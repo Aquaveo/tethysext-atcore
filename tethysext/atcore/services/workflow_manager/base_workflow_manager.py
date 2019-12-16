@@ -118,7 +118,7 @@ class BaseWorkflowManager(object):
         return self._workspace_path
 
     def prepare(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def run_job(self):
         """
