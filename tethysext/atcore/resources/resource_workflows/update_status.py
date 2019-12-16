@@ -9,36 +9,17 @@
 """
 import sys
 import traceback
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from tethysext.atcore.models.app_users import ResourceWorkflowStep
-from tethysext.atcore.services.resource_workflows.helpers import parse_workflow_step_args
-# DO NOT REMOVE, need to import all the subclasses of ResourceWorkflowStep for the polymorphism to work.
-from tethysext.atcore.models.resource_workflow_steps import *  # noqa: F401, F403
+from tethysext.atcore.services.resource_workflows.decorators import workflow_step_job
 
 
-def main(args):
+@workflow_step_job
+def main(resource_db_session, model_db_session, resource, workflow, step, gs_private_url, gs_public_url, resource_class,
+         workflow_class, params_json, params_file, cmd_args):
     print('Given Arguments:')
-    print(str(args))
-
-    # Session vars
-    step = None
-    model_db_session = None
-    resource_db_session = None
+    print(str(cmd_args))
 
     # Write out needed files
     try:
-        # Get the resource database session
-        resource_db_engine = create_engine(args.resource_db_url)
-        make_resource_db_session = sessionmaker(bind=resource_db_engine)
-        resource_db_session = make_resource_db_session()
-
-        # Get the step
-        # NOTE: if you get an error related to polymorphic_identity not being found, it may be caused by import
-        # errors with a subclass of the ResourceWorkflowStep. It could also be caused indirectly if the subclass
-        # has Pickle typed columns with values that import things.
-        step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
-
         print('Updating status...')
         job_statuses = step.get_attribute('condor_job_statuses')
         print(job_statuses)
@@ -53,46 +34,49 @@ def main(args):
         if step and resource_db_session:
             step.set_status(step.ROOT_STATUS_KEY, step.STATUS_FAILED)
             resource_db_session.commit()
-        sys.stderr.write('Error processing {0}'.format(args.resource_workflow_step_id))
+        sys.stderr.write('Error processing step {0}'.format(cmd_args.resource_workflow_step_id))
         traceback.print_exc(file=sys.stderr)
         sys.stderr.write(repr(e))
         sys.stderr.write(str(e))
     finally:
-        lock_on_complete = step.options.get('lock_on_complete', None)
-        unlock_on_complete = step.options.get('unlock_on_complete', None)
+        try:
+            lock_resource_on_complete = step.options.get('lock_resource_on_job_complete', None)
+            lock_workflow_on_complete = step.options.get('lock_workflow_on_job_complete', None)
+            unlock_resource_on_complete = step.options.get('unlock_resource_on_job_complete', None)
+            unlock_workflow_on_complete = step.options.get('unlock_workflow_on_job_complete', None)
 
-        if lock_on_complete and unlock_on_complete:
-            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_complete and unlock_on_complete '
-                               'options are both set to True')
+            if lock_resource_on_complete and unlock_resource_on_complete:
+                raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_complete and '
+                                   'unlock_resource_on_complete options are both enabled.')
 
-        if lock_on_complete is True:
-            # Lock the resource
-            if step.options.get('resource_lock_required'):
+            if lock_workflow_on_complete and unlock_workflow_on_complete:
+                raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_complete and '
+                                   'unlock_workflow_on_complete options are both enabled.')
+
+            if lock_resource_on_complete is True:
                 raise ValueError('Acquiring resource locks on completion of jobs is not supported at this time.')
                 # Cannot load Resource subclasses b/c of polymorphic discriminator issues...
-                # step.acquire_lock_and_log(None, model_db_session, resource)
+                # resource.acquire_user_lock()
 
-            # Lock the workflow
-            elif step.options.get('workflow_lock_required'):
-                step.acquire_lock_and_log(None, model_db_session, step.workflow)
+            if lock_workflow_on_complete:
+                step.workflow.acquire_user_lock()
 
-        elif unlock_on_complete is True:
-            # Unlock the resource
-            if step.options.get('resource_lock_required'):
+            if unlock_resource_on_complete:
                 raise ValueError('Releasing resource locks on completion of jobs is not supported at this time.')
                 # Cannot load Resource subclasses b/c of polymorphic discriminator issues...
-                # step.release_lock_and_log(None, model_db_session, resource)
+                # resource.release_user_lock()
 
-            # Unlock the workflow
-            elif step.options.get('workflow_lock_required'):
-                step.release_lock_and_log(None, model_db_session, step.workflow)
+            if unlock_workflow_on_complete:
+                step.workflow.release_user_lock()
 
-        model_db_session and model_db_session.close()
-        resource_db_session and resource_db_session.close()
+            model_db_session and model_db_session.commit()
+            resource_db_session and resource_db_session.commit()
+
+        except Exception as e:
+            sys.stderr.write('Error processing locks after processing step {0}'
+                             .format(cmd_args.resource_workflow_step_id))
+            traceback.print_exc(file=sys.stderr)
+            sys.stderr.write(repr(e))
+            sys.stderr.write(str(e))
 
     print('Updating Status Complete')
-
-
-if __name__ == '__main__':
-    args = parse_workflow_step_args()
-    main(args)
