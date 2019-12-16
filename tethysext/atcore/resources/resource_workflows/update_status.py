@@ -54,17 +54,13 @@ def main(resource_db_session, model_db_session, resource, workflow, step, gs_pri
                                    'unlock_workflow_on_complete options are both enabled.')
 
             if lock_resource_on_complete is True:
-                raise ValueError('Acquiring resource locks on completion of jobs is not supported at this time.')
-                # Cannot load Resource subclasses b/c of polymorphic discriminator issues...
-                # resource.acquire_user_lock()
+                resource.acquire_user_lock()
 
             if lock_workflow_on_complete:
                 step.workflow.acquire_user_lock()
 
             if unlock_resource_on_complete:
-                raise ValueError('Releasing resource locks on completion of jobs is not supported at this time.')
-                # Cannot load Resource subclasses b/c of polymorphic discriminator issues...
-                # resource.release_user_lock()
+                resource.release_user_lock()
 
             if unlock_workflow_on_complete:
                 step.workflow.release_user_lock()
