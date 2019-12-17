@@ -15,7 +15,7 @@ from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
-from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager
+from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
 log = logging.getLogger(__name__)
