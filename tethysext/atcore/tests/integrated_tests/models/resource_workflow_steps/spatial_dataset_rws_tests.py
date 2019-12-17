@@ -52,6 +52,7 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             'plot_columns': [],
             'max_rows': self.instance.DEFAULT_MAX_ROWS,
             'empty_rows': self.instance.DEFAULT_EMPTY_ROWS,
+            'geocode_enabled': False,
             **RWS_DEFAULT_OPTIONS
         }
         self.assertDictEqual(baseline, self.instance.default_options)

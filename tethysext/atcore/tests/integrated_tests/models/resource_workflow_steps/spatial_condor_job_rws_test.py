@@ -46,7 +46,8 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
             'release_workflow_lock_on_init': False,
             'resource_lock_required': False,
             'release_resource_lock_on_completion': True,
-            'release_resource_lock_on_init': False
+            'release_resource_lock_on_init': False,
+            'geocode_enabled': False,
         }
 
         self.assertDictEqual(baseline, self.instance.default_options)

@@ -20,6 +20,14 @@ class SpatialResourceWorkflowStep(ResourceWorkflowStep):
         'polymorphic_identity': TYPE
     }
 
+    @property
+    def default_options(self):
+        default_options = super().default_options
+        default_options.update({
+            'geocode_enabled': False,
+        })
+        return default_options
+
     def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
         """
         Constructor.

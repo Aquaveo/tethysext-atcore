@@ -28,11 +28,13 @@ var ATCORE_MAP_VIEW = (function() {
  	var m_map,                          // OpenLayers map object
  	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
+ 	    m_entities,                     // Entities for Cesium
  	    m_workspace,                    // Workspace from SpatialManager
  	    m_extent,                       // Home extent for map
  	    m_enable_properties_popup,      // Show properties pop-up
  	    m_select_interaction,           // TethysMap select interaction for vector layers
- 	    m_drawing_layer;                // The drawing layer
+ 	    m_drawing_layer,                // The drawing layer
+ 	    m_map_type;                     // The type of map
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
@@ -77,8 +79,8 @@ var ATCORE_MAP_VIEW = (function() {
         generate_custom_properties_table_content, initialize_custom_content;
 
  	// Feature selection
- 	var init_feature_selection, points_selection_styler, lines_selection_styler, polygons_selection_styler,
- 	    on_select_vector_features, on_select_wms_features;
+ 	var points_selection_styler, lines_selection_styler, polygons_selection_styler,
+ 	    on_select_vector_features, on_select_wms_features; //, init_feature_selection;
 
  	// Action modal
  	var init_action_modal, build_action_modal, show_action_modal, hide_action_modal;
@@ -105,6 +107,7 @@ var ATCORE_MAP_VIEW = (function() {
         m_extent = $map_attributes.data('map-extent');
         m_workspace = $map_attributes.data('workspace');
         m_enable_properties_popup = $map_attributes.data('enable-properties-popup');
+        m_map_type = $map_attributes.data('map-type');
     };
 
     parse_permissions = function() {
@@ -134,33 +137,56 @@ var ATCORE_MAP_VIEW = (function() {
         $extent_button.html('<span class="glyphicon glyphicon-home"></span>')
 
         // Get handle on map
-	    m_map = TETHYS_MAP_VIEW.getMap();
-
-	    // Set initial extent
-	    TETHYS_MAP_VIEW.zoomToExtent(m_extent);
+        // Set initial extent
+        var m_map = CESIUM_MAP_VIEW.getMap();
+        m_map.camera.setView(
+            {
+                'destination': Cesium.Rectangle.fromDegrees(
+                    m_extent[0], m_extent[1], m_extent[2], m_extent[3]
+                )
+            }
+        );
 
 	    // Setup layer map
 	    m_layers = {};
 	    m_drawing_layer = null;
 
 	    // Get id from tethys_data attribute
-	    m_map.getLayers().forEach(function(layer, index, array) {
-	        // Handle normal layers (skip basemap layers)
-	        if ('tethys_data' in layer && 'layer_id' in layer.tethys_data) {
-	           if (layer.tethys_data.layer_id in m_layers) {
-	               console.log('Warning: layer_name already in layers map: "' + layer.tethys_data.layer_id + '".');
-	           }
-	           m_layers[layer.tethys_data.layer_id] = layer;
-	        }
-	        // Handle drawing layer
-	        else if ('tethys_legend_title' in layer && layer.tethys_legend_title == 'Drawing Layer') {
-	            m_drawing_layer = layer;
-	            m_layers['drawing_layer'] = m_drawing_layer;
-	        }
-	    });
+	    var map_layers;
+        map_layers = m_map.imageryLayers._layers;
+        map_layers.forEach(function(layer, index, array) {
+            // Handle normal layers (skip basemap layers)
+            if ('tethys_data' in layer && 'layer_id' in layer.tethys_data) {
+               if (layer.tethys_data.layer_id in m_layers) {
+                   console.log('Warning: layer_name already in layers map: "' + layer.tethys_data.layer_id + '".');
+               }
+               m_layers[layer.tethys_data.layer_id] = layer;
+            }
+            // Handle drawing layer
+            else if ('tethys_legend_title' in layer && layer.tethys_legend_title == 'Drawing Layer') {
+                m_drawing_layer = layer;
+                m_layers['drawing_layer'] = m_drawing_layer;
+            }
+        });
 
+        m_entities = {};
+        var map_data_sources = m_map.dataSources._dataSources;
+        map_data_sources.forEach(function(data_source, index, array) {
+            // Handle normal layers (skip basemap layers)
+            if ('tethys_data' in data_source && 'layer_id' in data_source.tethys_data) {
+               if (data_source.tethys_data.layer_id in m_entities) {
+                   console.log('Warning: layer_name already in layers map: "' + data_source.tethys_data.layer_id + '".');
+               }
+               m_entities[data_source.tethys_data.layer_id] = data_source;
+            }
+            // Handle drawing layer
+            else if ('tethys_legend_title' in data_source && data_source.tethys_legend_title == 'Drawing Layer') {
+                m_drawing_layer = data_source;
+                m_entities['drawing_layer'] = m_drawing_layer;
+            }
+        });
         // Setup feature selection
-	    init_feature_selection();
+	    //init_feature_selection();
     };
 
     // Sync layer visibility
@@ -603,8 +629,16 @@ var ATCORE_MAP_VIEW = (function() {
             reset_ui();
 
             // Set the visibility of layer
-            m_layers[layer_name].setVisible(checked);
-
+            if (layer_name in m_layers)
+            {
+                var layer = m_layers[layer_name];
+                layer.setVisible(checked);
+            }
+            else if (layer_name in m_entities)
+            {
+                var entity = m_entities[layer_name];
+                entity.show = checked;
+            }
             // Set the visibility of legend
             if (checked) {
                 $("#legend-" + layer_variable).removeClass('hidden')
@@ -802,19 +836,27 @@ var ATCORE_MAP_VIEW = (function() {
             let layer_name = $action_button.data('layer-id');
             let extent = m_layers[layer_name].getExtent();
 
+            var m_map = CESIUM_MAP_VIEW.getMap();
             if (extent) {
                 // Zoom to layer extent
-                TETHYS_MAP_VIEW.zoomToExtent(extent);
-            }
-            else if ('tethys_legend_extent' in m_layers[layer_name] && m_layers[layer_name].tethys_legend_extent)
-            {
-                // use tethys legend extent if it is part of the layer
-                TETHYS_MAP_VIEW.zoomToExtent(m_layers[layer_name].tethys_legend_extent);
+                m_map.camera.setView(
+                    {
+                        'destination': Cesium.Rectangle.fromDegrees(
+                            extent[0], extent[1], extent[2], extent[3]
+                        )
+                    }
+                );
             }
             else {
                 // TODO: Query GeoServer to get layer extent?
                 // Zoom to map extent if layer has no extent
-                TETHYS_MAP_VIEW.zoomToExtent(m_extent);
+                m_map.camera.setView(
+                    {
+                        'destination': Cesium.Rectangle.fromDegrees(
+                            m_extent[0], m_extent[1], m_extent[2], m_extent[3]
+                        )
+                    }
+                );
             }
         });
     };
@@ -1126,12 +1168,12 @@ var ATCORE_MAP_VIEW = (function() {
     reset_ui = function(clear_selection=true) {
         // Clear selection
         if (clear_selection) {
-            TETHYS_MAP_VIEW.clearSelection();
+            //TETHYS_MAP_VIEW.clearSelection();
         }
 
         // Reset popup
         if (m_enable_properties_popup) {
-            reset_properties_pop_up();
+            //eset_properties_pop_up();
         }
 
         // Hide plot slide sheet
@@ -1291,15 +1333,16 @@ var ATCORE_MAP_VIEW = (function() {
 
 
     // Feature Selection
-    init_feature_selection = function() {
-        TETHYS_MAP_VIEW.overrideSelectionStyler('points', points_selection_styler);
-        TETHYS_MAP_VIEW.overrideSelectionStyler('lines', lines_selection_styler);
-        TETHYS_MAP_VIEW.overrideSelectionStyler('polygons', polygons_selection_styler);
-
-        if (m_enable_properties_popup) {
-            init_properties_pop_up();
-        }
-    };
+//    init_feature_selection = function() {
+//        var m_map = CESIUM_MAP_VIEW.getMap();
+//        m_map.selectionIndicator('points', points_selection_styler);
+//        m_map.selectionIndicator('lines', lines_selection_styler);
+//        m_map.selectionIndicator('polygons', polygons_selection_styler);
+//
+//        if (m_enable_properties_popup) {
+//            init_properties_pop_up();
+//        }
+//    };
 
     points_selection_styler = function(feature, resolution) {
         return [new ol.style.Style({
@@ -1651,7 +1694,7 @@ var ATCORE_MAP_VIEW = (function() {
 
 		// Initialize
 		init_layers_tab();
-        init_geocode();
+        //init_geocode();
         init_plot();
         init_draw_controls();
         sync_layer_visibility();

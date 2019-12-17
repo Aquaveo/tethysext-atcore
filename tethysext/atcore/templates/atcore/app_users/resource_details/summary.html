@@ -23,6 +23,7 @@
     {% endif %}
 
     {% for table_name, table in column %}
+      {% if not forloop.last or user.is_staff %}
       <div>
         <h6 class="resource-details table-header">{{ table_name }}</h6>
         <table class="table table-hover">
@@ -36,6 +37,7 @@
           </tbody>
         </table>
       </div>
+      {% endif %}
     {% endfor %}
   </div>
   {% endfor %}
