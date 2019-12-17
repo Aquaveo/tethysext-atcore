@@ -46,7 +46,8 @@ class FormInputWVTests(WorkflowViewTestCase):
             help='basic form input step',
             order=1,
             options={
-                'param_class': TestParam()
+                'param_class': 'tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.'
+                               'workflow_views.form_input_wv_tests.TestParam'
             }
         )
 
