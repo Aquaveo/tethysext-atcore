@@ -259,20 +259,15 @@ class ResourceViewTests(SqlAlchemyTestCase):
 
         self.assertEqual(None, ret)
 
-    def test_get_model_db_no_resource(self):
-        with self.assertRaises(RuntimeError) as e:
-            ResourceView().get_model_db(None, None)
-            self.assertIn('A resource with database_id attribute is required: Resource', e.exception.message)
+    @mock.patch('tethysext.atcore.controllers.resource_view.log')
+    def test_get_model_db_no_resource(self, mock_log):
+        ResourceView().get_model_db(None, None)
+        mock_log.warning.assert_called_with('No model database provided')
 
-    def test_get_model_db_no_db_id(self):
-        error_thrown = False
-
-        try:
-            ResourceView().get_model_db(None, self.resource)
-        except RuntimeError:
-            error_thrown = True
-
-        self.assertTrue(error_thrown)
+    @mock.patch('tethysext.atcore.controllers.resource_view.log')
+    def test_get_model_db_no_db_id(self, mock_log):
+        ResourceView().get_model_db(None, self.resource)
+        mock_log.warning.assert_called_with('No model database provided')
 
     def test_get_model_db(self):
         self.resource.set_attribute('database_id', '123456')

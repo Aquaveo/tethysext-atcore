@@ -243,42 +243,6 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_method.assert_called()
         self.assertEqual(mock_method(), response)
 
-    @mock.patch('tethysext.atcore.services.app_users.decorators.log')
-    @mock.patch('tethysext.atcore.services.app_users.decorators.redirect')
-    @mock.patch('tethysext.atcore.services.app_users.decorators.messages')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
-    @mock.patch('tethysext.atcore.controllers.resource_view.render')
-    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    def test_get_no_resource_id(self, _, __, ___, mock_messages, mock_redirect, mock_log):
-        mock_request = self.request_factory.get('/foo/bar/map-view/')
-        mock_request.user = self.django_user
-
-        self.controller(request=mock_request, resource_id=None, back_url='/foo/bar')
-
-        meg_call_args = mock_messages.error.call_args_list
-        self.assertIn('/foo/bar/map-view/', str(meg_call_args[0][0][0]))
-        self.assertEqual("We're sorry, an unexpected error has occurred.", meg_call_args[0][0][1])
-        mock_log.exception.assert_called()
-        mock_redirect.assert_called()
-
-    @mock.patch('tethysext.atcore.services.app_users.decorators.log')
-    @mock.patch('tethysext.atcore.services.app_users.decorators.redirect')
-    @mock.patch('tethysext.atcore.services.app_users.decorators.messages')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.get_resource')
-    def test_get_no_resource_database_id_error(self, mock_resource, mock_messages, mock_redirect, mock_log):
-        resource_id = '12345'
-        mock_request = self.request_factory.get('/foo/bar/map-view/')
-        mock_request.user = self.django_user
-        mock_res_ret = mock.MagicMock()
-        mock_resource.return_value = mock_res_ret
-        mock_res_ret.get_attribute.return_value = ""
-        self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
-        meg_call_args = mock_messages.error.call_args_list
-        self.assertIn('/foo/bar/map-view/', str(meg_call_args[0][0][0]))
-        self.assertEqual("We're sorry, an unexpected error has occurred.", meg_call_args[0][0][1])
-        mock_log.exception.assert_called()
-        mock_redirect.assert_called()
-
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url')
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.find_location_by_query')
     def test_post_location_by_query(self, mock_flaq, _):
@@ -298,11 +262,6 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
         self.controller(mock_request, resource_id=resource_id)
         mock_flaq.called_assert_with(mock_request, resource_id=resource_id)
-
-    def test_get_managers(self):
-        with self.assertRaises(RuntimeError) as e:
-            MapView().get_managers(None, None)
-            self.assertIn('A resource with database_id attribute is required: Resource', e.exception.message)
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url')
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_plot_data')

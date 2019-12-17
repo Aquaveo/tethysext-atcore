@@ -106,10 +106,12 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             layer_groups=layer_groups
         )
 
+        geocode_enabled_option = current_step.options.get('geocode_enabled', False)
         # Save changes to map view and layer groups
         context.update({
             'map_view': map_view,
             'layer_groups': layer_groups,
+            'geocode_enabled': geocode_enabled_option,
         })
 
     def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
