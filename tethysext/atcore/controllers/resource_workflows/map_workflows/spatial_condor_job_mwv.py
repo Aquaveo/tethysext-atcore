@@ -287,30 +287,30 @@ class SpatialCondorJobMWV(MapWorkflowView):
             resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
-        lock_on_submit = step.options.get('lock_on_submit', None)
-        unlock_on_submit = step.options.get('unlock_on_submit', None)
+        lock_workflow_on_submit = step.options.get('lock_workflow_on_job_submit', False)
+        lock_resource_on_submit = step.options.get('lock_resource_on_job_submit', False)
+        unlock_workflow_on_submit = step.options.get('unlock_workflow_on_job_submit', False)
+        unlock_resource_on_submit = step.options.get('unlock_resource_on_job_submit', False)
 
-        if lock_on_submit and unlock_on_submit:
-            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_submit and unlock_on_submit '
-                               'options are both set to True')
+        if lock_workflow_on_submit and unlock_workflow_on_submit:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_job_submit and '
+                               'unlock_workflow_on_job_submit options are mutually exclusive.')
 
-        if lock_on_submit is True:
-            # Lock the resource
-            if step.options.get('resource_lock_required'):
-                self.acquire_lock_and_log(request, session, resource)
+        if lock_resource_on_submit and unlock_resource_on_submit:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_job_submit and '
+                               'unlock_resource_on_job_submit options are mutually exclusive.')
 
-            # Lock the workflow
-            elif step.options.get('workflow_lock_required'):
-                self.acquire_lock_and_log(request, session, step.workflow)
+        if lock_resource_on_submit:
+            self.acquire_lock_and_log(request, session, resource)
 
-        elif unlock_on_submit is True:
-            # Unlock the resource
-            if step.options.get('resource_lock_required'):
-                self.release_lock_and_log(request, session, resource)
+        if lock_workflow_on_submit:
+            self.acquire_lock_and_log(request, session, step.workflow)
 
-            # Unlock the workflow
-            elif step.options.get('workflow_lock_required'):
-                self.release_lock_and_log(request, session, step.workflow)
+        if unlock_resource_on_submit:
+            self.release_lock_and_log(request, session, resource)
+
+        if unlock_workflow_on_submit:
+            self.release_lock_and_log(request, session, step.workflow)
 
     @staticmethod
     def get_working_directory(request, app):
@@ -362,7 +362,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Process lock options - only active users or permitted users can acquire user locks
         if user_has_active_role:
             # Bypass locking when view loads if lock on submit is requested
-            if not step.options.get('lock_on_submit'):
+            if not step.options.get('lock_resource_on_job_submit') \
+                    and not step.options.get('lock_workflow_on_job_submit'):
                 super().process_lock_options_on_init(request, session, resource, step)
 
     def process_lock_options_after_submission(self, request, session, resource, step):
@@ -375,5 +376,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
             resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
-        if not step.options.get('unlock_on_complete'):
+        if not step.options.get('unlock_resource_on_job_complete') \
+                and not step.options.get('unlock_workflow_on_job_complete'):
             super().process_lock_options_after_submission(request, session, resource, step)

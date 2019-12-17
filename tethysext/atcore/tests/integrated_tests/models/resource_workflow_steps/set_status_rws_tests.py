@@ -140,4 +140,4 @@ class SetStatusRWSTests(SqlAlchemyTestCase):
 
         self.assertEqual('Status "Dirty" is not a valid status for SetStatusRWS. Must be one of: '
                          'Pending, Working, Error, Failed, Complete, Submitted, Under Review, '
-                         'Approved, Rejected, Changes Requested', str(cm.exception))
+                         'Approved, Rejected, Changes Requested, Reviewed', str(cm.exception))

@@ -126,7 +126,7 @@ class Organization(AppUsersBase):
             return self.can_have_clients()
         elif license == self.LICENSES.PROFESSIONAL:
             return self.can_have_clients()
-        elif license == self.LICENSES.ENTERPRISE:
+        elif license == self.LICENSES.CONSULTANT:
             return self.can_have_clients()
 
     def can_have_clients(self):

@@ -218,11 +218,11 @@ class PermissionsGenerator:
         )
         self.all_permissions.append(assign_professional_license)
 
-        assign_enterprise_license = Permission(
-            name='assign_enterprise_license',
-            description='Assign enterprise license'
+        assign_consultant_license = Permission(
+            name='assign_consultant_license',
+            description='Assign consultant license'
         )
-        self.all_permissions.append(assign_enterprise_license)
+        self.all_permissions.append(assign_consultant_license)
 
         assign_any_license = Permission(
             name='assign_any_license',
@@ -333,26 +333,26 @@ class PermissionsGenerator:
         if self.permission_manager.PRO_A_PERMS in self.custom_permissions:
             professional_admin_perms += self.custom_permissions[self.permission_manager.PRO_A_PERMS]
 
-        # Enterprise User ---------------------------------------------------------------------------------------------#
-        enterprise_user_perms = professional_user_perms
+        # Consultant User ---------------------------------------------------------------------------------------------#
+        consultant_user_perms = professional_user_perms
 
-        if self.permission_manager.ENT_U_PERMS in self.custom_permissions:
-            enterprise_user_perms += self.custom_permissions[self.permission_manager.ENT_U_PERMS]
+        if self.permission_manager.CON_U_PERMS in self.custom_permissions:
+            consultant_user_perms += self.custom_permissions[self.permission_manager.CON_U_PERMS]
 
-        # Enterprise Reviewer Role ------------------------------------------------------------------------------------#
-        enterprise_reviewer_perms = professional_user_perms
+        # Consultant Reviewer Role ------------------------------------------------------------------------------------#
+        consultant_reviewer_perms = professional_user_perms
 
-        if self.permission_manager.ENT_R_PERMS in self.custom_permissions:
-            enterprise_reviewer_perms += self.custom_permissions[self.permission_manager.ENT_R_PERMS]
+        if self.permission_manager.CON_R_PERMS in self.custom_permissions:
+            consultant_reviewer_perms += self.custom_permissions[self.permission_manager.CON_R_PERMS]
 
-        # Enterprise Admin --------------------------------------------------------------------------------------------#
-        enterprise_admin_perms = professional_admin_perms + enterprise_user_perms + [
+        # Consultant Admin --------------------------------------------------------------------------------------------#
+        consultant_admin_perms = professional_admin_perms + consultant_user_perms + [
             create_organizations, edit_organizations, assign_advanced_license,
             assign_standard_license, assign_professional_license,
         ]
 
-        if self.permission_manager.ENT_A_PERMS in self.custom_permissions:
-            enterprise_admin_perms += self.custom_permissions[self.permission_manager.ENT_A_PERMS]
+        if self.permission_manager.CON_A_PERMS in self.custom_permissions:
+            consultant_admin_perms += self.custom_permissions[self.permission_manager.CON_A_PERMS]
 
         # App Admin ---------------------------------------------------------------------------------------------------#
         app_admin_perms = self.all_permissions
@@ -571,68 +571,68 @@ class PermissionsGenerator:
             self.permissions_groups[self.permission_manager.PRO_A_PERMS] = professional_admin_role
             self.all_permissions_groups.append(professional_admin_role)
 
-        # Enterprise User Role ----------------------------------------------------------------------------------------#
-        if self.permission_manager.ENT_U_PERMS in enabled_permissions_groups:
+        # Consultant User Role ----------------------------------------------------------------------------------------#
+        if self.permission_manager.CON_U_PERMS in enabled_permissions_groups:
             # Define role/permissions group
-            has_enterprise_user_role = Permission(
+            has_consultant_user_role = Permission(
                 name=self.permission_manager.get_has_role_permission_for(
                     role=self.permission_manager.ROLES.ORG_USER,
-                    license=self.permission_manager.LICENSES.ENTERPRISE
+                    license=self.permission_manager.LICENSES.CONSULTANT
                 ),
-                description='Has Enterprise User role'
+                description='Has Consultant User role'
             )
 
-            enterprise_user_role = PermissionGroup(
-                name=self.permission_manager.ENT_U_PERMS,
-                permissions=enterprise_user_perms + [has_enterprise_user_role, has_org_user_role]
+            consultant_user_role = PermissionGroup(
+                name=self.permission_manager.CON_U_PERMS,
+                permissions=consultant_user_perms + [has_consultant_user_role, has_org_user_role]
             )
 
             # Save for later use
-            self.permissions[self.permission_manager.ENT_U_PERMS] = enterprise_user_perms
-            self.permissions_groups[self.permission_manager.ENT_U_PERMS] = enterprise_user_role
-            self.all_permissions_groups.append(enterprise_user_role)
+            self.permissions[self.permission_manager.CON_U_PERMS] = consultant_user_perms
+            self.permissions_groups[self.permission_manager.CON_U_PERMS] = consultant_user_role
+            self.all_permissions_groups.append(consultant_user_role)
 
-        # Enterprise Reviewer Role ------------------------------------------------------------------------------------#
-        if self.permission_manager.ENT_R_PERMS in enabled_permissions_groups:
+        # Consultant Reviewer Role ------------------------------------------------------------------------------------#
+        if self.permission_manager.CON_R_PERMS in enabled_permissions_groups:
             # Define role/permissions group
-            has_enterprise_reviewer_role = Permission(
+            has_consultant_reviewer_role = Permission(
                 name=self.permission_manager.get_has_role_permission_for(
                     role=self.permission_manager.ROLES.ORG_REVIEWER,
-                    license=self.permission_manager.LICENSES.ENTERPRISE
+                    license=self.permission_manager.LICENSES.CONSULTANT
                 ),
-                description='Has Enterprise Reviewer role'
+                description='Has Consultant Reviewer role'
             )
 
-            enterprise_reviewer_role = PermissionGroup(
-                name=self.permission_manager.ENT_R_PERMS,
-                permissions=enterprise_reviewer_perms + [has_enterprise_reviewer_role, has_org_reviewer_role]
+            consultant_reviewer_role = PermissionGroup(
+                name=self.permission_manager.CON_R_PERMS,
+                permissions=consultant_reviewer_perms + [has_consultant_reviewer_role, has_org_reviewer_role]
             )
 
             # Save for later use
-            self.permissions[self.permission_manager.ENT_R_PERMS] = enterprise_reviewer_perms
-            self.permissions_groups[self.permission_manager.ENT_R_PERMS] = enterprise_reviewer_role
-            self.all_permissions_groups.append(enterprise_reviewer_role)
+            self.permissions[self.permission_manager.CON_R_PERMS] = consultant_reviewer_perms
+            self.permissions_groups[self.permission_manager.CON_R_PERMS] = consultant_reviewer_role
+            self.all_permissions_groups.append(consultant_reviewer_role)
 
-        # Enterprise Admin Role ---------------------------------------------------------------------------------------#
-        if self.permission_manager.ENT_A_PERMS in enabled_permissions_groups:
+        # Consultant Admin Role ---------------------------------------------------------------------------------------#
+        if self.permission_manager.CON_A_PERMS in enabled_permissions_groups:
             # Define role/permissions group
-            has_enterprise_admin_role = Permission(
+            has_consultant_admin_role = Permission(
                 name=self.permission_manager.get_has_role_permission_for(
                     role=self.permission_manager.ROLES.ORG_ADMIN,
-                    license=self.permission_manager.LICENSES.ENTERPRISE
+                    license=self.permission_manager.LICENSES.CONSULTANT
                 ),
-                description='Has Enterprise Admin role'
+                description='Has Consultant Admin role'
             )
 
-            enterprise_admin_role = PermissionGroup(
-                name=self.permission_manager.ENT_A_PERMS,
-                permissions=enterprise_admin_perms + [has_enterprise_admin_role, has_org_admin_role]
+            consultant_admin_role = PermissionGroup(
+                name=self.permission_manager.CON_A_PERMS,
+                permissions=consultant_admin_perms + [has_consultant_admin_role, has_org_admin_role]
             )
 
             # Save for later use
-            self.permissions[self.permission_manager.ENT_A_PERMS] = enterprise_admin_perms
-            self.permissions_groups[self.permission_manager.ENT_A_PERMS] = enterprise_admin_role
-            self.all_permissions_groups.append(enterprise_admin_role)
+            self.permissions[self.permission_manager.CON_A_PERMS] = consultant_admin_perms
+            self.permissions_groups[self.permission_manager.CON_A_PERMS] = consultant_admin_role
+            self.all_permissions_groups.append(consultant_admin_role)
 
         # App Admin Role ----------------------------------------------------------------------------------------------#
         if self.permission_manager.APP_A_PERMS in enabled_permissions_groups:

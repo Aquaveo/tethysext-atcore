@@ -80,7 +80,7 @@ class ModifyOrganization(AppUsersViewMixin):
             if has_permission(request, _Organization.LICENSES.get_assign_permission_for(license)):
                 licenses_can_assign.append(license)
 
-        # Only allow users with correct custom_permissions to create enterprise organizations
+        # Only allow users with correct custom_permissions to create consultant organizations
         license_options = []
         for license in licenses_can_assign:
             license_options.append(
@@ -136,13 +136,13 @@ class ModifyOrganization(AppUsersViewMixin):
             if old_license_option not in license_options:
                 license_options.append(old_license_option)
 
-            # Ensure enterprise users cannot change their license on their own.
+            # Ensure consultant users cannot change their license on their own.
             if not has_permission(request, 'assign_any_license') \
-                    and organization.license == _Organization.LICENSES.ENTERPRISE:
+                    and organization.license == _Organization.LICENSES.CONSULTANT:
                 license_options = (
                     (
-                        _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.ENTERPRISE),
-                        _Organization.LICENSES.ENTERPRISE
+                        _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.CONSULTANT),
+                        _Organization.LICENSES.CONSULTANT
                     ),
                 )
 
