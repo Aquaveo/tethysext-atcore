@@ -90,9 +90,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
         return step_data
 
-
-
-
     def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
                     *args, **kwargs):
         """

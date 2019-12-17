@@ -11,6 +11,7 @@ import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
 from tethys_sdk.compute import get_scheduler
 from .base_workflow_manager import BaseWorkflowManager
+from tethysext.atcore.utilities import generate_geoserver_urls
 
 log = logging.getLogger(__name__)
 
