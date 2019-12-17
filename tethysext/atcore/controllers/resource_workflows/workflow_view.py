@@ -182,6 +182,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         if 'reset-submit' in request.POST:
             if user_has_active_role and not workflow_locked_for_user:
                 step.workflow.reset_next_steps(step, include_current=True)
+                step.workflow.release_user_lock(request)
+                resource.release_user_lock(request)
                 session.commit()
             return redirect(current_url)
 
