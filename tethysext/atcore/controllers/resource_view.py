@@ -173,10 +173,8 @@ class ResourceView(ResourceViewMixin):
             database_id = resource.get_attribute('database_id')
 
         if not database_id:
-            log.warning('no model database provided')
+            log.warning('No model database provided')
             model_db = None
-            # raise RuntimeError('A resource with database_id attribute is required: '
-            #                    'Resource - {} Database ID - {}'.format(resource, database_id))
         else:
             model_db = self._ModelDatabase(app=self._app, database_id=database_id)
 

@@ -121,6 +121,7 @@ def workflow_step_job(job_func):
 
             # Session vars
             step = None
+            model_db_engine = None
             model_db_session = None
             resource_db_session = None
             ret_val = None
@@ -131,9 +132,10 @@ def workflow_step_job(job_func):
                 make_resource_db_session = sessionmaker(bind=resource_db_engine)
                 resource_db_session = make_resource_db_session()
 
-                model_db_engine = create_engine(args.model_db_url)
-                make_model_db_session = sessionmaker(bind=model_db_engine)
-                model_db_session = make_model_db_session()
+                if args.model_db_url is not None:
+                    model_db_engine = create_engine(args.model_db_url)
+                    make_model_db_session = sessionmaker(bind=model_db_engine)
+                    model_db_session = make_model_db_session()
 
                 # Import Resource and Workflow Classes
                 ResourceClass = import_from_string(args.resource_class)

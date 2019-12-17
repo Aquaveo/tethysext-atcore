@@ -20,7 +20,8 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
     """
     Helper class that prepares and submits condor workflows/jobs for resource workflows.
     """
-    ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'resource_workflows')
+    ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                                         'resources', 'resource_workflows')
 
     def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
                  jobs=None, input_files=None, gs_engine=None, *args):
@@ -286,3 +287,18 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             job.save()
 
         return jobs
+
+    def run_job(self):
+        """
+        Prepares and executes the job.
+
+        Returns:
+            str: UUID of the CondorWorkflow.
+        """
+        # Prepare
+        if not self.prepared:
+            self.prepare()
+
+        # Execute
+        self.workflow.execute()
+        return str(self.workflow.id)
