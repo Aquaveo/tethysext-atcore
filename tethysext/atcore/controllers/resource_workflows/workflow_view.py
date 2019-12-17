@@ -101,6 +101,11 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         # Configure workflow lock display
         lock_display_options = self.build_lock_display_options(request, workflow)
 
+        # Can user reset step
+        user_has_active_role = self.user_has_active_role(request, current_step)
+        workflow_locked_for_user = self.workflow_locked_for_request_user(request, workflow)
+        show_reset_btn = user_has_active_role and not workflow_locked_for_user
+
         context.update({
             'workflow': workflow,
             'steps': steps,
@@ -113,7 +118,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             'previous_title': self.previous_title,
             'next_title': self.next_title,
             'finish_title': self.finish_title,
-            'lock_display_options': lock_display_options
+            'lock_display_options': lock_display_options,
+            'show_reset_btn': show_reset_btn
         })
 
         # Hook for extending the context
@@ -172,6 +178,12 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         # User has active role?
         user_has_active_role = self.user_has_active_role(request, step)
         workflow_locked_for_user = self.workflow_locked_for_request_user(request, workflow)
+
+        if 'reset-submit' in request.POST:
+            if user_has_active_role and not workflow_locked_for_user:
+                step.workflow.reset_next_steps(step, include_current=True)
+                session.commit()
+            return redirect(current_url)
 
         if user_has_active_role and not workflow_locked_for_user:
             # Hook for processing step data when the user has the active role
@@ -284,6 +296,21 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """
         active_app = get_active_app(request)
         url_map_name = '{}:{}_workflow_step'.format(active_app.namespace, workflow.type)
+        return url_map_name
+
+    @staticmethod
+    def get_workflow_url_name(request, workflow):
+        """
+        Derive url map name for the given workflow view.
+        Args:
+            request(HttpRequest): The request.
+            workflow(ResourceWorkflow): The current workflow.
+
+        Returns:
+            str: name of the url pattern for the given workflow views.
+        """
+        active_app = get_active_app(request)
+        url_map_name = '{}:{}_workflow'.format(active_app.namespace, workflow.type)
         return url_map_name
 
     @staticmethod
@@ -583,7 +610,15 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             None or HttpResponse: If an HttpResponse is returned, render that instead.
         """  # noqa: E501
         workflow = self.get_workflow(request, workflow_id, session=session)
+        _, real_next_step = workflow.get_next_step()
         current_step = self.get_step(request, step_id=step_id, session=session)
+
+        if real_next_step and current_step.id != real_next_step.id:
+            if current_step.get_status() not in current_step.COMPLETE_STATUSES:
+                workflow_url_name = self.get_workflow_url_name(request, workflow)
+                workflow_url = reverse(workflow_url_name, args=(resource.id, workflow.id))
+                return redirect(workflow_url)
+
         previous_step, next_step = workflow.get_adjacent_steps(current_step)
         return self.on_get_step(request, session, resource, workflow, current_step, previous_step, next_step,
                                 *args, **kwargs)
