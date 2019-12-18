@@ -17,6 +17,7 @@ from tethysext.atcore.utilities import grammatically_correct_join
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
+from tethysext.atcore.controllers.utiltities import get_style_for_status
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
@@ -363,19 +364,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         Returns:
             str: style for the given status.
         """
-        from tethysext.atcore.mixins import StatusMixin
-
-        if status in [StatusMixin.STATUS_COMPLETE, StatusMixin.STATUS_APPROVED, StatusMixin.STATUS_REVIEWED]:
-            return 'success'
-
-        elif status in [StatusMixin.STATUS_SUBMITTED, StatusMixin.STATUS_UNDER_REVIEW,
-                        StatusMixin.STATUS_CHANGES_REQUESTED, StatusMixin.STATUS_WORKING]:
-            return 'warning'
-
-        elif status in [StatusMixin.STATUS_ERROR, StatusMixin.STATUS_FAILED, StatusMixin.STATUS_REJECTED]:
-            return 'danger'
-
-        return 'primary'
+        return get_style_for_status(status)
 
     def workflow_locked_for_request_user(self, request, workflow):
         """
