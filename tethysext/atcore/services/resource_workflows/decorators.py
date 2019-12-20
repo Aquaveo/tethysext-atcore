@@ -5,7 +5,7 @@ import traceback
 from pprint import pprint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import StatementError
+from sqlalchemy.exc import StatementError, ArgumentError
 from sqlalchemy.orm.exc import NoResultFound
 from django.http import JsonResponse
 from django.utils.functional import wraps
@@ -132,10 +132,12 @@ def workflow_step_job(job_func):
                 make_resource_db_session = sessionmaker(bind=resource_db_engine)
                 resource_db_session = make_resource_db_session()
 
-                if args.model_db_url is not None:
+                try:
                     model_db_engine = create_engine(args.model_db_url)
                     make_model_db_session = sessionmaker(bind=model_db_engine)
                     model_db_session = make_model_db_session()
+                except ArgumentError:
+                    sys.stderr.write(repr('invalid model_db_url'))
 
                 # Import Resource and Workflow Classes
                 ResourceClass = import_from_string(args.resource_class)
