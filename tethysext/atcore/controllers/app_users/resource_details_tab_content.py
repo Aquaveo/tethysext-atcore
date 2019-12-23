@@ -2,8 +2,8 @@
 ********************************************************************************
 * Name: resource_details_tab_content.py
 * Author: nswain, glarsen
-* Created On: August 09, 2018
-* Copyright: (c) Aquaveo 2018
+* Created On: August 09, 2019
+* Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
 import logging
@@ -13,8 +13,7 @@ from tethys_sdk.permissions import permission_required, has_permission
 from tethysext.atcore.models.app_users import ResourceWorkflow
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.controllers.app_users import ResourceDetails
-from tethysext.atcore.controllers.resource_workflows import ResourceWorkflowView
-
+from tethysext.atcore.controllers.utiltities import get_style_for_status
 
 log = logging.getLogger(__name__)
 
@@ -114,16 +113,17 @@ class ResourceDetailsTabContent(ResourceDetails):
             summary_tab_info[0].insert(0, general_summary_tab_info)
 
         # Debug Section
-        debug_atts = {x.replace("_", " ").title(): y for x, y in resource.attributes.items() if x != 'files'}
-        debug_atts['Locked'] = resource.is_user_locked
+        if request.user.is_staff:
+            debug_atts = {x.replace("_", " ").title(): y for x, y in resource.attributes.items() if x != 'files'}
+            debug_atts['Locked'] = resource.is_user_locked
 
-        if resource.is_user_locked:
-            debug_atts['Locked By'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
-        else:
-            debug_atts['Locked By'] = 'N/A'
+            if resource.is_user_locked:
+                debug_atts['Locked By'] = 'All Users' if resource.is_locked_for_all_users else resource.user_lock
+            else:
+                debug_atts['Locked By'] = 'N/A'
 
-        debug_summary_tab_info = ('Debug Info', debug_atts)
-        summary_tab_info[-1].append(debug_summary_tab_info)
+            debug_summary_tab_info = ('Debug Info', debug_atts)
+            summary_tab_info[-1].append(debug_summary_tab_info)
 
         context['columns'] = summary_tab_info
 
@@ -146,6 +146,7 @@ class ResourceDetailsTabContent(ResourceDetails):
         Returns:
             HttpResponse: rendered template.
         """
+
         make_session = self.get_sessionmaker()
         session = make_session()
 
@@ -164,7 +165,7 @@ class ResourceDetailsTabContent(ResourceDetails):
                 url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
                 href = reverse(url_name, args=(resource_id, str(workflow.id)))
 
-                status_style = ResourceWorkflowView.get_style_for_status(status)
+                status_style = get_style_for_status(status)
 
                 if status == workflow.STATUS_PENDING or status == '' or status is None:
                     statusdict = {

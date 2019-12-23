@@ -22,59 +22,21 @@
       {% endif %}
     {% endif %}
 
-    {% if not forloop.last %}
-      {% for table_name, table in column %}
-        <div>
-          <h6 class="resource-details table-header">{{ table_name }}</h6>
-          <table class="table table-hover">
-            <tbody>
-              {% for key, value in table.items %}
-                <tr>
-                  <td class="name">{{ key }}</td>
-                  <td>{{ value }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% endfor %}
-    {% endif %}
-
-    {% if forloop.last %}
-      {% for table_name, table in column %}
-        {% if forloop.last %}
-          {% if user.is_staff %}
-            <div>
-              <h6 class="resource-details table-header">{{ table_name }}</h6>
-              <table class="table table-hover">
-                <tbody>
-                  {% for key, value in table.items %}
-                    <tr>
-                      <td class="name">{{ key }}</td>
-                      <td>{{ value }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% endif %}
-        {% else %}
-          <div>
-            <h6 class="resource-details table-header">{{ table_name }}</h6>
-            <table class="table table-hover">
-              <tbody>
-                {% for key, value in table.items %}
-                  <tr>
-                    <td class="name">{{ key }}</td>
-                    <td>{{ value }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% endif %}
-      {% endfor %}
-    {% endif %}
+    {% for table_name, table in column %}
+      <div>
+        <h6 class="resource-details table-header">{{ table_name }}</h6>
+        <table class="table table-hover">
+          <tbody>
+            {% for key, value in table.items %}
+              <tr>
+                <td class="name">{{ key }}</td>
+                <td>{{ value }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
   </div>
   {% endfor %}
 </div>
