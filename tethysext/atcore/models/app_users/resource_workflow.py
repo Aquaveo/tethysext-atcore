@@ -183,11 +183,12 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         next_steps = self.steps[step_index + 1:]
         return next_steps
 
-    def reset_next_steps(self, step):
+    def reset_next_steps(self, step, include_current=False):
         """
         Reset all steps following the given step that are not PENDING.
         Args:
             step(ResourceWorkflowStep): A step belonging to this workflow.
+            include_current(bool): Reset current step
         """
         if step not in self.steps:
             raise ValueError('Step {} does not belong to this workflow.'.format(step))
@@ -199,6 +200,9 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             status = s.get_status(s.ROOT_STATUS_KEY)
             if status != s.STATUS_PENDING:
                 s.reset()
+
+        if include_current:
+            step.reset()
 
     @abstractmethod
     def get_url_name(self):

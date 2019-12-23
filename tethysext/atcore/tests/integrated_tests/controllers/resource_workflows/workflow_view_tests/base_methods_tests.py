@@ -433,8 +433,10 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
             'Invalid step type for view: "InvalidStep". Must be one of "ResourceWorkflowStep".',
             str(e.exception))
 
-    def test_on_get(self):
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.get_next_step')
+    def test_on_get(self, mock_get_next_step):
         resource = mock.MagicMock()
+        mock_get_next_step.return_value = None, None
 
         ret = ResourceWorkflowView().on_get(self.request, self.session, resource,
                                             str(self.workflow.id), str(self.step2.id))
