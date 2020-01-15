@@ -20,6 +20,8 @@ Lint:
   script:
     - pip install flake8
     - flake8 .
+  except:
+    - tags
 
 .kaniko_prep: &kaniko_prep
   image:
