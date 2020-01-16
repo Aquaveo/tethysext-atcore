@@ -310,6 +310,8 @@ class SpatialInputMWV(MapWorkflowView):
                             'geometry': geometry,
                             'properties': attributes
                         })
+
+                    reader.close()
                 elif '.prj' in f:
                     # Check the projection
                     projection_found = True
