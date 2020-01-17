@@ -6,11 +6,14 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import logging
 from django.shortcuts import render
 from django.http import HttpResponseNotFound, HttpResponse
 from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
+
+log = logging.getLogger(__name__)
 
 
 class ResourceView(ResourceViewMixin):
@@ -170,10 +173,10 @@ class ResourceView(ResourceViewMixin):
             database_id = resource.get_attribute('database_id')
 
         if not database_id:
-            raise RuntimeError('A resource with database_id attribute is required: '
-                               'Resource - {} Database ID - {}'.format(resource, database_id))
-
-        model_db = self._ModelDatabase(app=self._app, database_id=database_id)
+            log.warning('No model database provided')
+            model_db = None
+        else:
+            model_db = self._ModelDatabase(app=self._app, database_id=database_id)
 
         return model_db
 

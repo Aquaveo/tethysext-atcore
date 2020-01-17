@@ -31,6 +31,7 @@ class SpatialAttributesRWSTests(SqlAlchemyTestCase):
         baseline = {
             'geometry_source': None,
             'attributes': {},
+            'geocode_enabled': False,
             **RWS_DEFAULT_OPTIONS
         }
         self.assertDictEqual(baseline, self.instance.default_options)

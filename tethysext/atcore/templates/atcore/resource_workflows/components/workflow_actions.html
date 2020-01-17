@@ -13,6 +13,11 @@ Required Context:
 {% endcomment %}
 
 {% block workflow_actions %}
+  {% block reset_step_button %}
+    {% if show_reset_btn %}
+    <button class="btn btn-warning btn-reset" name="reset-submit" type='submit' form="workflow-form">Reset</button>
+    {% endif %}
+  {% endblock %}
   {% block previous_step_button %}
     {% if previous_step %}
     <button class="btn btn-default btn-previous" name="previous-submit" type='submit' form="workflow-form">{{ previous_title }}</button>

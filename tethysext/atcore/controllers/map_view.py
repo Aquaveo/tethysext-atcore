@@ -1,13 +1,14 @@
 """
 ********************************************************************************
-* Name: map_view_tests.py
+* Name: map_view.py
 * Author: nswain
 * Created On: October 15, 2018
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import uuid
+import logging
 import requests
+import uuid
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
@@ -23,6 +24,8 @@ from zipfile import ZipFile
 from io import BytesIO
 import os
 
+log = logging.getLogger(__name__)
+
 
 class MapView(ResourceView):
     """
@@ -35,6 +38,7 @@ class MapView(ResourceView):
 
     default_disable_basemap = False
     geoserver_name = ''
+    geocode_enabled = False
     geocode_api_key = '449ce48a52689190cb913b284efea8e9'  # TODO: Set as controller arg
     geocode_endpoint = 'http://api.opencagedata.com/geocode/v1/geojson'
     mutiselect = False
@@ -45,6 +49,7 @@ class MapView(ResourceView):
     _ModelDatabase = ModelDatabase
     _SpatialManager = None
     layer_tab_name = 'Layers'
+    map_type = 'tethys_map_view'
 
     def get_context(self, request, session, resource, context, model_db, *args, **kwargs):
         """
@@ -102,7 +107,6 @@ class MapView(ResourceView):
             'FullScreen',
             {'ZoomToExtent': {
                 'projection': 'EPSG:4326',
-                'extent': model_extent
             }}
         ]
 
@@ -120,6 +124,10 @@ class MapView(ResourceView):
                                                           layer_control='checkbox', visible=True)
             layer_groups.append(custom_layers)
 
+        # Translate to Cesium if necessary..
+        if self.map_type == "cesium_map_view":
+            pass
+
         # Initialize context
         context.update({
             'map_view': map_view,
@@ -131,6 +139,8 @@ class MapView(ResourceView):
             'back_url': self.back_url,
             'show_custom_layer': self.show_custom_layer,
             'layer_tab_name': self.layer_tab_name,
+            'map_type': self.map_type,
+            'geocode_enabled': self.geocode_enabled,
         })
 
         if resource:
@@ -319,10 +329,12 @@ class MapView(ResourceView):
                 database_id = resource.get_attribute('database_id')
 
             if not database_id:
-                raise RuntimeError('A resource with database_id attribute is required: '
-                                   'Resource - {} Database ID - {}'.format(resource, database_id))
-
-            self._model_db = self._ModelDatabase(app=self._app, database_id=database_id)
+                log.warning('no model database provided')
+                self._model_db = None
+                # raise RuntimeError('A resource with database_id attribute is required: '
+                #                    'Resource - {} Database ID - {}'.format(resource, database_id))
+            else:
+                self._model_db = self._ModelDatabase(app=self._app, database_id=database_id)
             gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
             self._map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=self._model_db)

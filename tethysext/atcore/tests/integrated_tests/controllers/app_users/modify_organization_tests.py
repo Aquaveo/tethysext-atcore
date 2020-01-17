@@ -33,7 +33,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         self.organization = mock.MagicMock(
             name='Aquaveo',
-            license='enterprise',
+            license='consultant',
             consultant=mock.MagicMock(id=11111),
             active=True
         )
@@ -138,12 +138,12 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.services.app_users.licenses.Licenses.list')
     def test_get_hide_consultant_licenses(self, mock_list):
-        mock_list.return_value = ('standard', 'advanced', 'garbage', 'professional', 'enterprise')
+        mock_list.return_value = ('standard', 'advanced', 'garbage', 'professional', 'consultant')
         modify_organization = ModifyOrganization()
 
         licenses = modify_organization.get_hide_consultant_licenses(self.request)
 
-        self.assertEqual(['garbage', 'enterprise'], licenses)
+        self.assertEqual(['garbage', 'consultant'], licenses)
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     def test_handle_modify_user_requests_valid_not_editing(self, mock_mixin_permissions):
@@ -198,7 +198,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['organization_type_select']['placeholder'])
         self.assertEqual('null', context['organization_type_select']['select2_options'])
         self.assertEqual([('Standard', 'standard'), ('Advanced', 'advanced'), ('Professional', 'professional'),
-                         ('Enterprise', 'enterprise')], context['organization_type_select']['options'])
+                         ('Consultant', 'consultant')], context['organization_type_select']['options'])
         self.assertFalse(context['organization_type_select']['disabled'])
         self.assertEqual('', context['organization_type_select']['error'])
 
@@ -232,10 +232,10 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         self.assertEqual('app_namespace:app_users_manage_users', context['next_controller'])
 
-        self.assertEqual({'standard': [''], 'advanced': [''], 'professional': [''], 'enterprise': ['']},
+        self.assertEqual({'standard': [''], 'advanced': [''], 'professional': [''], 'consultant': ['']},
                          context['license_to_consultant_map'])
 
-        self.assertEqual('enterprise', context['hide_consultant_licenses'][0])
+        self.assertEqual('consultant', context['hide_consultant_licenses'][0])
 
         self.assertEqual({}, context['organization_status_toggle']['attributes'])
         self.assertEqual('', context['organization_status_toggle']['classes'])
@@ -370,7 +370,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         self.assertIn('license_to_consultant_map', context)
 
-        self.assertEqual('enterprise', context['hide_consultant_licenses'][0])
+        self.assertEqual('consultant', context['hide_consultant_licenses'][0])
 
         self.assertEqual({}, context['organization_status_toggle']['attributes'])
         self.assertEqual('', context['organization_status_toggle']['classes'])

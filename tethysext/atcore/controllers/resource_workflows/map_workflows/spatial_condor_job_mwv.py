@@ -13,8 +13,9 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
-from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager
+from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
 log = logging.getLogger(__name__)
@@ -48,9 +49,17 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Can run workflows if not readonly
         can_run_workflows = not self.is_read_only(request, current_step)
 
+        # get tabular data if any
+        tabular_data = self.get_tabular_data_for_previous_steps(
+            current_step=current_step,
+        )
+
+        has_tabular_data = len(tabular_data) > 0
         # Save changes to map view and layer groups
         context.update({
-            'can_run_workflows': can_run_workflows
+            'can_run_workflows': can_run_workflows,
+            'has_tabular_data': has_tabular_data,
+            'tabular_data': tabular_data,
         })
 
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
@@ -63,6 +72,23 @@ class SpatialCondorJobMWV(MapWorkflowView):
             previous_step=previous_step,
             next_step=next_step
         )
+
+    def get_tabular_data_for_previous_steps(self, current_step):
+        previous_steps = current_step.workflow.get_previous_steps(current_step)
+        steps_to_skip = set()
+        mappable_tabular_step_types = (FormInputRWS,)
+        step_data = {}
+
+        for step in previous_steps:
+            # skip non form steps
+            if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
+                continue
+
+            step_params = step.get_parameter('form-values')
+            fixed_params = {x.replace('_', ' ').title(): step_params[x] for x in step_params}
+            step_data[step.name] = fixed_params
+
+        return step_data
 
     def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
                     *args, **kwargs):
@@ -287,30 +313,30 @@ class SpatialCondorJobMWV(MapWorkflowView):
             resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
-        lock_on_submit = step.options.get('lock_on_submit', None)
-        unlock_on_submit = step.options.get('unlock_on_submit', None)
+        lock_workflow_on_submit = step.options.get('lock_workflow_on_job_submit', False)
+        lock_resource_on_submit = step.options.get('lock_resource_on_job_submit', False)
+        unlock_workflow_on_submit = step.options.get('unlock_workflow_on_job_submit', False)
+        unlock_resource_on_submit = step.options.get('unlock_resource_on_job_submit', False)
 
-        if lock_on_submit and unlock_on_submit:
-            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_on_submit and unlock_on_submit '
-                               'options are both set to True')
+        if lock_workflow_on_submit and unlock_workflow_on_submit:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_workflow_on_job_submit and '
+                               'unlock_workflow_on_job_submit options are mutually exclusive.')
 
-        if lock_on_submit is True:
-            # Lock the resource
-            if step.options.get('resource_lock_required'):
-                self.acquire_lock_and_log(request, session, resource)
+        if lock_resource_on_submit and unlock_resource_on_submit:
+            raise RuntimeError('Improperly configured SpatialCondorJobRWS: lock_resource_on_job_submit and '
+                               'unlock_resource_on_job_submit options are mutually exclusive.')
 
-            # Lock the workflow
-            elif step.options.get('workflow_lock_required'):
-                self.acquire_lock_and_log(request, session, step.workflow)
+        if lock_resource_on_submit:
+            self.acquire_lock_and_log(request, session, resource)
 
-        elif unlock_on_submit is True:
-            # Unlock the resource
-            if step.options.get('resource_lock_required'):
-                self.release_lock_and_log(request, session, resource)
+        if lock_workflow_on_submit:
+            self.acquire_lock_and_log(request, session, step.workflow)
 
-            # Unlock the workflow
-            elif step.options.get('workflow_lock_required'):
-                self.release_lock_and_log(request, session, step.workflow)
+        if unlock_resource_on_submit:
+            self.release_lock_and_log(request, session, resource)
+
+        if unlock_workflow_on_submit:
+            self.release_lock_and_log(request, session, step.workflow)
 
     @staticmethod
     def get_working_directory(request, app):
@@ -362,7 +388,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Process lock options - only active users or permitted users can acquire user locks
         if user_has_active_role:
             # Bypass locking when view loads if lock on submit is requested
-            if not step.options.get('lock_on_submit'):
+            if not step.options.get('lock_resource_on_job_submit') \
+                    and not step.options.get('lock_workflow_on_job_submit'):
                 super().process_lock_options_on_init(request, session, resource, step)
 
     def process_lock_options_after_submission(self, request, session, resource, step):
@@ -375,5 +402,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
             resource(Resource): the resource this workflow applies to.
             step(ResourceWorkflowStep): the step.
         """
-        if not step.options.get('unlock_on_complete'):
+        if not step.options.get('unlock_resource_on_job_complete') \
+                and not step.options.get('unlock_workflow_on_job_complete'):
             super().process_lock_options_after_submission(request, session, resource, step)

@@ -1,5 +1,4 @@
 from unittest import mock
-from .common import RWS_DEFAULT_OPTIONS
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests,\
@@ -31,15 +30,26 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
         baseline = {
             'scheduler': '',
             'jobs': [],
-            'lock_on_complete': False,
-            'unlock_on_complete': False,
-            'lock_on_submit': False,
-            'unlock_on_submit': False,
             'working_message': '',
             'error_message': '',
             'pending_message': '',
-            **RWS_DEFAULT_OPTIONS
+            'lock_workflow_on_job_submit': False,
+            'lock_resource_on_job_submit': False,
+            'unlock_workflow_on_job_submit': False,
+            'unlock_resource_on_job_submit': False,
+            'lock_workflow_on_job_complete': False,
+            'lock_resource_on_job_complete': False,
+            'unlock_workflow_on_job_complete': False,
+            'unlock_resource_on_job_complete': False,
+            'workflow_lock_required': False,
+            'release_workflow_lock_on_completion': True,
+            'release_workflow_lock_on_init': False,
+            'resource_lock_required': False,
+            'release_resource_lock_on_completion': True,
+            'release_resource_lock_on_init': False,
+            'geocode_enabled': False,
         }
+
         self.assertDictEqual(baseline, self.instance.default_options)
 
     def test_init_parameters(self):

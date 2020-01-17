@@ -6,17 +6,22 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
 from tethys_sdk.compute import get_scheduler
+from .base_workflow_manager import BaseWorkflowManager
 from tethysext.atcore.utilities import generate_geoserver_urls
 
+log = logging.getLogger(__name__)
 
-class ResourceWorkflowCondorJobManager(object):
+
+class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
     """
     Helper class that prepares and submits condor workflows/jobs for resource workflows.
     """
-    ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'resource_workflows')
+    ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                                         'resources', 'resource_workflows')
 
     def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
                  jobs=None, input_files=None, gs_engine=None, *args):
@@ -42,7 +47,11 @@ class ResourceWorkflowCondorJobManager(object):
         self.resource_db_url = str(session.get_bind().url)
 
         # DB URL for database containing the model database
-        self.model_db_url = model_db.db_url
+        if model_db:
+            self.model_db_url = model_db.db_url
+        else:
+            log.warning('no model database provided')
+            self.model_db_url = None
 
         # Serialize GeoServer Connection
         self.gs_private_url = ''
@@ -58,6 +67,10 @@ class ResourceWorkflowCondorJobManager(object):
         self.resource_workflow_type = resource_workflow_step.workflow.DISPLAY_TYPE_SINGULAR
         self.resource_workflow_step_id = str(resource_workflow_step.id)
         self.resource_workflow_step_name = resource_workflow_step.name
+
+        # Get Path to Resource and Workflow Classes
+        self.resource_class = self._get_class_path(resource_workflow_step.workflow.resource)
+        self.workflow_class = self._get_class_path(resource_workflow_step.workflow)
 
         # Job Definition Variables
         self.jobs = jobs
@@ -84,6 +97,8 @@ class ResourceWorkflowCondorJobManager(object):
             self.resource_workflow_step_id,
             self.gs_private_url,
             self.gs_public_url,
+            self.resource_class,
+            self.workflow_class
         ]
 
         # Add custom args
@@ -125,6 +140,17 @@ class ResourceWorkflowCondorJobManager(object):
             os.makedirs(self.workspace)
 
         self.workspace_initialized = True
+
+    @staticmethod
+    def _get_class_path(obj):
+        """
+        Derive the dot path of the class of a given object class.
+        """
+        module = obj.__class__.__module__
+        if module is None or module == str.__class__.__module__:
+            return obj.__class__.__name__  # Avoid reporting __builtin__
+        else:
+            return module + '.' + obj.__class__.__name__
 
     def prepare(self):
         """
@@ -201,6 +227,7 @@ class ResourceWorkflowCondorJobManager(object):
 
         update_status_job.set_attribute('executable', 'update_status.py')
         update_status_job.set_attribute('arguments', self.job_args)
+        update_status_job.set_attribute('transfer_input_files', ['../workflow_params.json'])
 
         update_status_job.save()
 

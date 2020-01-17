@@ -1,5 +1,5 @@
 """
-********************************************************************************
+********************************************************************************update_status.py
 * Name: condor_workflow_manager_tests.py
 * Author: mlebaron
 * Created On: September 4, 2019
@@ -10,7 +10,7 @@ import mock
 import pathlib as pl
 import tethys_apps.base.app_base as tethys_app_base
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.services.condor_workflow_manager import ResourceWorkflowCondorJobManager as Manager
+from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager as Manager  # noqa: E501
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.app_users import Resource
 from tethys_compute.models.condor.condor_workflow import CondorWorkflow
@@ -164,6 +164,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             str(self.step.id),
             '',
             '',
+            str(manager._get_class_path(self.workflow.resource)),
+            str(manager._get_class_path(self.workflow)),
         ]
         self.assertEqual(expected_job_args, manager.job_args)
         self.assertEqual(None, manager.workflow)
@@ -212,6 +214,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             str(self.step.id),
             expected_private_url,
             expected_public_url,
+            str(manager._get_class_path(self.workflow.resource)),
+            str(manager._get_class_path(self.workflow)),
         ]
         self.assertEqual(expected_job_args, manager.job_args)
         self.assertEqual(None, manager.workflow)
@@ -252,7 +256,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual('vanilla', manager.jobs[0]._attributes['universe'])
         self.assertEqual('run_base_scenario.py', manager.jobs[0]._attributes['executable'])
         expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
-            f'{self.workflow.id} {self.step.id}   testkey'
+            f'{self.workflow.id} {self.step.id}   {manager._get_class_path(self.workflow.resource)} ' \
+            f'{manager._get_class_path(self.workflow)} testkey'
         self.assertEqual(expected_args, manager.jobs[0]._attributes['arguments'])
         self.assertEqual(', ../testkey', manager.jobs[0]._attributes['transfer_input_files'])
         self.assertEqual('gssha_files, base_ohl_series.json', manager.jobs[0]._attributes['transfer_output_files'])
@@ -264,8 +269,6 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual(self.jobs[1]['name'], manager.jobs[1]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[1]._attributes['universe'])
         self.assertEqual('run_detention_basin_scenario.py', manager.jobs[1]._attributes['executable'])
-        expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
-            f'{self.workflow.id} {self.step.id}   testkey'
         self.assertEqual(expected_args, manager.jobs[1]._attributes['arguments'])
         self.assertEqual(', ../testkey', manager.jobs[1]._attributes['transfer_input_files'])
         self.assertEqual('gssha_files, detention_basin_ohl_series.json',
@@ -278,8 +281,6 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual(self.jobs[2]['name'], manager.jobs[2]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[2]._attributes['universe'])
         self.assertEqual('post_process.py', manager.jobs[2]._attributes['executable'])
-        expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
-            f'{self.workflow.id} {self.step.id}   testkey'
         self.assertEqual(expected_args, manager.jobs[2]._attributes['arguments'])
         self.assertEqual('../base_scenario/base_ohl_series.json,  '
                          '../detention_basin_scenario/detention_basin_ohl_series.json, ../testkey',
@@ -293,10 +294,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual('finalize', manager.jobs[3]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[3]._attributes['universe'])
         self.assertEqual('update_status.py', manager.jobs[3]._attributes['executable'])
-        expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
-            f'{self.workflow.id} {self.step.id}   testkey'
         self.assertEqual(expected_args, manager.jobs[3]._attributes['arguments'])
-        self.assertEqual('', manager.jobs[3]._attributes['transfer_input_files'])
+        self.assertEqual('../workflow_params.json', manager.jobs[3]._attributes['transfer_input_files'])
         self.assertEqual('', manager.jobs[3]._attributes['transfer_output_files'])
 
         self.assertEqual(1, id)
@@ -309,6 +308,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             str(self.step.id),
             '',
             '',
+            str(manager._get_class_path(self.workflow.resource)),
+            str(manager._get_class_path(self.workflow)),
             'testkey'
         ]
         self.assertEqual(expected_job_args, manager.job_args)

@@ -135,3 +135,21 @@ def strip_list(l, *args):
 def grammatically_correct_join(strings, conjunction="and"):
     join_strings = ', '.join(strings[:-2] + [f" {conjunction} ".join(strings[-2:])])
     return join_strings
+
+
+def import_from_string(path):
+    """
+    Import object from given dot-path string.
+
+    Args:
+        path<str>: Dot-path to Class, Function or other object in a module (e.g. foo.bar.Klass).
+    """
+    # Split into parts and extract function name
+    module_path, obj_name = path.rsplit('.', 1)
+
+    # Import module
+    module = __import__(module_path, fromlist=[str(obj_name)])
+
+    # Import the function or class
+    obj = getattr(module, obj_name)
+    return obj

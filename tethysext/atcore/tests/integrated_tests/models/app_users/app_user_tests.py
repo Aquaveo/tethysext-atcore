@@ -94,7 +94,7 @@ class AppUserTests(SqlAlchemyTestCase):
 
         self.org1 = Organization(
             name=self.org1_name,
-            license=Organization.LICENSES.ENTERPRISE
+            license=Organization.LICENSES.CONSULTANT
         )
         self.org1.members.append(self.user)
         self.org1.members.append(self.peer_user)

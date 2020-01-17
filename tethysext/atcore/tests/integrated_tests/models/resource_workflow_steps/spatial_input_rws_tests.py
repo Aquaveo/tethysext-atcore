@@ -49,6 +49,7 @@ class SpatialInputRWSTests(SqlAlchemyTestCase):
             'snapping_layer': {},
             'snapping_options': {},
             'attributes': None,
+            'geocode_enabled': False,
             **RWS_DEFAULT_OPTIONS
         }
         self.assertDictEqual(baseline, self.instance.default_options)
