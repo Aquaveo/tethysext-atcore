@@ -843,8 +843,7 @@ var ATCORE_MAP_VIEW = (function() {
 
                 // Convert GeoJSON to shapefile. Note that shapefile only allows one shape type (point, line or polygon).
                 // This method convert using the first shape type it finds.
-                csrf_token = $('input[name=csrfmiddlewaretoken]').val()
-                $.when($.ajax({
+                $.ajax({
                         type: 'POST',
                         url: '',
                         data: {'method': 'convert_geojson_to_shapefile',
@@ -853,7 +852,10 @@ var ATCORE_MAP_VIEW = (function() {
                         xhrFields: {
                             responseType: 'blob',
                         },
-                }))
+                        beforeSend: xhr => {
+                            xhr.setRequestHeader('X-CSRFToken',  get_csrf_token());
+                        }
+                })
                 .done(function(data) {
                     let url = window.URL || window.webkitURL;
                     url = url.createObjectURL(data)
@@ -1609,13 +1611,13 @@ var ATCORE_MAP_VIEW = (function() {
             },
         }).done(function(data){
             if (status == 'create') {
-                // if the first child has no id, it's something we want to keep in the top (ex: layer or stress period selector).
-                if (!$('#layers-tab-panel').children().first().id) {
-                    $('#layers-tab-panel div:eq(0)').after(data.response);
-                }
-                else {
-                    $('#layers-tab-panel').prepend(data.response);
-                }
+//                // if the first child has no id, it's something we want to keep in the top (ex: layer or stress period selector).
+//                if (!$('#layers-tab-panel').children().first().id) {
+//                    $('#layers-tab-panel div:eq(0)').after(data.response);
+//                }
+//                else {
+                $('#layers-tab-panel').prepend(data.response);
+//                }
 
             }
             else {
