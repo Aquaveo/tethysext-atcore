@@ -53,6 +53,7 @@
       <div class="tab-content">
         {# LAYERS TAB PANEL #}
         <div role="tabpanel" class="tab-pane{% block disable_default_tab_panel %} active{% endblock %}" id="layers-tab-panel">
+          {% block layer_tab_panel %}
           {% for layer_group in layer_groups %}
           {% if layer_group.id == 'custom_layers'%}
             {% if show_custom_layer %}
@@ -159,7 +160,9 @@
               {% include 'atcore/components/layer_group_content.html' %}
             {% endif %}
           {% endfor %}
+          {% endblock %}
         </div>
+
 
         {# LEGEND TAB PANEL #}
         {% block legend_panel %}

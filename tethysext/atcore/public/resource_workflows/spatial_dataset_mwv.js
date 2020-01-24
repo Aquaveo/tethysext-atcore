@@ -371,7 +371,9 @@ var SPATIAL_DATASET_MWV = (function() {
 	 * NOTE: The functions in the public interface have access to the private
 	 * functions of the library because of JavaScript function scope.
 	 */
-	m_public_interface = {};
+	m_public_interface = {
+	    'after_form_load':after_form_load,
+	};
 
 	/************************************************************************
  	*                  INITIALIZATION / CONSTRUCTOR

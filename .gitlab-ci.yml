@@ -52,7 +52,7 @@ Test:
     # Run dependencies
     - docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis
     - echo "wait for container to start up..."
-    - sleep 120s
+    - sleep 180s
     - docker logs tethys_postgis
     # Create Test Database
     - docker exec tethys_postgis /bin/bash -c "export PGPASSWORD='pass'; createdb -U postgres -p 5432 -h 172.17.0.1 --no-password --owner postgres atcore_tests"
