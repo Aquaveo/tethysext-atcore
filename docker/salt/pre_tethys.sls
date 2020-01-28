@@ -20,3 +20,10 @@ Chown_Static_Workspaces_On_Mounted:
         find {{ WORKSPACE_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ;
         find {{ STATIC_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
     - shell: /bin/bash
+
+Restore_Settings:
+  file.copy:
+    - name: {{ TETHYS_HOME }}/tethys/tethys_portal/settings.py
+    - source: {{ TETHYS_PERSIST }}/settings.py
+    - force: True
+    - unless: /bin/bash -c "[ ! -f "{{ TETHYS_PERSIST }}/settings.py" ];" 
