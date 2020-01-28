@@ -1,5 +1,7 @@
 {% set STATIC_ROOT = salt['environ.get']('STATIC_ROOT') %}
 {% set WORKSPACE_ROOT = salt['environ.get']('WORKSPACE_ROOT') %}
+{% set TETHYS_HOME = salt['environ.get']('TETHYS_HOME') %}
+{% set TETHYS_PERSIST = salt['environ.get']('TETHYS_PERSIST') %}
 
 Create_Static_Root_On_Mounted:
   cmd.run:
