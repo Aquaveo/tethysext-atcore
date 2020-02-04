@@ -25,7 +25,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         'polymorphic_identity': TYPE
     }
 
-    def __init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs):
+    def __init__(self, geoserver_name, map_manager, spatial_manager, map_renderer='tethys_map_view', *args, **kwargs):
         """
         Constructor.
 
@@ -38,6 +38,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         self.controller.kwargs = {
             'geoserver_name': geoserver_name,
             '_MapManager': map_manager,
+            'map_type': map_renderer,
             '_SpatialManager': spatial_manager
         }
 

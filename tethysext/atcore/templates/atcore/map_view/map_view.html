@@ -280,6 +280,9 @@
   <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/map_view/flat_map.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/map_view/atcore_map_view.css' %}" rel="stylesheet"/>
+  {% if map_type == "cesium_map_view" %}
+  <link href="{% static 'atcore/map_view/atcore_cesium_map_view.css' %}" rel="stylesheet"/>
+  {% endif %}
   <link href="{% static 'atcore/map_view/geocoder.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/messages.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/flatmark.css' %}" rel="stylesheet"/>

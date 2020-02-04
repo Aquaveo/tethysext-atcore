@@ -136,14 +136,19 @@ var ATCORE_MAP_VIEW = (function() {
         let $extent_button = $('button[title="Fit to extent"]');
         $extent_button.html('<span class="glyphicon glyphicon-home"></span>')
 
+        Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(m_extent[0], m_extent[1],
+                                                                          m_extent[2], m_extent[3]);
+        Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+
         // Get handle on map
         // Set initial extent
         var m_map = CESIUM_MAP_VIEW.getMap();
-        m_map.camera.setView(
+        m_map.camera.flyTo(
             {
                 'destination': Cesium.Rectangle.fromDegrees(
                     m_extent[0], m_extent[1], m_extent[2], m_extent[3]
-                )
+                ),
+                'endTransform': Cesium.Matrix4.IDENTITY,
             }
         );
 
@@ -632,7 +637,7 @@ var ATCORE_MAP_VIEW = (function() {
             if (layer_name in m_layers)
             {
                 var layer = m_layers[layer_name];
-                layer.setVisible(checked);
+                layer.show = checked;
             }
             else if (layer_name in m_entities)
             {
@@ -680,8 +685,24 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Update opacity of layer
             let layer_name = $target.data('layer-id');
-            m_layers[layer_name].setOpacity(val/100);
 
+            let layer = m_layers[layer_name];
+            if (layer) {
+                m_layers[layer_name].alpha = val/100;
+            }
+            else {
+                let dataSource = m_entities[layer_name];
+                if (dataSource) {
+                    var entities = dataSource.entities.values;
+                    for (var i = 0; i < entities.length; i++) {
+                        var entity = entities[i];
+                        var color = entity.polygon.material;
+                        entity.polygon.material = new Cesium.Color(
+                            color.color._value.red, color.color._value.green, color.color._value.blue, val/100
+                        );
+                    }
+                }
+            }
             // TODO: Save state to resource - store in attributes?
         });
     };
@@ -834,23 +855,29 @@ var ATCORE_MAP_VIEW = (function() {
             }
 
             let layer_name = $action_button.data('layer-id');
-            let extent = m_layers[layer_name].getExtent();
+            let layer = m_layers[layer_name];
+            if (!layer) {
+                layer = m_entities[layer_name];
+                if (!layer) {
+                    return;
+                }
+            }
+
+            let extent = layer.legend_extent;
 
             var m_map = CESIUM_MAP_VIEW.getMap();
             if (extent) {
                 // Zoom to layer extent
-                m_map.camera.setView(
+                m_map.camera.flyTo(
                     {
-                        'destination': Cesium.Rectangle.fromDegrees(
-                            extent[0], extent[1], extent[2], extent[3]
-                        )
+                        'destination': Cesium.Rectangle.fromDegrees(extent[0], extent[1], extent[2], extent[3]),
                     }
                 );
             }
             else {
                 // TODO: Query GeoServer to get layer extent?
                 // Zoom to map extent if layer has no extent
-                m_map.camera.setView(
+                m_map.camera.flyTo(
                     {
                         'destination': Cesium.Rectangle.fromDegrees(
                             m_extent[0], m_extent[1], m_extent[2], m_extent[3]

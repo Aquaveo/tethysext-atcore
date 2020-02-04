@@ -13,7 +13,7 @@ from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
-from tethys_sdk.gizmos import ToggleSwitch
+from tethys_sdk.gizmos import ToggleSwitch, CesiumMapView
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
@@ -127,7 +127,26 @@ class MapView(ResourceView):
 
         # Translate to Cesium if necessary..
         if self.map_type == "cesium_map_view":
-            pass
+            # CesiumMapView.cesium_version = '1.64'
+
+            # Get view object from tethys map_view
+            layers, entities = self.translate_layers_to_cesium(map_view.layers)
+            cesium_map_view = CesiumMapView(
+                cesium_ion_token=map_manager.get_cesium_token(),
+                options={
+                    'vrButton': True,
+                },
+                terrain={'terrainProvider': {
+                    'Cesium.createWorldTerrain': {
+                        'requestVertexNormals': True,
+                        'requestWaterMask': True
+                    }
+                }},
+                layers=layers,
+                entities=entities
+            )
+
+            map_view = cesium_map_view
 
         # Initialize context
         context.update({
@@ -200,6 +219,17 @@ class MapView(ResourceView):
             'can_use_plot': has_permission(request, 'use_map_plot')
         }
         return permissions
+
+    def translate_layers_to_cesium(self, map_view_layers):
+        cesium_layers = []
+        cesium_entities = []
+        for layer in map_view_layers:
+            if layer['source'] in ['ImageWMS', 'TileWMS']:
+                cesium_layers.append(layer)
+            elif layer['source'] in ['GeoJSON']:
+                cesium_entities.append(layer)
+
+        return cesium_layers, cesium_entities
 
     def save_custom_layers(self, request, session, resource, *args, **kwargs):
         """
