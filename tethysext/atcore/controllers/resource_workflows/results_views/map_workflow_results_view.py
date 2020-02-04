@@ -107,8 +107,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             if result_layer:
                 # Add layer to beginning the map's of layer list
                 map_view.layers.insert(0, result_layer)
-                # TODO: UNCOMMENT AND TRANSLATE TO CESIUM WHEN APPROPRIATE
-                print('ERROR: IF YOU ARE SEEING THIS, YOU PROBABLY DONT HAVE LAYERS ON YOUR RESULT VIEW...')
                 results_layers.append(result_layer)
 
         # Build the Layer Group for Workflow Layers

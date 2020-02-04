@@ -92,6 +92,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         mock_result_url.assert_called_with(mock_request, mock_current_step.workflow)
         baseline = {
             'current_step': mock_current_step,
+            'layers': mock_get_result().layers,
             'results': 'baz',
             'result_url_name': 'bar'
         }
