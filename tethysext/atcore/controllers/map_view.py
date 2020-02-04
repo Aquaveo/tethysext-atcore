@@ -107,6 +107,7 @@ class MapView(ResourceView):
             'FullScreen',
             {'ZoomToExtent': {
                 'projection': 'EPSG:4326',
+                'extent': model_extent
             }}
         ]
 
