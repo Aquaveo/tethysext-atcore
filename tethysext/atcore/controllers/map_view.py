@@ -121,11 +121,12 @@ class MapView(ResourceView):
 
         # Translate to Cesium if necessary..
         if self.map_type == "cesium_map_view":
-            CesiumMapView.cesium_version = '1.65'
+            # CesiumMapView.cesium_version = '1.64'
 
             # Get view object from tethys map_view
             layers, entities = self.translate_layers_to_cesium(map_view.layers)
             cesium_map_view = CesiumMapView(
+                cesium_ion_token=map_manager.get_cesium_token(),
                 options={
                     'vrButton': True,
                 },

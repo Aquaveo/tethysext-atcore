@@ -100,6 +100,15 @@ class MapManagerBase(object):
             MapView, 4-list<float>: The MapView and extent objects.
         """
 
+    def get_cesium_token(self):
+        """
+        Get the cesium token for Cesium Views
+
+        Returns:
+            str: The cesium API token
+        """
+        return ''
+
     def build_param_string(self, **kwargs):
         """
         Build a VIEWPARAMS or ENV string with given kwargs (e.g.: 'foo:1;bar:baz')
