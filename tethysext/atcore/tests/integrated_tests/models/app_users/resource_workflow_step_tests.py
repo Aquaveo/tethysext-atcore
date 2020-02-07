@@ -23,7 +23,17 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.workflow = ResourceWorkflow(name='bar')
 
         #  Build the step to test
-        self.step = ResourceWorkflowStep(name='foo', help='step_0', order=1)
+        self.step = ResourceWorkflowStep(
+            name='foo',
+            help='step_0',
+            order=1,
+            # options={
+            #     'geometry_source': {
+            #         SpatialDatasetRWS.OPT_PARENT_STEP: {
+            #             'parent_field': 'geometry'}
+            #     }
+            # }
+        )
         self.session.add(self.step)
 
         self.workflow.steps = [self.step]
@@ -68,12 +78,11 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
                 'value': None,
                 'required': False
             }}]
-        self.step = ResourceWorkflowStep(name='bar', help='step_1', order=1, child_id='None')
+        self.step = ResourceWorkflowStep(name='bar', help='step_1', order=1)
         baseline = {
             'type': 'generic_workflow_step',
             'name': 'bar',
             'help': 'step_1',
-            'child_id': 'None',
             'parameters': {
                 'test_not_required_parameter': None
             }
@@ -190,17 +199,15 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.step._parameter = baseline
         self.assertTrue(baseline is not self.step.get_parameters())
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.options')
-    def test_resolve_option(self, mock_options):
-        parent = ResourceWorkflowStep(name='baz', help='step_2', order=2)
-        self.step = ResourceWorkflowStep(name='foo', help='step_0', order=1, parent=parent)
-        mock_options.get.return_value = {'parent': 'test_data'}
-        magic_parent = mock.MagicMock()
-        magic_parent.get_parameter.return_value = 'Test'
-        self.step.parent = magic_parent
+    def test_resolve_option(self, mock_options, mock_parameter):
+        parent = ResourceWorkflowStep(name='baz', help='step_2', order=2, )
+        self.step = ResourceWorkflowStep(name='foo', help='step_0', order=1, parents=[parent])
+        mock_options.get.return_value = {'parent': {'match_attr': 'name', 'match_value': 'baz'}}
+        mock_parameter.return_value = 'param_value'
         ret = self.step.resolve_option('option')
-        magic_parent.get_parameter.assert_called_with('test_data')
-        self.assertEqual('Test', ret)
+        self.assertEqual('param_value', ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.options')
     def test_resolve_option_no_option_value(self, mock_options):
@@ -208,16 +215,14 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.assertIsNone(self.step.resolve_option('option'))
         mock_options.get.assert_called_with('option', None)
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.options')
-    def test_resolve_option_ValueError(self, mock_options):
+    def test_resolve_option_ValueError(self, mock_options, mock_parameter):
         parent = ResourceWorkflowStep(name='baz', help='step_2', order=2)
-        self.step = ResourceWorkflowStep(name='foo', help='step_0', order=1, parent=parent)
-        mock_options.get.return_value = {'parent': 'test_data'}
-        magic_parent = mock.MagicMock()
-        magic_parent.get_parameter.side_effect = [ValueError]
-        self.step.parent = magic_parent
+        self.step = ResourceWorkflowStep(name='foo', help='step_0', order=1, parents=[parent])
+        mock_options.get.return_value = {'parent': {'match_attr': 'name', 'match_value': 'baz'}}
+        mock_parameter.side_effect = ValueError
         self.assertRaises(RuntimeError, self.step.resolve_option, 'option')
-        magic_parent.get_parameter.assert_called_with('test_data')
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.init_parameters')
     def test_reset(self, mock_init_parameters):

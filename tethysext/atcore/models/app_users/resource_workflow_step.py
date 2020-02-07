@@ -16,6 +16,7 @@ from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
+from tethysext.atcore.models.app_users.associations import step_parent_child_association
 from tethysext.atcore.models.controller_metadata import ControllerMetadata
 
 
@@ -57,7 +58,6 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     SERIALIZED_FIELDS = ['id', 'child_id', 'resource_workflow_id', 'type', 'name', 'help']
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    child_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
     result_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
     controller_metadata_id = Column(GUID, ForeignKey('app_users_controller_metadata.id'))
     resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
@@ -80,12 +80,13 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         uselist=False,
     )
 
-    child = relationship(
+    children = relationship(
         'ResourceWorkflowStep',
-        backref=backref('parent', uselist=False),
-        foreign_keys=[child_id],
-        remote_side=[id],
-        cascade='all,delete'
+        secondary=step_parent_child_association,
+        backref=backref('parents'),
+        secondaryjoin=id == step_parent_child_association.c.child_id,
+        primaryjoin=id == step_parent_child_association.c.parent_id,
+        cascade='all,delete',
     )
 
     result = relationship(
@@ -301,14 +302,37 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
             return None
 
         if isinstance(option_value, dict) and self.OPT_PARENT_STEP in option_value:
-            field_name = option_value[self.OPT_PARENT_STEP]
-            parent_step = self.parent
+            parent_options = option_value[self.OPT_PARENT_STEP]
+            parent_field = parent_options.get('parent_field', 'geometry')
 
-            try:
-                parent_parameter = parent_step.get_parameter(field_name)
-                return parent_parameter
-            except ValueError as e:
-                raise RuntimeError(str(e))
+            # Get match criteria, if any
+            match_attr = parent_options.get('match_attr', None)
+            match_value = parent_options.get('match_value', None)
+
+            target_parent = None
+
+            if match_attr is not None and match_value is not None:
+                # Find the parent that matches the given criteria
+                for parent in self.parents:
+                    if getattr(parent, match_attr, None) == match_value:
+                        target_parent = parent
+                        break
+            else:
+                # Default to the first parent if no match criteria given
+                try:
+                    target_parent = self.parents[0]
+                except IndexError:
+                    raise RuntimeError('Cannot resolve option from parent: no parents found.')
+
+            # Get the parameter from the parent identified
+            if target_parent:
+                try:
+                    parent_parameter = target_parent.get_parameter(parent_field)
+                    return parent_parameter
+                except ValueError as e:
+                    raise RuntimeError(str(e))
+
+            raise RuntimeError('Cannot resolve option from parent: no parents match criteria given.')
 
     def reset(self):
         """

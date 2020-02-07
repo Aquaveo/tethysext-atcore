@@ -302,7 +302,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             order=2
         )
         workflow.steps.append(step2)
-        step1.child = step2
+        step1.children = [step2]
 
         map_view, ret_layer_groups = MapWorkflowView().add_layers_for_previous_steps(self.request, resource, step2,
                                                                                      self.map_view, layer_groups)
