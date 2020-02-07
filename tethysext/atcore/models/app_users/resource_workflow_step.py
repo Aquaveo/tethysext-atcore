@@ -80,14 +80,6 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         uselist=False,
     )
 
-    # child = relationship(
-    #     'ResourceWorkflowStep',
-    #     backref=backref('parent', uselist=False),
-    #     foreign_keys=[child_id],
-    #     remote_side=[id],
-    #     cascade='all,delete'
-    # )
-
     children = relationship(
         'ResourceWorkflowStep',
         secondary=step_parent_child_association,
