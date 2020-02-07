@@ -50,8 +50,15 @@ class SpatialDataMWV(MapWorkflowView):
             resource=resource
         )
 
-        if current_step.parent and 'singular_name' in current_step.parent.options:
-            title = current_step.parent.options['singular_name']
+        parent_name = None
+
+        for parent in current_step.parents:
+            if parent and 'singular_name' in parent.options:
+                parent_name = parent.options['singular_name']
+                break
+
+        if parent_name:
+            title = parent_name
         else:
             title = current_step.options['dataset_title']
 

@@ -109,7 +109,7 @@ class SpatialDataMwvTests(WorkflowViewTestCase):
         step1.options = {'singular_name': 'single_name'}
         step2 = mock.MagicMock(spec=SpatialResourceWorkflowStep)
         step2.options = {'geometry_source': 'geometry'}
-        step2.parent = step1
+        step2.parents = [step1]
 
         SpatialDataMWV().process_step_options(self.request, self.session, context, self.resource, step2,
                                               './prev', './next')
