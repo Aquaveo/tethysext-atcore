@@ -69,7 +69,7 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
             'result_url_name': result_url_name,
         })
 
-        if result.layers:
+        if getattr(result, 'layers', None) and result.layers:
             context['layers'] = result.layers
 
         return context
