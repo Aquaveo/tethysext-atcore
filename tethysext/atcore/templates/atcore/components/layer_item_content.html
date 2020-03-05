@@ -38,7 +38,7 @@
         <li role="separator" class="divider"></li>
       {% endif %}
       <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
-      {% if show_download %}
+      {% if layer.layer_options.show_download or show_download %}
       <li role="separator" class="divider"></li>
       <li><a class="download-layer" href="javascript:void(0);"><span class="glyphicon glyphicon-cloud-download"></span><span class="command-name">Download</span></a></li>
       {% endif %}
