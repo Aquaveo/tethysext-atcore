@@ -24,7 +24,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
     ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
                                          'resources', 'resource_workflows')
 
-    def __init__(self, session, resource_workflow_step, user, working_directory, app, scheduler_name, model_db=None,
+    def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
                  jobs=None, input_files=None, gs_engine=None, *args):
         """
         Constructor.
