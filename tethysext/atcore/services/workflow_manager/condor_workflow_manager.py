@@ -12,6 +12,7 @@ from tethys_sdk.jobs import CondorWorkflowJobNode
 from tethys_sdk.compute import get_scheduler
 from .base_workflow_manager import BaseWorkflowManager
 from tethysext.atcore.utilities import generate_geoserver_urls
+from tethys_apps.exceptions import TethysAppSettingDoesNotExist
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +49,11 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
 
         # DB URL for database containing the model database
         if model_db:
-            self.model_db_url = model_db.db_url
+            try:
+                self.model_db_url = model_db.db_url
+            except TethysAppSettingDoesNotExist:
+                log.warning('no model database found')
+                self.model_db_url = None
         else:
             log.warning('no model database provided')
             self.model_db_url = None

@@ -131,7 +131,7 @@ class MapManagerBase(object):
 
     def build_geojson_layer(self, geojson, layer_name, layer_title, layer_variable, layer_id='', visible=True,
                             public=True, selectable=False, plottable=False, has_action=False, extent=None,
-                            popup_title=None, excluded_properties=None):
+                            popup_title=None, excluded_properties=None, show_download=False):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -148,6 +148,7 @@ class MapManagerBase(object):
             extent(list): Extent for the layer. Optional.
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
+            show_download(boolean): enable download geojson as shapefile. Default is False.
 
         Returns:
             MVLayer: the MVLayer object.
@@ -174,7 +175,8 @@ class MapManagerBase(object):
             has_action=has_action,
             popup_title=popup_title,
             excluded_properties=excluded_properties,
-            style_map=style_map
+            style_map=style_map,
+            show_download=show_download,
         )
 
         return mv_layer
@@ -258,7 +260,8 @@ class MapManagerBase(object):
 
     def _build_mv_layer(self, layer_source, layer_name, layer_title, layer_variable, options, layer_id=None,
                         extent=None, visible=True, public=True, selectable=False, plottable=False, has_action=False,
-                        excluded_properties=None, popup_title=None, geometry_attribute=None, style_map=None):
+                        excluded_properties=None, popup_title=None, geometry_attribute=None, style_map=None,
+                        show_download=False):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -276,7 +279,7 @@ class MapManagerBase(object):
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Optional.
             style_map(dict): Style map dictionary. See MVLayer documentation for examples of style maps. Optional.
-
+            show_download(boolean): enable download layer. (only works for geojson layer).
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501
@@ -316,7 +319,7 @@ class MapManagerBase(object):
             extent = self.map_extent
 
         # Build layer options
-        layer_options = {"visible": visible}
+        layer_options = {"visible": visible, "show_download": show_download}
 
         if style_map:
             layer_options.update({'style_map': style_map})
@@ -347,7 +350,7 @@ class MapManagerBase(object):
             layers(list<MVLayer>): List of layers to include in the layer group.
             layer_control(str): Type of control for layers. Either 'checkbox' or 'radio'. Defaults to checkbox.
             visible(bool): Whether layer group is initially visible. Defaults to True.
-
+            public(bool): enable public to see this layer group if True.
         Returns:
             dict: Layer group definition.
         """
@@ -360,7 +363,7 @@ class MapManagerBase(object):
             'control': layer_control,
             'layers': layers,
             'visible': visible,
-            'toggle_status': public
+            'toggle_status': public,
         }
         return layer_group
 

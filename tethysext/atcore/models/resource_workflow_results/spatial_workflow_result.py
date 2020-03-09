@@ -102,7 +102,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
     def add_geojson_layer(self, geojson, layer_name, layer_title, layer_variable, layer_id='', visible=True,
                           public=True, selectable=False, plottable=False, has_action=False, extent=None,
-                          popup_title=None, excluded_properties=None):
+                          popup_title=None, excluded_properties=None, show_download=False):
         """
         Add a geojson layer to display on the map of this result view.
 
@@ -120,6 +120,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             extent(list): Extent for the layer. Optional.
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
+            show_download(boolean): enable download layer to shapefile.
         """  # noqa: E501
         layer = {
             'type': 'geojson',
@@ -135,9 +136,9 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             'has_action': has_action,
             'extent': extent,
             'popup_title': popup_title,
-            'excluded_properties': excluded_properties
+            'excluded_properties': excluded_properties,
+            'show_download': show_download,
         }
-
         self._add_layer(layer)
 
     def add_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, layer_id='', viewparams=None, env=None,

@@ -322,6 +322,7 @@ class MapManagerBaseTests(unittest.TestCase):
             visible=True,
             public=True,
             selectable=False,
+            show_download=False,
             plottable=False,
             has_action=False,
             popup_title=None,
@@ -387,6 +388,7 @@ class MapManagerBaseTests(unittest.TestCase):
             visible=False,
             public=False,
             selectable=True,
+            show_download=False,
             plottable=True,
             has_action=False,
             popup_title='POPUP_TITLE_PASS_THROUGH',
@@ -712,7 +714,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -757,7 +759,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -802,7 +804,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -847,7 +849,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -892,7 +894,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -937,7 +939,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(custom_extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -995,6 +997,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         expected_layer_options = {
             'visible': True,
+            'show_download': False,
             'style_map': style_map
         }
 
@@ -1044,7 +1047,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': False}, ret['layer_options'])
+        self.assertEqual({'visible': False, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -1089,7 +1092,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(True, ret['feature_selection'])
@@ -1135,7 +1138,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
@@ -1180,7 +1183,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         self.assertIsInstance(ret, MVLayer)
         self.assertEqual(layer_source, ret['source'])
-        self.assertEqual({'visible': True}, ret['layer_options'])
+        self.assertEqual({'visible': True, 'show_download': False}, ret['layer_options'])
         self.assertEqual(layer_title, ret['legend_title'])
         self.assertEqual(extent, ret['legend_extent'])
         self.assertEqual(False, ret['feature_selection'])
