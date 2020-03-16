@@ -155,7 +155,6 @@ class ResourceDetailsTabContent(ResourceDetails):
         session = make_session()
 
         try:
-            breakpoint()
             app_user_name = request.user.username
             app_user = session.query(AppUser).filter(AppUser.username == app_user_name).one()
             app_user_role = app_user.role
