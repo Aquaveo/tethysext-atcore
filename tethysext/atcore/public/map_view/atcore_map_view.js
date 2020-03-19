@@ -951,10 +951,12 @@ var ATCORE_MAP_VIEW = (function() {
                               + '<input class="form-control" type="text" id="new-name-field" style="margin-bottom:10px" value="New Layer" autofocus onfocus="this.select();">'
                               + '<label class="sr-only" for="service-type">Map Service Type</label>'
                               + '<select class="form-control" style="margin-bottom:10px" id="service-type">'
-                              + '<option value="WMS" selected>WMS</option>'
+                              + '<option value="WMS">WMS</option>'
+                              + '<option value="TileArcGISRest" selected>ArcGIS Map Server</option>'
                               + '</select>'
                               + '<label class="sr-only" for="services-link">Service Link</label>'
-                              + '<input class="form-control" type="text" id="services-link" value="https://mrdata.usgs.gov/services/sgmc2" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
+//                              + '<input class="form-control" type="text" id="services-link" value="https://mrdata.usgs.gov/services/sgmc2" placeholder="Service Link (ex: https://mrdata.usgs.gov/services/sgmc2)" autofocus onfocus="this.select();">'
+                              + '<input class="form-control" type="text" id="services-link" value="https://mbmgmap.mtech.edu/arcgis/rest/services/geology_100k/geology_100k_legacy/MapServer" placeholder="Service Link (ex: https://mbmgmap.mtech.edu/arcgis/rest/services/geology_100k/geology_100k_legacy/MapServer)" autofocus onfocus="this.select();">'
                               + '<label class="sr-only" for="service-layer-name">Layer Name</label>'
                               + '<input class="form-control" type="text" id="service-layer-name" value="Lithology" placeholder="Layer Name (ex: Lithology)" style="margin-top: 10px" autofocus onfocus="this.select();">'
                               + '</div>';
@@ -994,7 +996,17 @@ var ATCORE_MAP_VIEW = (function() {
                 html_content += '</li></ul>';
                 $new_layer.append(html_content);
                 $new_layer.css({'overflow': 'visible'});
-                var wms_layers =
+                var append_layer;
+                if (service_type == "TileArcGISRest") {
+                    append_layer =
+                        new ol.layer.Tile({
+                            source: new ol.source.TileArcGISRest({
+                                url:service_link,
+                            })
+                        })
+                }
+                else {
+                    append_layer =
                         new ol.layer.Tile({
                             source: new ol.source.TileWMS({
                                 url:service_link,
@@ -1003,10 +1015,12 @@ var ATCORE_MAP_VIEW = (function() {
                                 serverType: 'geoserver'
                             })
                         })
-                m_layers[uuid] = wms_layers;
+                }
+
+                m_layers[uuid] = append_layer;
                 // Hide the modal
                 hide_action_modal();
-                m_map.addLayer(wms_layers);
+                m_map.addLayer(append_layer);
                 init_new_layers_tab(uuid);
 
                 // Save to resource
