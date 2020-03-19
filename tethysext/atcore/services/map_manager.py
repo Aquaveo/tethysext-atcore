@@ -263,7 +263,7 @@ class MapManagerBase(object):
                             public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
                             popup_title=None):
         """
-        Build an WMS MVLayer object with supplied arguments.
+        Build an AcrGIS Map Server MVLayer object with supplied arguments.
         Args:
             endpoint(str): URL to GeoServer WMS interface.
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
