@@ -14,7 +14,6 @@ from tethysext.atcore.models.app_users import ResourceWorkflow
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.controllers.app_users import ResourceDetails
 from tethysext.atcore.controllers.utiltities import get_style_for_status
-from tethysext.atcore.models.app_users.app_user import AppUser
 from tethysext.atcore.services.app_users.roles import Roles
 
 log = logging.getLogger(__name__)
@@ -153,10 +152,10 @@ class ResourceDetailsTabContent(ResourceDetails):
 
         make_session = self.get_sessionmaker()
         session = make_session()
+        _AppUser = self.get_app_user_model()
 
         try:
-            app_user_name = request.user.username
-            app_user = session.query(AppUser).filter(AppUser.username == app_user_name).one()
+            app_user = _AppUser.get_app_user_from_request(request, session)
             app_user_role = app_user.role
             if self.show_all_workflows or app_user_role in self.show_all_workflows_roles:
                 workflows = session.query(ResourceWorkflow).\
