@@ -66,6 +66,7 @@ class DatasetWorkflowResultView(WorkflowResultsView):
             data_table = DataTableView(
                 column_names=ds['dataset'].columns,
                 rows=[list(record.values()) for record in ds['dataset'].to_dict(orient='records', into=OrderedDict)],
+                buttons='excel',
                 **options.get('data_table_kwargs', {})
             )
             ds.update({'data_table': data_table})
