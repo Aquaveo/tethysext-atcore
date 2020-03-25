@@ -149,9 +149,12 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             if step in steps_to_skip or not isinstance(step, mappable_step_types):
                 continue
 
+            # Get the geometry
             geometry = None
             if not step.children:
-                geometry = step.to_geojson()
+                # Get the geometry of the step if no children exist
+                if isinstance(step, SpatialResourceWorkflowStep):
+                    geometry = step.to_geojson()
             else:
                 for child in step.children:
                     # If step has a child, get geojson from the child,
