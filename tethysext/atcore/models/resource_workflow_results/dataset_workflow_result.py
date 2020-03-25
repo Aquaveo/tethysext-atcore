@@ -76,13 +76,14 @@ class DatasetWorkflowResult(ResourceWorkflowResult):
         datasets.append(dataset)
         self.datasets = datasets
 
-    def add_pandas_dataframe(self, title, data_frame):
+    def add_pandas_dataframe(self, title, data_frame, show_export_button=False):
         """
         Adds a pandas.DataFrame to the result.
 
         Args:
             title(str): Display name.
             data_frame(pandas.DataFrame): The data.
+            show_export_button(boolean): Enable data export option.
         """
 
         if not title:
@@ -96,6 +97,7 @@ class DatasetWorkflowResult(ResourceWorkflowResult):
 
         d = {
             'title': title,
-            'dataset': data_frame
+            'dataset': data_frame,
+            'show_export_button': show_export_button,
         }
         self._add_dataset(d)

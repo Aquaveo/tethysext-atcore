@@ -59,6 +59,7 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
                     'column_names': ['foo', 'bar', 'baz'],
                     'footer': False,
                     'datatable_options': {
+                        'dom': '""',
                         'data_table_kwargs': '{"foo": true}'
                     }
                 }
