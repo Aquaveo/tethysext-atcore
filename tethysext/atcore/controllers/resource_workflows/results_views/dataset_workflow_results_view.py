@@ -63,10 +63,17 @@ class DatasetWorkflowResultView(WorkflowResultsView):
         page_title = options.get('page_title', result.name)
 
         for ds in datasets:
+            # Check if the export options is there
+            dom_attribute = ""
+            if 'show_export_button' in ds.keys():
+                if ds['show_export_button']:
+                    # B stands for button.
+                    dom_attribute = "Bfrtip"
+
             data_table = DataTableView(
                 column_names=ds['dataset'].columns,
                 rows=[list(record.values()) for record in ds['dataset'].to_dict(orient='records', into=OrderedDict)],
-                buttons='excel',
+                dom=dom_attribute,
                 **options.get('data_table_kwargs', {})
             )
             ds.update({'data_table': data_table})
