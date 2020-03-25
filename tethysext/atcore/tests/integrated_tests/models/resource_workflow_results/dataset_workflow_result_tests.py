@@ -68,7 +68,8 @@ class DatasetWorkflowResultTests(SqlAlchemyTestCase):
         self.instance.add_pandas_dataframe('foo', mock_dataframe)
         baseline = {
             'title': 'foo',
-            'dataset': mock_dataframe
+            'dataset': mock_dataframe,
+            'show_export_button': False
         }
         mock_add_dataset.assert_called_with(baseline)
 
