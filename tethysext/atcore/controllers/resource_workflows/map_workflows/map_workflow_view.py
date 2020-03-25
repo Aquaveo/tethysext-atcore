@@ -150,23 +150,26 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
                 continue
 
             geometry = None
-            for child in step.children:
-                # If step has a child, get geojson from the child,
-                # which will include the properties added by the child
-                if child is not None:
-                    # Child step must be a SpatialResourceWorkflowStep
-                    if not isinstance(child, SpatialResourceWorkflowStep):
-                        continue
+            if not step.children:
+                geometry = step.to_geojson()
+            else:
+                for child in step.children:
+                    # If step has a child, get geojson from the child,
+                    # which will include the properties added by the child
+                    if child is not None:
+                        # Child step must be a SpatialResourceWorkflowStep
+                        if not isinstance(child, SpatialResourceWorkflowStep):
+                            continue
 
-                    # Child geojson should include properties it adds to the features
-                    geometry = child.to_geojson()
+                        # Child geojson should include properties it adds to the features
+                        geometry = child.to_geojson()
 
-                    # Skip child step in the future to avoid adding it twice
-                    steps_to_skip.add(child)
+                        # Skip child step in the future to avoid adding it twice
+                        steps_to_skip.add(child)
 
-                # Otherwise, get the geojson from this step directly
-                else:
-                    geometry = step.to_geojson()
+                    # Otherwise, get the geojson from this step directly
+                    else:
+                        geometry = step.to_geojson()
 
             if not geometry:
                 log.warning('Parameter "geometry" for {} was not defined.'.format(step))
