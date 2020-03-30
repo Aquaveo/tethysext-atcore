@@ -149,24 +149,30 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             if step in steps_to_skip or not isinstance(step, mappable_step_types):
                 continue
 
+            # Get the geometry
             geometry = None
-            for child in step.children:
-                # If step has a child, get geojson from the child,
-                # which will include the properties added by the child
-                if child is not None:
-                    # Child step must be a SpatialResourceWorkflowStep
-                    if not isinstance(child, SpatialResourceWorkflowStep):
-                        continue
-
-                    # Child geojson should include properties it adds to the features
-                    geometry = child.to_geojson()
-
-                    # Skip child step in the future to avoid adding it twice
-                    steps_to_skip.add(child)
-
-                # Otherwise, get the geojson from this step directly
-                else:
+            if not step.children:
+                # Get the geometry of the step if no children exist
+                if isinstance(step, SpatialResourceWorkflowStep):
                     geometry = step.to_geojson()
+            else:
+                for child in step.children:
+                    # If step has a child, get geojson from the child,
+                    # which will include the properties added by the child
+                    if child is not None:
+                        # Child step must be a SpatialResourceWorkflowStep
+                        if not isinstance(child, SpatialResourceWorkflowStep):
+                            continue
+
+                        # Child geojson should include properties it adds to the features
+                        geometry = child.to_geojson()
+
+                        # Skip child step in the future to avoid adding it twice
+                        steps_to_skip.add(child)
+
+                    # Otherwise, get the geojson from this step directly
+                    else:
+                        geometry = step.to_geojson()
 
             if not geometry:
                 log.warning('Parameter "geometry" for {} was not defined.'.format(step))
