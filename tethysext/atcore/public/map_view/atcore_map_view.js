@@ -1653,9 +1653,12 @@ var ATCORE_MAP_VIEW = (function() {
     hide_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Set layer to be visible first
-            m_layers[layer_ids[i]].setVisible(false)
+            m_layers[layer_ids[i]].setVisible(false);
+
+            // uncheck the layer if we hide it
+            $('.layer-visibility-control[data-layer-id="' + layer_ids[i] + '"]')[0].checked = false;
             // Find the correct layer-list-item and add hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden")
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden");
 
         }
     }
