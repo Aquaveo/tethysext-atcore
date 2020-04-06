@@ -172,11 +172,13 @@ class MapView(ResourceView):
         show_rename = has_permission(request, 'rename_layers')
         show_remove = has_permission(request, 'remove_layers')
         show_public_toggle = has_permission(request, 'toggle_public_layers')
+        can_download = has_permission(request, 'can_download')
 
         context.update({
             'show_rename': show_rename,
             'show_remove': show_remove,
-            'show_public_toggle': show_public_toggle
+            'show_public_toggle': show_public_toggle,
+            'can_download': can_download,
         })
 
         if show_public_toggle:
