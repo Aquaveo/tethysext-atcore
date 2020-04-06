@@ -11,6 +11,7 @@ from collections import OrderedDict
 from tethys_sdk.gizmos import DataTableView
 from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
+from tethys_sdk.permissions import has_permission
 
 
 log = logging.getLogger(__name__)
@@ -62,11 +63,14 @@ class DatasetWorkflowResultView(WorkflowResultsView):
         # Page title same as result name
         page_title = options.get('page_title', result.name)
 
+        # Get can_export_datatable permission
+        can_export_datatable = has_permission(request, 'can_export_datatable')
+
         for ds in datasets:
             # Check if the export options is there
             dom_attribute = ""
             if 'show_export_button' in ds.keys():
-                if ds['show_export_button']:
+                if ds['show_export_button'] and can_export_datatable:
                     # B stands for button.
                     dom_attribute = "Bfrtip"
 
