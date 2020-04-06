@@ -278,7 +278,7 @@ class PermissionsGenerator:
         # Download layer permissions
         can_export_datatable = Permission(
             name='can_export_datatable',
-            description='Can download layer in map view.'
+            description='Can export data in datatable.'
         )
         self.all_permissions.append(can_export_datatable)
 
