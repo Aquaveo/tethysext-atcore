@@ -268,6 +268,20 @@ class PermissionsGenerator:
         )
         self.all_permissions.append(can_override_user_locks)
 
+        # Download layer permissions
+        can_download = Permission(
+            name='can_download',
+            description='Can download layer in map view.'
+        )
+        self.all_permissions.append(can_download)
+
+        # Download layer permissions
+        can_export_datatable = Permission(
+            name='can_export_datatable',
+            description='Can export data in datatable.'
+        )
+        self.all_permissions.append(can_export_datatable)
+
         # Only add enabled permissions groups
         enabled_permissions_groups = self.permission_manager.list()
 
@@ -291,7 +305,7 @@ class PermissionsGenerator:
             view_users, modify_users, modify_organization_members,
             assign_org_user_role, assign_org_reviewer_role, assign_org_admin_role,
             remove_layers, rename_layers, toggle_public_layers,
-            can_override_user_locks
+            can_override_user_locks, can_download, can_export_datatable
         ]
 
         if self.permission_manager.STD_A_PERMS in self.custom_permissions:
@@ -348,7 +362,7 @@ class PermissionsGenerator:
         # Consultant Admin --------------------------------------------------------------------------------------------#
         consultant_admin_perms = professional_admin_perms + consultant_user_perms + [
             create_organizations, edit_organizations, assign_advanced_license,
-            assign_standard_license, assign_professional_license,
+            assign_standard_license, assign_professional_license, can_download, can_export_datatable
         ]
 
         if self.permission_manager.CON_A_PERMS in self.custom_permissions:

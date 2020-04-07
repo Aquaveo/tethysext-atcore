@@ -1596,7 +1596,8 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Create new layer groups with layers
     // This method allows user to create tree items and have them linked to the tree items created in this method.
-    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends, show_download) {
+    load_layers = function (tab_id, layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends, show_download) {
+        // tab_id: name of the tab layer group
         // layer_group_name: name of the layer group - Ex: My Layer Group
         // layer_group_id: id of the layer group - Ex: my_layer_group_123456
         // layer_data: list of openlayer layers
@@ -1605,6 +1606,9 @@ var ATCORE_MAP_VIEW = (function() {
         // layer_legends: list of the legend name of the open layer layers Ex: my-legend -> your legend id is going to be (#legend-my-legend)
         // Add layers to map
         var i = 0;
+        if (tab_id == "") {
+            tab_id = "layers-tab-panel"
+        }
         for (i = 0; i < layer_data.length; i++) {
             m_layers[layer_ids[i]] = layer_data[i];
             m_map.addLayer(layer_data[i]);
@@ -1635,7 +1639,7 @@ var ATCORE_MAP_VIEW = (function() {
 //                    $('#layers-tab-panel div:eq(0)').after(data.response);
 //                }
 //                else {
-                $('#layers-tab-panel').prepend(data.response);
+                $('#' + tab_id).prepend(data.response);
 //                }
 
             }
@@ -1649,9 +1653,12 @@ var ATCORE_MAP_VIEW = (function() {
     hide_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Set layer to be visible first
-            m_layers[layer_ids[i]].setVisible(false)
+            m_layers[layer_ids[i]].setVisible(false);
+
+            // uncheck the layer if we hide it
+            $('.layer-visibility-control[data-layer-id="' + layer_ids[i] + '"]')[0].checked = false;
             // Find the correct layer-list-item and add hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden")
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden");
 
         }
     }
