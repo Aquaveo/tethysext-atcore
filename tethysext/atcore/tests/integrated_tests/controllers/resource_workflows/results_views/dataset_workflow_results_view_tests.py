@@ -19,9 +19,10 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
         super().setUp()
         self.instance = DatasetWorkflowResultView()
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.has_permission')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.DatasetWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context(self, mock_sup_get_context, mock_get_result):
+    def test_get_context(self, mock_sup_get_context, mock_get_result, _):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
