@@ -10,3 +10,7 @@
 .dataTables_wrapper {
     margin-top: 20px;
 }
+
+#inner-app-content .tab-content {
+    padding-bottom: 50px;
+}
