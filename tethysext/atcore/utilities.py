@@ -105,12 +105,12 @@ def clean_request(request):
     return request
 
 
-def strip_list(l, *args):
+def strip_list(the_list, *args):
     """
     Strip emtpy items from end of list.
 
     Args:
-        l(list): the list.
+        the_list(list): the list.
         *args: any number of values to strip from the end of the list.
     """
     targets = ''
@@ -119,17 +119,17 @@ def strip_list(l, *args):
         targets = args
 
     while True:
-        if len(l) == 0:
+        if len(the_list) == 0:
             break
 
-        back = l[-1]
+        back = the_list[-1]
 
         if back not in targets:
             break
 
-        l.pop(-1)
+        the_list.pop(-1)
 
-    return l
+    return the_list
 
 
 def grammatically_correct_join(strings, conjunction="and"):

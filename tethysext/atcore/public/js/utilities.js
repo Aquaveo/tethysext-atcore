@@ -143,3 +143,45 @@ function _fallback_copy_text_to_clipboard(text) {
 
     document.body.removeChild(text_area);
 }
+
+// Utilities to convert utc time to local time.
+function convert_utc_to_local(identifier) {
+    let time_list = $(identifier);
+    for (i=0; i < time_list.length; i++) {
+        let utc_time = time_list[i].innerText;
+        utc_time += " UTC";
+
+        // Remove all commas and dots
+        utc_time = utc_time.replace(/,/g, "").replace(/\./g, "");
+
+        // Handle case where we have no minutes such as "May 4 2000 5 pm UTC"
+        // This needs to be "May 4 2000 5:00 pm UTC"
+        if (!utc_time.includes(":")) {
+            let position = utc_time.indexOf('UTC') - 4;
+            utc_time = [utc_time.slice(0, position), ":00", utc_time.slice(position)].join("");
+        }
+
+        let local_time = new Date(utc_time);
+        if (!isNaN(local_time.getTime())) {
+            // Update time
+            time_list[i].innerText = format_output_time(local_time);
+        }
+    }
+}
+
+function format_output_time(date) {
+    // return Date in format of MMM DD YYYY HH:MM AM/PM
+    var month = date.toLocaleString('default', { month: 'long' });
+    var day = date.getDate();
+    var year = date.getFullYear();
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    // Get local timezone
+    var timezone = date.toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2];
+    var strTime = month + " " + day + " " + year + " " + hours + ':' + minutes + ' ' + ampm + " " + timezone;
+    return strTime;
+}
