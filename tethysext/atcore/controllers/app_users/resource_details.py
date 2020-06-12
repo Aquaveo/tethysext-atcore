@@ -140,7 +140,7 @@ class ResourceDetails(ResourceViewMixin):
             session.delete(workflow)
             session.commit()
             log.info(f'Deleted Workflow: {workflow}')
-        except:  # noqa: F722
+        except:  # noqa: E722
             log.exception('An error occurred while attempting to delete a workflow.')
             return JsonResponse({'success': False, 'error': 'An unexpected error has occurred.'})
         finally:

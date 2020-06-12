@@ -286,7 +286,7 @@ class MapManagerBaseTests(unittest.TestCase):
                     'type': 'Feature',
                     'geometry': {'type': 'Point', 'coordinates': [-87.89832948468124, 30.651451015987234]},
                     'properties': {'id': 4}
-                 },
+                },
             ]
         }
 

@@ -199,7 +199,7 @@ class ManageOrganizationMembersTest(SqlAlchemyTestCase):
 
         mock_get_permissions_manager.assert_called()
 
-        self.assertEqual(mock_request,  mock_messages.warning.call_args_list[0][0][0])
+        self.assertEqual(mock_request, mock_messages.warning.call_args_list[0][0][0])
 
         self.assertEqual('Member "{}" was not removed to prevent from being '
                          'orphaned.'.format(self.user_org_member.username),
