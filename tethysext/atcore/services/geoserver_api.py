@@ -212,8 +212,8 @@ class GeoServerAPI(object):
             buffer_factor(float): Apply a buffer around the bounding box.
         """
 
-        url = (self.gs_engine.endpoint + 'workspaces/' + workspace + '/datastores/' +
-               datastore_name + '/featuretypes/' + feature_name + '.json')
+        url = (self.gs_engine.endpoint + 'workspaces/' + workspace + '/datastores/' + datastore_name
+               + '/featuretypes/' + feature_name + '.json')
 
         response = requests.get(url, auth=(self.gs_engine.username, self.gs_engine.password))
 

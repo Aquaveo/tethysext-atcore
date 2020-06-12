@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys:v3.0.0b-r31
+FROM docker.aquaveo.com/tethys/aqua-tethys:3.1.0-beta.8
 
 #####################
 # Default Variables #
@@ -28,13 +28,11 @@ ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
-# Generate temporary settings.py to be able to install the extension, then remove it.
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
-  ; tethys gen settings --overwrite \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; tethys install --quiet --only-dependencies \
-  ; python setup.py install \
-  ; rm ${TETHYS_HOME}/tethys/tethys_portal/settings.py"
+  ; conda list \
+  ; pip list \
+  ; tethys install -N"
 
 #########
 # CHOWN #
@@ -56,7 +54,6 @@ EXPOSE 80
 # COPY IN SALT #
 ################
 ADD docker/salt/ /srv/salt/
-ADD docker/test-docker.sh ${TETHYS_HOME}/
 
 #######
 # RUN #

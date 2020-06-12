@@ -118,7 +118,7 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
         mock_messages.warning.assert_called()
 
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.messages')
-    def test__handle_new_workflow_form_valid(self,  mock_messages):
+    def test__handle_new_workflow_form_valid(self, mock_messages):
         # TODO: Fix test
         pass
         # post_data = {'new-workflow': '', 'workflow-name': 'spam', 'workflow-type': 'ham'}

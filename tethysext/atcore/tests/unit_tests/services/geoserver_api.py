@@ -1012,7 +1012,7 @@ class GeoServerAPITests(unittest.TestCase):
         operation = self.gs_api.GWC_OP_MASS_TRUNCATE
         self.gs_api.modify_tile_cache(self.workspace, name, operation)
 
-        url = 'masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
+        url = 'masstruncate/'
 
         # Create feature type call
         post_call_args = mock_post.call_args_list
@@ -1068,7 +1068,7 @@ class GeoServerAPITests(unittest.TestCase):
         operation = self.gs_api.GWC_OP_MASS_TRUNCATE
         self.assertRaises(requests.RequestException, self.gs_api.modify_tile_cache, self.workspace, name, operation)
 
-        url = 'masstruncate/'.format(endpoint=self.gs_api.get_gwc_endpoint())
+        url = 'masstruncate/'
 
         # Create feature type call
         post_call_args = mock_post.call_args_list

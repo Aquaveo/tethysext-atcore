@@ -344,13 +344,14 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.request.POST['rerun-submit'] = True
         self.step.options['scheduler'] = 'my_schedule'
         job = {
-             'name': 'base_scenario',
-             'condorpy_template_name': 'vanilla_transfer_files',
-             'remote_input_files': [None],
-             'attributes': {
-                 'executable': 'run_base_scenario.py',
-                 'transfer_output_files': ['gssha_files', 'base_ohl_series.json']
-             }}
+            'name': 'base_scenario',
+            'condorpy_template_name': 'vanilla_transfer_files',
+            'remote_input_files': [None],
+            'attributes': {
+                'executable': 'run_base_scenario.py',
+                'transfer_output_files': ['gssha_files', 'base_ohl_series.json']
+            }
+        }
         self.step.options['jobs'] = [job]
 
         ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
