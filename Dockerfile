@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM docker.aquaveo.com/tethys/aqua-tethys:3.1.0-beta.8
+FROM tethysplatform/tethys-core:master
 
 #####################
 # Default Variables #
