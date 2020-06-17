@@ -255,7 +255,7 @@ class ManageResources(AppUsersViewMixin):
             return {
                 'action': self.ACTION_LAUNCH,
                 'title': self.default_action_title,
-                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace),  args=[resource.id])
+                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
             }
 
     def get_resources(self, session, request, request_app_user):

@@ -12,6 +12,7 @@ requirements:
       - conda-forge
     packages:
       - django=2.2.*
+      - coverage
       - factory_boy
       - filelock
       - geojson
