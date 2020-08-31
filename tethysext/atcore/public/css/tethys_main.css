@@ -1,0 +1,332 @@
+
+/* 
+ * Maintenance Site Styles 
+ */
+#maintenance-container {
+  text-align: center;
+  padding-top: 40px;
+}
+
+#maintenance-container h1, #maintenance-container h6 {
+  margin: 10px 50px;
+}
+
+#maintenance-container #maintenance-image {
+  border-radius: 50%;
+  width: 500px;
+  padding: 50px;
+}
+
+@media(max-width: 500px) {
+  #maintenance-container #maintenance-image {
+    width: 75%;
+    padding: 5%;
+  }
+
+  #maintenance-container h1 {
+    font-size: 28px;
+    line-height: 1.25;
+  }
+
+  #maintenance-container h6 {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+}
+
+
+
+
+/*****************************************************************************
+ * FILE: header
+ * DATE: 2014
+ * AUTHOR: Nathan Swain
+ * COPYRIGHT: (c) Brigham Young University 2014
+ * LICENSE: BSD 2-Clause
+ *****************************************************************************/
+/* =====================================================
+   Header 
+   ===================================================== */
+.site-header .header-logo {
+  float: left;
+  margin: 22px 0 2px 0;
+  font-size: 0;
+  min-height: unset;
+  width: unset;           
+}
+.site-header .header-logo .logo-image {
+  display: inline-block;
+  float: unset;
+  padding: unset;
+  margin-right: 8px;
+}
+.site-header .header-logo .logo-image img {
+  height: unset!important;
+  width: 236px!important;
+  margin-top: 0!important;
+  margin-right: unset;
+  vertical-align: text-bottom;
+}
+.site-header .header-logo .logo-title {
+  display: inline-block;
+  float: unset;
+  width: unset;
+  line-height: 1;
+  margin: 0;
+  font-size: 38px;
+  vertical-align: top;
+}
+.site-header .header-logo .logo-title a {
+  font-size: inherit;
+}
+
+.mobile-nav.in {
+  top: 59px;
+}
+
+@media (max-width: 1080px) {
+  .site-header {
+    margin: 0 20px;
+  }
+  .site-header .header-logo {
+    margin: unset;
+    width: unset;
+    margin-top: 17.5px;
+  }
+
+  .site-header .header-logo .logo-image {
+    height: unset;
+    margin-right: 5px;
+  }
+
+  .site-header .header-logo .logo-image img {
+    line-height: unset;
+    max-width: unset;
+    width: 222px!important;
+    height: unset;
+  }
+  .site-header .header-logo .logo-title {
+    font-size: 40px;
+    line-height: unset;
+    max-width: unset;
+  }
+  .site-header .header-logo .logo-title a {
+    display: unset;
+    font-size: unset;
+    text-overflow: unset;
+    overflow: unset;
+    white-space: unset;
+    width: unset;
+  }
+}
+@media (max-width: 900px) {
+  .site-header {
+    margin: unset;
+  }                
+  .site-header .header-logo {
+    margin: 24.5px 0 10px 0;
+    width: unset;
+  }
+  .site-header .header-logo .logo-image img {
+    width: 150px!important;
+    height: unset;
+  }
+  .site-header .header-logo .logo-title {
+    line-height: unset;
+    width: unset;
+    font-size: 28px;
+  }
+  .site-header .header-logo .logo-title a {
+    display: unset;
+    font-size: unset;
+    text-overflow: unset;
+    overflow: unset;
+    white-space: unset;
+    width: unset;
+  }  
+}
+@media (max-width: 750px) {
+  .site-header {
+    margin: unset;
+    height: 60px;
+  }
+  .site-header .header-logo {
+    margin: 14px 0 10px 0;
+    width: 65%;
+  }
+  .site-header .header-logo .logo-image img {
+    width: 160px!important;
+  }
+  .site-header .header-logo .logo-title {
+    font-size: 29px;
+    line-height: unset;
+    width: unset;           
+  }
+  .site-header .header-logo .logo-title a {
+    display: unset;
+    font-size: unset;
+    text-overflow: unset;
+    overflow: unset;
+    white-space: unset;
+    width: unset;
+  }
+  #site-wrapper {
+    padding-top: 60px;      
+  }
+  .mobile-nav-button {
+    margin-top: 10px;
+  }
+
+
+@media (max-width: 450px) {
+  .site-header .header-logo {
+    margin-top: 18px;
+  }
+
+  .site-header .header-logo .logo-image img {
+    width: 120px!important;
+  }
+
+  .site-header .header-logo .logo-title {
+    font-size: 22px;
+  }
+}
+/*****************************************************************************
+ * FILE: home
+ * DATE: 2014
+ * AUTHOR: Nathan Swain
+ * COPYRIGHT: (c) Brigham Young University 2014
+ * LICENSE: BSD 2-Clause
+ *****************************************************************************/
+/* ===========================================
+   Hero Section
+   =========================================== */
+
+ .btn-custom-oauth {
+  color: unset;
+  background-color: unset;
+  border-color: unset;
+}
+.btn-custom-oauth:hover {
+  color: unset;
+  background-color: unset;
+  border-color: unset;
+}
+.btn-custom-oauth {
+  background-color: unset;
+  color: unset;
+}
+.fa-unlock-alt {
+  color: unset;
+}
+.btn-custom-oauth:hover {
+  background-color: unset;
+}
+.btn-custom-oauth:hover .fa-unlock-alt {
+  color: unset;
+}
+.btn-custom-oauth:focus {
+  background-color: unset;
+}
+.btn-custom-oauth:focus .fa-unlock-alt {
+  color: unset;
+}
+.label-custom-oauth {
+  color: unset;
+  border: unset;
+}
+.label-custom-oauth:hover {
+  color: unset;
+  background-color: unset;
+}
+/*****************************************************************************
+ * FILE: secondary_header
+ * DATE: 2014
+ * AUTHOR: Nathan Swain
+ * COPYRIGHT: (c) Brigham Young University 2014
+ * LICENSE: BSD 2-Clause
+ *****************************************************************************/
+.tethys-secondary-header {
+  position: relative;
+  height: 100px;
+  background: #1b95dc;
+  margin-bottom: 70px;
+}
+.tethys-secondary-header .image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 20px;
+  z-index: 100;
+}
+.tethys-secondary-header .image-wrapper img {
+  border-radius: 50%;
+  width: 120px;
+  background: #1b95dc;
+  box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+}
+.tethys-secondary-header .secondary-title-wrapper {
+  float: left;
+}
+.tethys-secondary-header .secondary-title-wrapper .secondary-title {
+  display: block;
+  color: white;
+  font-size: 40px;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 21px 0;
+  padding-left: 130px;
+}
+@media (max-width: 700px) {
+  .tethys-secondary-header {
+    height: 100px;
+    margin-bottom: 0;
+  }
+  .tethys-secondary-header .image-wrapper {
+    position: inline-block;
+    padding: 10px 20px;
+  }
+  .tethys-secondary-header .image-wrapper img {
+    width: 80px;
+    box-shadow: none;
+  }
+  .tethys-secondary-header .secondary-title-wrapper .secondary-title {
+    font-size: 40px;
+    padding: 21px 0;
+    padding-left: 50px;
+  }
+}
+
+/*
+ * Override App Library Header Styles
+ */
+
+.tethys-secondary-header {
+  height: 60px!important;
+}
+
+.tethys-secondary-header .secondary-title-wrapper .secondary-title {
+  font-size: 30px!important;
+  font-weight: 400!important;
+  padding: 0!important;
+  padding-left: 50px!important;
+  margin-top: 9px!important;
+}
+
+@media(max-width: 900px) {
+  .tethys-secondary-header .secondary-title-wrapper .secondary-title {
+    padding-left: 20px!important;
+  }
+}
+
+@media(max-width: 750px) {
+  .tethys-secondary-header {
+    height: 40px!important;
+  }
+
+  .tethys-secondary-header .secondary-title-wrapper .secondary-title {
+    font-size: 20px!important;
+    margin-top: 6px!important;
+  }
+}

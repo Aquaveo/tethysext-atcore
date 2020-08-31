@@ -1,0 +1,21 @@
+<coverage>
+  <name>{{ coverage_name }}</name>
+  <nativeName>{{ coverage_name }}</nativeName>
+  <namespace>
+    <name>{{ workspace }}</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}namespaces/{{ workspace }}.xml" type="application/xml"/>
+  </namespace>
+  <title>{{ coverage_name }}</title>
+  <description>Generated from {{ coverage_name }}</description>
+  <keywords>
+    <string>WCS</string>
+    <string>{{ coverage_name }}</string>
+  </keywords>
+  <srs>EPSG:{{ srid }}</srs>
+  <enabled>true</enabled>
+  <store class="coverageStore">
+    <name>{{ workspace }}:{{ store_name }}</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ workspace }}/coveragestores/{{ store_name }}.xml" type="application/xml"/>
+  </store>
+  <nativeFormat>{{ format }}</nativeFormat>
+</coverage>

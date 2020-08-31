@@ -1,0 +1,29 @@
+#app-content-wrapper .btn-fab {
+    z-index: 1000;
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+    border-radius: 50%;
+    -webkit-transition: .2s ease-in-out all;
+    -moz-transition: .2s ease-in-out all;
+    -o-transition: .2s ease-in-out all;
+    -ms-transition: .2s ease-in-out all;
+    transition: .2s ease-in-out all;
+}
+
+#app-content-wrapper.show-nav .btn-fab {
+    right: 320px;
+}
+
+.btn-fab:hover {
+    box-shadow: 0 4px 5px 0 rgba(0,0,0,.14),
+    0 1px 10px 0 rgba(0,0,0,.12),
+    0 2px 4px -1px rgba(0,0,0,.2);
+}
+
+.btn-fab .glyphicon {
+    top: 12px;
+}

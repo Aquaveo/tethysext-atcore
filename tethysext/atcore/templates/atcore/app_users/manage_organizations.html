@@ -1,0 +1,216 @@
+{% extends base_template %}
+{% load static tethys_gizmos %}
+
+{# import tethys_gizmos.css for centering of loading gif #}
+{% block import_gizmos %}
+    {% import_gizmo_dependency toggle_switch %}
+{% endblock %}
+
+{% block app_content %}
+  <div class="manage-container">
+    <div class="top-action-buttons pull-right">
+      {# NEW ORG BUTTON #}
+      {% if show_new_button %}
+      <a class="btn btn-default manage-action-btn btn-new"
+         href="{% url tethys_app.namespace|add:':app_users_new_organization' %}"
+         data-toggle="tooltip"
+         data-placement="bottom"
+         title="New">
+        <span class="glyphicon glyphicon-plus"></span>
+      </a>
+      {% endif %}
+    </div>
+    <h1>{% block organizations_title %}{{ page_title }}{% endblock %}</h1>
+
+    {% for organization_license, organization_cards in organization_cards.items %}
+      <h5>{{ organization_license }}</h5>
+      <div class="panel-group manage-panel-group" id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
+      {% for organization_card in organization_cards %}
+        <div class="panel panel-default manage-panel">
+
+          {# PANEL HEADER #}
+          <div class="panel-heading manage-panel-heading" role="tab" id="heading-{{ organization_card.id }}">
+
+            {# ORG TITLE #}
+            <div class="manage-item-title-wrapper">
+              <span class="manage-item-title">
+                <a role="button"
+                   data-toggle="collapse"
+                   data-parent="#{{ organization_license|slugify }}-cards"
+                   href="#collapse-{{ organization_card.id }}"
+                   aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                   aria-controls="collapse-{{ organization_card.id }}">
+                  {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
+                </a>
+              </span>
+            </div>
+
+            {# ACTION BUTTONS #}
+            {% if organization_card.can_modify_members or organization_card.can_modify %}
+            <div class="manage-grid-actions">
+
+              {# MODIFY MEMBERS BUTTON #}
+              {% if organization_card.can_modify_members %}
+              <a class="btn btn-default btn-users btn-flat"
+                 href="{% url tethys_app.namespace|add:':app_users_manage_organization_members' organization_card.id %}?next=manage-organizations"
+                 data-toggle="tooltip"
+                 data-placement="top"
+                 title="Manage Members">
+                <span class="glyphicon glyphicon-user"></span>
+              </a>
+              {% endif %}
+
+              {# EDIT ORG BUTTON #}
+              {% if organization_card.can_edit %}
+              <a class="btn btn-default btn-edit btn-flat"
+                 href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization_card.id %}"
+                 data-toggle="tooltip"
+                 data-placement="top"
+                 title="Edit">
+                <span class="glyphicon glyphicon-edit"></span>
+              </a>
+              {% endif %}
+
+              {# DELETE ORG BUTTON #}
+              {% if organization_card.can_delete %}
+              <a class="btn btn-default btn-delete-manage btn-delete btn-flat"
+                 href="javascript:void(0);"
+                 data-id="{{ organization_card.id }}"
+                 data-toggle="tooltip"
+                 data-placement="top"
+                 title="Delete">
+                <span class="glyphicon glyphicon-trash"></span>
+              </a>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+
+          {# PANEL BODY #}
+          <div id="collapse-{{ organization_card.id }}"
+               class="panel-collapse collapse {% if forloop.first %}in{% endif %}"
+               role="tabpanel"
+               aria-labelledby="heading-{{ organization_card.id }}">
+            <div class="panel-body list-group-panel-body">
+              <ul class="list-group">
+
+                {# LICENSE #}
+                {% if organization_card.license %}
+                <li class="list-group-item">
+                  <p class="manage-section-title">LICENSE</p>
+                  <span class="manage-tag project-tag">{{ organization_card.license }}</span>
+                </li>
+                {% endif %}
+
+                {# CONSULTANT #}
+                {% if organization_card.consultant %}
+                <li class="list-group-item">
+                  <p class="manage-section-title">CONSULTANT</p>
+                  <span class="manage-tag project-tag">{{ organization_card.consultant.name }}</span>
+                </li>
+                {% endif %}
+
+                {# MEMBERS SECTION #}
+                <li class="list-group-item">
+                  <p class="manage-section-title">MEMBERS</p>
+                  {% for member in organization_card.members %}
+                    {% if link_to_members %}
+                    <a href="{% url tethys_app.namespace|add:':app_users_edit_user' member.1 %}?next=manage-organizations"><span class="manage-tag member-tag manage-tag-hover">{% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}</span></a>
+                    {% else %}
+                    <span class="manage-tag member-tag">
+                      {% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}
+                    </span>
+                    {% endif %}
+                  {% endfor %}
+                </li>
+
+                {# RESOURCES SECTION #}
+                {% for resource_display_type, resources in organization_card.resources.items %}
+                <li class="list-group-item">
+                  <p class="manage-section-title">{{ resource_display_type|upper }}</p>
+                  {% for resource in resources %}
+                  <a href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}?back=manage-organizations"><span class="manage-tag project-tag manage-tag-hover">{{ resource.name }}</span></a>
+                  {% endfor %}
+                </li>
+                {% endfor %}
+
+                {# CLIENTS #}
+                {% if organization_card.clients %}
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-md-8">
+                      <p class="manage-section-title">CLIENTS</p>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>License</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for client in organization_card.clients %}
+                          <tr>
+                            <td><a href="{% url tethys_app.namespace|add:':app_users_edit_organization' client.id %}">{{ client.name }}</a></td>
+                            <td>{{ client.license_display_name }}</td>
+                            <td>{{ client.created|date:'M d, Y' }}</td>
+                            <td>{{ client.license_expires|date:'M d, Y' }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </li>
+                {% endif %}
+
+                {% block custom_organization_fields %}{% endblock %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block after_app_content %}
+  {% if load_delete_modal %}
+  <!-- Delete Modal -->
+  <div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="delete-modal-label">Delete Organization</h4>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this organization? This action cannot be undone.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <a id="modal-delete-button" class="btn btn-danger btn-delete-modal" href="javascript:void(0);" data-delete-type="organizations">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/app_users/css/collapse_list_group.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/js/csrf.js' %}"></script>
+  <script src="{% static 'atcore/app_users/js/app_users.js' %}"></script>
+{% endblock %}

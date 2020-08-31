@@ -1,0 +1,16 @@
+{% load tethys_gizmos %}
+
+<div class="form-group spatial-ref-select-group {% if error %}has-error{% endif %}">
+  <label class="control-label" for="{{ id }}">{{ display_name }}</label>
+  <select id="{{ id }}" name="{{ name }}" class="spatial-ref-select">
+    {% if initial %}
+    <option value="{{ initial.1 }}" selected="selected">{{ initial.0 }}</option>
+    {% endif %}
+  </select>
+  <span class="help-block">{{ error }}</span>
+</div>
+<div id="spatial-reference-service-attributes"
+     data-spatial-reference-service="{{ spatial_reference_service|jsonify }}"
+     data-placeholder="{{ placeholder|jsonify }}"
+     data-query-delay="{{ query_delay|jsonify }}"
+     data-min-length="{{ min_length|jsonify }}"></div>

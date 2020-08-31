@@ -1,0 +1,7 @@
+.spatial-ref-select {
+    width: 100%;
+}
+
+.spatial-ref-select-group .select2-container {
+    display: block;
+}

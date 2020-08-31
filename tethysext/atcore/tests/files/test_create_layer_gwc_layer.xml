@@ -1,0 +1,31 @@
+<GeoServerLayer>
+  <name>foo:bar</name>
+  <enabled>true</enabled>
+  <inMemoryCached>true</inMemoryCached>
+  <mimeFormats>
+    <string>image/png</string>
+  </mimeFormats>
+  <gridSubsets>
+    <gridSubset>
+      <gridSetName>EPSG:900913</gridSetName>
+    </gridSubset>
+  </gridSubsets>
+  <metaWidthHeight>
+    <int>4</int>
+    <int>4</int>
+  </metaWidthHeight>
+  <expireCache>0</expireCache>
+  <expireClients>0</expireClients>
+  <parameterFilters>
+    <stringParameterFilter>
+      <key>STYLES</key>
+      <defaultValue>foo:points</defaultValue>
+    </stringParameterFilter>
+    <regexParameterFilter>
+      <key>VIEWPARAMS</key>
+      <defaultValue/>
+      <regex>.*</regex>
+    </regexParameterFilter>
+  </parameterFilters>
+  <gutter>0</gutter>
+</GeoServerLayer>

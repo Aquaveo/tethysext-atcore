@@ -1,0 +1,19 @@
+.at-breadcrumbs {
+    padding: 8px 15px;
+    margin-bottom: 20px;
+    list-style: none;
+    background-color: #f5f5f5;
+}
+
+.at-breadcrumbs>li {
+    display: inline-block;
+}
+
+.at-breadcrumbs .separator {
+    color: #777;
+}
+
+.at-breadcrumbs .active {
+    color: #777;
+    font-weight: 600;
+}

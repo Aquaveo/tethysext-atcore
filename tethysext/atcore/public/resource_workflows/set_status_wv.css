@@ -1,0 +1,16 @@
+.read-only {
+    font-size: 18px;
+    overflow-x: auto;
+}
+
+.read-only.no-comments {
+    font-style: italic;
+}
+
+#app-content-wrapper.show-nav #app-content .read-only {
+    padding-right: 415px;
+}
+
+#app-content-wrapper #app-content .read-only {
+    padding-right: 0;
+}

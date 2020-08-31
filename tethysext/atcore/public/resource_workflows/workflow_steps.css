@@ -1,0 +1,111 @@
+/* Workflow Steps */
+.workflow-steps {
+    list-style: none;
+    padding-inline-start: 0;
+    margin-top: 20px;
+}
+
+.workflow-steps .help-block {
+    padding-left: 42px;
+}
+
+.workflow-step {
+    display: block;
+    font-size: 16px!important;
+    color: #444444!important;
+    padding: 10px 10px;
+    border-top: 1px #dddddd solid;
+    border-bottom: 1px #dddddd solid;
+}
+
+.workflow-step:focus, .workflow-step:focus-within, .workflow-step:hover {
+    text-decoration: none!important;
+}
+
+.workflow-step .glyphicon {
+    display: inline-block;
+    font-size: 20px!important;
+}
+
+.workflow-step .workflow-step-title {
+    display: inline-block;
+    padding-left: 10px;
+}
+
+.workflow-step:hover {
+    background-color: #dddddd!important;
+}
+
+.workflow-step.active {
+    color: #ffffff!important;
+    background-color: #4b72aa!important;
+}
+
+.workflow-step.active:hover {
+    color: #ffffff!important;
+    background-color: #385680!important;
+}
+
+/* Success Style */
+.workflow-status-success {
+    color: #649967!important;
+}
+
+.active.workflow-status-success {
+    color: #ffffff!important;
+    background-color: #649967!important;
+}
+
+.active.workflow-status-success:hover {
+    background-color: #4b734d!important;
+}
+
+.workflow-status-success i {
+    color: #649967;
+}
+
+/* Danger Style */
+.workflow-status-danger {
+    color: #b85f5d!important;
+}
+
+.active.workflow-status-danger {
+    color: #ffffff!important;
+    background-color: #b85f5d!important;
+}
+
+.active.workflow-status-danger:hover {
+    background-color: #8a4746!important;
+}
+
+.workflow-status-danger i {
+    color: #b85f5d;
+}
+
+/* Warning Style */
+.workflow-status-warning {
+    color: #b58f43!important;
+}
+
+.active.workflow-status-warning {
+    color: #ffffff!important;
+    background-color: #b58f43!important;
+}
+
+.active.workflow-status-warning:hover {
+    background-color: #886b32!important;
+}
+
+.workflow-status-warning i {
+    color: #b58f43;
+}
+
+/* Lock Styles */
+.workflow-step-lock i{
+    color: #444444;
+}
+
+/* Status Symbol Active */
+.workflow-step.active i {
+    color: #ffffff!important;
+}

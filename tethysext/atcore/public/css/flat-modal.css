@@ -1,0 +1,15 @@
+.modal-dialog .modal-content {
+  border-radius: 0px;
+}
+
+.modal-dialog .form-control {
+    border-radius: 0px;
+}
+
+.modal-dialog .btn {
+    border-radius: 0px;
+}
+
+.modal-dialog .btn {
+    margin: 0;
+}

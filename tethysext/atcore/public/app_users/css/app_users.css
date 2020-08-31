@@ -1,0 +1,239 @@
+#app-content-wrapper #app-content #app-navigation .nav li.title {
+    padding: 10px 0;
+}
+
+#inner-app-content {
+    overflow: auto;
+}
+
+td, th {
+    vertical-align: middle!important;
+}
+
+.btn {
+    margin: 3px;
+}
+
+.btn-huge {
+  font-size: 26px;
+}
+
+.btn-td {
+    padding: 0!important;
+    min-width: 200px;
+}
+
+.btn-flat {
+    height: 60px;
+    margin: 0!important;
+    padding: 20px 15px;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    min-width: 60px;
+}
+
+.btn-action {
+    min-width: 80px;
+    color: white;
+}
+
+.btn-resource-launch {
+    background-color: #4b72aa;
+}
+
+.btn-resource-launch:hover {
+    background-color: #385680;
+}
+
+.btn-resource-processing {
+    background-color: #b58f43;
+}
+
+.btn-resource-processing:hover {
+    background-color: #886b32;
+}
+
+.btn-resource-error {
+    background-color: #b85f5d;
+}
+
+.btn-resource-error:hover {
+    background-color: #c54846;
+}
+
+.btn:hover {
+    color: white;
+}
+
+.btn-users {
+    margin-left: 0;
+}
+
+.btn-users:hover {
+    background-color: #4b734d;
+    border-color: #4b734d;
+}
+
+.btn-import {
+    background-color: #649967;
+    border-color: #649967;
+    color: white;
+}
+
+.btn-import:hover {
+    background-color: #4b734d;
+    border-color: #4b734d;
+}
+
+.btn-new {
+    background-color: #649967;
+    border-color: #649967;
+    color: white;
+}
+
+.btn-new:hover {
+    background-color: #4b734d;
+    border-color: #4b734d;
+}
+
+.btn-edit:hover {
+    background-color: #b58f43;
+    border-color: #b58f43;
+}
+
+.btn-delete:hover {
+    background-color: #b85f5d;
+    border-color: #b85f5d;
+}
+
+.btn-remove:hover {
+    background-color: #b85f5d;
+    border-color: #b85f5d;
+}
+
+.manage-panel-heading {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+    border-radius: 0;
+}
+
+.panel-group  {
+    border-radius: 0;
+}
+
+.panel {
+    border-radius: 0!important;
+}
+
+.list-group-item:last-child {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.manage-grid-actions .btn {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.manage-item-title {
+    display: block;
+    margin: 13px 10px;
+    font-size: 24px;
+}
+
+.manage-container {
+    max-width: 1000px;
+}
+
+.manage-action-btn {
+    margin-bottom: 15px;
+}
+
+.manage-tag {
+    display: inline-block;
+    padding: 6px 10px;
+    margin-bottom: 3px;
+    margin-top: 3px;
+    border-radius: 5px;
+    border: 1px #ccc solid;
+    color: #333;
+    background-color: #ffffff;
+}
+
+.manage-tag-hover:hover {
+    background: lightgray;
+}
+
+.toggle-switch-container .form-group {
+    margin: 0;
+}
+
+#status-toggle-wrapper .bootstrap-switch {
+    display: block;
+    width: 100px;
+}
+
+.input-group {
+    width: 100%;
+}
+
+.modal-backdrop {
+    display: None;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #66afe9!important;
+    outline: 0!important;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)!important;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)!important;
+}
+
+.progress {
+    border-radius: 0;
+    margin-bottom: 2px;
+}
+
+.progress-bar {
+    background-color: #4b72aa;
+}
+
+.progress-bar-danger {
+    background-color: #b85b5d;
+}
+
+.progress-bar-success {
+    background-color: #649967;
+}
+
+.storage-table {
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.btn-delete-modal {
+    margin-top: 0;
+}
+
+.role-tag:hover {
+    background: #FFFFFF;
+}
+
+.activity-tag:hover {
+    background: #FFFFFF;
+}
+
+#app-content {
+    height: 100%;
+}
+
+.new-resource {
+    height: 75%;
+}
+
+.table-bottom-border tr td {
+    border-bottom: 1px solid #ddd;
+}
+

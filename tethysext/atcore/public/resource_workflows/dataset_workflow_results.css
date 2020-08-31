@@ -1,0 +1,16 @@
+#app-content-wrapper #app-content {
+    height: 100%;
+}
+
+#inner-app-content {
+    height: 100%;
+    overflow: auto;
+}
+
+.dataTables_wrapper {
+    margin-top: 20px;
+}
+
+#inner-app-content .tab-content {
+    padding-bottom: 50px;
+}

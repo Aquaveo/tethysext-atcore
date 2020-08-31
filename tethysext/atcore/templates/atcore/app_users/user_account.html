@@ -1,0 +1,52 @@
+{% extends base_template %}
+{% load static %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-6">
+      <div class="user-account-container">
+        <h1>{{ page_title }}</h1>
+      </div>
+      <h6 class="project-details table-header">General</h6>
+      <table class="table table-hover">
+        <tr>
+          <td class="status">Account Status</td>
+          <td>{{ user_account_status }}</td>
+        </tr>
+        <tr>
+          <td class="name">Username</td>
+          <td>{{ username }}</td>
+        </tr>
+        <tr>
+          <td class="name">Role</td>
+          <td>{{ user_role }}</td>
+        </tr>
+      </table>
+      {% if organizations %}
+      <h6 class="project-details table-header">Organizations</h6>
+      <table class="table table-hover">
+        <tr>
+          <th>Name</th>
+          <th>License</th>
+        </tr>
+        {% for organization in organizations %}
+        <tr>
+          <td>{{ organization.name }}</td>
+          <td>{{ organization.license }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+      {% if permissions_groups %}
+      <h6 class="project-details table-header">Permissions</h6>
+      <table class="table table-hover">
+        {% for permissions_group in permissions_groups %}
+        <tr>
+          <td>{{ permissions_group }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

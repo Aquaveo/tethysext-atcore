@@ -1,0 +1,59 @@
+{% extends "atcore/resource_workflows/map_workflow_view.html" %}
+{% load tethys_gizmos static %}
+
+
+{% block app_content %}
+  {{ block.super }}
+  <form id="run-job-form" method="post">
+    {% csrf_token %}
+    <input hidden name="method" value="run-job">
+  </form>
+{% endblock %}
+
+{% block map %}
+  {{ block.super }}
+  {% if has_tabular_data %}
+    <div class="tab-data">
+      {% for tab_data_title, tab_data in tabular_data.items %}
+      <h2>{{ tab_data_title }}</h2>
+      {% for k, v in tab_data.items %}
+      <p><b>{{ k|title }}:</b> {{ v }}</p>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block app_actions %}
+  {% if can_run_workflows %}
+  <button class="btn btn-success" type="submit" form="run-job-form" name="run-submit">Run</button>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  {% if has_tabular_data %}
+    <style>
+      .map-form {
+        width: 500px;
+        height: 500px;
+        padding-left: 25px;
+        padding-top: 25px;
+      }
+      .tab-data {
+        padding-left: 25px;
+        padding-top: 25px;
+        display: block;
+      }
+    </style>
+  {% endif %}
+{% endblock %}
+
+{% block after_app_content %}
+  {{ block.super }}
+{% endblock %}

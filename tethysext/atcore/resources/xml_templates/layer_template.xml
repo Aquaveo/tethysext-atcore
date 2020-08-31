@@ -1,0 +1,18 @@
+<layer>
+  <defaultStyle>
+    <name>{{ workspace }}:{{ default_style }}</name>
+    <workspace>{{ workspace }}</workspace>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ workspace }}/styles/{{ default_style }}.xml" type="application/xml"/>
+  </defaultStyle>
+  {%- if other_styles|length > 0 -%}
+  <styles class="linked-hash-set">
+    {% for other_style in other_styles %}
+    <style>
+      <name>{{ workspace }}:{{ other_style }}</name>
+      <workspace>{{ workspace }}</workspace>
+      <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ workspace }}/styles/{{ other_style }}.xml" type="application/xml"/>
+    </style>
+    {% endfor %}
+  </styles>
+  {% endif %}
+</layer>

@@ -1,0 +1,115 @@
+{% extends base_template %}
+{% load static tethys_gizmos %}
+
+{% block app_navigation_items %}
+  <p style="margin-bottom: 5px;"><b>Name:</b></p>
+  <p>The name of the new {{ type_singular|lower }}.</p>
+  <li class="separator"></li>
+
+  <p style="margin-bottom: 5px;"><b>Description:</b></p>
+  <p>A more detailed description of the {{ type_singular|lower }}</p>
+  <li class="separator"></li>
+
+  <p style="margin-bottom: 5px;"><b>Organizations:</b></p>
+  <p>{{ type_plural }} will be accessible to the members of the organizations to which the {{ type_singular|lower }} is assigned.</p>
+  <li class="separator"></li>
+
+  {% if show_srid_field %}
+  <p style="margin-bottom: 5px;"><b>Spatial Reference System:</b></p>
+  <p>
+    The spatial reference system that was used to define the spatial features of your {{ type_singular|lower }}. If you don't know
+    the spatial reference system or no spatial reference system was used to create your {{ type_singular|lower }}, then leave it
+    blank. You may want to use <a href="http://spatialreference.org/">spatialref.org</a> to help you identify the
+    appropriate spatial reference system.
+  </p>
+  <li class="separator"></li>
+  {% endif %}
+
+  {% if show_file_upload_field %}
+  <p style="margin-bottom: 5px;"><b>{{ file_upload_label }}</b></p>
+  <p>{{ file_upload_help }}</p>
+  {% endif %}
+{% endblock %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-12">
+      <h1>{% if editing %}Edit{% else %}New{% endif %} {{ type_singular }}</h1>
+      <form id="new-resource-form" method="post" action="" {% if show_file_upload_field %}enctype="multipart/form-data"{% endif %}>
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6">
+            {# NAME FIELD #}
+            {% gizmo resource_name_input %}
+
+            {# DESCRIPTION FIELD #}
+            <div class="form-group" id="resource-description-group">
+              <label for="resource-description">Description</label>
+              <textarea id="resource-description"
+                        name="resource-description"
+                        class="form-control"
+                        rows=5
+                        style="width: 100%;">{{ resource_description }}</textarea>
+            </div>
+
+            {# ORGANIZATIONS FIELD #}
+            {% gizmo organization_select %}
+
+            {# SPATIAL REFERENCE FIELD #}
+            {% if show_srid_field %}
+              {% gizmo spatial_reference_select %}
+            {% endif %}
+            {{ resource_srid_error }}
+
+            {% block custom_app_content %}
+            {% endblock %}
+
+            {# FILE UPLOAD FIELD #}
+            {% if show_file_upload_field %}
+            <div class="form-group {% if file_upload_error %}has-error{% endif %}" id="input-file-upload-wrapper">
+              <label class="control-label" for="input-file-upload">{{ file_upload_label }}</label>
+              <div class="input-file-wrapper">
+                <input id="input-file-upload"
+                       class="file-input"
+                       name="input-file-upload"
+                       type="file"
+                       accept="{{ file_upload_accept }}"
+                       {% if file_upload_multiple %}multiple{% endif %}>
+                <label for="input-file-upload" class="btn btn-default btn-file-input">Browse</label>
+              </div>
+              <span class="help-block">{{ file_upload_error }}</span>
+            </div>
+            {% endif %}
+            {{ file_upload_error }}
+
+            <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
+            <input type="submit"
+                   class="btn btn-success"
+                   name="modify-resource-submit"
+                   value="{% if editing %}Save Changes{% else %}Create {{ type_singular }}{% endif %}">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+
+  <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
+
+  {% if show_file_upload_field %}
+  <link href="{% static 'atcore/file_input/css/file_input.css' %}" rel="stylesheet"/>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+
+  {% if show_file_upload_field %}
+  <script src="{% static 'atcore/file_input/js/file_input.js' %}" type="text/javascript"></script>
+  {% endif %}
+
+  <script>$(function () { $('#resource-name').focus(); });</script>
+{% endblock %}

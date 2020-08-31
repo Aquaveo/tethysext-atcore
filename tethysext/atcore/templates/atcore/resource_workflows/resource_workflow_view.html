@@ -1,0 +1,47 @@
+{% extends base_template %}
+{% load static %}
+
+{% block app_navigation_items %}
+  {# NAV HEADER #}
+  {% include 'atcore/components/nav_header.html' %}
+  {# WORKFLOW LOCKED STATUS #}
+  {% include 'atcore/resource_workflows/components/workflow_locked_status.html' %}
+
+  <div class="workflow-tabs">
+    <ul class="nav nav-tabs atcore-nav-tabs" role="tablist">
+    {# WORKFLOW TAB #}
+    {% include 'atcore/resource_workflows/components/workflow_tab.html' %}
+    </ul>
+    <div class="tab-content">
+    {# WORKFLOW TAB PANEL #}
+    {% include 'atcore/resource_workflows/components/workflow_tab_content.html' %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block app_content %}
+  {% block before_workflow_form %}
+  {% endblock %}
+  <form id="workflow-form" class="workflow-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input name="method" value="save-step-data" hidden>
+    {% block workflow_form_content %}
+    {% endblock %}
+  </form>
+  {% block after_workflow_form %}
+  {% endblock %}
+{% endblock %}
+
+{% block app_actions %}
+  {% include 'atcore/resource_workflows/components/workflow_actions.html' %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/css/wide_nav.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/nav_header.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/nav_tabs.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/workflow_steps.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/workflow_locked_status.css' %}" rel="stylesheet"/>
+{% endblock %}

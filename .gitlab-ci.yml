@@ -1,0 +1,45 @@
+stages:
+  - Lint
+  - Build
+  - Test
+  - Cleanup
+
+
+include:
+  - project: 'tethys/kubernetes/gl-k8s-integration'
+    ref: 1.3.0-beta.2
+    file: '/kaniko-build.yml'
+  - project: 'tethys/kubernetes/gl-k8s-integration'
+    ref: 1.3.0-beta.2
+    file: '/test-tethys.yml'
+
+variables:
+  CONDA_HOME: '/opt/conda'
+  POSTGRES_VERSION: '9.6'
+
+### Build ###
+"Build Commit":
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+"Build Tag":
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+### Test ###
+"Unit Test":
+  variables:
+    POSTGRES_DB: atcore_tests
+    POSTGRES_PASSWORD: pass
+  script:
+    # We need to uninstall atcore and reinstall in development mode to run the test.
+    - cd /var/www/tethys/exts/tethysext-atcore && pip uninstall -y tethysext-atcore && tethys install -d -q -w
+    - echo "Run Tests:"
+    # Unit Tests
+    - cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
+    # Intermediate Tests
+    - cd /usr/lib/tethys/tethys/tethys_portal && ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests
+    # Coverage Report
+    - cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini
+  except:
+    - tags

@@ -1,0 +1,7 @@
+<layer>
+  <defaultStyle>
+    <name>foo:points</name>
+    <workspace>foo</workspace>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8181/geoserver/rest/workspaces/foo/styles/points.xml" type="application/xml"/>
+  </defaultStyle>
+</layer>

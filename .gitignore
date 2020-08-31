@@ -1,0 +1,14 @@
+*.pydevproject
+*.project
+*.egg-info
+*.class
+*.pyo
+*.pyc
+*.db
+*.sqlite
+*.DS_Store
+*.idea
+*.coverage
+build
+dist
+working_dir

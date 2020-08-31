@@ -1,0 +1,73 @@
+{% extends base_template %}
+{% load static tethys_gizmos %}
+
+{% block app_navigation_items %}
+  <p style="margin-bottom: 5px;"><b>Username:</b></p>
+  <p>The unique username the user will use to access his/her account.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Password:</b></p>
+  <p>The password the user will use to access his/her account.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Role:</b></p>
+  <p>The role assigned to a user determines which features that user can access. You cannot change your own role.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Organizations:</b></p>
+  <p>Users have access to the projects of the organizations to which they belong.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>First Name:</b></p>
+  <p>The user's first name.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Last Name:</b></p>
+  <p>The user's last name.</p>
+  <li class="separator"></li>
+  <p style="margin-bottom: 5px;"><b>Email:</b></p>
+  <p>The user's email address.</p>
+
+{% endblock %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-12">
+      <h1>{% if editing %}Edit{% else %}New{% endif %} User</h1>
+      <form id="new-user-group-form" method="post" action="">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Account</h6>
+            {% if not is_me %}
+              {% gizmo toggle_switch user_account_status_toggle %}
+            {% endif %}
+            {% gizmo text_input username_input %}
+            {% gizmo text_input password_input %}
+            {% gizmo text_input confirm_password_input %}
+
+            <h6>Permissions</h6>
+            {% gizmo select_input role_select %}
+            <div id="organization-select-wrapper">
+              {% gizmo select_input organization_select %}
+            </div>
+            <h6>Profile</h6>
+            {% gizmo text_input first_name_input %}
+            {% gizmo text_input last_name_input %}
+            {% gizmo text_input email_input %}
+
+          </div>
+        </div>
+        <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
+        <input type="submit" class="btn btn-success" name="modify-user-submit" value="{% if editing %}Save Changes{% else %}Create User{% endif %}">
+      </form>
+    </div>
+  </div>
+  <div id="app-users-attributes"
+       data-no-organization-roles="{{ no_organization_roles|jsonify }}"></div>
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/app_users/css/app_users.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/app_users/js/hide_organization_if_admin.js' %}" type="text/javascript"></script>
+{% endblock %}

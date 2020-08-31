@@ -1,0 +1,44 @@
+{% extends "atcore/map_view/map_view.html" %}
+{% load tethys_gizmos static %}
+
+{# OVERRIDE DEFAULT ACTIVE TAB #}
+{% block disable_default_tab %}{% endblock %}
+{% block disable_default_tab_panel %}{% endblock %}
+
+{% block after_nav_header %}
+  {# WORKFLOW LOCKED STATUS #}
+  {% include 'atcore/resource_workflows/components/workflow_locked_status.html' %}
+{% endblock %}
+
+{% block custom_map_tabs %}
+  {# WORKFLOW TAB #}
+  {% include 'atcore/resource_workflows/components/workflow_tab.html' %}
+{% endblock %}
+
+{% block custom_map_tab_panels %}
+  {# WORKFLOW TAB PANEL #}
+  {% include 'atcore/resource_workflows/components/workflow_tab_content.html' %}
+{% endblock %}
+
+{% block map %}
+  <form id="workflow-form" class="map-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input name="method" value="save-step-data" hidden>
+    {{ block.super }}
+  </form>
+{% endblock %}
+
+{% block tab_data %}
+{% endblock %}
+
+{% block app_actions %}
+  {% include 'atcore/resource_workflows/components/workflow_actions.html' %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="{% static 'atcore/resource_workflows/workflow_steps.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/atcore_map_workflow.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/resource_workflows/workflow_locked_status.css' %}" rel="stylesheet"/>
+{% endblock %}

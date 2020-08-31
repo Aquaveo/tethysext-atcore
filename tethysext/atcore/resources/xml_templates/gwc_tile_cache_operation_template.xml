@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<seedRequest>
+	<name>{{ workspace }}:{{ name }}</name>
+  {% if bounds %}
+	<bounds>
+    <coords>
+      <double>{{ bounds[0] }}</double> <!-- minx -->
+      <double>{{ bounds[1] }}</double> <!-- miny -->
+      <double>{{ bounds[2] }}</double> <!-- maxx -->
+      <double>{{ bounds[3] }}</double> <!-- maxy -->
+    </coords>
+	</bounds>
+  {% endif %}
+
+  <!-- These are listed on http://localhost:8080/geowebcache/demo -->
+  <gridSetId>EPSG:{{ grid_set_id }}</gridSetId>
+	<zoomStart>{{ zoom_start }}</zoomStart>
+	<zoomStop>{{ zoom_end }}</zoomStop>
+	<format>{{ format }}</format>
+	<type>{{ operation }}</type>
+
+	<!-- Number of seeding threads to run in parallel. If type is truncate only one thread will execute. -->
+	<threadCount>{{ thread_count }}</threadCount>
+
+  {% if parameters %}
+    <parameters>
+    {% for key, value in parameters.iteritems() %}
+      <entry>
+        <string>{{ key }}</string>
+        <string>{{ value }}</string>
+      </entry>
+    {% endfor %}
+    </parameters>
+  {% endif %}
+</seedRequest>
