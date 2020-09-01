@@ -1,6 +1,7 @@
 linters:
   flake8:
     fixer: true
+    config: './tox.ini'
   shellcheck:
     shell: bash
 fixers:
