@@ -58,5 +58,21 @@ jobs:
       image: '${{ env.KANIKO_IMAGE }}:${{ env.TAG }}'
     steps:
     - uses: actions/checkout@v2
+    - name: Set Env
+      run: |
+        echo ::set-env name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
+        echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
+    - name: Set Tag
+      run: |
+        echo ::set-env name=TAG::dev_${GITHUB_SHA}
+      # If the branch is stable, we'll overwrite the TAG to include stable.
+    - name: Set Stable Tag
+      if: endsWith(github.ref, '/stable')
+      run: |
+        echo ::set-env name=TAG::stable
+    - name: Test Tag
+      run: |
+        echo $TAG
+    - uses: actions/checkout@v2
     - name: Run Test
       run: bash ${TETHYS_HOME}/run.sh --test
