@@ -58,4 +58,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
-      run: bash ${TETHYS_HOME}/run.sh --test
+      run: bash ~/.tethys/run.sh --test
