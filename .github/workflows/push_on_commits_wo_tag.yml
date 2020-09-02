@@ -54,11 +54,8 @@ jobs:
 
   salt_tests:
     runs-on: ubuntu-latest
-    - name: Set Tag
-      run: |
-        echo ::set-env name=TAG::dev_${GITHUB_SHA}
     container:
-      image: 'aquaveollc/tethysext-atcore:dev_${{ env.TAG }}'
+      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
