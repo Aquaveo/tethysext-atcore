@@ -23,7 +23,7 @@ jobs:
         echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
     - name: Set Tag
       run: |
-        echo ::set-env name=TAG::dev-${GITHUB_SHA}
+        echo ::set-env name=TAG::${GITHUB_SHA}
       # If the branch is stable, we'll overwrite the TAG to include stable.
     - name: Set Stable Tag
       if: endsWith(github.ref, '/stable')
@@ -46,7 +46,7 @@ jobs:
         # Image tag
         tag: ${{ env.TAG }}
         # Enables build cache
-        cache: true
+        cache: truea
         # Docker registry meant to be used as cache
         cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
         # Dockerfile filename
