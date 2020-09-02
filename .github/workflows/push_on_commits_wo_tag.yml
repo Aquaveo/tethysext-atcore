@@ -51,11 +51,12 @@ jobs:
         cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}W
         # Dockerfile filename
         build_file: Dockerfile
+
   salt_tests:
     runs-on: ubuntu-latest
-    containers:
+    container:
       image: '${{ env.KANIKO_IMAGE }}:${{ env.TAG }}
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
-      run: bash ~/.tethys/run.sh --test
+      run: bash ${TETHYS_HOME}/run.sh --test
