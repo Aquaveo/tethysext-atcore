@@ -55,7 +55,7 @@ jobs:
   salt_tests:
     runs-on: ubuntu-latest
     container:
-      image: 'aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}'
+      image: 'aquaveollc/tethysext-atcore:dev_${{ GITHUB_SHA}}'
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
