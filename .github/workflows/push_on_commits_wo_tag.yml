@@ -48,11 +48,14 @@ jobs:
         # Enables build cache
         cache: truea
         # Docker registry meant to be used as cache
-        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
+        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}W
         # Dockerfile filename
         build_file: Dockerfile
-#    - name: unit test
-#      run:
-#  salt_tests:
-#    runs-on: ubuntu-latest
-#    containers:
+  salt_tests:
+    runs-on: ubuntu-latest
+    containers:
+      image: '${{ env.KANIKO_IMAGE }}:${{ env.TAG }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run Test
+      run: bash ${TETHYS_HOME}/run.sh --test
