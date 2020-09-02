@@ -56,6 +56,23 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
+    services:
+      postgres:
+        image: mdillon/postgis:9.6
+        env:
+          POSTGRES_DB: tethys_postgis
+          POSTGRES_PASSWORD: please_dont_use_default_passwords
+          TETHYS_PUBLIC_HOST: 172.17.0.1
+          TETHYS_DB_HOST: tethys-postgis
+          TETHYS_DB_PORT: 5432
+          TETHYS_DB_USERNAME: tethys_super
+          TETHYS_DB_PASSWORD: please_dont_use_default_passwords
+          TETHYS_DB_SUPERUSER: tethys_super
+          TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
+          APP_DB_HOST: tethys-postgis
+          APP_DB_PORT: 5432
+          APP_DB_USERNAME: tethys_super
+          APP_DB_PASSWORD: please_dont_use_default_passwords
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
