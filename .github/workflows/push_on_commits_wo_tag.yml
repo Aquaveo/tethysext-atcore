@@ -73,10 +73,14 @@ jobs:
           APP_DB_PORT: 5432
           APP_DB_USERNAME: tethys_super
           APP_DB_PASSWORD: please_dont_use_default_passwords
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
-      run: bash ${TETHYS_HOME}/run.sh --test
-      env:
-        POSTGRES_HOST: tethys_postgis
-        POSTGRES_PORT: 5432
+      run: |
+        printenv
+        bash ${TETHYS_HOME}/run.sh --test
