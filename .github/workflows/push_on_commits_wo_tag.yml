@@ -60,8 +60,9 @@ jobs:
       postgres:
         image: mdillon/postgis:9.6
         env:
-          POSTGRES_HOST: localhost
+          POSTGRES_HOST: tethys-postgis
           POSTGRES_PASSWORD: please_dont_use_default_passwords
+          POSTGRES_DB: tethys_postgis
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -79,7 +80,7 @@ jobs:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
         TETHYS_PUBLIC_HOST: 172.17.0.1
-        TETHYS_DB_HOST: localhost
+        TETHYS_DB_HOST: tethys-postgis
         TETHYS_DB_PORT: 5432
         TETHYS_DB_USERNAME: tethys_super
         TETHYS_DB_PASSWORD: please_dont_use_default_passwords
