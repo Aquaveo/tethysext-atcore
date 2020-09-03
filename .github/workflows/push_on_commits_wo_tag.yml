@@ -63,13 +63,12 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_PASSWORD: please_dont_use_default_passwords
           POSTGRES_DB: tethys_postgis
+          POSTGRES_PORT: 5436
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-        ports:
-          - 5432:5436
     steps:
     - uses: actions/checkout@v2
     - name: Run Test
