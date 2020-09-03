@@ -77,3 +77,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run Test
       run: bash ${TETHYS_HOME}/run.sh --test
+      env:
+        POSTGRES_HOST: tethys-postgis
+        POSTGRES_PORT: 5432
