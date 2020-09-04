@@ -119,6 +119,7 @@ jobs:
         ls
         bash activate tethys
         conda env list
+        conda init bash
         conda activate tethys
         echo "Python Environment:"
         conda list
