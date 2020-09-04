@@ -115,7 +115,7 @@ jobs:
     - name: Run Test
       run: |
         echo "Activate Tethys"
-        . ${CONDA_HOME}/bin/activate tethys
+        bash ${CONDA_HOME}/bin/activate tethys
         echo "Python Environment:"
         conda list
         pip list
