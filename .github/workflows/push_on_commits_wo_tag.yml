@@ -111,18 +111,19 @@ jobs:
           --health-retries 10
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
     - name: Run Test
       run: |
         echo "Activate Tethys"
         . ${CONDA_HOME}/bin/activate tethys
         echo "Python Environment:"
         conda list
-        sudo - H pip list
+        pip list
         echo "Generate Settings with run.sh --test"
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
-        sudo - H pip uninstall -y tethysext-atcore
-        sudo - H tethys install -d -q -w
+        pip uninstall -y tethysext-atcore
+        tethys install -d -q -w
         echo "Run Tests:"
         cd /var/www/tethys/exts/tethysext-atcore
         ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
