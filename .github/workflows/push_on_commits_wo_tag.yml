@@ -120,6 +120,7 @@ jobs:
         bash activate tethys
         conda env list
         conda init bash
+        exec bash
         conda activate tethys
         echo "Python Environment:"
         conda list
