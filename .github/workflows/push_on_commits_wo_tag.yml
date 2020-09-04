@@ -117,7 +117,7 @@ jobs:
         echo "Activate Tethys"
         cd  ${CONDA_HOME}/bin/
         ls
-        . activate tethys
+        bash activate tethys
         echo "Python Environment:"
         conda list
         pip list
