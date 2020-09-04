@@ -118,6 +118,8 @@ jobs:
         cd  ${CONDA_HOME}/bin/
         ls
         bash activate tethys
+        conda env list
+        conda activate tethys
         echo "Python Environment:"
         conda list
         pip list
