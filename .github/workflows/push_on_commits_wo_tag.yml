@@ -112,7 +112,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
-    - name: Run Test
+    - name: Setup
       run: |
         echo "Activate Tethys"
         cd  ${CONDA_HOME}/bin/
@@ -121,6 +121,8 @@ jobs:
         conda env list
         conda init bash
         exec bash
+    - name: Run Test
+      run: |
         conda activate tethys
         echo "Python Environment:"
         conda list
