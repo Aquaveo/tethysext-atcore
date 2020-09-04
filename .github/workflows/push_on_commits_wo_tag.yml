@@ -121,7 +121,6 @@ jobs:
         echo "Generate Settings with run.sh --test"
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
-#        pip uninstall -y tethysext-atcore
         tethys install -d -q -w
         echo "Run Tests:"
         cd /var/www/tethys/exts/tethysext-atcore
