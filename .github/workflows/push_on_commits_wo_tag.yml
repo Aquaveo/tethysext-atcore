@@ -120,7 +120,7 @@ jobs:
         bash activate tethys
         conda env list
         conda init bash
-        exec bash
+        pip show conda
     - name: Run Test
       run: |
         conda activate tethys
