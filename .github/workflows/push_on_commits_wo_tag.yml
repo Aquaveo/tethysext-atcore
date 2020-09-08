@@ -117,18 +117,10 @@ jobs:
         echo "Activate Tethys"
         cd  ${CONDA_HOME}/bin/
         ls
-        conda info | grep -i "base environment"
-        source /opt/conda/etc/profile.d/conda.sh
-        . ${CONDA_HOME}/bin/activate tethys
-        conda env list
-        conda init bash
-        pip show conda
+        bash ${TETHYS_HOME}/run.sh --test &&
     - name: Run Test
       run: |
-        conda activate tethys
-        echo "Python Environment:"
-        conda list
-        pip list
+        . ${CONDA_HOME}/bin/activate tethys && conda list && pip list
         echo "Generate Settings with run.sh --test"
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
