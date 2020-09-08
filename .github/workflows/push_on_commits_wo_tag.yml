@@ -117,6 +117,7 @@ jobs:
         echo "Activate Tethys"
         cd  ${CONDA_HOME}/bin/
         ls
+        conda info | grep -i "base environment"
         source /opt/conda/etc/profile.d/conda.sh
         . ${CONDA_HOME}/bin/activate tethys
         conda env list
