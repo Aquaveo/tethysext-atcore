@@ -114,19 +114,13 @@ jobs:
     - name: Setup
       run: |
         echo "Activate Tethys"
+        . ${CONDA_HOME}/bin/activate tethys
         cd  ${CONDA_HOME}/bin/
         ls
-        bash ${TETHYS_HOME}/run.sh --test &&
+        bash ${TETHYS_HOME}/run.sh --test
     - name: Run Test
       run: |
-        . ${CONDA_HOME}/bin/activate tethys
-        conda list
-        pip list
-        echo "Generate Settings with run.sh --test"
-        bash ${TETHYS_HOME}/run.sh --test
-        cd /var/www/tethys/exts/tethysext-atcore
-        pip uninstall -y tethysext-atcore
-        tethys install -d -q -w
+        . ${CONDA_HOME}/bin/activate tethys && conda list && pip list && cd /var/www/tethys/exts/tethysext-atcore && pip uninstall -y tethysext-atcore && tethys install -d -q -w
         echo "Run Tests:"
         cd /var/www/tethys/exts/tethysext-atcore
         ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
