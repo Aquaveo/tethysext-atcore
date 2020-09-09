@@ -114,9 +114,6 @@ jobs:
     - name: Setup
       run: |
         echo "Activate Tethys"
-        . ${CONDA_HOME}/bin/activate tethys
-        cd  ${CONDA_HOME}/bin/
-        ls
         bash ${TETHYS_HOME}/run.sh --test
     - name: Run Test
       run: |
