@@ -117,7 +117,7 @@ jobs:
         . ${CONDA_HOME}/bin/activate tethys
         conda list
         bash ${TETHYS_HOME}/run.sh --test
-        cd /var/www/tethys/exts/tethysext-atcore && pip uninstall -y tethysext-atcore && tethys install -d -q -w
+        cd /var/www/tethys/exts/tethysext-atcore && tethys install -d -q -w
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
