@@ -113,12 +113,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run Test
       run: |
-        conda info --envs
         . ${CONDA_HOME}/bin/activate tethys
         conda info --envs
         conda activate tethys
         conda info --envs
-        tethys
+        tethys install -d -q -w
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
         ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
