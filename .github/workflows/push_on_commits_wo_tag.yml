@@ -121,7 +121,7 @@ jobs:
         touch /var/www/tethys/exts/tethysext-atcore/tethysext/atcore/tests/files/arc_grid/precip30min.*
         ATCORE_TEST_DATABASE="postgresql://postgres:please_dont_use_default_passwords@tethys-postgis:5432/tethys_postgis" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
         cd /usr/lib/tethys/tethys/tethys_portal
-        ATCORE_TEST_DATABASE="postgresql://postgres:please_dont_use_default_passwords@$tethys-postgis:5432/tethys_postgis" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests
+        ATCORE_TEST_DATABASE="postgresql://postgres:please_dont_use_default_passwords@tethys-postgis:5432/tethys_postgis" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests
         cd /var/www/tethys/exts/tethysext-atcore
         coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini
       env:
