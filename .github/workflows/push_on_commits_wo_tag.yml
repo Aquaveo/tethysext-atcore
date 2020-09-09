@@ -103,7 +103,7 @@ jobs:
           POSTGRES_HOST: tethys-postgis
           POSTGRES_PASSWORD: please_dont_use_default_passwords
           POSTGRES_DB: tethys_postgis
-          POSTGRES_PORT: 5436
+          POSTGRES_PORT: 5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -117,7 +117,6 @@ jobs:
         conda info --envs
         conda activate tethys
         conda info --envs
-        tethys install -d -q -w
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
         ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
@@ -128,16 +127,16 @@ jobs:
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
-        POSTGRES_PORT: 5436
+        POSTGRES_PORT: 5432
         TETHYS_PUBLIC_HOST: 172.17.0.1
         TETHYS_DB_HOST: tethys-postgis
-        TETHYS_DB_PORT: 5436
+        TETHYS_DB_PORT: 5432
         TETHYS_DB_USERNAME: tethys_super
         TETHYS_DB_PASSWORD: please_dont_use_default_passwords
         TETHYS_DB_SUPERUSER: tethys_super
         TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
         APP_DB_HOST: tethys-postgis
-        APP_DB_PORT: 5436
+        APP_DB_PORT: 5432
         APP_DB_USERNAME: tethys_super
         APP_DB_PASSWORD: please_dont_use_default_passwords
 
