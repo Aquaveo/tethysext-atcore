@@ -52,47 +52,7 @@ jobs:
 #        # Dockerfile filename
 #        build_file: Dockerfile
 
-#  salt_tests:
-#    runs-on: ubuntu-latest
-#    container:
-#      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
-#    services:
-#      tethys-postgis:
-#        image: mdillon/postgis:9.6
-#        env:
-#          POSTGRES_HOST: tethys-postgis
-#          POSTGRES_PASSWORD: please_dont_use_default_passwords
-#          POSTGRES_DB: tethys_postgis
-#          POSTGRES_PORT: 5432
-#        options: >-
-#          --health-cmd pg_isready
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 10
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: Run Test
-#      run: |
-#        printenv
-#
-#        bash ${TETHYS_HOME}/run.sh --test
-#      env:
-#        POSTGRES_DB: tethys_postgis
-#        POSTGRES_PASSWORD: please_dont_use_default_passwords
-#        POSTGRES_PORT: 5432
-#        TETHYS_PUBLIC_HOST: 172.17.0.1
-#        TETHYS_DB_HOST: tethys-postgis
-#        TETHYS_DB_PORT: 5432
-#        TETHYS_DB_USERNAME: tethys_super
-#        TETHYS_DB_PASSWORD: please_dont_use_default_passwords
-#        TETHYS_DB_SUPERUSER: tethys_super
-#        TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
-#        APP_DB_HOST: tethys-postgis
-#        APP_DB_PORT: 5432
-#        APP_DB_USERNAME: tethys_super
-#        APP_DB_PASSWORD: please_dont_use_default_passwords
-
-  unit_tests:
+  salt_tests:
     runs-on: ubuntu-latest
     container:
       image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
@@ -111,20 +71,11 @@ jobs:
           --health-retries 10
     steps:
     - uses: actions/checkout@v2
-    - name: Setup
-      run: |
-        echo "Activate Tethys"
-        bash ${TETHYS_HOME}/run.sh --test
     - name: Run Test
       run: |
-        . ${CONDA_HOME}/bin/activate tethys && conda list && pip list && cd /var/www/tethys/exts/tethysext-atcore && pip uninstall -y tethysext-atcore && tethys install -d -q -w
-        echo "Run Tests:"
-        cd /var/www/tethys/exts/tethysext-atcore
-        ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
-        cd /usr/lib/tethys/tethys/tethys_portal
-        ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests
-        cd /var/www/tethys/exts/tethysext-atcore
-        coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini
+        printenv
+
+        bash ${TETHYS_HOME}/run.sh --test
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
@@ -140,3 +91,52 @@ jobs:
         APP_DB_PORT: 5432
         APP_DB_USERNAME: tethys_super
         APP_DB_PASSWORD: please_dont_use_default_passwords
+
+#  unit_tests:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
+#    services:
+#      tethys-postgis:
+#        image: mdillon/postgis:9.6
+#        env:
+#          POSTGRES_HOST: tethys-postgis
+#          POSTGRES_PASSWORD: please_dont_use_default_passwords
+#          POSTGRES_DB: tethys_postgis
+#          POSTGRES_PORT: 5432
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 10
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Setup
+#      run: |
+#        echo "Activate Tethys"
+#        bash ${TETHYS_HOME}/run.sh --test
+#    - name: Run Test
+#      run: |
+#        . ${CONDA_HOME}/bin/activate tethys && conda list && pip list && cd /var/www/tethys/exts/tethysext-atcore && pip uninstall -y tethysext-atcore && tethys install -d -q -w
+#        echo "Run Tests:"
+#        cd /var/www/tethys/exts/tethysext-atcore
+#        ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
+#        cd /usr/lib/tethys/tethys/tethys_portal
+#        ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests
+#        cd /var/www/tethys/exts/tethysext-atcore
+#        coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini
+#      env:
+#        POSTGRES_DB: tethys_postgis
+#        POSTGRES_PASSWORD: please_dont_use_default_passwords
+#        POSTGRES_PORT: 5432
+#        TETHYS_PUBLIC_HOST: 172.17.0.1
+#        TETHYS_DB_HOST: tethys-postgis
+#        TETHYS_DB_PORT: 5432
+#        TETHYS_DB_USERNAME: tethys_super
+#        TETHYS_DB_PASSWORD: please_dont_use_default_passwords
+#        TETHYS_DB_SUPERUSER: tethys_super
+#        TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
+#        APP_DB_HOST: tethys-postgis
+#        APP_DB_PORT: 5432
+#        APP_DB_USERNAME: tethys_super
+#        APP_DB_PASSWORD: please_dont_use_default_passwords
