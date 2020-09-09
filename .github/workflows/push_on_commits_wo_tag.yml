@@ -116,6 +116,7 @@ jobs:
         printenv
         . ${CONDA_HOME}/bin/activate tethys
         conda list
+        tethys
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
         tethys install -d -q -w
