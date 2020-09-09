@@ -116,10 +116,15 @@ jobs:
         printenv
         . ${CONDA_HOME}/bin/activate tethys
         conda list
+        conda info --envs
         tethys
         bash ${TETHYS_HOME}/run.sh --test
         cd /var/www/tethys/exts/tethysext-atcore
-        tethys install -d -q -w
+        ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
+        cd /usr/lib/tethys/tethys/tethys_portal
+        ATCORE_TEST_DATABASE="postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests
+        cd /var/www/tethys/exts/tethysext-atcore
+        coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
