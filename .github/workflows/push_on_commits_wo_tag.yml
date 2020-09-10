@@ -57,8 +57,12 @@ jobs:
 
   salt_tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker_image_test:
+          - 'test'
     container:
-      image: $GITHUB_SHA
+      image: ${{ matrix.docker_image_test }}
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
