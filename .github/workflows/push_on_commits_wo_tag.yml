@@ -78,7 +78,7 @@ jobs:
     - name: Pull Docker image
       run: docker pull ${{ env.TEST_IMAGE }}
     - name: Run image
-      run: docker run -it -d --name tethysext-atcore
+      run: docker run -it -d --name tethysext-atcore ${{ env.TEST_IMAGE }}
     - name: Run Test
       run: |
         docker exec tethysext-atcore bash -c '. ${TETHYS_HOME}/run.sh --test'
