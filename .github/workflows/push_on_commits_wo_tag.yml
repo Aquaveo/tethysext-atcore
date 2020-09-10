@@ -7,6 +7,8 @@ on:
     branches:
       - '*'
 
+env:
+  TEST_IMAGE: aquaveollc/tethysext-atcore/dev_${GITHUB_SHA}
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -55,7 +57,7 @@ jobs:
   salt_tests:
     runs-on: ubuntu-latest
     container:
-      image: 'aquaveollc/tethysext-atcore:dev_${{ jobs.salt_tests.GITHUB_SHA }}'
+      image: $TEST_IMAGE
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
