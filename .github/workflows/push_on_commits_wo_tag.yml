@@ -8,7 +8,7 @@ on:
       - '*'
 
 env:
-  TEST_IMAGE: aquaveollc/tethysext-atcore/dev_${GITHUB_SHA}
+  TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -58,7 +58,7 @@ jobs:
   salt_tests:
     runs-on: ubuntu-latest
     container:
-      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
+      image: {{ env.TEST_IMAGE }}
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
