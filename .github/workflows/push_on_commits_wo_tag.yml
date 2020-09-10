@@ -75,6 +75,13 @@ jobs:
           - 5432:5432
     steps:
     - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: npm ci
+    - name: Connect to PostgreSQL
+      run: node client.js
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
     - name: Docker login
       run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
     - name: Pull & Run image
