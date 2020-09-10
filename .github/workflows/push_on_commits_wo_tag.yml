@@ -60,7 +60,7 @@ jobs:
     strategy:
       matrix:
         docker_image_test:
-          - aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
+          - ${{ env.TEST_IMAGE }}
     container:
       image: ${{ matrix.docker_image_test }}
     services:
