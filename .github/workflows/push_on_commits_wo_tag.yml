@@ -8,7 +8,8 @@ on:
       - '*'
 
 env:
-  TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
+#  TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
+  TEST_IMAGE: aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -57,12 +58,6 @@ jobs:
 
   salt_tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        docker_image_test:
-          - ${{ env.TEST_IMAGE }}
-    container:
-      image: ${{ matrix.docker_image_test }}
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
@@ -78,13 +73,13 @@ jobs:
           --health-retries 10
     steps:
     - uses: actions/checkout@v2
+    - name: Docker login
+      run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
+    - name: Pull Docker image
+      run: docker pull ${{ env.TEST_IMAGE }}
     - name: Run Test
       run: |
-        printenv
-        echo 'show github_sha'
-        echo ${{ env.TEST_IMAGE }}
-        echo ${GITHUB_SHA}
-        . ${TETHYS_HOME}/run.sh --test
+        docker exec builder bash -c '. ${TETHYS_HOME}/run.sh --test'
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
