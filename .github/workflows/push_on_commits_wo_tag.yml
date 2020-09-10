@@ -55,7 +55,7 @@ jobs:
   salt_tests:
     runs-on: ubuntu-latest
     container:
-      image: 'aquaveollc/tethysext-atcore:dev_$GITHUB_SHA'
+      image: 'aquaveollc/tethysext-atcore:dev_${{ jobs.salt_tests.GITHUB_SHA }}'
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
