@@ -9,53 +9,53 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-#  # This workflow contains a single job called "build"
-#  build:
-#    # The type of runner that the job will run on
-#    runs-on: ubuntu-latest
-#    # Steps represent a sequence of tasks that will be executed as part of the job
-#    steps:
-#    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-#    - uses: actions/checkout@v2
-#    - name: Set Env
-#      run: |
-#        echo ::set-env name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
-#        echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
-#    - name: Set Tag
-#      run: |
-#        echo ::set-env name=TAG::dev_${GITHUB_SHA}
-#      # If the branch is stable, we'll overwrite the TAG to include stable.
-#    - name: Set Stable Tag
-#      if: endsWith(github.ref, '/stable')
-#      run: |
-#        echo ::set-env name=TAG::stable
-#    - name: Test Tag
-#      run: |
-#        echo $TAG
-#    - name: build and push tag
-#      uses: aevea/action-kaniko@v0.6.0
-#      with:
-#        # Docker registry where the image will be pushed
-#        registry: docker.io
-#        # Username used for authentication to the Docker registry
-#        username: ${{ secrets.DOCKER_BUILDER_USERNAME }}
-#        # Password used for authentication to the Docker registry
-#        password: ${{ secrets.DOCKER_BUILDER_TOKEN }}
-#        # Image name
-#        image: ${{ env.KANIKO_IMAGE }}
-#        # Image tag
-#        tag: ${{ env.TAG }}
-#        # Enables build cache
-#        cache: truea
-#        # Docker registry meant to be used as cache
-#        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}W
-#        # Dockerfile filename
-#        build_file: Dockerfile
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Set Env
+      run: |
+        echo ::set-env name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
+        echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
+    - name: Set Tag
+      run: |
+        echo ::set-env name=TAG::dev_${GITHUB_SHA}
+      # If the branch is stable, we'll overwrite the TAG to include stable.
+    - name: Set Stable Tag
+      if: endsWith(github.ref, '/stable')
+      run: |
+        echo ::set-env name=TAG::stable
+    - name: Test Tag
+      run: |
+        echo $TAG
+    - name: build and push tag
+      uses: aevea/action-kaniko@v0.6.0
+      with:
+        # Docker registry where the image will be pushed
+        registry: docker.io
+        # Username used for authentication to the Docker registry
+        username: ${{ secrets.DOCKER_BUILDER_USERNAME }}
+        # Password used for authentication to the Docker registry
+        password: ${{ secrets.DOCKER_BUILDER_TOKEN }}
+        # Image name
+        image: ${{ env.KANIKO_IMAGE }}
+        # Image tag
+        tag: ${{ env.TAG }}
+        # Enables build cache
+        cache: truea
+        # Docker registry meant to be used as cache
+        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}W
+        # Dockerfile filename
+        build_file: Dockerfile
 
   salt_tests:
     runs-on: ubuntu-latest
     container:
-      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
+      image: 'aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}'
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
@@ -76,7 +76,7 @@ jobs:
         printenv
         echo 'show github_sha'
         echo ${GITHUB_SHA}
-        bash ${TETHYS_HOME}/run.sh --test
+        . ${TETHYS_HOME}/run.sh --test
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
