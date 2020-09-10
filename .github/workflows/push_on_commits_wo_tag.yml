@@ -98,7 +98,7 @@ jobs:
         APP_DB_PASSWORD: please_dont_use_default_passwords
     - name: Run Test
       run: |
-        docker exec tethysext-atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
+        docker exec tethys_atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
 
 #  unit_tests:
 #    runs-on: ubuntu-latest
