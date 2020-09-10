@@ -79,9 +79,6 @@ jobs:
       run: docker pull ${{ env.TEST_IMAGE }}
     - name: Run image
       run: docker run -it -d --name tethysext-atcore ${{ env.TEST_IMAGE }}
-    - name: Run Test
-      run: |
-        docker exec tethysext-atcore bash -c '. ${TETHYS_HOME}/run.sh --test'
       env:
         POSTGRES_DB: tethys_postgis
         POSTGRES_PASSWORD: please_dont_use_default_passwords
@@ -97,6 +94,9 @@ jobs:
         APP_DB_PORT: 5432
         APP_DB_USERNAME: tethys_super
         APP_DB_PASSWORD: please_dont_use_default_passwords
+    - name: Run Test
+      run: |
+        docker exec tethysext-atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
 
 #  unit_tests:
 #    runs-on: ubuntu-latest
