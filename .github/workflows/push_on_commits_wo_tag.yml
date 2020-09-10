@@ -100,7 +100,7 @@ jobs:
 
     - name: Run Docker Image
       run: |
-        docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD='pass' mdillon/postgis:9.6
+        docker run -d --name tethys_postgis -p 5432:5432 -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} mdillon/postgis:9.6
         echo "wait for container to start up..."
         sleep 160s
         docker logs tethys_postgis
