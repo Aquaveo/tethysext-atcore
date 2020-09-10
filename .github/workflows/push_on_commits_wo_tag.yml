@@ -74,7 +74,8 @@ jobs:
     - name: Run Test
       run: |
         printenv
-
+        echo 'show github_sha'
+        echo ${GITHUB_SHA}
         bash ${TETHYS_HOME}/run.sh --test
       env:
         POSTGRES_DB: tethys_postgis
