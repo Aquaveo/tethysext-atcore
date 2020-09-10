@@ -58,7 +58,7 @@ jobs:
   salt_tests:
     runs-on: ubuntu-latest
     container:
-      image: ${{ TEST_IMAGE }}
+      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
@@ -78,6 +78,7 @@ jobs:
       run: |
         printenv
         echo 'show github_sha'
+        echo ${{ env.TEST_IMAGE }}
         echo ${GITHUB_SHA}
         . ${TETHYS_HOME}/run.sh --test
       env:
