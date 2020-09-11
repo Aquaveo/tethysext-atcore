@@ -13,14 +13,14 @@ env:
   POSTGRES_DB: tethys_postgis
   POSTGRES_PASSWORD: please_dont_use_default_passwords
   POSTGRES_PORT: 5432
-  TETHYS_PUBLIC_HOST: 127.0.0.1
-  TETHYS_DB_HOST: 127.0.0.1
+  TETHYS_PUBLIC_HOST: 172.17.0.1
+  TETHYS_DB_HOST: 172.17.0.1
   TETHYS_DB_PORT: 5432
   TETHYS_DB_USERNAME: tethys_super
   TETHYS_DB_PASSWORD: please_dont_use_default_passwords
   TETHYS_DB_SUPERUSER: tethys_super
   TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
-  APP_DB_HOST: 127.0.0.1
+  APP_DB_HOST: 172.17.0.1
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
