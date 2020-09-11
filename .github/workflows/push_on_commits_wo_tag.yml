@@ -10,13 +10,13 @@ on:
 env:
 #  TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
   TEST_IMAGE: aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c
-  POSTGRES_DB: tethys_postgis
+  POSTGRES_DB: postgres
   POSTGRES_PASSWORD: please_dont_use_default_passwords
   POSTGRES_PORT: 5432
   TETHYS_PUBLIC_HOST: 172.17.0.1
-  TETHYS_DB_HOST: 127.0.0.1
+  TETHYS_DB_HOST: 172.17.0.1
   TETHYS_DB_PORT: 5432
-  TETHYS_DB_USERNAME: tethys_super
+  TETHYS_DB_USERNAME: postgres
   TETHYS_DB_PASSWORD: please_dont_use_default_passwords
   TETHYS_DB_SUPERUSER: tethys_super
   TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
