@@ -24,7 +24,7 @@ env:
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
-  ALLOWED_HOST: [*]
+  ALLOWED_HOST: '[*]'
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
