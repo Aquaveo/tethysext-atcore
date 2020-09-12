@@ -70,6 +70,7 @@ jobs:
         build_file: Dockerfile
 
   salt_tests:
+    needs: [build]
     runs-on: ubuntu-latest
     services:
       tethys-postgis:
@@ -107,6 +108,7 @@ jobs:
         docker exec tethys_atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
 
   unit_tests:
+    needs: [build]
     runs-on: ubuntu-latest
     services:
       tethys-postgis:
