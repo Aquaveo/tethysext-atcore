@@ -68,39 +68,6 @@ jobs:
 #        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}W
 #        # Dockerfile filename
 #        build_file: Dockerfile
-
-#  salt_tests:
-#    runs-on: ubuntu-latest
-#    services:
-#      tethys-postgis:
-#        image: mdillon/postgis:9.6
-#        env:
-#          --health-cmd pg_isready
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 10
-#        ports:
-#          - 5432:5432
-#    steps:
-#    - name: Check out repository code
-#      uses: actions/checkout@v2
-#
-#    - name: Docker login
-#      run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
-#
-#    - name: Pull Docker Image
-#      run: |
-#        docker pull ${{ env.TEST_IMAGE }}
-#
-#    - name: Run Docker Image
-#      run: |
-#        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
-#        sleep 60s
-#        docker logs tethys_atcore
-#    - name: Run Salt Test
-#      run: |
-#        docker exec tethys_atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
-
   unit_tests:
     runs-on: ubuntu-latest
     services:
@@ -138,3 +105,35 @@ jobs:
         docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE="postgresql://postgres:please_dont_use_default_passwords@tethys-postgis:5432/tethys_postgis" coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests'
         docker exec tethys_atcore bash -c 'cd /usr/lib/tethys/tethys/tethys_portal && ATCORE_TEST_DATABASE="postgresql://postgres:please_dont_use_default_passwords@tethys-postgis:5432/tethys_postgis" coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests'
         docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini'
+
+#  salt_tests:
+#    runs-on: ubuntu-latest
+#    services:
+#      tethys-postgis:
+#        image: mdillon/postgis:9.6
+#        env:
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 10
+#        ports:
+#          - 5432:5432
+#    steps:
+#    - name: Check out repository code
+#      uses: actions/checkout@v2
+#
+#    - name: Docker login
+#      run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
+#
+#    - name: Pull Docker Image
+#      run: |
+#        docker pull ${{ env.TEST_IMAGE }}
+#
+#    - name: Run Docker Image
+#      run: |
+#        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
+#        sleep 60s
+#        docker logs tethys_atcore
+#    - name: Run Salt Test
+#      run: |
+#        docker exec tethys_atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
