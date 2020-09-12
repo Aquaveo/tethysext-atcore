@@ -75,11 +75,6 @@ jobs:
 #      tethys-postgis:
 #        image: mdillon/postgis:9.6
 #        env:
-#          POSTGRES_HOST: tethys-postgis
-#          POSTGRES_PASSWORD: please_dont_use_default_passwords
-#          POSTGRES_DB: tethys_postgis
-#          POSTGRES_PORT: 5432
-#        options: >-
 #          --health-cmd pg_isready
 #          --health-interval 10s
 #          --health-timeout 5s
@@ -108,17 +103,10 @@ jobs:
 
   unit_tests:
     runs-on: ubuntu-latest
-    container:
-      image: 'aquaveollc/tethysext-atcore:dev_7cce61c73407e1e2ae93ed566ba053e3c5bf539c'
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
         env:
-          POSTGRES_HOST: tethys-postgis
-          POSTGRES_PASSWORD: please_dont_use_default_passwords
-          POSTGRES_DB: tethys_postgis
-          POSTGRES_PORT: 5432
-        options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
