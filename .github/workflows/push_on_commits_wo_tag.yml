@@ -143,7 +143,7 @@ jobs:
     - name: Run Test
       run: |
         docker exec tethys_atcore bash -c 'conda run -n tethys pip list'
-        docker exec tethys_atcore bash -c ' . ${TETHYS_HOME}/run.sh --test && conda run -n tethys tethys install -d -q -w'
+        docker exec tethys_atcore bash -c ' . ${TETHYS_HOME}/run.sh --test && cd /var/www/tethys/exts/tethysext-atcore && ls && conda run -n tethys tethys install -d -q -w'
         docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE='postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests' coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
         docker exec tethys_atcore bash -c "cd /usr/lib/tethys/tethys/tethys_portal && ATCORE_TEST_DATABASE='postgresql://postgres:pass@${TETHYS_DB_HOST}:5432/atcore_tests' coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
         docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini'
