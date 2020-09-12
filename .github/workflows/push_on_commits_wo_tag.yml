@@ -30,8 +30,6 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -72,9 +70,8 @@ jobs:
         build_file: Dockerfile
 
   salt_tests:
+    needs: [build]
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
@@ -111,9 +108,8 @@ jobs:
         docker exec tethys_atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
 
   unit_tests:
+    needs: [build]
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
     services:
       tethys-postgis:
         image: mdillon/postgis:9.6
