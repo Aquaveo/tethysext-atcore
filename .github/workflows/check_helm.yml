@@ -18,8 +18,8 @@ jobs:
   check_helm:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    container:
-      image: aquaveollc/helm-docker:stable
+#    container:
+#      image: aquaveollc/helm-docker:stable
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -40,10 +40,10 @@ jobs:
       uses: WyriHaximus/github-action-helm3@v2
       with:
         exec: helm lint ${{ env.HELM_CHART }}
-    - name: check_helm_chart
-      run: check_helm_chart ${{ env.HELM_CHART }}
-      env:
-        HELM_REPO_HOST: https://aquaveo.github.io/tethysext-atcore/
+#    - name: check_helm_chart
+#      run: check_helm_chart ${{ env.HELM_CHART }}
+#      env:
+#        HELM_REPO_HOST: https://aquaveo.github.io/tethysext-atcore/
     - name: Package Tethysapp Helm
       uses: WyriHaximus/github-action-helm3@v1.0.0
       with:
