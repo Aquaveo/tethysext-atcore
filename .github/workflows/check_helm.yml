@@ -20,6 +20,14 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+    - name: Add tethysapp Helm
+      uses: WyriHaximus/github-action-helm3@v2
+      with:
+        exec: helm repo add tethysapp https://aquaveo.github.io/tethysapp_helm_template/
+    - name: Add tethysapp Helm
+      uses: WyriHaximus/github-action-helm3@v2
+      with:
+        exec: helm repo add misc-helm-charts https://aquaveo.github.io/misc-helm-charts/
     - name: Lint Helm
       uses: WyriHaximus/github-action-helm3@v2
       with:

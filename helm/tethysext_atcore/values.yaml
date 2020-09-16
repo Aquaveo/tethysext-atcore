@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: "docker.aquaveo.com/tethys/steem/tethysapp-steem"
+  repository: "aquaveollc/tethysext-atcore:latest"
   tag: latest
   pullPolicy: Always
 
@@ -14,23 +14,8 @@ imagePullSecrets:
 nameOverride: ""
 fullnameOverride: ""
 
-condor:
-  fullnameOverride: "steem-condor"
-  keypass: aquaveo
-  image:
-    tag: latest
-    pullPolicy: Always
-
-geoserver:
-  fullnameOverride: "steem-gs"
-  image:
-    tag: latest
-    pullPolicy: Always
-  username: "admin"
-  password: "geoserver"
-
 postgis:
-  fullnameOverride: "steem-db"
+  fullnameOverride: "atcore-db"
   image:
     tag: latest
     pullPolicy: Always
