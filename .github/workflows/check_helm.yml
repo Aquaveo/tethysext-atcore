@@ -31,7 +31,7 @@ jobs:
     - name: Depenency update
       uses: WyriHaximus/github-action-helm3@v2
       with:
-        exec: helm dependency update ./heml/tethysext_atcore
+        exec: helm dependency update ./helm/tethysext_atcore
     - name: Lint
       uses: WyriHaximus/github-action-helm3@v2
       with:
