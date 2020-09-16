@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "tethysext_atcore.fullname" . }}-test-connection"
+  labels:
+    {{- include "tethysext_atcore.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "tethysext_atcore.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
