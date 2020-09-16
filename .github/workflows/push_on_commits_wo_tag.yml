@@ -63,9 +63,9 @@ jobs:
         # Image tag
         tag: ${{ env.TAG }}
         # Enables build cache
-        cache: truea
+        cache: true
         # Docker registry meant to be used as cache
-        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}W
+        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
         # Dockerfile filename
         build_file: Dockerfile
 
