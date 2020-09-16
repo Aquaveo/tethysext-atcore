@@ -1,0 +1,4 @@
+dependencies:
+  - name: tethysapp
+    version: "*"
+    repository: "https://aquaveo.github.io/tethysapp_helm_template/"
