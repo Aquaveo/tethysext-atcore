@@ -41,4 +41,4 @@ jobs:
     - name: check_helm_chart
       run: check_helm_chart ${{ env.HELM_CHART }}
       env:
-        HELM_REPO_HOST:
+        HELM_REPO_HOST: https://aquaveo.github.io/tethysext-atcore/
