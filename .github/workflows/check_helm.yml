@@ -23,6 +23,4 @@ jobs:
     - name: Lint Helm
       uses: WyriHaximus/github-action-helm3@v2
       with:
-        exec: |
-          ls
-          helm lint ${{ env.HELM_CHART }}
+        exec: helm lint ./helm/tethysext_atcore
