@@ -28,7 +28,11 @@ jobs:
       uses: WyriHaximus/github-action-helm3@v2
       with:
         exec: helm repo add misc-helm-charts https://aquaveo.github.io/misc-helm-charts/
-    - name: Lint Helm
+    - name: Depenency update
       uses: WyriHaximus/github-action-helm3@v2
       with:
-        exec: helm lint ${{ env.HELM_CHART }}
+        exec: helm dependency update ./heml/tethysext_atcore
+    - name: Lint
+      uses: WyriHaximus/github-action-helm3@v2
+      with:
+        exec: helm lint ./heml/tethysext_atcore
