@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - '*'
+    paths-ignore:
+      - 'docs/**'
 
 env:
   HELM_CHART: ./helm/tethysext_atcore
@@ -42,3 +44,30 @@ jobs:
       run: check_helm_chart ${{ env.HELM_CHART }}
       env:
         HELM_REPO_HOST: https://aquaveo.github.io/tethysext-atcore/
+      - name: Package Tethysapp Helm
+        uses: WyriHaximus/github-action-helm3@v1.0.0
+        with:
+          exec: helm package ${{ env.HELM_CHART }}
+      - name: Copy Helm Package to docs
+        run: |
+          cd ${{github.workspace}} &&
+          LOCAL_PACKAGE=$(ls *.tgz | head -n1) &&
+          echo $LOCAL_PACKAGE &&
+          mv -f $LOCAL_PACKAGE ./docs/$LOCAL_PACKAGE &&
+          rm -f *.tgz
+          rm -f *.tgz.~*
+      - name: Create new index file
+        uses: WyriHaximus/github-action-helm3@v1.0.0
+        with:
+          exec: ls . && helm repo index ./docs --url https://aquaveo.github.io/tethysext-atcore/
+      - name: Commit Changes
+        run: |
+          git config --global user.name "GitHub Action" &&
+          git config --global user.email "htran@aquaveo.com" &&
+          git checkout $TAG &&
+          git add . &&
+          git commit -m "Update Helm Repo"
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GIT_PASSWORD }}
