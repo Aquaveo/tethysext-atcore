@@ -40,3 +40,5 @@ jobs:
         exec: helm lint ${{ env.HELM_CHART }}
     - name: check_helm_chart
       run: check_helm_chart ${{ env.HELM_CHART }}
+      env:
+        HELM_REPO_HOST:
