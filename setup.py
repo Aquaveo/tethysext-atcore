@@ -21,7 +21,7 @@ resource_files += find_resource_files('tethysext/' + ext_package + '/resources')
 
 setup(
     name=release_package,
-    version='0.3.0',
+    version='0.10.0',
     description='',
     long_description='',
     keywords='',
@@ -30,7 +30,7 @@ setup(
     url='',
     license='',
     packages=find_namespace_packages(
-        exclude=['ez_setup', 'examples', 'docker',
+        exclude=['ez_setup', 'examples', 'docker', '.github', 'docs', 'helm',
                  'tethysext/' + ext_package + '/tests',
                  'tethysext/' + ext_package + '/tests.*']
     ),
