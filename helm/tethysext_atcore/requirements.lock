@@ -1,0 +1,6 @@
+dependencies:
+- name: tethysapp
+  repository: https://aquaveo.github.io/tethysapp_helm_template/
+  version: 0.1.0
+digest: sha256:c46b24f3b5bdbe700a885f56dc414c7bff695bdc3e883409554a9ab0b69289b3
+generated: "2020-09-16T20:59:36.512841042Z"
