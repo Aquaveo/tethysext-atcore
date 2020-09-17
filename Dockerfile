@@ -24,7 +24,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
 ###########
 # INSTALL #
 ###########
-ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
+ADD tethysext-atcore/tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
