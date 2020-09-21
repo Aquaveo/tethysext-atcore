@@ -162,3 +162,4 @@ jobs:
         -H "Authorization: ${{ secrets.DOCKER_BUILDER_USERNAME }} ${{ secrets.DOCKER_BUILDER_TOKEN }}" \
         -d "{\"query\":\"query {repository(owner:\\\""aquaveollc"\\\", name:\\\""tethysext-atcore-cache"\\\") {registryPackages(first:10) {edges{node{id, name, versions(first:10){edges {node {id, version}}}}}}}}\"}" \
         https://api.github.com/graphql)"
+        printenv
