@@ -157,9 +157,6 @@ jobs:
     steps:
     - name: get gpr package version id from first 10 packages
       run: |
-        echo "::set-env name=VERSION_ID::$(curl -X POST \
-        -H "Accept: application/vnd.github.package-deletes-preview+json" \
-        -H "Authorization: ${{ secrets.DOCKER_BUILDER_USERNAME }} ${{ secrets.DOCKER_BUILDER_TOKEN }}" \
-        -d "{\"query\":\"query {repository(owner:\\\""aquaveollc"\\\", name:\\\""tethysext-atcore-cache"\\\") {registryPackages(first:10) {edges{node{id, name, versions(first:10){edges {node {id, version}}}}}}}}\"}" \
-        https://api.github.com/graphql)"
+        echo "export TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "${{ secrets.DOCKER_BUILDER_USERNAME}", "password": "${{ secrets.DOCKER_BUILDER_TOKEN }}"}' https://hub.docker.com/v2/users/login/ | jq -r .token)"
+        echo "export IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_BUILDER_USERNAME}/tethysext-atcore-cache/tags/?page_size=100 | jq -r '.results|.[]|.name')
         printenv
