@@ -4,7 +4,7 @@ name: check_helm
 # Push to docker hub if tag has been created.
 on:
   push:
-    branches:
+    tags:
       - '*'
     paths-ignore:
       - 'docs/**'
