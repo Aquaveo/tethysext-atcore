@@ -155,7 +155,7 @@ jobs:
 #    needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/delete-package-versions@1
+      - uses: actions/delete-package-versions@v1
         with:
           owner: 'aquaveollc'
           repo: 'tethysext-atcore-cache'
