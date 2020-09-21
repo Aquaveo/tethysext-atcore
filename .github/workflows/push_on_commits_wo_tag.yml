@@ -155,10 +155,10 @@ jobs:
 #    needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/delete-package-versions@v1
-        with:
-          owner: 'aquaveollc'
-          repo: 'tethysext-atcore-cache'
-          num-old-versions-to-delete: '1'
-          package-version-ids: '8ac384daa7293d0c4a1449f5863231d8aca0841cb8658c4433522adf88d982bd'
-          token: ${{ secrets.DOCKER_BUILDER_TOKEN }}
+    - name: get gpr package version id from first 10 packages
+      run: |
+        echo "::set-env name=VERSION_ID::$(curl -X POST \
+        -H "Accept: application/vnd.github.package-deletes-preview+json" \
+        -H "Authorization: ${{ secrets.DOCKER_BUILDER_USERNAME }} ${{ secrets.DOCKER_BUILDER_TOKEN }}" \
+        -d "{\"query\":\"query {repository(owner:\\\""aquaveollc"\\\", name:\\\""tethysext-atcore-cache"\\\") {registryPackages(first:10) {edges{node{id, name, versions(first:10){edges {node {id, version}}}}}}}}\"}" \
+        https://api.github.com/graphql"
