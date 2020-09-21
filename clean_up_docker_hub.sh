@@ -6,9 +6,9 @@
 # Requires 'jq': https://stedolan.github.io/jq/
 
 # set username, password, and organization
-UNAME=""
-UPASS=""
-ORG=""
+UNAME=$1
+UPASS=$2
+ORG=$3
 
 # -------
 
