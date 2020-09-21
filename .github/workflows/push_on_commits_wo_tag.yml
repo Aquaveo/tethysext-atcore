@@ -160,3 +160,4 @@ jobs:
           owner: 'aquaveollc'
           repo: 'tethysext-atcore-cache'
           num-old-versions-to-delete: '1'
+          token: ${{ secrets.DOCKER_BUILDER_TOKEN }}
