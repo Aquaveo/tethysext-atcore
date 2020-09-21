@@ -155,8 +155,9 @@ jobs:
 #    needs: [build]
     runs-on: ubuntu-latest
     steps:
-    - name: get gpr package version id from first 10 packages
-      run: |
-        ls
-        UNAME=${{ secrets.DOCKER_BUILDER_USERNAME }} UPASS=${{ secrets.DOCKER_BUILDER_TOKEN }} ORG='aquaveollc' bash clean_up_docker_hub.sh
+      - uses: actions/checkout@v2
+      - name: get gpr package version id from first 10 packages
+        run: |
+          ls
+          UNAME='${{ secrets.DOCKER_BUILDER_USERNAME }}' UPASS='${{ secrets.DOCKER_BUILDER_TOKEN }}' ORG='aquaveollc' bash clean_up_docker_hub.sh
 
