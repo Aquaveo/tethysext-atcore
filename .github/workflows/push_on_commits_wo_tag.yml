@@ -159,5 +159,5 @@ jobs:
       - name: get gpr package version id from first 10 packages
         run: |
           ls
-          bash clean_up_docker_hub.sh '${{ secrets.DOCKER_BUILDER_USERNAME }}' '${{ secrets.DOCKER_BUILDER_TOKEN }}' 'aquaveollc'
+          bash clean_up_docker_hub.sh '${{ secrets.DOCKER_BUILDER_USERNAME }}' '${{ secrets.DOCKER_BUILDER_TOKEN }}' 'aquaveollc' 'tethysext-atcore-cache'
 

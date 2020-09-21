@@ -9,6 +9,7 @@
 UNAME=$1
 UPASS=$2
 ORG=$3
+REPO=$4
 
 # -------
 
@@ -29,9 +30,12 @@ echo "Deleting images and tags for organization: ${ORG}"
 for i in ${REPO_LIST}
 do
   # Delete repo (all)
-  echo -n "${i}: "
-#  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
-  echo "DELETED"
+  if [ "$REPO" = "$i"]; then
+    echo -n "${i}: "
+    #  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
+    echo "DELETED"
+  fi
+
 
   # Delete by tags (TODO: filter)
   #IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?page_size=300 | jq -r '.results|.[]|.name')
