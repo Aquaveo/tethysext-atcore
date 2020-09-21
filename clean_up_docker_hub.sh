@@ -30,7 +30,7 @@ echo "Deleting images and tags for organization: ${ORG}"
 for i in ${REPO_LIST}
 do
   # Delete repo (all)
-  if [ "$REPO" = "$i"]; then
+  if [ "${REPO}" = "${i}" ]; then
     echo -n "${i}: "
     #  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
     echo "DELETED"
