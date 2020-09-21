@@ -33,7 +33,14 @@ do
   if [ "${REPO}" = "${i}" ]; then
     echo -n "${i}: "
     #  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
-    echo "DELETED"
+    IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?per_page=5 | jq -r '.results|.[]|.name')
+    for j in ${IMAGE_TAGS}
+    do
+      echo -n "  - ${j} ... "
+#      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/${j}/
+      echo "DELETED"
+    done
+
   fi
 
 
