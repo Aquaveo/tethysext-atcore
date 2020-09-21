@@ -15,6 +15,7 @@ ORG=""
 set -e
 
 # get token
+echo "${UNAME}"
 echo "Retrieving token ..."
 TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${UNAME}'", "password": "'${UPASS}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
