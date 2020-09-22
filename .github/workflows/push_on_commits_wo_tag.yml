@@ -155,7 +155,7 @@ jobs:
 #        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini'
 
   cleanup:
-    needs: [build]
+#    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
