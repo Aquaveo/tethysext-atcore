@@ -11,7 +11,7 @@ env:
   TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
   DOCKER_HUB_ORG: aquaveollc
   DOCKER_REPO: tethysext-atcore
-  MAX_NUMBER_CACHE: 5
+  MAX_NUMBER_IMAGE: 1
   POSTGRES_DB: tethys_postgis
   POSTGRES_PASSWORD: please_dont_use_default_passwords
   POSTGRES_PORT: 5432
@@ -29,49 +29,49 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-    - name: Set Env
-      run: |
-        echo ::set-env name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
-        echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
-    - name: Set Tag
-      run: |
-        echo ::set-env name=TAG::dev_${GITHUB_SHA}
-      # If the branch is stable, we'll overwrite the TAG to include stable.
-    - name: Set Stable Tag
-      if: endsWith(github.ref, '/stable')
-      run: |
-        echo ::set-env name=TAG::stable
-    - name: Test Tag
-      run: |
-        echo $TAG
-    - name: build and push tag
-      uses: aevea/action-kaniko@v0.6.0
-      with:
-        # Docker registry where the image will be pushed
-        registry: docker.io
-        # Username used for authentication to the Docker registry
-        username: ${{ secrets.DOCKER_BUILDER_USERNAME }}
-        # Password used for authentication to the Docker registry
-        password: ${{ secrets.DOCKER_BUILDER_TOKEN }}
-        # Image name
-        image: ${{ env.KANIKO_IMAGE }}
-        # Image tag
-        tag: ${{ env.TAG }}
-        # Enables build cache
-        cache: true
-        # Docker registry meant to be used as cache
-        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
-        # Dockerfile filename
-        build_file: Dockerfile
-
+#  # This workflow contains a single job called "build"
+#  build:
+#    # The type of runner that the job will run on
+#    runs-on: ubuntu-latest
+#    # Steps represent a sequence of tasks that will be executed as part of the job
+#    steps:
+#    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#    - uses: actions/checkout@v2
+#    - name: Set Env
+#      run: |
+#        echo ::set-env name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
+#        echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
+#    - name: Set Tag
+#      run: |
+#        echo ::set-env name=TAG::dev_${GITHUB_SHA}
+#      # If the branch is stable, we'll overwrite the TAG to include stable.
+#    - name: Set Stable Tag
+#      if: endsWith(github.ref, '/stable')
+#      run: |
+#        echo ::set-env name=TAG::stable
+#    - name: Test Tag
+#      run: |
+#        echo $TAG
+#    - name: build and push tag
+#      uses: aevea/action-kaniko@v0.6.0
+#      with:
+#        # Docker registry where the image will be pushed
+#        registry: docker.io
+#        # Username used for authentication to the Docker registry
+#        username: ${{ secrets.DOCKER_BUILDER_USERNAME }}
+#        # Password used for authentication to the Docker registry
+#        password: ${{ secrets.DOCKER_BUILDER_TOKEN }}
+#        # Image name
+#        image: ${{ env.KANIKO_IMAGE }}
+#        # Image tag
+#        tag: ${{ env.TAG }}
+#        # Enables build cache
+#        cache: true
+#        # Docker registry meant to be used as cache
+#        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
+#        # Dockerfile filename
+#        build_file: Dockerfile
+#
 #  salt_tests:
 #    needs: [build]
 #    runs-on: ubuntu-latest
@@ -154,12 +154,12 @@ jobs:
 #        docker exec tethys_atcore bash -c "cd /usr/lib/tethys/tethys/tethys_portal && ATCORE_TEST_DATABASE='postgresql://postgres:please_dont_use_default_passwords@${TETHYS_DB_HOST}:5432/tethys_postgis' conda run -n tethys coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
 #        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini'
 
-#  cleanup:
+  cleanup:
 #    needs: [build]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: only keeps the first 5 image
-#        run: |
-#          . .github/scripts/clean_up_docker_hub.sh '${{ secrets.DOCKER_BUILDER_USERNAME }}' '${{ secrets.DOCKER_BUILDER_PASSWORD }}' '${{ env.DOCKER_HUB_ORG }}' '${{ env.DOCKER_REPO }}' '${{ env.MAX_NUMBER_CACHE }}'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: only keeps the first 5 image
+        run: |
+          . .github/scripts/clean_up_docker_hub.sh '${{ secrets.DOCKER_BUILDER_USERNAME }}' '${{ secrets.DOCKER_BUILDER_PASSWORD }}' '${{ env.DOCKER_HUB_ORG }}' '${{ env.DOCKER_REPO }}' '${{ env.MAX_NUMBER_IMAGE }}'
 
