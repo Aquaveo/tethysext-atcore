@@ -22,40 +22,16 @@ echo "Retrieving token ..."
 TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${UNAME}'", "password": "'${UPASS}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
 # get list of repositories
-echo "Retrieving repository list ..."
-REPO_LIST=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/?page_size=200 | jq -r '.results|.[]|.name')
-
-# delete images and/or tags
-echo "Deleting images and tags for organization: ${ORG}"
-for i in ${REPO_LIST}
+# Delete repo (all)
+#  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
+IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?page_size=300 | jq -r '.results|.[]|.name')
+start=0
+for j in ${IMAGE_TAGS}
 do
-  # Delete repo (all)
-  if [ "${REPO}" = "${i}" ]; then
-    echo -n "${i}: "
-    #  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
-    IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?page_size=300 | jq -r '.results|.[]|.name')
-    COUNT_IMAGE=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?page_size=300 | jq '. | length')
-    echo "Number of image is ${COUNT_IMAGE}"
-    start=0
-    for j in ${IMAGE_TAGS}
-    do
-      start=$((start + 1))
-      if [ ${MAX_IMAGE} -lt ${start} ]; then
-        echo -n "  - ${j} ... "
-  #      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/${j}/
-        echo "DELETED"
-      fi
-    done
-
+  start=$((start + 1))
+  if [ ${MAX_IMAGE} -lt ${start} ]; then
+    echo -n "  - ${j} ... "
+#    curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
+    echo "DELETED"
   fi
-
-
-  # Delete by tags (TODO: filter)
-  #IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?page_size=300 | jq -r '.results|.[]|.name')
-  #for j in ${IMAGE_TAGS}
-  #do
-  #   echo -n "  - ${j} ... "
-  #   curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/${j}/
-  #   echo "DELETED"
-  #done
 done
