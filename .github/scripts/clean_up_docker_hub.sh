@@ -21,14 +21,15 @@ TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'$
 
 # get list of repositories
 IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?page_size=300 | jq -r '.results|.[]|.name')
-start=0
+count=0
 for j in ${IMAGE_TAGS}
 do
-  start=$((start + 1))
-  # Keep the first 5 image.
-  if [ ${MAX_IMAGE} -lt ${start} ]; then
-    echo -n "  - ${j} ... "
-    curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
-    echo "DELETED"
-  fi
+  if [[ ${j} == "dev"* ]]; then
+    count=$((count + 1))
+    # Keep the first 5 image.
+    if [ ${MAX_IMAGE} -lt ${count} ]; then
+      echo -n "  - ${j} ... "
+  #    curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
+      echo "DELETED"
+    fi
 done
