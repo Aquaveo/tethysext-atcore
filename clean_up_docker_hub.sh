@@ -34,6 +34,8 @@ do
     echo -n "${i}: "
     #  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
     IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?per_page=5 | jq -r '.results|.[]|.name')
+    COUNT_IMAGE=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?per_page=5 | jq '. | length')
+    echo "Number of image is ${COUNT_IMAGE}"
     for j in ${IMAGE_TAGS}
     do
       echo -n "  - ${j} ... "
