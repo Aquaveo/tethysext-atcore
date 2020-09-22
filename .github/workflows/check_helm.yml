@@ -57,14 +57,14 @@ jobs:
     - name: Commit Changes
       run: |
         git config --global user.name "GitHub Action" &&
-        git config --global user.email "htran@aquaveo.com" &&
+        git config --global user.email ${{ secrets.AQUAVEO_GITHUB_USERNAME }} &&
         git checkout $TAG &&
         git add . &&
         git commit -m "Update Helm Repo"
     - name: Push Changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GIT_PASSWORD }}
+        github_token: ${{ secrets.AQUAVEO_GITHUB_PASSWORD }}
 
 #  build_helm:
 #    # The type of runner that the job will run on
