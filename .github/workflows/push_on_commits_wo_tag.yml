@@ -11,7 +11,7 @@ env:
   TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
   DOCKER_HUB_ORG: aquaveollc
   DOCKER_REPO: tethysext-atcore
-  MAX_NUMBER_IMAGE: 1
+  MAX_NUMBER_IMAGE: 5
   POSTGRES_DB: tethys_postgis
   POSTGRES_PASSWORD: please_dont_use_default_passwords
   POSTGRES_PORT: 5432

@@ -26,10 +26,10 @@ for j in ${IMAGE_TAGS}
 do
   if [[ ${j} == "dev"* ]]; then
     count=$((count + 1))
-    # Keep the first 5 image.
+    # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
       echo -n "  - ${j} ... "
-  #    curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
+      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
       echo "DELETED"
     fi
   fi
