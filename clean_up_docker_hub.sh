@@ -10,7 +10,7 @@ UNAME=$1
 UPASS=$2
 ORG=$3
 REPO=$4
-MAX_IMAGE=5
+MAX_IMAGE=$5
 # -------
 
 set -e
