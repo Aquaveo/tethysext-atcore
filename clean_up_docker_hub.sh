@@ -10,7 +10,7 @@ UNAME=$1
 UPASS=$2
 ORG=$3
 REPO=$4
-
+MAX_IMAGE=5
 # -------
 
 set -e
@@ -33,14 +33,18 @@ do
   if [ "${REPO}" = "${i}" ]; then
     echo -n "${i}: "
     #  curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/
-    IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?per_page=5 | jq -r '.results|.[]|.name')
-    COUNT_IMAGE=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?per_page=5 | jq '. | length')
+    IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?page_size=300 | jq -r '.results|.[]|.name')
+    COUNT_IMAGE=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/?page_size=300 | jq '. | length')
     echo "Number of image is ${COUNT_IMAGE}"
+    start=0
     for j in ${IMAGE_TAGS}
     do
-      echo -n "  - ${j} ... "
-#      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/${j}/
-      echo "DELETED"
+      start=$((start + 1))
+      if [ ${MAX_IMAGE} -lt ${start} ]; then
+        echo -n "  - ${j} ... "
+  #      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${i}/tags/${j}/
+        echo "DELETED"
+      fi
     done
 
   fi
