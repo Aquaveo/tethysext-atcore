@@ -11,7 +11,6 @@ UPASS=$2
 ORG=$3
 REPO=$4
 MAX_IMAGE=$5
-BUILD_TAG=$6
 # -------
 
 set -e
@@ -26,15 +25,17 @@ echo ${IMAGE_TAGS}
 length=${#IMAGE_TAGS[@]}
 echo ${length}
 count=0
+count_all=0
 echo ${BUILD_TAG}
 for j in ${IMAGE_TAGS}
 do
+  count_all=$((count_all + 1))
   if [[ ${j} == *"dev_"* ]]; then
     count=$((count + 1))
     # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
-      # Only delete if not current BUILD_TAG. For precautious.
-      if [ ${j} != ${BUILD_TAG} ]; then
+      # Do not delete the last item. For some reason, the latest item is put to last!
+      if [ ${count_all} -lt ${length} ]; then
         echo -n "  - ${j} ... "
   #     curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
         echo "DELETED"
