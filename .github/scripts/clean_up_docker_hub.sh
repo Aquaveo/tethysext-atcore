@@ -29,7 +29,7 @@ do
     # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
       echo -n "  - ${j} ... "
-      echo -n 'https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/'
+      echo -n 'https://hub.docker.com/v2/repositories/'${ORG}'/'${REPO}'/tags/'${j}'/'
       curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
       echo "DELETED"
     fi
