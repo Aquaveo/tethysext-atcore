@@ -21,9 +21,7 @@ TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'$
 
 # get list of repositories
 IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?page_size=300 | jq -r '.results | sort_by(.last_updated) | reverse[] | .name')
-TOTAL_COUNT=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?page_size=300 | jq -r '.count')
 count=0
-count_all=0
 echo ${IMAGE_TAGS}
 for j in ${IMAGE_TAGS}
 do
@@ -32,12 +30,9 @@ do
     count=$((count + 1))
     # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
-      # Do not delete the last item. For some reason, the latest item is put to last!
-      if [ ${count_all} -lt ${TOTAL_COUNT} ]; then
-        echo -n "  - ${j} ... "
-#        curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
-        echo "DELETED"
-      fi
+      echo -n "  - ${j} ... "
+      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
+      echo "DELETED"
     fi
   fi
 done
