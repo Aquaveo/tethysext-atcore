@@ -30,6 +30,7 @@ do
     count=$((count + 1))
     # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
+      # Only delete if not current BUILD_TAG. For precautious.
       if [ ${j} != ${BUILD_TAG} ]; then
         echo -n "  - ${j} ... "
   #     curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
