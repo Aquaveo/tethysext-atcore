@@ -24,7 +24,7 @@ IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/
 count=0
 for j in ${IMAGE_TAGS}
 do
-  echo ${j}
+  echo -n "  - ${j} ... "
   if [[ ${j} == *"dev_"* ]]; then
     count=$((count + 1))
     echo ${count}
