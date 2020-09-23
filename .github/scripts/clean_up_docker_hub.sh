@@ -22,7 +22,6 @@ TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'$
 # get list of repositories
 IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq '.results[].name')
 count=0
-echo ${IMAGE_TAGS}
 for j in ${IMAGE_TAGS}
 do
   if [[ ${j} == *"dev_"* ]]; then
