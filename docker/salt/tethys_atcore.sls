@@ -12,6 +12,7 @@ Edit_Tethys_Portal_Config_Settings_File_Atcore:
         --set PUBLIC_HOST {{ TETHYS_PUBLIC_HOST }}
         --set INSTALLED_APPS "[datetimewidget, django_select2, taggit]"
         --set DATA_UPLOAD_MAX_MEMORY_SIZE 104800000
+        --set CHANNEL_LAYERS.default.BACKEND 'channels.layers.InMemoryChannelLayer'
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
