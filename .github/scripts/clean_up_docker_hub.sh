@@ -24,7 +24,7 @@ IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/
 count=0
 for j in ${IMAGE_TAGS}
 do
-  if [[ ${j} == "dev"* ]]; then
+  if [[ ${j} == *"dev_"* ]]; then
     count=$((count + 1))
     # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
