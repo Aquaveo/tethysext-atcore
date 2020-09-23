@@ -24,7 +24,7 @@ IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/
 TOTAL_COUNT=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq -r '.count')
 count=0
 count_all=0
-echo ${TOTAL_COUNT}
+echo ${IMAGE_TAGS}
 for j in ${IMAGE_TAGS}
 do
   count_all=$((count_all + 1))
@@ -35,7 +35,7 @@ do
       # Do not delete the last item. For some reason, the latest item is put to last!
       if [ ${count_all} -lt ${TOTAL_COUNT} ]; then
         echo -n "  - ${j} ... "
-       curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
+#        curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
         echo "DELETED"
       fi
     fi
