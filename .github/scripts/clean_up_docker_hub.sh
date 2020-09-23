@@ -11,6 +11,7 @@ UPASS=$2
 ORG=$3
 REPO=$4
 MAX_IMAGE=$5
+BUILD_TAG=$6
 # -------
 
 set -e
@@ -22,16 +23,18 @@ TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'$
 # get list of repositories
 IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq -r '.results[].name')
 count=0
-echo ${IMAGE_TAGS}
+echo ${BUILD_TAG}
 for j in ${IMAGE_TAGS}
 do
   if [[ ${j} == *"dev_"* ]]; then
     count=$((count + 1))
     # Keep the first max_image.
     if [ ${MAX_IMAGE} -lt ${count} ]; then
-      echo -n "  - ${j} ... "
-      curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
-      echo "DELETED"
+      if [ ${j} != ${BUILD_TAG} ]; then
+        echo -n "  - ${j} ... "
+  #     curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/${j}/
+        echo "DELETED"
+      fi
     fi
   fi
 done
