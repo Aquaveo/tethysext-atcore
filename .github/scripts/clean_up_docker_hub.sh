@@ -22,6 +22,8 @@ TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'$
 
 # get list of repositories
 IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq -r '.results[].name')
+echo ${IMAGE_TAGS}
+echo $(jq length ${IMAGE_TAGS})
 count=0
 echo ${BUILD_TAG}
 for j in ${IMAGE_TAGS}
