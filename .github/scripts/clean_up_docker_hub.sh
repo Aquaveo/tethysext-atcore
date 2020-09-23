@@ -20,7 +20,7 @@ echo "Retrieving token ..."
 TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${UNAME}'", "password": "'${UPASS}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
 # get list of repositories
-IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq -r '.results[].name')
+IMAGE_TAGS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq -r '.results | sort_by(.last_updated) | reverse[] | .name')
 TOTAL_COUNT=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${REPO}/tags/?ordering=last_updated | jq -r '.count')
 count=0
 count_all=0
