@@ -84,10 +84,10 @@ class PlotWorkflowResultView(WorkflowResultsView):
                     else:
                         df = ds['dataset']
                         import plotly.graph_objs as go
-                        dict_key = [x for x in df.to_dict().keys()]
-                        plot_view = PlotlyView([go.Scatter(x=[value for value in df.to_dict()[dict_key[0]].values()],
-                                                           y=[value for value in df.to_dict()[dict_key[1]].values()]),
-                                                go.Scatter(x=[10, 11], y=[1, 10])])
+                        plot_list = list()
+                        for axis in ds['axes']:
+                            plot_list.append(go.Scatter(x=df['dataset'][axis[0]], y=df['dataset'][axis[1]]))
+                        plot_view = PlotlyView(plot_list)
 
             data_table = DataTableView(
                 column_names=ds['dataset'].columns,
