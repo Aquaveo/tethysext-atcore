@@ -76,13 +76,14 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         datasets.append(dataset)
         self.datasets = datasets
 
-    def add_pandas_dataframe(self, title, data_frame, plot_lib='bokeh'):
+    def add_pandas_dataframe(self, title, data_frame, axes, plot_lib='bokeh'):
         """
         Adds a pandas.DataFrame to the result.
 
         Args:
             title(str): Display name.
             data_frame(pandas.DataFrame): The data.
+            axes(list): A list of tuples for pair axis ex: ([('x', 'y'), ('x1', 'y1'), ('x', 'y2')])
             plot_lib(enum): either "bokeh" or "plotly"
         """
 
@@ -99,5 +100,6 @@ class PlotWorkflowResult(ResourceWorkflowResult):
             'title': title,
             'dataset': data_frame,
             'plot_lib': plot_lib,
+            'axes': axes
         }
         self._add_dataset(d)

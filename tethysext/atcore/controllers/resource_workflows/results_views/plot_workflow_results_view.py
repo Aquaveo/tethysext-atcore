@@ -76,17 +76,22 @@ class PlotWorkflowResultView(WorkflowResultsView):
             dom_attribute = ""
             if 'plot_lib' in ds.keys():
                 if can_export_datatable:
+                    df = ds['dataset']
                     if ds['plot_lib'] == 'bokeh':
-                        data_source = ColumnDataSource(ds['dataset'])
+                        data_sources = list()
+                        for axis in ds['axes']:
+                            data = {'x': df[axis[0]].to_list(), 'y': df[axis[1]].to_list()}
+                            data_sources.append(ColumnDataSource(data))
                         plot = figure(height=500, width=800, title=ds['title'])
-                        plot.line("x", "y", source=data_source)
+                        for data_source in data_sources:
+                            plot.line("x", "y", source=data_source)
                         plot_view = BokehView(plot, height="500px")
                     else:
-                        df = ds['dataset']
                         import plotly.graph_objs as go
                         plot_list = list()
                         for axis in ds['axes']:
-                            plot_list.append(go.Scatter(x=df['dataset'][axis[0]], y=df['dataset'][axis[1]]))
+                            plot_list.append(go.Scatter(x=df[axis[0]].to_list(),
+                                                        y=df[axis[1]].to_list()))
                         plot_view = PlotlyView(plot_list)
 
             data_table = DataTableView(
