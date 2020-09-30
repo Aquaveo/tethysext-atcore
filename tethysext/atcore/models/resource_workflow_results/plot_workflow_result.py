@@ -41,10 +41,8 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         """
         default_options = super().default_options
         default_options.update({
-            'data_table_kwargs': {
-                'searching': False,
-                'paging': False,
-                'info': False
+            'plot_kwargs': {
+                'plot_lib': 'bokeh',
             },
             'no_dataset_message': 'No dataset found.'
         })
@@ -76,15 +74,13 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         datasets.append(dataset)
         self.datasets = datasets
 
-    def add_pandas_dataframe(self, title, data_frame, axes, plot_lib='bokeh'):
+    def add_pandas_dataframe(self, title, data_frame):
         """
         Adds a pandas.DataFrame to the result.
 
         Args:
             title(str): Display name.
             data_frame(pandas.DataFrame): The data.
-            axes(list): A list of tuples for pair axis ex: ([('x', 'y'), ('x1', 'y1'), ('x', 'y2')])
-            plot_lib(enum): either "bokeh" or "plotly"
         """
 
         if not title:
@@ -99,7 +95,5 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         d = {
             'title': title,
             'dataset': data_frame,
-            'plot_lib': plot_lib,
-            'axes': axes
         }
         self._add_dataset(d)

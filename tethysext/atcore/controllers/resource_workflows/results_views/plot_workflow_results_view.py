@@ -7,17 +7,17 @@
 ********************************************************************************
 """
 import logging
-from collections import OrderedDict
-from tethys_sdk.gizmos import DataTableView
 from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethys_sdk.permissions import has_permission
 from tethys_sdk.gizmos import BokehView
-from bokeh.plotting import figure
-import numpy as np
-import pandas as pd
-from bokeh.models import ColumnDataSource
 from tethys_sdk.gizmos import PlotlyView
+
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource
+from bokeh.palettes import Category10
+import plotly.graph_objs as go
+
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,6 @@ class PlotWorkflowResultView(WorkflowResultsView):
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
             model_db (ModelDatabase): ModelDatabase instance associated with this request.
-
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
@@ -65,43 +64,60 @@ class PlotWorkflowResultView(WorkflowResultsView):
         # Get options
         options = result.options
 
+        # Get plot lib
+        plot_lib = options.get('plot_lib', 'bokeh')
+
+        # Get axes option
+        # axes(list): A list of tuples for pair axis ex: ([('x', 'y'), ('x1', 'y1'), ('x', 'y2')])
+        plot_axes = options.get('axes', [])
+
+        # Get labels option
+        # labels(list): Label for each series
+        plot_labels = options.get('labels', [])
+
         # Page title same as result name
         page_title = options.get('page_title', result.name)
 
-        # Get can_export_datatable permission
-        can_export_datatable = has_permission(request, 'can_export_datatable')
+        # Set plot options
+        plot_height = options.get('height', 500)
+        plot_width = options.get('width', 800)
+        plot_type = options.get('plot_type', 'markers')
 
         for ds in datasets:
-            # Check if the export options is there
-            dom_attribute = ""
-            if 'plot_lib' in ds.keys():
-                if can_export_datatable:
-                    df = ds['dataset']
-                    if ds['plot_lib'] == 'bokeh':
-                        data_sources = list()
-                        for axis in ds['axes']:
-                            data = {'x': df[axis[0]].to_list(), 'y': df[axis[1]].to_list()}
-                            data_sources.append(ColumnDataSource(data))
-                        plot = figure(height=500, width=800, title=ds['title'])
-                        for data_source in data_sources:
-                            plot.line("x", "y", source=data_source)
-                        plot_view = BokehView(plot, height="500px")
+            df = ds['dataset']
+
+            # Build plot_axes list if it's not defined
+            if not plot_axes:
+                column_names = df.columns.to_list()
+                for count, col in enumerate(column_names[1:], 1):
+                    # Assume 1st column is x and the rest is y
+                    plot_axes.append((column_names[0], col))
+
+            if not plot_labels:
+                for i, _ in enumerate(plot_axes, 1):
+                    plot_labels.append(f"Data Series {i}")
+
+            if plot_lib == 'bokeh':
+                plot = figure(height=plot_height, width=plot_width, title=ds['title'])
+
+                for i, axis in enumerate(plot_axes):
+                    data = {'x': df[axis[0]].to_list(), 'y': df[axis[1]].to_list()}
+                    if plot_type == 'lines':
+                        plot.line("x", "y", source=ColumnDataSource(data), legend_label=plot_labels[i],
+                                  color=Category10[10][i % 10])
                     else:
-                        import plotly.graph_objs as go
-                        plot_list = list()
-                        for axis in ds['axes']:
-                            plot_list.append(go.Scatter(x=df[axis[0]].to_list(),
-                                                        y=df[axis[1]].to_list()))
-                        plot_view = PlotlyView(plot_list)
+                        plot.scatter("x", "y", source=ColumnDataSource(data), legend_label=plot_labels[i],
+                                     color=Category10[10][i % 10])
 
-            data_table = DataTableView(
-                column_names=ds['dataset'].columns,
-                rows=[list(record.values()) for record in ds['dataset'].to_dict(orient='records', into=OrderedDict)],
-                dom=dom_attribute,
-                **options.get('data_table_kwargs', {})
-            )
-            ds.update({'data_table': data_table})
+                plot_view = BokehView(plot)
+            else:
+                plot = go.Figure(layout=go.Layout(title=ds['title'], width=plot_width, height=plot_height))
+                plot_mode = 'lines' if plot_type == 'lines' else 'markers'
+                for i, axis in enumerate(plot_axes):
+                    plot.add_trace(go.Scatter(x=df[axis[0]].to_list(), y=df[axis[1]].to_list(), name=plot_labels[i],
+                                              mode=plot_mode))
 
+                plot_view = PlotlyView(plot)
 
         base_context.update({
             'no_dataset_message': options.get('no_dataset_message', 'No dataset found.'),
