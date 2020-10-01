@@ -9,7 +9,7 @@
 import copy
 import pandas as pd
 from tethysext.atcore.models.app_users.resource_workflow_result import ResourceWorkflowResult
-
+import plotly.graph_objs as go
 
 __all__ = ['PlotWorkflowResult']
 
@@ -106,13 +106,14 @@ class PlotWorkflowResult(ResourceWorkflowResult):
             plot(obj): bokeh or plotly figure.
         """
 
-        # if not isinstance(plot, pd.DataFrame):
-        #     raise ValueError('The argument "data_frame" must be a pandas.DataFrame.')
+        if not isinstance(plot, go.Figure):
+            raise ValueError('The argument "plot" must be a plotly Figure.')
 
-        # if data_frame.empty:
-        #     raise ValueError('The pandas.DataFrame must not be empty.')
+        if plot.empty:
+            raise ValueError('The plot cannot be empty.')
 
         d = {
             'plot_object': plot,
         }
+
         self._add_dataset(d)
