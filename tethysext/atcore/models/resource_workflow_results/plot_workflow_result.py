@@ -97,3 +97,22 @@ class PlotWorkflowResult(ResourceWorkflowResult):
             'dataset': data_frame,
         }
         self._add_dataset(d)
+
+    def add_plot(self, plot):
+        """
+        Adds a pandas.DataFrame to the result.
+
+        Args:
+            plot(obj): bokeh or plotly figure.
+        """
+
+        # if not isinstance(plot, pd.DataFrame):
+        #     raise ValueError('The argument "data_frame" must be a pandas.DataFrame.')
+
+        # if data_frame.empty:
+        #     raise ValueError('The pandas.DataFrame must not be empty.')
+
+        d = {
+            'plot_object': plot,
+        }
+        self._add_dataset(d)

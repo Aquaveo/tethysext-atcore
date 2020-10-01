@@ -9,7 +9,6 @@
 import logging
 from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
-from tethys_sdk.permissions import has_permission
 from tethys_sdk.gizmos import BokehView
 from tethys_sdk.gizmos import PlotlyView
 
@@ -75,13 +74,8 @@ class PlotWorkflowResultView(WorkflowResultsView):
         # labels(list): Label for each series
         plot_labels = options.get('labels', [])
 
-        # Page title same as result name
-        page_title = options.get('page_title', result.name)
-
         # Set plot options
-        plot_height = options.get('height', 500)
-        plot_width = options.get('width', 800)
-        plot_type = options.get('plot_type', 'markers')
+        plot_type = options.get('plot_type', 'lines')
 
         for ds in datasets:
             df = ds['dataset']
@@ -98,7 +92,7 @@ class PlotWorkflowResultView(WorkflowResultsView):
                     plot_labels.append(f"Data Series {i}")
 
             if plot_lib == 'bokeh':
-                plot = figure(height=plot_height, width=plot_width, title=ds['title'])
+                plot = figure(title=ds['title'])
 
                 for i, axis in enumerate(plot_axes):
                     data = {'x': df[axis[0]].to_list(), 'y': df[axis[1]].to_list()}
@@ -108,10 +102,9 @@ class PlotWorkflowResultView(WorkflowResultsView):
                     else:
                         plot.scatter("x", "y", source=ColumnDataSource(data), legend_label=plot_labels[i],
                                      color=Category10[10][i % 10])
-
                 plot_view = BokehView(plot)
             else:
-                plot = go.Figure(layout=go.Layout(title=ds['title'], width=plot_width, height=plot_height))
+                plot = go.Figure(layout=go.Layout(title=ds['title']))
                 plot_mode = 'lines' if plot_type == 'lines' else 'markers'
                 for i, axis in enumerate(plot_axes):
                     plot.add_trace(go.Scatter(x=df[axis[0]].to_list(), y=df[axis[1]].to_list(), name=plot_labels[i],
@@ -121,7 +114,6 @@ class PlotWorkflowResultView(WorkflowResultsView):
 
         base_context.update({
             'no_dataset_message': options.get('no_dataset_message', 'No dataset found.'),
-            'page_title': page_title,
             'datasets': datasets,
             'plot_view_input': plot_view,
         })
