@@ -43,8 +43,8 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'bokeh', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
-                                        'No dataset found.']
+        mock_options.get.side_effect = ['page title', 'bokeh', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'],
+                                        'linear', 'No dataset found.']
         baseline = {
             'no_dataset_message': 'No dataset found.',
             'datasets': [{
@@ -268,8 +268,8 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'plotly', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
-                                        'No dataset found.']
+        mock_options.get.side_effect = ['page title', 'plotly', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'],
+                                        'linear', 'No dataset found.']
         baseline = {
             'no_dataset_message': 'No dataset found.',
             'datasets': [{

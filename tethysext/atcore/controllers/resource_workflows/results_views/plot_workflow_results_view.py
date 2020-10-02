@@ -99,7 +99,7 @@ class PlotWorkflowResultView(WorkflowResultsView):
 
                 if not plot_labels:
                     for i, _ in enumerate(plot_axes, 1):
-                        plot_labels.append(f"Data Series {i}")
+                        plot_labels.append(f"Data Series {str(i)}")
 
                 if plot_lib == 'bokeh':
                     x_axis_type = 'linear'
