@@ -93,13 +93,13 @@ class PlotWorkflowResultView(WorkflowResultsView):
                 # Build plot_axes list if it's not defined
                 if not plot_axes:
                     column_names = df.columns.to_list()
-                    for count, col in enumerate(column_names[1:], 1):
+                    for col in column_names[1:]:
                         # Assume 1st column is x and the rest is y
                         plot_axes.append((column_names[0], col))
 
                 if not plot_labels:
-                    for i, _ in enumerate(plot_axes, 1):
-                        plot_labels.append(f"Data Series {str(i)}")
+                    for i in range(len(plot_axes)):
+                        plot_labels.append(f"Data Series {str(i+1)}")
 
                 if plot_lib == 'bokeh':
                     x_axis_type = 'linear'
