@@ -109,9 +109,6 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         if not isinstance(plot, go.Figure):
             raise ValueError('The argument "plot" must be a plotly Figure.')
 
-        if plot.empty:
-            raise ValueError('The plot cannot be empty.')
-
         d = {
             'plot_object': plot,
         }

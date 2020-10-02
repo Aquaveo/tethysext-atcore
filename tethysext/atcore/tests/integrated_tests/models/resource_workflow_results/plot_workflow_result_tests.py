@@ -4,7 +4,7 @@ from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
-
+import plotly.graph_objs as go
 
 def setUpModule():
     setup_module_for_sqlalchemy_tests()
@@ -81,3 +81,15 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
     def test_add_pandas_dataframe_empty_dataframe(self):
         mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=True)
         self.assertRaises(ValueError, self.instance.add_pandas_dataframe, 'foo', mock_dataframe)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult._add_dataset')  # noqa: E501
+    def test_add_plot(self, mock_add_dataset):
+        mock_plot = mock.MagicMock(spec=go.Figure, empty=False)
+        self.instance.add_plot(mock_plot)
+        baseline = {
+            'plot_object': mock_plot,
+        }
+        mock_add_dataset.assert_called_with(baseline)
+
+    def test_add_plot_not_plolty(self):
+        self.assertRaises(ValueError, self.instance.add_plot, 'foo')

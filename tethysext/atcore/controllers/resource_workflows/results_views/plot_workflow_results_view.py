@@ -81,7 +81,6 @@ class PlotWorkflowResultView(WorkflowResultsView):
 
         # Set line shape 'linear' 'spline' 'vhv' 'hvh' 'vh' 'hv'
         line_shape = options.get('line_shape', 'linear')
-
         for ds in datasets:
             if 'dataset' in ds.keys():
                 df = ds['dataset']
