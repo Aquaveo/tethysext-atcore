@@ -6,6 +6,7 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for
     tear_down_module_for_sqlalchemy_tests
 import plotly.graph_objs as go
 
+
 def setUpModule():
     setup_module_for_sqlalchemy_tests()
 
