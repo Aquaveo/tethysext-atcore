@@ -9,14 +9,15 @@
 import logging
 from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
-from tethys_sdk.gizmos import BokehView
-from tethys_sdk.gizmos import PlotlyView
 
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
 from bokeh.palettes import Category10
 import plotly.graph_objs as go
 from datetime import datetime
+
+from tethys_sdk.gizmos import BokehView
+from tethys_sdk.gizmos import PlotlyView
 
 log = logging.getLogger(__name__)
 
@@ -63,11 +64,13 @@ class PlotWorkflowResultView(WorkflowResultsView):
         # Get options
         options = result.options
 
+        # Page title same as result name
+        page_title = options.get('page_title', result.name)
+
         # Get plot lib
-        plot_lib = options.get('plot_lib', 'bokeh')
+        plot_lib = options.get('plot_lib', 'plotly')
 
         # Get axes option
-        # axes(list): A list of tuples for pair axis ex: ([('x', 'y'), ('x1', 'y1'), ('x', 'y2')])
         plot_axes = options.get('axes', [])
 
         # Get labels option
@@ -79,8 +82,10 @@ class PlotWorkflowResultView(WorkflowResultsView):
         # Set plot options
         axis_labels = options.get('axis_labels', ['x', 'y'])
 
-        # Set line shape 'linear' 'spline' 'vhv' 'hvh' 'vh' 'hv'
+        # Set line shape
         line_shape = options.get('line_shape', 'linear')
+
+        plot_view = None
         for ds in datasets:
             if 'dataset' in ds.keys():
                 df = ds['dataset']
@@ -115,7 +120,8 @@ class PlotWorkflowResultView(WorkflowResultsView):
                     plot_view = BokehView(plot, height='95%', width='95%')
                 else:
                     plot = go.Figure(layout=go.Layout(xaxis={'title': {'text': axis_labels[0]}},
-                                                      yaxis={'title': {'text': axis_labels[1]}}))
+                                                      yaxis={'title': {'text': axis_labels[1]}},
+                                                      height=600))
                     plot_mode = 'lines' if plot_type == 'lines' else 'markers'
                     for i, axis in enumerate(plot_axes):
                         plot.add_trace(go.Scatter(x=df[axis[0]].to_list(), y=df[axis[1]].to_list(), name=plot_labels[i],
@@ -129,6 +135,7 @@ class PlotWorkflowResultView(WorkflowResultsView):
                 plot_view = PlotlyView(plot, height='95%', width='95%')
 
         base_context.update({
+            'page_title': page_title,
             'no_dataset_message': options.get('no_dataset_message', 'No dataset found.'),
             'datasets': datasets,
             'plot_view_input': plot_view,

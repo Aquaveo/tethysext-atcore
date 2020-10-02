@@ -13,7 +13,11 @@
 {% block app_content %}
   <h1>{{ page_title }}</h1>
   <!-- Tab panes -->
-  {% gizmo plot_view_input %}
+  {% if plot_view_input %}
+    {% gizmo plot_view_input %}
+  {% else %}
+    <p>No data provided. Use add_plot or add_pandas_dataframe to create a plot.</p>
+  {% endif %}
 
   {{ block.super }}
 {% endblock %}

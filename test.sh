@@ -4,8 +4,12 @@ if [ ! -f "$1" ]; then
     return 1;
 fi
 rm -f .coverage
+echo "Running Unit Tests..."
+coverage run -a --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
 echo "Running Intermediate Tests..."
 coverage run -a --rcfile=coverage.ini $1 test -v 2 tethysext.atcore.tests.integrated_tests
 echo "Combined Coverage Report..."
 coverage report -m --rcfile=coverage.ini
+echo "Linting..."
+flake8
 echo "Testing Complete"

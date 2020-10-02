@@ -25,9 +25,12 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
 
     def test_default_options(self):
         baseline = {
-            'plot_kwargs': {
-                'plot_lib': 'bokeh',
-            },
+            'plot_lib': 'plotly',
+            'axes': [],
+            'labels': [],
+            'plot_type': 'lines',
+            'axis_labels': ['x', 'y'],
+            'line_shape': 'linear',
             'no_dataset_message': 'No dataset found.'
         }
         self.assertDictEqual(baseline, self.instance.default_options)

@@ -37,13 +37,24 @@ class PlotWorkflowResult(ResourceWorkflowResult):
     @property
     def default_options(self):
         """
+        plot_lib (str): bokeh or plotly
+        axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
+        labels(list): A list of series' label. For example: ['Series 1', 'Series 2', 'Series 3']
+        axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
+        plot_type (str): lines or scatter
+        line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
+
         Returns default options dictionary for the object.
         """
         default_options = super().default_options
+
         default_options.update({
-            'plot_kwargs': {
-                'plot_lib': 'bokeh',
-            },
+            'plot_lib': 'plotly',
+            'axes': [],
+            'labels': [],
+            'plot_type': 'lines',
+            'axis_labels': ['x', 'y'],
+            'line_shape': 'linear',
             'no_dataset_message': 'No dataset found.'
         })
         return default_options

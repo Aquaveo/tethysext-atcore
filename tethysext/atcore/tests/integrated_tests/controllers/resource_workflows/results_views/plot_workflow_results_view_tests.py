@@ -43,7 +43,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['bokeh', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
+        mock_options.get.side_effect = ['page title', 'bokeh', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
                                         'No dataset found.']
         baseline = {
             'no_dataset_message': 'No dataset found.',
@@ -84,7 +84,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         mock_options.get.assert_has_calls([
-            mock.call('plot_lib', 'bokeh'),
+            mock.call('plot_lib', 'plotly'),
             mock.call('axes', []),
             mock.call('labels', []),
             mock.call('plot_type', 'lines'),
@@ -115,13 +115,13 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
 
         mock_pandas_data = mock.MagicMock(spec=pd.DataFrame, columns=mock.MagicMock())
         mock_pandas_data.columns.to_list.return_value = ['x', 'y', 'y1']
-        mock_result.name = 'bar'
+        mock_result.name = 'page title'
         mock_result.datasets = [{
             'dataset': mock_pandas_data,
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['bokeh', [], [], 'lines', ['x', 'y'], 'linear',
+        mock_options.get.side_effect = ['page_title', 'bokeh', [], [], 'lines', ['x', 'y'], 'linear',
                                         'No dataset found.']
         baseline = {
             'no_dataset_message': 'No dataset found.',
@@ -162,7 +162,8 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         mock_options.get.assert_has_calls([
-            mock.call('plot_lib', 'bokeh'),
+            mock.call('page_title', 'page title'),
+            mock.call('plot_lib', 'plotly'),
             mock.call('axes', []),
             mock.call('labels', []),
             mock.call('plot_type', 'lines'),
@@ -195,14 +196,14 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_pandas_data_y = mock.MagicMock(spec=pd.DataFrame, to_list=mock.MagicMock())
         mock_pandas_data_x.to_list.side_effect = [[1, 2, 3]]
         mock_pandas_data_y.to_list.side_effect = [[4, 5, 6]]
-        mock_result.name = 'bar'
+        mock_result.name = 'page_title'
         mock_result.datasets = [{
             'dataset': {'x': mock_pandas_data_x, 'y': mock_pandas_data_y},
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['plotly', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
-                                        'No dataset found.']
+        mock_options.get.side_effect = ['page title', 'plotly', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'],
+                                        'linear', 'No dataset found.']
         baseline = {
             'no_dataset_message': 'No dataset found.',
             'datasets': [{
@@ -261,13 +262,13 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_plotly.return_value = 'PlotlyView'
         mock_get_result.return_value = mock_result
 
-        mock_result.name = 'bar'
+        mock_result.name = 'page_title'
         mock_result.datasets = [{
             'plot_object': 'plot_object',
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['plotly', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
+        mock_options.get.side_effect = ['page title', 'plotly', [('x', 'y')], ['Series 1'], 'lines', ['x', 'y'], 'linear',
                                         'No dataset found.']
         baseline = {
             'no_dataset_message': 'No dataset found.',
