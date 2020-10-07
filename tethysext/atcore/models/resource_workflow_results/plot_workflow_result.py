@@ -1,9 +1,9 @@
 """
 ********************************************************************************
-* Name: dataset_workflow_result.py
-* Author: nswain
-* Created On: June 3, 2019
-* Copyright: (c) Aquaveo 2019
+* Name: plot_workflow_result.py
+* Author: nathan, htran, msouff
+* Created On: Oct 7, 2020
+* Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
 import copy
@@ -37,24 +37,23 @@ class PlotWorkflowResult(ResourceWorkflowResult):
     @property
     def default_options(self):
         """
-        plot_lib (str): bokeh or plotly
-        axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
-        labels(list): A list of series' label. For example: ['Series 1', 'Series 2', 'Series 3']
-        axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
-        plot_type (str): lines or scatter
-        line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
-
-        Returns default options dictionary for the object.
+        Options:
+            renderer (str): bokeh or plotly
+            axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
+            axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
+            plot_type (str): lines or scatter
+            line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
+            x_axis_type (str): type of x axis. Available options are 'linear' or 'datetime'
+            Returns default options dictionary for the object.
         """
         default_options = super().default_options
-
         default_options.update({
-            'plot_lib': 'plotly',
+            'renderer': 'plotly',
             'axes': [],
-            'labels': [],
             'plot_type': 'lines',
             'axis_labels': ['x', 'y'],
             'line_shape': 'linear',
+            'x_axis_type': 'datetime',
             'no_dataset_message': 'No dataset found.'
         })
         return default_options
@@ -71,6 +70,18 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         data['datasets'] = value
         self.data = data
 
+    @property
+    def plot(self):
+        if 'plot' not in self.data:
+            self.data['plot'] = ''
+        return copy.deepcopy(self.data['plot'])
+
+    @plot.setter
+    def plot(self, value):
+        data = copy.deepcopy(self.data)
+        data['plot'] = value
+        self.data = data
+
     def reset(self):
         self.datasets = []
 
@@ -85,18 +96,52 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         datasets.append(dataset)
         self.datasets = datasets
 
-    def add_pandas_dataframe(self, title, data_frame):
+    def _add_plot(self, plot_object):
         """
-        Adds a pandas.DataFrame to the result.
+        Update plot object.
 
         Args:
-            title(str): Display name.
-            data_frame(pandas.DataFrame): The data.
+            plot_object(dict): The plot.
+        """
+        self.plot = plot_object
+
+    def add_series(self, title, data):
+        """
+        Add plot series into plot dataset.
+
+        Args:
+            title: series name
+            data: plot data. Support different types of data: 2-D list, 2-D Numpy array and pandas dataframe.
         """
 
         if not title:
             raise ValueError('The argument "title" is required.')
 
+        if isinstance(data, pd.DataFrame):
+            if data.empty:
+                raise ValueError('The pandas.DataFrame must not be empty.')
+        else:
+            if not data:
+                raise ValueError('The argument "data" is required.')
+
+        d = {
+            'dataset': data,
+            'title': title,
+
+        }
+        self._add_dataset(d)
+
+    def plot_from_dataframe(self, data_frame, plot_axes=[], series_labels=[]):
+        """
+        Adds a pandas.DataFrame to the result.
+
+        Args:
+            data_frame(pandas.DataFrame): The data. if plot axes is not provided,
+             the first column is x and the rest are ys.
+            plot_axes(list): A list of tuple label for x and y axes respectively.
+             For example: [('x', 'y'), ('x1', 'y1)].
+            series_labels(list): A list of series' label. For example: ['Series 1', 'Series 2', 'Series 3'].
+        """
         if not isinstance(data_frame, pd.DataFrame):
             raise ValueError('The argument "data_frame" must be a pandas.DataFrame.')
 
@@ -104,24 +149,25 @@ class PlotWorkflowResult(ResourceWorkflowResult):
             raise ValueError('The pandas.DataFrame must not be empty.')
 
         d = {
-            'title': title,
             'dataset': data_frame,
+            'plot_axes': plot_axes,
+            'series_labels': series_labels,
         }
         self._add_dataset(d)
 
     def add_plot(self, plot):
         """
-        Adds a pandas.DataFrame to the result.
+        Adds a plotly plot object to the result.
 
         Args:
-            plot(obj): bokeh or plotly figure.
+            plot(obj): plotly figure. Only support adding one plot.
         """
 
         if not isinstance(plot, go.Figure):
             raise ValueError('The argument "plot" must be a plotly Figure.')
 
-        d = {
+        plot_object = {
             'plot_object': plot,
         }
 
-        self._add_dataset(d)
+        self._add_plot(plot_object)
