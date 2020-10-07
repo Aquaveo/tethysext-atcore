@@ -14,9 +14,7 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
 from bokeh.palettes import Category10
 import plotly.graph_objs as go
-from datetime import datetime
 import pandas as pd
-import numpy as np
 
 from tethys_sdk.gizmos import BokehView
 from tethys_sdk.gizmos import PlotlyView
