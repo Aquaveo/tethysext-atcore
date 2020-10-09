@@ -17,6 +17,15 @@ __all__ = ['PlotWorkflowResult']
 class PlotWorkflowResult(ResourceWorkflowResult):
     """
     Data model for storing spatial information about resource workflow results.
+
+    Options:
+        renderer (str): bokeh or plotly
+        axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
+        axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
+        plot_type (str): lines or scatter
+        line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
+        x_axis_type (str): type of x axis. Available options are 'linear' or 'datetime'
+        Returns default options dictionary for the object.
     """
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView'  # noqa: E501
     TYPE = 'plot_workflow_result'
@@ -36,16 +45,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
 
     @property
     def default_options(self):
-        """
-        Options:
-            renderer (str): bokeh or plotly
-            axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
-            axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
-            plot_type (str): lines or scatter
-            line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
-            x_axis_type (str): type of x axis. Available options are 'linear' or 'datetime'
-            Returns default options dictionary for the object.
-        """
+
         default_options = super().default_options
         default_options.update({
             'renderer': 'plotly',
