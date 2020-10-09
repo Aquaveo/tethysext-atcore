@@ -26,12 +26,12 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
 
     def test_default_options(self):
         baseline = {
-            'plot_lib': 'plotly',
+            'renderer': 'plotly',
             'axes': [],
-            'labels': [],
             'plot_type': 'lines',
             'axis_labels': ['x', 'y'],
             'line_shape': 'linear',
+            'x_axis_type': 'datetime',
             'no_dataset_message': 'No dataset found.'
         }
         self.assertDictEqual(baseline, self.instance.default_options)
@@ -52,6 +52,11 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
         self.instance._add_dataset(test_data)
         self.assertListEqual([test_data], self.instance.datasets)
 
+    def test__add_plot(self):
+        test_data = 'Test plot'
+        self.instance._add_plot(test_data)
+        self.assertEqual(test_data, self.instance.plot)
+
     def test_datasets_bound(self):
         self.bind_instance_to_session()
         self.test_datasets()
@@ -64,29 +69,45 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
         self.bind_instance_to_session()
         self.test__add_dataset()
 
+    def test_add_series_no_title(self):
+        self.assertRaises(ValueError, self.instance.add_series, '', ['test'])
+
+    def test_add_series_no_data(self):
+        self.assertRaises(ValueError, self.instance.add_series, 'title', '')
+
+    def test_add_series_empty_data_frame(self):
+        mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=True)
+        self.assertRaises(ValueError, self.instance.add_series, 'title', mock_dataframe)
+
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult._add_dataset')  # noqa: E501
-    def test_add_pandas_dataframe(self, mock_add_dataset):
+    def test_add_series(self, mock_add_dataset):
         mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=False)
-        self.instance.add_pandas_dataframe('foo', mock_dataframe)
+        self.instance.add_series('series title', mock_dataframe)
         baseline = {
-            'title': 'foo',
+            'title': 'series title',
             'dataset': mock_dataframe,
         }
         mock_add_dataset.assert_called_with(baseline)
 
-    def test_add_pandas_dataframe_no_title(self):
-        mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=False)
-        self.assertRaises(ValueError, self.instance.add_pandas_dataframe, '', mock_dataframe)
-        self.assertRaises(ValueError, self.instance.add_pandas_dataframe, None, mock_dataframe)
-
-    def test_add_pandas_dataframe_not_dataframe(self):
-        self.assertRaises(ValueError, self.instance.add_pandas_dataframe, 'foo', ['test'])
-
-    def test_add_pandas_dataframe_empty_dataframe(self):
-        mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=True)
-        self.assertRaises(ValueError, self.instance.add_pandas_dataframe, 'foo', mock_dataframe)
-
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult._add_dataset')  # noqa: E501
+    def test_plot_from_dataframe(self, mock_add_dataset):
+        mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=False)
+        self.instance.plot_from_dataframe(mock_dataframe)
+        baseline = {
+            'dataset': mock_dataframe,
+            'series_axes': [],
+            'series_labels': []
+        }
+        mock_add_dataset.assert_called_with(baseline)
+
+    def test_plot_from_dataframe_not_dataframe(self):
+        self.assertRaises(ValueError, self.instance.plot_from_dataframe, ['test'])
+
+    def test_plot_from_dataframe_empty_dataframe(self):
+        mock_dataframe = mock.MagicMock(spec=pd.DataFrame, empty=True)
+        self.assertRaises(ValueError, self.instance.plot_from_dataframe, mock_dataframe)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult._add_plot')  # noqa: E501
     def test_add_plot(self, mock_add_dataset):
         mock_plot = mock.MagicMock(spec=go.Figure, empty=False)
         self.instance.add_plot(mock_plot)

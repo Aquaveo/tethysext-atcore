@@ -107,11 +107,11 @@ class PlotWorkflowResult(ResourceWorkflowResult):
 
     def add_series(self, title, data):
         """
-        Add plot series into plot dataset.
+        Add plot series into plot dataset. We assume that the first column is x and second column is y
 
         Args:
             title: series name
-            data: plot data. Support different types of data: 2-D list, 2-D Numpy array and pandas dataframe.
+            data: plot data. Support different types of data: 2-D list, 2-D Numpy array and pandas dataframe with 2 col.
         """
 
         if not title:
@@ -131,15 +131,15 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         }
         self._add_dataset(d)
 
-    def plot_from_dataframe(self, data_frame, plot_axes=[], series_labels=[]):
+    def plot_from_dataframe(self, data_frame, series_axes=[], series_labels=[]):
         """
-        Adds a pandas.DataFrame to the result.
+        Adds a pandas.DataFrame with multiple columns to the result.
 
         Args:
-            data_frame(pandas.DataFrame): The data. if plot axes is not provided,
+            data_frame(pandas.DataFrame): The data.
+            series_axes(list): A list of tuple label for x and y axes respectively.
+             For example: [('x', 'y'), ('x1', 'y1)]. if plot axes is not provided,
              the first column is x and the rest are ys.
-            plot_axes(list): A list of tuple label for x and y axes respectively.
-             For example: [('x', 'y'), ('x1', 'y1)].
             series_labels(list): A list of series' label. For example: ['Series 1', 'Series 2', 'Series 3'].
         """
         if not isinstance(data_frame, pd.DataFrame):
@@ -150,7 +150,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
 
         d = {
             'dataset': data_frame,
-            'plot_axes': plot_axes,
+            'series_axes': series_axes,
             'series_labels': series_labels,
         }
         self._add_dataset(d)

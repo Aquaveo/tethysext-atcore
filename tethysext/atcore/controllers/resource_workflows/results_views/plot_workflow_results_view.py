@@ -110,40 +110,39 @@ class PlotWorkflowResultView(WorkflowResultsView):
             # label count variable to keep track of default variable number.
             label_count = 1
             for ds in datasets:
-                plot_axes = [('x', 'y')]
+                series_axes = [('x', 'y')]
                 # series_labels is for panda frame with multiple columns representing multiple series.
                 series_labels = ''
                 if 'title' in ds.keys():
                     series_label = ds['title']
 
                 # Handle panda dataframe with multiple columns. If panda dataframe has multiple columns and has no
-                # plot_axes, we'll assume the first one is x and the rest are y.
-                if 'plot_axes' in ds.keys():
-                    plot_axes = ds['plot_axes']
-                    if not plot_axes:
+                # series_axes, we'll assume the first one is x and the rest are ys.
+                if 'series_axes' in ds.keys():
+                    series_axes = ds['series_axes']
+                    if not series_axes:
                         column_names = ds['dataset'].columns.to_list()
                         for col in column_names[1:]:
                             # Assume 1st column is x and the rest is y
-                            plot_axes.append((column_names[0], col))
+                            series_axes.append((column_names[0], col))
 
                 # Create default series label for panda dataframe with multiple columns.
                 if 'series_labels' in ds.keys():
                     series_labels = ds['series_labels']
                     if not series_labels:
-                        for i in range(len(plot_axes)):
+                        for i in range(len(series_axes)):
                             series_labels.append(f"Data Series {label_count}")
                             label_count += 1
                 if 'dataset' in ds.keys():
-                    if plot_axes:
+                    if series_axes:
                         plot_data = ds['dataset']
                         if renderer == 'bokeh':
-                            for i, axis in enumerate(plot_axes):
+                            for i, axis in enumerate(series_axes):
                                 if isinstance(plot_data, pd.DataFrame):
-                                    try:
-                                        data = {'x': plot_data[axis[0]].to_list(), 'y': plot_data[axis[1]].to_list()}
-                                    except KeyError:
-                                        data = {'x': plot_data[plot_data.columns[0]].to_list(),
-                                                'y': plot_data[plot_data.columns[1]].to_list()}
+                                    x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
+                                    y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
+                                    data = {'x': plot_data[x_axis].to_list(), 'y': plot_data[y_axis].to_list()}
+
                                 elif isinstance(plot_data, list):
                                     data = {'x': plot_data[0], 'y': plot_data[1]}
 
@@ -161,20 +160,16 @@ class PlotWorkflowResultView(WorkflowResultsView):
                                     plot_count += 1
                         else:
                             plot_mode = 'lines' if plot_type == 'lines' else 'markers'
-                            for i, axis in enumerate(plot_axes):
+                            for i, axis in enumerate(series_axes):
                                 # Handle panda dataframe with multiple columns
                                 if isinstance(series_labels, list):
                                     series_label = series_labels[i]
                                 if isinstance(plot_data, pd.DataFrame):
-                                    try:
-                                        plot.add_trace(go.Scatter(x=plot_data[axis[0]].to_list(),
-                                                                  y=plot_data[axis[1]].to_list(), name=series_label,
-                                                                  mode=plot_mode, line_shape=line_shape))
-                                    except KeyError:
-                                        plot.add_trace(go.Scatter(x=plot_data[plot_data.columns[0]].to_list(),
-                                                                  y=plot_data[plot_data.columns[1]].to_list(),
-                                                                  name=series_label, mode=plot_mode,
-                                                                  line_shape=line_shape))
+                                    x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
+                                    y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
+                                    plot.add_trace(go.Scatter(x=plot_data[x_axis].to_list(),
+                                                              y=plot_data[y_axis].to_list(), name=series_label,
+                                                              mode=plot_mode, line_shape=line_shape))
                                 else:
                                     plot.add_trace(go.Scatter(x=plot_data[0], y=plot_data[1], name=series_label,
                                                               mode=plot_mode, line_shape=line_shape))
