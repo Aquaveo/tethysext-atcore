@@ -52,6 +52,7 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
     }
 
     def __init__(self, *args, **kwargs):
+        controller = kwargs.pop('controller', self.CONTROLLER)
         super().__init__(*args, **kwargs)
 
         if 'options' in kwargs:
@@ -59,7 +60,7 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
         else:
             self._options = self.default_options
 
-        self._controller = ControllerMetadata(path=self.CONTROLLER)
+        self._controller = ControllerMetadata(path=controller)
 
     def __str__(self):
         return '<{} name="{}" id="{}" >'.format(self.__class__.__name__, self.name, self.id)

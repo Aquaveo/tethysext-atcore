@@ -142,7 +142,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Get handle on map
         // Set initial extent
-        var m_map = CESIUM_MAP_VIEW.getMap();
+        m_map = CESIUM_MAP_VIEW.getMap();
         m_map.camera.flyTo(
             {
                 'destination': Cesium.Rectangle.fromDegrees(
@@ -197,22 +197,40 @@ var ATCORE_MAP_VIEW = (function() {
     // Sync layer visibility
     sync_layer_visibility = function() {
         let layer_tab_panel = $('#layers-tab-panel');
-        let layer_groups = layer_tab_panel.find('.layer-group-item')
+        let layer_groups = layer_tab_panel.find('.layer-group-item');
         let i;
         let check_status;
         $.each(layer_groups, function(index, content) {
             // Get Group check status
-            check_status = $('#' + content.id).find('.layer-group-visibility-control')[0].checked
+            check_status = $(`#${content.id}`).find('.layer-group-visibility-control')[0].checked;
 
-            // Do not show any layers associated with unchecked layer groups
-            if (check_status == false) {
-                // Get all layers in this group
-                let layer_list_id = $('#' + content.id).next()[0].id
-                let layer_lists =  $('#' + layer_list_id).children()
-                $.each(layer_lists, function(layer_index, layer_content) {
-                    let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
-                    m_layers[layer_id].setVisible(false)
-                })
+            let layer_list_id = $(`#${content.id}`).next()[0].id;
+
+            if (layer_list_id) {
+                let layer_lists =  $(`#${layer_list_id}`).children();
+
+                // Do not show any layers associated with unchecked layer groups
+                if (check_status == false) {
+                    $.each(layer_lists, function(layer_index, layer_content) {
+                        let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
+                        if (layer_id in m_layers && m_layers[layer_id]) {
+                            m_layers[layer_id].show = false;
+                        }
+                    })
+                } else {
+                    $.each(layer_lists, function(layer_index, layer_content) {
+                        let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
+                        let layer_variable = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerVariable;
+
+                        let checked = $(layer_content).find(`[data-layer-id='${layer_id}']`)[0].checked;
+                        if (checked) {
+                            $("#legend-" + layer_variable).removeClass('hidden');
+                        }
+                        else {
+                            $("#legend-" + layer_variable).addClass('hidden');
+                        }
+                    })
+                }
             }
 
         });
@@ -220,11 +238,17 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Map Management
     remove_layer_from_map = function(layer_name) {
-        // Remove from map
-        m_map.removeLayer(m_layers[layer_name]);
-
-        // Remove from layers list
-        delete m_layers[layer_name];
+        if (layer_name in m_layers && m_layers[layer_name]) {
+            // Remove from map
+            m_map.imageryLayers.remove(m_layers[layer_name]);
+            // Remove from layers list
+            delete m_layers[layer_name];
+        } else if (layer_name in m_entities && m_entities[layer_name]) {
+            // Remove from map
+            m_map.dataSources.remove(m_entities[layer_name]);
+            // Remove from entities list
+            delete m_entities[layer_name];
+        }
     };
 
     get_layer_name_from_feature = function(feature) {
@@ -589,7 +613,7 @@ var ATCORE_MAP_VIEW = (function() {
             let $layer_visiblity_controls = $layer_list.find('.layer-visibility-control');
 
             $layer_visiblity_controls.each(function(index, item) {
-                // Set disabiled
+                // Set disabled
                 let $item = $(item);
                 $item.prop('disabled', !layer_group_checked);
 
@@ -597,12 +621,16 @@ var ATCORE_MAP_VIEW = (function() {
                 let layer_name = $item.data('layer-id');
                 let layer_checked = $item.is(':checked');
                 let layer_variable = $item.data('layer-variable');
-                m_layers[layer_name].setVisible(layer_group_checked && layer_checked);
+                if (layer_name in m_layers && m_layers[layer_name]) { // handle empty layer groups. E.g. empty Custom Layers
+                    m_layers[layer_name].show = (layer_group_checked && layer_checked);
+                } else if (layer_name in m_entities && m_entities[layer_name]) {
+                    m_entities[layer_name].show = (layer_group_checked && layer_checked);
+                }
 
                 if (layer_group_checked && layer_checked) {
-                    $("#legend-" + layer_variable).removeClass('hidden')
+                    $("#legend-" + layer_variable).removeClass('hidden');
                 } else {
-                    $("#legend-" + layer_variable).addClass('hidden')
+                    $("#legend-" + layer_variable).addClass('hidden');
                 }
 
             });
@@ -634,22 +662,18 @@ var ATCORE_MAP_VIEW = (function() {
             reset_ui();
 
             // Set the visibility of layer
-            if (layer_name in m_layers)
-            {
-                var layer = m_layers[layer_name];
-                layer.show = checked;
+            if (layer_name in m_layers && m_layers[layer_name]) {
+                m_layers[layer_name].show = checked;
             }
-            else if (layer_name in m_entities)
-            {
-                var entity = m_entities[layer_name];
-                entity.show = checked;
+            else if (layer_name in m_entities && m_entities[layer_name]) {
+                m_entities[layer_name].show = checked;
             }
             // Set the visibility of legend
             if (checked) {
-                $("#legend-" + layer_variable).removeClass('hidden')
+                $("#legend-" + layer_variable).removeClass('hidden');
             }
             else {
-                $("#legend-" + layer_variable).addClass('hidden')
+                $("#legend-" + layer_variable).addClass('hidden');
             }
 
             // TODO: Save state to resource - store in attributes?
@@ -663,10 +687,14 @@ var ATCORE_MAP_VIEW = (function() {
             let layer_variable = $target.data('layer-variable');
 
             // Set the visibility of layer
-            m_layers[layer_name].setVisible(checked);
+            if (layer_name in m_layers && m_layers[layer_name]) { // handle empty layer groups. E.g. empty Custom Layers
+                m_layers[layer_name].show = checked;
+            } else if (layer_name in m_entities && m_entities[layer_name]) {
+                m_entities[layer_name].show = checked;
+            }
 
             // Set the visibility of legend
-            $("#legend-" + layer_variable).addClass('hidden')
+            $("#legend-" + layer_variable).addClass('hidden');
 
             // TODO: Save state to resource - store in attributes?
         });
@@ -780,7 +808,7 @@ var ATCORE_MAP_VIEW = (function() {
             modal.action_button.on('click', function(e) {
                 // Reset the ui
                 reset_ui();
-                var uuid = ''
+                var uuid = '';
                 if (remove_type === 'layer') {
                     // Remove layer from map
                     var layer_id = $action_button.data('layer-id');
@@ -865,7 +893,6 @@ var ATCORE_MAP_VIEW = (function() {
 
             let extent = layer.legend_extent;
 
-            var m_map = CESIUM_MAP_VIEW.getMap();
             if (extent) {
                 // Zoom to layer extent
                 m_map.camera.flyTo(
@@ -951,7 +978,7 @@ var ATCORE_MAP_VIEW = (function() {
 
             let $layer_label = $action_button.closest('.layers-context-menu').prev();
             let $display_name = $layer_label.find('.display-name').first();
-            let $new_layer = $layer_label.parent().next().first()
+            let $new_layer = $layer_label.parent().next().first();
             var uuid = generate_uuid();
             // Build Modal
             let modal_content = '<div class="form-group">'
@@ -979,7 +1006,7 @@ var ATCORE_MAP_VIEW = (function() {
                 let service_type = modal.content.find('#service-type').first().val();
                 let service_link =  modal.content.find('#services-link').first().val();
                 let service_layer_name =  modal.content.find('#service-layer-name').first().val();
-                let html_content = '<li class="layer-list-item">'
+                let html_content = '<li class="layer-list-item">';
                 html_content += '<label class="flatmark"><span class="display-name">' + new_name + '</span>';
                 html_content += '<input type="checkbox" class="layer-visibility-control" checked id="' + uuid + '"';
                 html_content += 'data-layer-id="' + uuid + '" data-layer-variable="" name="custom_layers">';
@@ -1636,9 +1663,9 @@ var ATCORE_MAP_VIEW = (function() {
     hide_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Set layer to be visible first
-            m_layers[layer_ids[i]].setVisible(false)
+            m_layers[layer_ids[i]].show = false;
             // Find the correct layer-list-item and add hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden")
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden");
 
         }
     }
@@ -1646,7 +1673,7 @@ var ATCORE_MAP_VIEW = (function() {
     show_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Find the correct layer-list-item and add hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("hidden")
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("hidden");
 
         }
     }
