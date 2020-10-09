@@ -34,6 +34,11 @@ class ResourceWorkflowResultTests(SqlAlchemyTestCase):
         result = ResourceWorkflowResult(name='foo', description='lorem_1', _data={'baz': 1}, options=baseline_options)
         self.assertDictEqual(baseline_options, result.options)
 
+    def test__init__controller_in_kwargs(self):
+        controller = 'this.is.a.test.controller'
+        result = ResourceWorkflowResult(name='foo', description='lorem_1', controller=controller, _data={'baz': 1})
+        self.assertEqual(controller, result.controller.path)
+
     def test__str__(self):
         baseline_str = '<ResourceWorkflowResult name="{}" id="{}" >'.format(self.result.name, self.result.id)
         ret = str(self.result)
