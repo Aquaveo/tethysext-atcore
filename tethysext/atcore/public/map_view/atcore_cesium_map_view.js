@@ -142,7 +142,7 @@ var ATCORE_MAP_VIEW = (function() {
 
         // Get handle on map
         // Set initial extent
-        var m_map = CESIUM_MAP_VIEW.getMap();
+        m_map = CESIUM_MAP_VIEW.getMap();
         m_map.camera.flyTo(
             {
                 'destination': Cesium.Rectangle.fromDegrees(
@@ -238,7 +238,6 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Map Management
     remove_layer_from_map = function(layer_name) {
-        let m_map = CESIUM_MAP_VIEW.getMap();
         if (layer_name in m_layers && m_layers[layer_name]) {
             // Remove from map
             m_map.imageryLayers.remove(m_layers[layer_name]);
