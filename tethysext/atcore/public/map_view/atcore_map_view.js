@@ -131,7 +131,7 @@ var ATCORE_MAP_VIEW = (function() {
     setup_map = function() {
         // Change Extent Button from "E" to Extent Symbol
         let $extent_button = $('button[title="Fit to extent"]');
-        $extent_button.html('<span class="glyphicon glyphicon-home"></span>')
+        $extent_button.html('<span class="glyphicon glyphicon-home"></span>');
 
         // Get handle on map
 	    m_map = TETHYS_MAP_VIEW.getMap();
@@ -166,7 +166,7 @@ var ATCORE_MAP_VIEW = (function() {
     // Sync layer visibility
     sync_layer_visibility = function() {
         let layer_tab_panel = $('#layers-tab-panel');
-        let layer_groups = layer_tab_panel.find('.layer-group-item')
+        let layer_groups = layer_tab_panel.find('.layer-group-item');
         let i;
         let check_status;
         $.each(layer_groups, function(index, content) {
@@ -192,12 +192,12 @@ var ATCORE_MAP_VIEW = (function() {
                             let layer_id = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerId;
                             let layer_variable = layer_content.getElementsByClassName('layer-visibility-control')[0].dataset.layerVariable;
 
-                            let checked = $(layer_content).find(`[data-layer-id='${layer_id}']`)[0].checked
+                            let checked = $(layer_content).find(`[data-layer-id='${layer_id}']`)[0].checked;
                             if (checked) {
-                                $("#legend-" + layer_variable).removeClass('hidden')
+                                $("#legend-" + layer_variable).removeClass('hidden');
                             }
                             else {
-                                $("#legend-" + layer_variable).addClass('hidden')
+                                $("#legend-" + layer_variable).addClass('hidden');
                             }
                         })
                     }
@@ -630,10 +630,10 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Set the visibility of legend
             if (checked) {
-                $("#legend-" + layer_variable).removeClass('hidden')
+                $("#legend-" + layer_variable).removeClass('hidden');
             }
             else {
-                $("#legend-" + layer_variable).addClass('hidden')
+                $("#legend-" + layer_variable).addClass('hidden');
             }
 
             // TODO: Save state to resource - store in attributes?
@@ -652,7 +652,7 @@ var ATCORE_MAP_VIEW = (function() {
             }
 
             // Set the visibility of legend
-            $("#legend-" + layer_variable).addClass('hidden')
+            $("#legend-" + layer_variable).addClass('hidden');
 
             // TODO: Save state to resource - store in attributes?
         });
@@ -750,7 +750,7 @@ var ATCORE_MAP_VIEW = (function() {
             modal.action_button.on('click', function(e) {
                 // Reset the ui
                 reset_ui();
-                var uuid = ''
+                var uuid = '';
                 if (remove_type === 'layer') {
                     // Remove layer from map
                     var layer_id = $action_button.data('layer-id');
@@ -831,8 +831,7 @@ var ATCORE_MAP_VIEW = (function() {
                 // Zoom to layer extent
                 TETHYS_MAP_VIEW.zoomToExtent(extent);
             }
-            else if ('tethys_legend_extent' in m_layers[layer_name] && m_layers[layer_name].tethys_legend_extent)
-            {
+            else if ('tethys_legend_extent' in m_layers[layer_name] && m_layers[layer_name].tethys_legend_extent) {
                 // use tethys legend extent if it is part of the layer
                 TETHYS_MAP_VIEW.zoomToExtent(m_layers[layer_name].tethys_legend_extent);
             }
@@ -854,7 +853,7 @@ var ATCORE_MAP_VIEW = (function() {
                     $action_button = $action_button.closest('.download-layer');
                 }
                 //Get File Name and replace spaces with underscore
-                let layer_name = $action_button.closest('.layer-list-item').find('.display-name').html()
+                let layer_name = $action_button.closest('.layer-list-item').find('.display-name').html();
                 if (typeof(layer_name) === 'string') {
                     layer_name =  layer_name.split(' ').join('_');
                 }
@@ -864,7 +863,7 @@ var ATCORE_MAP_VIEW = (function() {
 
                 // Get feature
                 let feature_layer = m_layers[layer_id];
-                let features = feature_layer.getSource().getFeatures()
+                let features = feature_layer.getSource().getFeatures();
 
                 // Write out feature to GeoJSON format
                 let format = new ol.format.GeoJSON({featureProjection: 'EPSG:3857'});
@@ -887,7 +886,7 @@ var ATCORE_MAP_VIEW = (function() {
                 })
                 .done(function(data) {
                     let url = window.URL || window.webkitURL;
-                    url = url.createObjectURL(data)
+                    url = url.createObjectURL(data);
                     // create a temporary element to put the href in and click on it on the first time.
                     // I need to do this since for some reason $action_button.click() does not work here.
                     let a = document.createElement('a');
@@ -967,7 +966,7 @@ var ATCORE_MAP_VIEW = (function() {
 
             let $layer_label = $action_button.closest('.layers-context-menu').prev();
             let $display_name = $layer_label.find('.display-name').first();
-            let $new_layer = $layer_label.parent().next().first()
+            let $new_layer = $layer_label.parent().next().first();
             var uuid = generate_uuid();
             // Build Modal
             let modal_content = '<div class="form-group">'
@@ -997,7 +996,7 @@ var ATCORE_MAP_VIEW = (function() {
                 let service_type = modal.content.find('#service-type').first().val();
                 let service_link =  modal.content.find('#services-link').first().val();
                 let service_layer_name =  modal.content.find('#service-layer-name').first().val();
-                let html_content = '<li class="layer-list-item">'
+                let html_content = '<li class="layer-list-item">';
                 html_content += '<label class="flatmark"><span class="display-name">' + new_name + '</span>';
                 html_content += '<input type="checkbox" class="layer-visibility-control" checked id="' + uuid + '"';
                 html_content += 'data-layer-id="' + uuid + '" data-layer-variable="" name="custom_layers">';
@@ -1048,7 +1047,7 @@ var ATCORE_MAP_VIEW = (function() {
                 init_new_layers_tab(uuid);
 
                 // Save to resource
-                csrf_token = $('input[name=csrfmiddlewaretoken]').val()
+                csrf_token = $('input[name=csrfmiddlewaretoken]').val();
                 $.ajax({
                     type: 'POST',
                     url: '',
