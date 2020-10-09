@@ -38,5 +38,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[],  # IMPORTANT: LIST DEPENDENCIES IN install.yml INSTEAD OF HERE
-    test_suite='tethysext.atcore.tests'
+    test_suite='tethysext.atcore.tests',
+    entry_points={
+        'console_scripts': ['atcore=tethysext.atcore.cli:atcore_command'],
+    },
 )
