@@ -498,8 +498,9 @@ class MapManagerBase(object):
 
         return view, extent
 
-    def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions, first_division=1,
-                                             top_offset=0, bottom_offset=0, prefix='val'):
+    def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions, value_precision=2,
+                                             first_division=1, top_offset=0, bottom_offset=0, prefix='val', colors=[],
+                                             color_prefix='color'):
         """
         Generate custom elevation divisions.
 
@@ -507,10 +508,13 @@ class MapManagerBase(object):
             min_value(number): minimum value.
             max_value(number): maximum value.
             num_divisison(int): number of divisions.
+            value_precision(int): level of precision for legend values.
             first_division(int): first division number (defaults to 1).
             top_offset(number): offset from top of color ramp (defaults to 0).
             bottom_offset(number): offset from bottom of color ramp (defaults to 0).
             prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
+            colors(list): hexadesimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
+            color_prefix(str): name of color variable prefix (i.e.: 'color' for pattern 'color1').
 
         Returns:
             dict<name, value>: custom divisions
@@ -528,10 +532,10 @@ class MapManagerBase(object):
         b = max_val - (m * max_div)
 
         for i in range(min_div, max_div + 1):
-            if (max_value - min_value) / num_divisions <= 2:
-                divisions['{}{}'.format(prefix, i)] = "{0:.5f}".format(m * i + b)
-            else:
-                divisions['{}{}'.format(prefix, i)] = ceil(m * i + b)
+            divisions[f'{prefix}{i}'] = f"{(m * i + b):.{value_precision}f}"
+
+            if colors:
+                divisions[f'{color_prefix}{i}'] = f"{colors[(i - 1) % len(colors)]}"
 
         return divisions
 

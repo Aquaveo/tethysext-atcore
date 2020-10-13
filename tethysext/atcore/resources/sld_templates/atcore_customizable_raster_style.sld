@@ -12,8 +12,7 @@
           <sld:RasterSymbolizer>
             <sld:ColorMap>
               <sld:ColorMapEntry color="${env('color0','#9EACFF')}" opacity="0" quantity="${env('val_no_data',0)}" label="nodata"/>
-              <sld:ColorMapEntry color="${env('color0','#9EACFF')}" quantity="${env('val0',0.00001)}" label="Low"/>
-              <sld:ColorMapEntry color="${env('color1','#8F9BF5')}" quantity="${env('val1',0.1)}"/>
+              <sld:ColorMapEntry color="${env('color1','#8F9BF5')}" quantity="${env('val1',0.1)}" label="Low"/>
               <sld:ColorMapEntry color="${env('color2','#808BEC')}" quantity="${env('val2',1)}"/>
               <sld:ColorMapEntry color="${env('color3','#717BE2')}" quantity="${env('val3',5)}"/>
               <sld:ColorMapEntry color="${env('color4','#636BD9')}" quantity="${env('val4',10)}"/>

@@ -131,41 +131,44 @@ class MapManagerBaseTests(unittest.TestCase):
         val = self.map_manager.generate_custom_color_ramp_divisions(
             min_value=min_elevation,
             max_value=max_elevation,
+            value_precision=1,
             num_divisions=10
         )
         expected = {
-            'val1': 100.0,
-            'val2': 200.0,
-            'val3': 300.0,
-            'val4': 400.0,
-            'val5': 500.0,
-            'val6': 600.0,
-            'val7': 700.0,
-            'val8': 800.0,
-            'val9': 900.0,
-            'val10': 1000.0
+            'val1': '100.0',
+            'val2': '200.0',
+            'val3': '300.0',
+            'val4': '400.0',
+            'val5': '500.0',
+            'val6': '600.0',
+            'val7': '700.0',
+            'val8': '800.0',
+            'val9': '900.0',
+            'val10': '1000.0'
         }
         self.assertEqual(expected, val)
 
-    def test_generate_custom_color_ramp_divisions_decimals(self):
+    def test_generate_custom_color_ramp_divisions_with_colors(self):
         min_elevation = 100
-        max_elevation = 109
+        max_elevation = 1000
         val = self.map_manager.generate_custom_color_ramp_divisions(
             min_value=min_elevation,
             max_value=max_elevation,
-            num_divisions=10
+            num_divisions=10,
+            colors=['#FF3000', '#FF7000', '#FFA200', '#FFD000', '#FFFF00', '#A2D05C', '#45A2B9',
+                    '#0080FF',  '#003ea3', '#003ea3']
         )
         expected = {
-            'val1': '100.00000',
-            'val2': '101.00000',
-            'val3': '102.00000',
-            'val4': '103.00000',
-            'val5': '104.00000',
-            'val6': '105.00000',
-            'val7': '106.00000',
-            'val8': '107.00000',
-            'val9': '108.00000',
-            'val10': '109.00000'
+            'val1': '100.00', 'color1': '#FF3000',
+            'val2': '200.00', 'color2': '#FF7000',
+            'val3': '300.00', 'color3': '#FFA200',
+            'val4': '400.00', 'color4': '#FFD000',
+            'val5': '500.00', 'color5': '#FFFF00',
+            'val6': '600.00', 'color6': '#A2D05C',
+            'val7': '700.00', 'color7': '#45A2B9',
+            'val8': '800.00', 'color8': '#0080FF',
+            'val9': '900.00', 'color9': '#003ea3',
+            'val10': '1000.00', 'color10': '#003ea3'
         }
         self.assertEqual(expected, val)
 
@@ -176,19 +179,20 @@ class MapManagerBaseTests(unittest.TestCase):
             min_value=min_elevation,
             max_value=max_elevation,
             num_divisions=10,
+            value_precision=1,
             first_division=0
         )
         expected = {
-            'val0': 100.0,
-            'val1': 200.0,
-            'val2': 300.0,
-            'val3': 400.0,
-            'val4': 500.0,
-            'val5': 600.0,
-            'val6': 700.0,
-            'val7': 800.0,
-            'val8': 900.0,
-            'val9': 1000.0
+            'val0': '100.0',
+            'val1': '200.0',
+            'val2': '300.0',
+            'val3': '400.0',
+            'val4': '500.0',
+            'val5': '600.0',
+            'val6': '700.0',
+            'val7': '800.0',
+            'val8': '900.0',
+            'val9': '1000.0'
         }
         self.assertEqual(expected, val)
 
@@ -199,19 +203,20 @@ class MapManagerBaseTests(unittest.TestCase):
             min_value=min_elevation,
             max_value=max_elevation,
             num_divisions=10,
+            value_precision=1,
             prefix='foo'
         )
         expected = {
-            'foo1': 100.0,
-            'foo2': 200.0,
-            'foo3': 300.0,
-            'foo4': 400.0,
-            'foo5': 500.0,
-            'foo6': 600.0,
-            'foo7': 700.0,
-            'foo8': 800.0,
-            'foo9': 900.0,
-            'foo10': 1000.0
+            'foo1': '100.0',
+            'foo2': '200.0',
+            'foo3': '300.0',
+            'foo4': '400.0',
+            'foo5': '500.0',
+            'foo6': '600.0',
+            'foo7': '700.0',
+            'foo8': '800.0',
+            'foo9': '900.0',
+            'foo10': '1000.0'
         }
         self.assertEqual(expected, val)
 
@@ -222,19 +227,20 @@ class MapManagerBaseTests(unittest.TestCase):
             min_value=min_elevation,
             max_value=max_elevation,
             num_divisions=10,
+            value_precision=1,
             top_offset=900
         )
         expected = {
-            'val1': 10.0,
-            'val2': 20.0,
-            'val3': 30.0,
-            'val4': 40.0,
-            'val5': 50.0,
-            'val6': 60.0,
-            'val7': 70.0,
-            'val8': 80.0,
-            'val9': 90.0,
-            'val10': 100.0
+            'val1': '10.0',
+            'val2': '20.0',
+            'val3': '30.0',
+            'val4': '40.0',
+            'val5': '50.0',
+            'val6': '60.0',
+            'val7': '70.0',
+            'val8': '80.0',
+            'val9': '90.0',
+            'val10': '100.0'
         }
         self.assertEqual(expected, val)
 
@@ -245,20 +251,21 @@ class MapManagerBaseTests(unittest.TestCase):
             min_value=min_elevation,
             max_value=max_elevation,
             num_divisions=10,
+            value_precision=1,
             bottom_offset=900
         )
 
         expected = {
-            'val1': 910.0,
-            'val2': 920.0,
-            'val3': 930.0,
-            'val4': 940.0,
-            'val5': 950.0,
-            'val6': 960.0,
-            'val7': 970.0,
-            'val8': 980.0,
-            'val9': 990.0,
-            'val10': 1000.0
+            'val1': '910.0',
+            'val2': '920.0',
+            'val3': '930.0',
+            'val4': '940.0',
+            'val5': '950.0',
+            'val6': '960.0',
+            'val7': '970.0',
+            'val8': '980.0',
+            'val9': '990.0',
+            'val10': '1000.0'
         }
         self.assertEqual(expected, val)
 
