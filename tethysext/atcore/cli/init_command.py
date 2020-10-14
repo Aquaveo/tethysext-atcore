@@ -33,7 +33,7 @@ def init_atcore(arguments):
     # Initialize workspace
     print_info('Initializing ATCORE GeoServer Workspace...')
     try:
-        geoserver_engine.create_workspace(WORKSPACE, f'{WORKSPACE}_URI')
+        geoserver_engine.create_workspace(WORKSPACE, f'https://www.aquaveo.com/{WORKSPACE}')
         print_success('Successfully initialized ATCORE GeoServer workspace.')
     except Exception as e:
         errors_occurred = True
