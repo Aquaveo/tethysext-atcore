@@ -1,16 +1,32 @@
 <layer>
   <defaultStyle>
+  {%- if ':' in default_style %}
+    {% set style_workspace = default_style.split(':')[0] %}
+    {% set style_name = default_style.split(':')[1] %}
+    <name>{{ default_style }}</name>
+    <workspace>{{ style_workspace }}</workspace>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ style_workspace }}/styles/{{ style_name }}.xml" type="application/xml"/>
+  {% else %}
     <name>{{ workspace }}:{{ default_style }}</name>
     <workspace>{{ workspace }}</workspace>
     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ workspace }}/styles/{{ default_style }}.xml" type="application/xml"/>
+  {% endif -%}
   </defaultStyle>
   {%- if other_styles|length > 0 -%}
   <styles class="linked-hash-set">
     {% for other_style in other_styles %}
     <style>
+    {%- if ':' in other_style %}
+      {% set other_style_workspace = other_style.split(':')[0] %}
+      {% set other_style_name = other_style.split(':')[1] %}
+      <name>{{ other_style_workspace }}:{{ other_style_name }}</name>
+      <workspace>{{ other_style_workspace }}</workspace>
+      <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ other_style_workspace }}/styles/{{ other_style_name }}.xml" type="application/xml"/>
+    {% else %}
       <name>{{ workspace }}:{{ other_style }}</name>
       <workspace>{{ workspace }}</workspace>
       <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="{{ geoserver_rest_endpoint }}workspaces/{{ workspace }}/styles/{{ other_style }}.xml" type="application/xml"/>
+    {% endif -%}
     </style>
     {% endfor %}
   </styles>
