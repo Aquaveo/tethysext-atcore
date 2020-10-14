@@ -1,0 +1,83 @@
+{% extends "atcore/resource_workflows/workflow_results_view.html" %}
+{% load tethys_gizmos static %}
+
+{% block import_gizmos %}
+  {{ block.super }}
+  {% import_gizmo_dependency datatable_view %}
+{% endblock %}
+
+{% block app_content %}
+  {% if has_tabular_data %}
+    <div class="tab-data">
+      {% for tab_data_title, tab_data in tabular_data.items %}
+      <h2>{{ tab_data_title }}</h2>
+      {% for k, v in tab_data.items %}
+      <p><b>{{ k|title }}:</b> {{ v }}</p>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+{% if dataset_results %}
+  <div id="dataset_tabs">
+    <ul class="nav nav-tabs" role="tablist">
+    {% for datasets in dataset_results %}
+      {% for dataset in datasets %}
+      <li role="presentation" {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#dataset-{{ forloop.counter }}" aria-controls="home" role="tab" data-toggle="tab">{{ dataset.title }}</a></li>
+      {% endfor %}
+    {% endfor %}
+    </ul>
+
+    <div class="tab-content">
+    {% for datasets in dataset_results %}
+      {% for dataset in datasets %}
+      <div role="tabpanel" class="tab-pane{% if forloop.counter == 1 %} active{% endif %}" id="dataset-{{ forloop.counter }}">
+        {% gizmo dataset.data_table %}
+      </div>
+      {% endfor %}
+    {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <h3>{{ no_dataset_message }}</h3>
+  {% endif %}
+  {% if has_plot_data %}
+    {% gizmo plot_object %}
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>var TAB_SELECTOR = '#dataset_tabs .nav_tabs a';</script>
+{% endblock %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  {% if has_tabular_data %}
+    <style>
+      .map-form {
+        width: 500px;
+        height: 500px;
+        padding-left: 25px;
+        padding-top: 25px;
+      }
+      .tab-data {
+        padding-left: 25px;
+        padding-top: 25px;
+        display: block;
+      }
+    </style>
+  {% endif %}
+  {% if has_dataset_data %}
+    <style>
+      #dataset_tabs {
+        padding: 25px;
+      }
+    </style>
+  {% endif %}
+{% endblock %}
+
+{% block after_app_content %}
+  {{ block.super }}
+{% endblock %}
