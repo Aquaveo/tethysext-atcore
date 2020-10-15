@@ -12,10 +12,11 @@ from tethysext.atcore.models.resource_workflow_results import ReportWorkflowResu
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
-from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult
+from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult,\
+    SpatialWorkflowResult
 from tethysext.atcore.controllers.utiltities import get_plot_object_from_result
 
-from tethys_sdk.gizmos import DataTableView
+from tethys_sdk.gizmos import DataTableView, MapView
 from collections import OrderedDict
 
 
@@ -87,6 +88,52 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         for result in plot_results:
             plot_objects.append(get_plot_object_from_result(result))
         has_plot_data = len(plot_objects) > 0
+        # Only one plot is working. The plot isn't working inside a django template loop.
+        # plot_objects = plot_objects[0]
+
+        # Get SpatialWorkflowResult
+        map_results = list()
+        for result in current_step.results:
+            if isinstance(result, SpatialWorkflowResult):
+                map_results.append(result)
+
+        # Generate MVLayers for spatial data
+        # Get managers
+        _, map_manager = self.get_managers(
+            request=request,
+            resource=resource,
+        )
+
+        # Build MVLayers for map
+        map_layers = list()
+        for result in map_results:
+            for layer in result.layers:
+                layer_type = layer.pop('type', None)
+
+                if not layer_type or layer_type not in ['geojson', 'wms']:
+                    log.warning('Unsupported layer type will be skipped: {}'.format(layer))
+                    continue
+
+                result_layer = None
+
+                if layer_type == 'geojson':
+                    result_layer = map_manager.build_geojson_layer(**layer)
+
+                elif layer_type == 'wms':
+                    result_layer = map_manager.build_wms_layer(**layer)
+
+                if result_layer:
+                    # Add layer to beginning the map's of layer list
+                    map_view.layers.insert(0, result_layer)
+                    map_layers.append(result_layer)
+
+        map_data = MapView(height='500px',
+                           width='60%',
+                           layers=map_layers,
+                           )
+
+        has_map_data = len(map_layers) > 0
+
         # Save changes to map view and layer groups
         context.update({
             'can_run_workflows': can_run_workflows,
@@ -95,7 +142,9 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             'tabular_data': tabular_data,
             'dataset_results': dataset_results,
             'has_plot_data': has_plot_data,
-            'plot_object': plot_objects[0],
+            'plot_objects': plot_objects,
+            'has_map_data': has_map_data,
+            'map_data': map_data,
         })
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
         super().process_step_options(
