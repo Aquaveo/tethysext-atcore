@@ -3,6 +3,8 @@
 
 {% block import_gizmos %}
   {{ block.super }}
+  {% import_gizmo_dependency plotly_view %}
+
   {% import_gizmo_dependency datatable_view %}
 {% endblock %}
 
@@ -42,14 +44,20 @@
   <h3>{{ no_dataset_message }}</h3>
   {% endif %}
   {% if has_plot_data %}
-    {% gizmo plot_object %}
+    {% for plot_object in plot_objects %}
+      {% gizmo plot_object %}
+    {% endfor %}
   {% endif %}
+
+  {% if has_map_data %}
+    {% gizmo map_data %}
+  {% endif %}
+
   {{ block.super }}
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
-  <script>var TAB_SELECTOR = '#dataset_tabs .nav_tabs a';</script>
 {% endblock %}
 
 {% block content_dependent_styles %}
