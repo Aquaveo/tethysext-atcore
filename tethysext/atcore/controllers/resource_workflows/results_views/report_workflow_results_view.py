@@ -58,45 +58,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         )
         has_tabular_data = len(tabular_data) > 0
 
-        # Get DatasetWorkflowResult
-        dataset_results = list()
-        for result in current_step.results:
-            if isinstance(result, DatasetWorkflowResult):
-                dataset_results.append(result.datasets)
-
-        for datasets in dataset_results:
-            for ds in datasets:
-                # Check if the export options is there
-                data_table = DataTableView(
-                    column_names=ds['dataset'].columns,
-                    rows=[list(record.values()) for record in ds['dataset'].to_dict(orient='records',
-                                                                                    into=OrderedDict)],
-                    searching=False,
-                    paging=False,
-                    info=False
-                )
-                ds.update({'data_table': data_table})
-        has_dataset_data = len(dataset_results) > 0
-
-        # Get PlotWorkflowResult
-        plot_results = list()
-        plot_objects = list()
-        for result in current_step.results:
-            if isinstance(result, PlotWorkflowResult):
-                plot_results.append(result)
-
-        for result in plot_results:
-            plot_objects.append(get_plot_object_from_result(result))
-        has_plot_data = len(plot_objects) > 0
-        # Only one plot is working. The plot isn't working inside a django template loop.
-        # plot_objects = plot_objects[0]
-
-        # Get SpatialWorkflowResult
-        map_results = list()
-        for result in current_step.results:
-            if isinstance(result, SpatialWorkflowResult):
-                map_results.append(result)
-
         # Generate MVLayers for spatial data
         # Get managers
         _, map_manager = self.get_managers(
@@ -104,47 +65,53 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             resource=resource,
         )
 
-        # Build MVLayers for map
-        map_layers = list()
-        for result in map_results:
-            for layer in result.layers:
-                layer_type = layer.pop('type', None)
+        # Get DatasetWorkflowResult
+        results = list()
+        for result in current_step.results:
+            if isinstance(result, DatasetWorkflowResult):
+                for ds in result.datasets:
+                    # Check if the export options is there
+                    data_table = DataTableView(
+                        column_names=ds['dataset'].columns,
+                        rows=[list(record.values()) for record in ds['dataset'].to_dict(orient='records',
+                                                                                        into=OrderedDict)],
+                        searching=False,
+                        paging=False,
+                        info=False
+                    )
+                    ds.update({'data_table': data_table})
+                    results.append({'dataset': ds})
+            elif isinstance(result, PlotWorkflowResult):
+                results.append({'plot': [result.name, get_plot_object_from_result(result)]})
+            elif isinstance(result, SpatialWorkflowResult):
+                for layer in result.layers:
+                    layer_type = layer.pop('type', None)
 
-                if not layer_type or layer_type not in ['geojson', 'wms']:
-                    log.warning('Unsupported layer type will be skipped: {}'.format(layer))
-                    continue
+                    if not layer_type or layer_type not in ['geojson', 'wms']:
+                        log.warning('Unsupported layer type will be skipped: {}'.format(layer))
+                        continue
 
-                result_layer = None
+                    result_layer = None
 
-                if layer_type == 'geojson':
-                    result_layer = map_manager.build_geojson_layer(**layer)
+                    if layer_type == 'geojson':
+                        result_layer = map_manager.build_geojson_layer(**layer)
 
-                elif layer_type == 'wms':
-                    result_layer = map_manager.build_wms_layer(**layer)
+                    elif layer_type == 'wms':
+                        result_layer = map_manager.build_wms_layer(**layer)
 
-                if result_layer:
-                    # Add layer to beginning the map's of layer list
-                    map_view.layers.insert(0, result_layer)
-                    map_layers.append(result_layer)
+                    if result_layer:
+                        result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
+                        # Add layer to beginning the map's of layer list
+                        map_view.layers.insert(0, result_layer)
 
-        map_data = MapView(height='500px',
-                           width='60%',
-                           layers=map_layers,
-                           )
-
-        has_map_data = len(map_layers) > 0
-
+                        # Append to final results list.
+                        results.append({'map': result_layer})
         # Save changes to map view and layer groups
         context.update({
             'can_run_workflows': can_run_workflows,
             'has_tabular_data': has_tabular_data,
-            'has_dataset_data': has_dataset_data,
             'tabular_data': tabular_data,
-            'dataset_results': dataset_results,
-            'has_plot_data': has_plot_data,
-            'plot_objects': plot_objects,
-            'has_map_data': has_map_data,
-            'map_data': map_data,
+            'report_results': results,
         })
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
         super().process_step_options(
@@ -370,3 +337,14 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         layout = plot.get('layout', {}) if plot else None
 
         return title, data, layout
+
+    @staticmethod
+    def geoserver_url(link):
+        """
+        link: 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/'
+        :return: 'http://192.168.99.163:8181/geoserver/wms/'
+        """
+        start_remove_index = link.find('//') + 2
+        end_remove_index = link.find('@') + 1
+        link = link[:start_remove_index] + link[end_remove_index:]
+        return link

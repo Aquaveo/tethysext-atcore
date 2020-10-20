@@ -1,65 +1,6 @@
 {% extends "atcore/resource_workflows/workflow_results_view.html" %}
 {% load tethys_gizmos static %}
 
-{% block import_gizmos %}
-  {{ block.super }}
-  {% import_gizmo_dependency plotly_view %}
-
-  {% import_gizmo_dependency datatable_view %}
-{% endblock %}
-
-{% block app_content %}
-  {% if has_tabular_data %}
-    <div class="tab-data">
-      {% for tab_data_title, tab_data in tabular_data.items %}
-      <h2>{{ tab_data_title }}</h2>
-      {% for k, v in tab_data.items %}
-      <p><b>{{ k|title }}:</b> {{ v }}</p>
-      {% endfor %}
-      {% endfor %}
-    </div>
-  {% endif %}
-
-{% if dataset_results %}
-  <div id="dataset_tabs">
-    <ul class="nav nav-tabs" role="tablist">
-    {% for datasets in dataset_results %}
-      {% for dataset in datasets %}
-      <li role="presentation" {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#dataset-{{ forloop.counter }}" aria-controls="home" role="tab" data-toggle="tab">{{ dataset.title }}</a></li>
-      {% endfor %}
-    {% endfor %}
-    </ul>
-
-    <div class="tab-content">
-    {% for datasets in dataset_results %}
-      {% for dataset in datasets %}
-      <div role="tabpanel" class="tab-pane{% if forloop.counter == 1 %} active{% endif %}" id="dataset-{{ forloop.counter }}">
-        {% gizmo dataset.data_table %}
-      </div>
-      {% endfor %}
-    {% endfor %}
-    </div>
-  </div>
-  {% else %}
-  <h3>{{ no_dataset_message }}</h3>
-  {% endif %}
-  {% if has_plot_data %}
-    {% for plot_object in plot_objects %}
-      {% gizmo plot_object %}
-    {% endfor %}
-  {% endif %}
-
-  {% if has_map_data %}
-    {% gizmo map_data %}
-  {% endif %}
-
-  {{ block.super }}
-{% endblock %}
-
-{% block scripts %}
-  {{ block.super }}
-{% endblock %}
-
 {% block content_dependent_styles %}
   {{ block.super }}
   {% if has_tabular_data %}
@@ -77,14 +18,66 @@
       }
     </style>
   {% endif %}
-  {% if has_dataset_data %}
-    <style>
-      #dataset_tabs {
-        padding: 25px;
-      }
-    </style>
-  {% endif %}
+  <style>
+    .modebar{
+      display: none !important;
+     }
+  </style>
 {% endblock %}
+
+{% block import_gizmos %}
+  {{ block.super }}
+  {% import_gizmo_dependency plotly_view %}
+  {% import_gizmo_dependency datatable_view %}
+  {% import_gizmo_dependency map_view %}
+<!--  <script type-->
+{% endblock %}
+
+{% block app_content %}
+  <form>
+  <div id="report_workflow_data">
+    {% if has_tabular_data %}
+      <div class="tab-data">
+        {% for tab_data_title, tab_data in tabular_data.items %}
+        <h2>{{ tab_data_title }}</h2>
+        {% for k, v in tab_data.items %}
+        <p><b>{{ k|title }}:</b> {{ v }}</p>
+        {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
+    <!-- Try to find a way to move the script (one line below) into the component. -->
+    <script>let maps = [] </script>
+    {% for result in report_results %}
+      {% for k, v in result.items %}
+        {% if k == 'map' %}
+          <h3>{{ v.legend_title }}</h3>
+          {% set map_layer = v %}
+          {% include "./components/report_workflow_map_component.html" %}
+        {% elif k == 'dataset' %}
+          <h3>{{ v.title }}</h3>
+          <div>
+            {% gizmo v.data_table %}
+          </div>
+        {% elif k == 'plot' %}
+          <h3>{{ v.0 }}</h3>
+          <div>
+            {% gizmo v.1 %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+  <input type="button" value="Export to PDF" id="btnPrint" />
+  </form>
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+{% endblock %}
+
+
 
 {% block after_app_content %}
   {{ block.super }}

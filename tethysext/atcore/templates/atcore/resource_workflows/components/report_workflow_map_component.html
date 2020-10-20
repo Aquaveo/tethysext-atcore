@@ -1,0 +1,26 @@
+<div id="openLayerMap{{ forloop.counter }}"></div>
+<script>
+  maps[{{ forloop.counter }}] = new ol.Map({
+        interactions: ol.interaction.defaults({mouseWheelZoom:false}),
+        controls: [],
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM(),
+          }),
+          new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+              url: '{{ map_layer.options.url|safe }}',
+              params: {'LAYERS': '{{ map_layer.options.params.LAYERS|safe }}'},
+              serverType: 'geoserver',
+            })
+          }),
+        ],
+        target: 'openLayerMap{{ forloop.counter }}',
+        view: new ol.View({
+          center: ol.proj.fromLonLat([({{map_layer.legend_extent.0}} + {{map_layer.legend_extent.2}})/2, ({{map_layer.legend_extent.1}} + {{map_layer.legend_extent.3}})/2]),
+          zoom: 13,
+        }),
+      });
+  //console.log(ol.proj.toLonLat(maps[{{ forloop.counter }}].getView().calculateExtent(maps[{{ forloop.counter }}].getSize())));
+  //maps[{{ forloop.counter }}].getView().fit({{map_layer.legend_extent}}, maps[{{ forloop.counter }}].getSize());
+</script>
