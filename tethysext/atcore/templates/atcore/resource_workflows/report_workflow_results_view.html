@@ -30,11 +30,32 @@
   {% import_gizmo_dependency plotly_view %}
   {% import_gizmo_dependency datatable_view %}
   {% import_gizmo_dependency map_view %}
-<!--  <script type-->
 {% endblock %}
 
 {% block app_content %}
-  <form>
+  {{ block.super }}
+
+  <form id="report_form">
+  <input type="button" value="Export to PDF" id="btnPrint" />
+  <script type="text/javascript">
+    $("#btnPrint").on("click", function() {
+      let divContents=$('#report_workflow_data').html()
+      let appNavigation =
+      let printWindow = window.open('');
+      printWindow.document.write('<html><head><title>DIV Contents</title>');
+      printWindow.document.write('</head><body >');
+      printWindow.document.write(divContents);
+      printWindow.document.write('</body></html>');
+      printWindow.print();
+      printWindow.close();
+<!--      let doc = new jsPDF('landscape');-->
+<!--      doc.fromHTML($('#report_workflow_data')[0], 15, 15, {-->
+<!--        width: 170-->
+<!--      }, function() {-->
+<!--        doc.save('sample-file.pdf');-->
+<!--      });-->
+    });
+  </script>
   <div id="report_workflow_data">
     {% if has_tabular_data %}
       <div class="tab-data">
@@ -68,9 +89,7 @@
       {% endfor %}
     {% endfor %}
   </div>
-  <input type="button" value="Export to PDF" id="btnPrint" />
   </form>
-  {{ block.super }}
 {% endblock %}
 
 {% block scripts %}
