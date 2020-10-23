@@ -1,6 +1,19 @@
 {% extends "atcore/resource_workflows/workflow_results_view.html" %}
 {% load tethys_gizmos static %}
 
+{% block app_content_wrapper_override %}
+  {{ block.super }}
+  <input type="button" value="Print Report" id="btnPrint" class="btn btn-info" style="position:absolute;right:20px;top:70px;"/>
+  <script type="text/javascript">
+    $("#btnPrint").on("click", function() {
+      let curURL = window.location.href;
+      history.replaceState(history.state, '', '/steem-report');
+      window.print();
+      history.replaceState(history.state, '', curURL);
+    });
+  </script>
+{% endblock %}
+
 {% block content_dependent_styles %}
   {{ block.super }}
   {% if has_tabular_data %}
@@ -12,8 +25,6 @@
         padding-top: 25px;
       }
       .tab-data {
-        padding-left: 25px;
-        padding-top: 25px;
         display: block;
       }
     </style>
@@ -21,7 +32,47 @@
   <style>
     .modebar{
       display: none !important;
-     }
+    }
+
+    @media print {
+      body {
+        padding-top: 72px;
+        transform: scale(1);
+      }
+      @page {
+        margin-top: 0
+      }
+      div[id*="resultType-"] {
+        page-break-after: always;
+      }
+      #inner-app-content {
+        overflow: visible;
+      }
+      #app-content {
+        overflow: visible;
+      }
+      #btnPrint, #app-header, #app-actions,  #app-actions > *, .results-tabs {
+        display: none;
+      }
+      #app-content-wrapper.show-nav #app-content {
+        padding-right: 0;
+        transform: translate3d(0,0,0);
+        overflow: true;
+      }
+      #app-navigation {
+        display: none;
+      }
+      #app-content-wrapper #app-content {
+        padding-top: 0;
+        overflow: visible;
+      }
+      #app-content-wrapper {
+        overflow-x: visible;
+      }
+      a[href]:after {
+        content: none !important;
+      }
+    }
   </style>
 {% endblock %}
 
@@ -36,40 +87,6 @@
   {{ block.super }}
 
   <form id="report_form">
-  <input type="button" value="Export to PDF" id="btnPrint" />
-  <script type="text/javascript">
-    $("#btnPrint").on("click", function() {
-      let appContentWrapper=$('#app-content-wrapper')
-      let resultTab = $('.results-tabs')
-      let appActions = $('#app-actions')
-      let btnPrint = $('#btnPrint')
-      let showNav = appContentWrapper.hasClass('show-nav')
-      // Hide before export
-      appContentWrapper.removeClass('show-nav')
-      resultTab.hide()
-      appActions.hide()
-      btnPrint.hide()
-      let printWindow = window.print();
-      if (showNav) {
-        appContentWrapper.addClass('show-nav')
-      }
-      btnPrint.show()
-      resultTab.show()
-      appActions.show()
-      //printWindow.document.write('<html><head><title>DIV Contents</title>');
-      //printWindow.document.write('</head><body >');
-      //printWindow.document.write(divContents);
-      //printWindow.document.write('</body></html>');
-      //printWindow.print();
-      //printWindow.close();
-      //let doc = new jsPDF('landscape');
-      //doc.fromHTML($('#report_workflow_data')[0], 15, 15, {
-      //  width: 170
-      //}, function() {
-      //  doc.save('sample-file.pdf');
-      //});
-    });
-  </script>
   <div id="report_workflow_data">
     {% if has_tabular_data %}
       <div class="tab-data">
@@ -93,13 +110,28 @@
           <input class="form-control report-note" placeholder="Map Note" type="text" />
           {% set map_layer = v.1 %}
           {% include "./components/report_workflow_map_component.html" %}
+          <div id="resultType-map">
+            <h3 style="padding-top:72px;">{{ v.legend_title }}</h3>
+            {% set map_layer = v %}
+            {% include "./components/report_workflow_map_component.html" %}
+          </div>
         {% elif k == 'dataset' %}
+          <div id="resultType-table">
+            <h3  style="padding-top:72px;">{{ v.title }}</h3>
+            <div>
+              {% gizmo v.data_table %}
+            </div>
           <h3>{{ v.title }}</h3>
           <input class="form-control report-note" placeholder="Table Note" type="text" />
           <div>
             {% gizmo v.data_table %}
           </div>
         {% elif k == 'plot' %}
+          <div id="resultType-plot">
+            <h3  style="padding-top:72px;">{{ v.0 }}</h3>
+            <div id="resultPlotDiv{{ forloop.counter }}" style="width:75%;">
+              {% gizmo v.1 %}
+            </div>
           <h3>{{ v.0 }}</h3>
           <input class="form-control report-note" placeholder="Plot Note" type="text" />
           <div>
