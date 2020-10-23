@@ -80,11 +80,10 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         info=False
                     )
                     ds.update({'data_table': data_table})
-                    breakpoint()
+                    ds.update({'data_description': result.description})
                     results.append({'dataset': ds})
             elif isinstance(result, PlotWorkflowResult):
-                results.append({'plot': [result.name, get_plot_object_from_result(result)]})
-                breakpoint()
+                results.append({'plot': [result.name, result.description, get_plot_object_from_result(result)]})
             elif isinstance(result, SpatialWorkflowResult):
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)

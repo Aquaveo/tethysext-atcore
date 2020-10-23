@@ -86,6 +86,9 @@ def get_plot_object_from_result(result):
         elif renderer == 'plotly':
             plot = go.Figure(layout=go.Layout(xaxis={'title': {'text': axis_labels[0]}},
                                               yaxis={'title': {'text': axis_labels[1]}},
+                                              legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02,
+                                                      'xanchor': 'right', 'x': 1},
+                                              margin={'r': 0},
                                               height=600))
 
         # Plot count variable to keep track of the series color in bokeh.

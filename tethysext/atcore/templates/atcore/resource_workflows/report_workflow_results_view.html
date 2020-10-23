@@ -33,14 +33,40 @@
     .modebar{
       display: none !important;
     }
+    input {
+      margin-bottom: 40px;
+      margin-top: 10px;
+    }
+    h3 {
+      padding-top: 20px !important;
+    }
+    [contentEditable=true]:empty:not(:focus)::before{
+        content:attr(data-ph)
+    }
+    .textareaclone {
+      margin-top: 10px;
+      margin-bottom: 40px;
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid gray;
+    }
 
     @media print {
+      input:placeholder-shown {
+          display: none;
+      }
+      div:empty {
+          display: none;
+      }
+      div {
+        border-style: none !important;
+      }
       body {
-        padding-top: 72px;
         transform: scale(1);
       }
       @page {
         margin-top: 0
+        padding-top: 72px !important;
       }
       div[id*="resultType-"] {
         page-break-after: always;
@@ -103,39 +129,36 @@
     {% for result in report_results %}
       {% for k, v in result.items %}
         {% if k == 'map' %}
-          <h3>{{ v.1.legend_title }}</h3>
-          {% if v.0 %}
-            <h3>Description: {{ v.0 }}</h3>
-          {% endif %}
-          <input class="form-control report-note" placeholder="Map Note" type="text" />
-          {% set map_layer = v.1 %}
-          {% include "./components/report_workflow_map_component.html" %}
-          <div id="resultType-map">
-            <h3 style="padding-top:72px;">{{ v.legend_title }}</h3>
-            {% set map_layer = v %}
+          <div id="resultType-map-{{ forloop.counter }}">
+            <h3 style="padding-top:72px;">{{ v.1.legend_title }}</h3>
+            {% if v.0 %}
+              <h4>Description: {{ v.0 }}</h4>
+            {% endif %}
+            {% set map_layer = v.1 %}
             {% include "./components/report_workflow_map_component.html" %}
+            <div contentEditable=true class="textareaclone" data-ph="Map Note"></div>
           </div>
         {% elif k == 'dataset' %}
-          <div id="resultType-table">
+          <div id="resultType-table-{{ forloop.counter }}">
             <h3  style="padding-top:72px;">{{ v.title }}</h3>
+            {% if v.data_description %}
+              <h4>Description: {{ v.data_description }}</h4>
+            {% endif %}
             <div>
               {% gizmo v.data_table %}
             </div>
-          <h3>{{ v.title }}</h3>
-          <input class="form-control report-note" placeholder="Table Note" type="text" />
-          <div>
-            {% gizmo v.data_table %}
+            <div contentEditable=true class="textareaclone" data-ph="Data Note"></div>
           </div>
         {% elif k == 'plot' %}
-          <div id="resultType-plot">
+          <div id="resultType-plot-{{ forloop.counter }}">
             <h3  style="padding-top:72px;">{{ v.0 }}</h3>
-            <div id="resultPlotDiv{{ forloop.counter }}" style="width:75%;">
-              {% gizmo v.1 %}
+            {% if v.1 %}
+              <h4>Description: {{ v.1 }}</h4>
+            {% endif %}
+            <div id="resultPlotDiv{{ forloop.counter }}" style="width:950px;">
+              {% gizmo v.2 %}
             </div>
-          <h3>{{ v.0 }}</h3>
-          <input class="form-control report-note" placeholder="Plot Note" type="text" />
-          <div>
-            {% gizmo v.1 %}
+            <div contentEditable=true class="textareaclone" data-ph="Plot Note"></div>
           </div>
         {% endif %}
       {% endfor %}
