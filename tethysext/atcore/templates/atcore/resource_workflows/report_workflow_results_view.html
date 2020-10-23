@@ -39,21 +39,35 @@
   <input type="button" value="Export to PDF" id="btnPrint" />
   <script type="text/javascript">
     $("#btnPrint").on("click", function() {
-      let divContents=$('#report_workflow_data').html()
-      let appNavigation =
-      let printWindow = window.open('');
-      printWindow.document.write('<html><head><title>DIV Contents</title>');
-      printWindow.document.write('</head><body >');
-      printWindow.document.write(divContents);
-      printWindow.document.write('</body></html>');
-      printWindow.print();
-      printWindow.close();
-<!--      let doc = new jsPDF('landscape');-->
-<!--      doc.fromHTML($('#report_workflow_data')[0], 15, 15, {-->
-<!--        width: 170-->
-<!--      }, function() {-->
-<!--        doc.save('sample-file.pdf');-->
-<!--      });-->
+      let appContentWrapper=$('#app-content-wrapper')
+      let resultTab = $('.results-tabs')
+      let appActions = $('#app-actions')
+      let btnPrint = $('#btnPrint')
+      let showNav = appContentWrapper.hasClass('show-nav')
+      // Hide before export
+      appContentWrapper.removeClass('show-nav')
+      resultTab.hide()
+      appActions.hide()
+      btnPrint.hide()
+      let printWindow = window.print();
+      if (showNav) {
+        appContentWrapper.addClass('show-nav')
+      }
+      btnPrint.show()
+      resultTab.show()
+      appActions.show()
+      //printWindow.document.write('<html><head><title>DIV Contents</title>');
+      //printWindow.document.write('</head><body >');
+      //printWindow.document.write(divContents);
+      //printWindow.document.write('</body></html>');
+      //printWindow.print();
+      //printWindow.close();
+      //let doc = new jsPDF('landscape');
+      //doc.fromHTML($('#report_workflow_data')[0], 15, 15, {
+      //  width: 170
+      //}, function() {
+      //  doc.save('sample-file.pdf');
+      //});
     });
   </script>
   <div id="report_workflow_data">
@@ -72,16 +86,22 @@
     {% for result in report_results %}
       {% for k, v in result.items %}
         {% if k == 'map' %}
-          <h3>{{ v.legend_title }}</h3>
-          {% set map_layer = v %}
+          <h3>{{ v.1.legend_title }}</h3>
+          {% if v.0 %}
+            <h3>Description: {{ v.0 }}</h3>
+          {% endif %}
+          <input class="form-control report-note" placeholder="Map Note" type="text" />
+          {% set map_layer = v.1 %}
           {% include "./components/report_workflow_map_component.html" %}
         {% elif k == 'dataset' %}
           <h3>{{ v.title }}</h3>
+          <input class="form-control report-note" placeholder="Table Note" type="text" />
           <div>
             {% gizmo v.data_table %}
           </div>
         {% elif k == 'plot' %}
           <h3>{{ v.0 }}</h3>
+          <input class="form-control report-note" placeholder="Plot Note" type="text" />
           <div>
             {% gizmo v.1 %}
           </div>
