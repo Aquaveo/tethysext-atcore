@@ -30,9 +30,12 @@
     </style>
   {% endif %}
   <style>
+    h4 {
+      font-size: 20px;
+    }
     .legend-list {
         list-style: none;
-        padding-inline-start: 30px;
+        padding-inline-start: 5px;
         transition: height 0.2s ease-out;
         margin-left: 10px;
         margin-right: auto;
@@ -160,6 +163,7 @@
         {% endfor %}
       </div>
     {% endif %}
+    <div contentEditable=true class="add-border" data-ph="General Note"></div>
     <!-- Try to find a way to move the script (one line below) into the component. -->
     <script>let maps = [] </script>
     {% for result in report_results %}
@@ -173,24 +177,8 @@
           <div class="container-fluid">
             <div class="row">
             {% set map_layer = v.2 %}
-            {% include "./components/report_workflow_map_component.html" %}
             {% set legend = v.1 %}
-              <div class="col-xs-3" id="legend-{{ legend.legend_id }}">
-                <li class="legend-group-item">
-                  <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
-                  </label>
-                </li>
-                <ul class="legend-list" data-collapsed="false">
-                  {% for value, color in legend.divisions.items  %}
-                    <div class="legend-item">
-                      <li class="legend-list-item">
-                        <p>{{ value }} </p>
-                        <div class="color-box" style="background-color: {{ color }} !important;"></div>
-                      </li>
-                    </div>
-                  {% endfor %}
-                </ul>
-              </div>
+            {% include "./components/report_workflow_map_component.html" %}
             </div>
           </div>
           <div contentEditable=true class="add-border" data-ph="Map Note"></div>

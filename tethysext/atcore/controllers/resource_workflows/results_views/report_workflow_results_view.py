@@ -66,7 +66,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             resource=resource,
         )
 
-
         # Get DatasetWorkflowResult
         results = list()
         for result in current_step.results:

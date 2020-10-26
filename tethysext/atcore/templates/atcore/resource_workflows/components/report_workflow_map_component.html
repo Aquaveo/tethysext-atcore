@@ -1,4 +1,20 @@
 <div class="col-xs-9 nopadding" id="openLayerMap{{ forloop.counter }}" style="width:700px; height:600px;"></div>
+<div class="col-xs-3" id="legend-{{ legend.legend_id }}" style="width:220px;">
+  <li class="legend-group-item">
+    <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
+    </label>
+  </li>
+  <ul class="legend-list" data-collapsed="false">
+    {% for value, color in legend.divisions.items  %}
+      <div class="legend-item">
+        <li class="legend-list-item">
+          <p>{{ value }} </p>
+          <div class="color-box" style="background-color: {{ color }} !important;"></div>
+        </li>
+      </div>
+    {% endfor %}
+  </ul>
+</div>
 <script>
   let wmsSource = new ol.source.ImageWMS({url: '{{ map_layer.options.url|safe }}',
                                           params: {{ map_layer.options.params|safe }},
@@ -29,9 +45,7 @@
           zoom: 12,
         }),
       });
-  // let graphicUrl = wmsSource.getLegendUrl(1);
-  // let img = document.getElementById('openLayerMapLegend{{ forloop.counter }}')
-  // img.src = graphicUrl
-  // console.log(ol.proj.toLonLat(maps[{{ forloop.counter }}].getView().calculateExtent(maps[{{ forloop.counter }}].getSize())));
-  // maps[{{ forloop.counter }}].getView().fit({{map_layer.legend_extent}}, maps[{{ forloop.counter }}].getSize());
+  // Find wms layer extent and fit the map to it.
+  let extent = ol.proj.transformExtent({{map_layer.legend_extent}}, 'EPSG:4326', 'EPSG:3857');
+  console.log(maps[{{ forloop.counter }}].getView().fit(extent, maps[{{ forloop.counter }}].getSize()));
 </script>
