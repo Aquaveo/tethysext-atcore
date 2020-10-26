@@ -15,6 +15,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_results_view impor
 from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult,\
     SpatialWorkflowResult
 from tethysext.atcore.controllers.utiltities import get_plot_object_from_result
+import collections
 
 from tethys_sdk.gizmos import DataTableView, MapView
 from collections import OrderedDict
@@ -65,6 +66,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             resource=resource,
         )
 
+
         # Get DatasetWorkflowResult
         results = list()
         for result in current_step.results:
@@ -85,6 +87,12 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             elif isinstance(result, PlotWorkflowResult):
                 results.append({'plot': [result.name, result.description, get_plot_object_from_result(result)]})
             elif isinstance(result, SpatialWorkflowResult):
+                params = ""
+                # Get layer params
+                for param_layer in context['layer_groups']:
+                    if param_layer['id'] in result.codename:
+                        params = param_layer['layers'][0]['options']['params']
+
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
 
@@ -101,12 +109,46 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         result_layer = map_manager.build_wms_layer(**layer)
 
                     if result_layer:
+                        # Update env param
+                        legend_info = None
+                        if params:
+                            if 'TILED' in params.keys():
+                                params.pop('TILED')
+                            if 'TILESORIGIN' in params.keys():
+                                params.pop('TILESORIGIN')
+                            result_layer['options']['params'] = params
+
+                            legend_key = result_layer['data']['layer_id']
+                            if ":" in legend_key:
+                                legend_key = legend_key.replace(":", "_")
+
+                            legend_info = {
+                                'legend_id': legend_key,
+                                'title': result_layer['legend_title'],
+                                'divisions': dict()
+                            }
+
+                            # Uses param ENV to create the scale
+                            divisions = params['ENV'].split(";")
+                            divisions_dict = {}
+
+                            for division in divisions:
+                                division = division.split(":")
+                                divisions_dict[division[0]] = division[1]
+
+                            for k, v in divisions_dict.items():
+                                if 'val' in k and k[:11] != 'val_no_data':
+                                    legend_info['divisions'][float(v)] = divisions_dict[k.replace('val', 'color')]
+                            legend_info['divisions'] = collections.OrderedDict(
+                                sorted(legend_info['divisions'].items())
+                            )
+
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
                         # Add layer to beginning the map's of layer list
                         map_view.layers.insert(0, result_layer)
-
                         # Append to final results list.
-                        results.append({'map': [result.description, result_layer]})
+                        results.append({'map': [result.description, legend_info, result_layer]})
+
         # Save changes to map view and layer groups
         context.update({
             'can_run_workflows': can_run_workflows,

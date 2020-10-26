@@ -1,5 +1,10 @@
-<div id="openLayerMap{{ forloop.counter }}" style="width:900px; height:600px;"></div>
+<div class="col-xs-9 nopadding" id="openLayerMap{{ forloop.counter }}" style="width:700px; height:600px;"></div>
 <script>
+  let wmsSource = new ol.source.ImageWMS({url: '{{ map_layer.options.url|safe }}',
+                                          params: {{ map_layer.options.params|safe }},
+                                          ratio: 1,
+                                          serverType: 'geoserver',
+                                        })
   maps[{{ forloop.counter }}] = new ol.Map({
         interactions: ol.interaction.defaults({mouseWheelZoom:false}),
         controls: [],
@@ -15,11 +20,7 @@
             }),
           }),
           new ol.layer.Image({
-            source: new ol.source.ImageWMS({
-              url: '{{ map_layer.options.url|safe }}',
-              params: {'LAYERS': '{{ map_layer.options.params.LAYERS|safe }}'},
-              serverType: 'geoserver',
-            })
+            source: wmsSource,
           }),
         ],
         target: 'openLayerMap{{ forloop.counter }}',
@@ -28,6 +29,9 @@
           zoom: 12,
         }),
       });
-  //console.log(ol.proj.toLonLat(maps[{{ forloop.counter }}].getView().calculateExtent(maps[{{ forloop.counter }}].getSize())));
-  //maps[{{ forloop.counter }}].getView().fit({{map_layer.legend_extent}}, maps[{{ forloop.counter }}].getSize());
+  // let graphicUrl = wmsSource.getLegendUrl(1);
+  // let img = document.getElementById('openLayerMapLegend{{ forloop.counter }}')
+  // img.src = graphicUrl
+  // console.log(ol.proj.toLonLat(maps[{{ forloop.counter }}].getView().calculateExtent(maps[{{ forloop.counter }}].getSize())));
+  // maps[{{ forloop.counter }}].getView().fit({{map_layer.legend_extent}}, maps[{{ forloop.counter }}].getSize());
 </script>
