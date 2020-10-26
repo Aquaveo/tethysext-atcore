@@ -101,14 +101,15 @@
         border-style: none !important;
       }
       body {
+        -webkit-print-color-adjust: exact;
         transform: scale(1);
+        padding-top: 172px !important;
       }
       @page {
-        margin-top: 0
-        padding-top: 72px !important;
+        margin-top: 0;
       }
       div[id*="resultType-"] {
-        page-break-after: always;
+        page-break-inside: avoid;
       }
       #inner-app-content {
         overflow: visible;
@@ -170,14 +171,14 @@
       {% for k, v in result.items %}
         {% if k == 'map' %}
           <div id="resultType-map-{{ forloop.counter }}">
-          <h3 style="padding-top:72px;">{{ v.1.legend_title }}</h3>
-          {% if v.0 %}
-            <h4>Description: {{ v.0 }}</h4>
+          <h3 style="padding-top:72px;">{{ v.0 }}</h3>
+          {% if v.1 %}
+            <h4>Description: {{ v.1 }}</h4>
           {% endif %}
           <div class="container-fluid">
             <div class="row">
-            {% set map_layer = v.2 %}
-            {% set legend = v.1 %}
+            {% set map_layer = v.3 %}
+            {% set legend = v.2 %}
             {% include "./components/report_workflow_map_component.html" %}
             </div>
           </div>

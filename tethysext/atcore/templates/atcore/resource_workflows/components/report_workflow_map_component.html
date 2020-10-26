@@ -22,7 +22,15 @@
                                           serverType: 'geoserver',
                                         })
   maps[{{ forloop.counter }}] = new ol.Map({
-        interactions: ol.interaction.defaults({mouseWheelZoom:false}),
+        interactions: ol.interaction.defaults({
+          mouseWheelZoom:false,
+          doubleClickZoom: false,
+          dragPan: false,
+          keyboardPan: false,
+          keyboardZoom: false,
+          select: false,
+          pointer: false,
+        }),
         controls: [],
         layers: [
           new ol.layer.Tile({

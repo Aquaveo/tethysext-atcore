@@ -146,7 +146,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         # Add layer to beginning the map's of layer list
                         map_view.layers.insert(0, result_layer)
                         # Append to final results list.
-                        results.append({'map': [result.description, legend_info, result_layer]})
+                        results.append({'map': [result.name, result.description, legend_info, result_layer]})
 
         # Save changes to map view and layer groups
         context.update({
