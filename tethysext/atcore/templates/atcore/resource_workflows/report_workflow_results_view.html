@@ -72,13 +72,6 @@
     .modebar{
       display: none !important;
     }
-    input {
-      margin-bottom: 40px;
-      margin-top: 10px;
-    }
-    h3 {
-      padding-top: 20px !important;
-    }
     [contentEditable=true]:empty:not(:focus)::before{
         content:attr(data-ph)
     }
@@ -91,9 +84,6 @@
     }
 
     @media print {
-      input:placeholder-shown {
-          display: none;
-      }
       div:empty {
           display: none;
       }
@@ -101,15 +91,21 @@
         border-style: none !important;
       }
       body {
+        color-adjust: exact;
         -webkit-print-color-adjust: exact;
         transform: scale(1);
-        padding-top: 172px !important;
+        padding-top: 60px;
       }
       @page {
         margin-top: 0;
       }
       div[id*="resultType-"] {
+        padding-top: 60px;
         page-break-inside: avoid;
+      }
+      .add-border {
+        margin-top: 0;
+        margin-bottom: 0;
       }
       #inner-app-content {
         overflow: visible;
@@ -171,7 +167,7 @@
       {% for k, v in result.items %}
         {% if k == 'map' %}
           <div id="resultType-map-{{ forloop.counter }}">
-          <h3 style="padding-top:72px;">{{ v.0 }}</h3>
+          <h3>{{ v.0 }}</h3>
           {% if v.1 %}
             <h4>Description: {{ v.1 }}</h4>
           {% endif %}
@@ -186,7 +182,7 @@
           </div>
         {% elif k == 'dataset' %}
           <div id="resultType-table-{{ forloop.counter }}">
-            <h3  style="padding-top:72px;">{{ v.title }}</h3>
+            <h3>{{ v.title }}</h3>
             {% if v.data_description %}
               <h4>Description: {{ v.data_description }}</h4>
             {% endif %}
@@ -197,7 +193,7 @@
           </div>
         {% elif k == 'plot' %}
           <div id="resultType-plot-{{ forloop.counter }}">
-            <h3  style="padding-top:72px;">{{ v.0 }}</h3>
+            <h3>{{ v.0 }}</h3>
             {% if v.1 %}
               <h4>Description: {{ v.1 }}</h4>
             {% endif %}
