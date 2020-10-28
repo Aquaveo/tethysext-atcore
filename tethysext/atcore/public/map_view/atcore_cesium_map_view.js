@@ -324,7 +324,9 @@ var ATCORE_MAP_VIEW = (function() {
         // available and let's the user pick between them if there's multiple.
          vr_xrButton = new WebXRButton({
           onRequestSession: vr_onRequestSession,
-          onEndSession: vr_onEndSession
+          onEndSession: vr_onEndSession,
+          background: '#BBBBBB',
+          color: '#666666'
         });
         document.querySelector('#vr-button-container').appendChild(vr_xrButton.domElement);
 
@@ -377,6 +379,7 @@ var ATCORE_MAP_VIEW = (function() {
       vr_updateRenderer(session, false);
 
       vr_cesiumScene.useWebVR = true;
+
       cVR = new CesiumVR(100, session);
 
       // Get a frame of reference, which is required for querying poses. In
@@ -411,6 +414,10 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     vr_onEndSession = function(session) {
+      vr_gl = null;
+      vr_renderer = null;
+      vr_scene = null;
+      cVR = null;
       session.end();
     };
 
