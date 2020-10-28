@@ -52,7 +52,7 @@ def get_plot_object_from_result(result):
     options = result.options
 
     # Page title same as result name.
-    page_title = options.get('page_title', result.name)
+    # page_title = options.get('page_title', result.name)
 
     # Get renderer.
     renderer = options.get('renderer', 'plotly')
