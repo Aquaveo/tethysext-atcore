@@ -27,6 +27,7 @@ from .controllers.resource_workflows.resource_workflow_router_tests import Resou
 from .controllers.resource_workflows.results_views.dataset_workflow_results_view_tests import DatasetWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.plot_workflow_results_view_tests import PlotWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
+from .controllers.resource_workflows.results_views.report_workflow_results_view_tests import ReportWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBaseMethodsTests  # noqa: F401

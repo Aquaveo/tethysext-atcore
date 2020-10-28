@@ -17,7 +17,7 @@ from tethysext.atcore.utilities import grammatically_correct_join
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_controller
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
-from tethysext.atcore.controllers.utiltities import get_style_for_status
+from tethysext.atcore.controllers.utilities import get_style_for_status
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 

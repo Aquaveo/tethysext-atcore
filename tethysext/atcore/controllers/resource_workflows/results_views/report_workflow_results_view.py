@@ -14,8 +14,7 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWor
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult,\
     SpatialWorkflowResult
-from tethysext.atcore.controllers.utiltities import get_plot_object_from_result
-import collections
+from tethysext.atcore.controllers.utilities import get_plot_object_from_result, get_tabular_data_for_previous_steps
 
 from tethys_sdk.gizmos import DataTableView, MapView
 from collections import OrderedDict
@@ -54,13 +53,14 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         can_run_workflows = not self.is_read_only(request, current_step)
 
         # get tabular data if any
-        tabular_data = self.get_tabular_data_for_previous_steps(
+        tabular_data = get_tabular_data_for_previous_steps(
             current_step=current_step,
         )
         has_tabular_data = len(tabular_data) > 0
 
         # Generate MVLayers for spatial data
         # Get managers
+
         _, map_manager = self.get_managers(
             request=request,
             resource=resource,
@@ -138,7 +138,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                             for k, v in divisions_dict.items():
                                 if 'val' in k and k[:11] != 'val_no_data':
                                     legend_info['divisions'][float(v)] = divisions_dict[k.replace('val', 'color')]
-                            legend_info['divisions'] = collections.OrderedDict(
+                            legend_info['divisions'] = OrderedDict(
                                 sorted(legend_info['divisions'].items())
                             )
 
@@ -166,22 +166,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             next_step=next_step
         )
 
-    def get_tabular_data_for_previous_steps(self, current_step):
-        previous_steps = current_step.workflow.get_previous_steps(current_step)
-        steps_to_skip = set()
-        mappable_tabular_step_types = (FormInputRWS,)
-        step_data = {}
-        for step in previous_steps:
-            # skip non form steps
-            if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
-                continue
-
-            step_params = step.get_parameter('form-values')
-            fixed_params = {x.replace('_', ' ').title(): step_params[x] for x in step_params}
-            step_data[step.name] = fixed_params
-
-        return step_data
-
     def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
                     **kwargs):
         """
@@ -197,6 +181,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
+
         base_context = MapWorkflowView.get_context(
             self,
             request=request,

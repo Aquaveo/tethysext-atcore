@@ -14,6 +14,7 @@ import pandas as pd
 
 from tethys_sdk.gizmos import BokehView
 from tethys_sdk.gizmos import PlotlyView
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 
 
 def get_style_for_status(status):
@@ -168,3 +169,20 @@ def get_plot_object_from_result(result):
             plot_view = PlotlyView(plot, height='95%', width='95%')
 
     return plot_view
+
+
+def get_tabular_data_for_previous_steps(current_step):
+    previous_steps = current_step.workflow.get_previous_steps(current_step)
+    steps_to_skip = set()
+    mappable_tabular_step_types = (FormInputRWS,)
+    step_data = {}
+    for step in previous_steps:
+        # skip non form steps
+        if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
+            continue
+
+        step_params = step.get_parameter('form-values')
+        fixed_params = {x.replace('_', ' ').title(): step_params[x] for x in step_params}
+        step_data[step.name] = fixed_params
+
+    return step_data

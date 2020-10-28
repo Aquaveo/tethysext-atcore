@@ -21,7 +21,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         super().setUp()
         self.instance = PlotWorkflowResultView()
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.BokehView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_bokeh(self, mock_sup_get_context, mock_get_result, mock_bokeh):
@@ -96,7 +96,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.PlotlyView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_plotly(self, mock_sup_get_context, mock_get_result, mock_plotly):
@@ -168,7 +168,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.PlotlyView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_plot_object(self, mock_sup_get_context, mock_get_result, mock_plotly):
@@ -230,7 +230,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.BokehView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_bokeh_add_series_list(self, mock_sup_get_context, mock_get_result, mock_bokeh):
@@ -296,7 +296,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.BokehView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_bokeh_scatter_add_series_list(self, mock_sup_get_context, mock_get_result, mock_bokeh):
@@ -362,7 +362,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.PlotlyView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_add_series_list(self, mock_sup_get_context, mock_get_result, mock_plotly):
@@ -428,7 +428,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.PlotlyView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_add_series_numpy(self, mock_sup_get_context, mock_get_result, mock_plotly):
@@ -493,7 +493,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
-    @mock.patch('tethysext.atcore.controllers.utiltities.PlotlyView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.utilities.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_add_series_pandas_multiple_columns(self, mock_sup_get_context, mock_get_result, mock_plotly):

@@ -9,7 +9,7 @@
 import logging
 from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
-from tethysext.atcore.controllers.utiltities import get_plot_object_from_result
+from tethysext.atcore.controllers.utilities import get_plot_object_from_result
 
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
