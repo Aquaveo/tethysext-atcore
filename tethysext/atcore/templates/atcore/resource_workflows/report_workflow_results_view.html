@@ -141,6 +141,7 @@
 {% block import_gizmos %}
   {{ block.super }}
   {% import_gizmo_dependency plotly_view %}
+  {% import_gizmo_dependency bokeh_view %}
   {% import_gizmo_dependency datatable_view %}
   {% import_gizmo_dependency map_view %}
 {% endblock %}
