@@ -5,6 +5,14 @@
  * COPYRIGHT: (c) Aquaveo 2018
  * LICENSE:
  *****************************************************************************/
+import {CanvasCopy} from './modules/cesium_canvas_copy.js';
+import {CesiumVR} from './modules/cesium_vr_plugin.js'
+import {CesiumVRUtil} from './modules/cesium_vr_util.js';
+import {WebXRButton} from './modules/util/webxr-button.js';
+import {Renderer, createWebGLContext} from './modules/render/core/renderer.js';
+import {Scene} from './modules/render/scenes/scene.js';
+import {QueryArgs} from './modules/util/query-args.js';
+import WebXRPolyfill from './modules/third-party/webxr-polyfill/build/webxr-polyfill.module.js';
 
 /*****************************************************************************
  *                      LIBRARY WRAPPER
@@ -63,6 +71,12 @@ var ATCORE_MAP_VIEW = (function() {
 
  	// Action Button
  	var generate_action_button, bind_action_buttons, load_action
+
+ 	// VR
+ 	var init_cesium_vr, vr_init_xr, vr_onRequestSession, vr_onSessionStarted, vr_updateRenderer, vr_onEndSession,
+ 	    vr_onSessionEnded, vr_onXRFrame, vr_lofi, vr_Enabled, vr_useWebGL, vr_wakelock, vr_ellipsoid, vr_imageryUrl,
+ 	    vr_xrButton, vr_xrRefSpace, vr_gl, vr_renderer, vr_scene, vr_setup, vr_cesiumScene, vr_cesiumCamera,
+ 	    vr_preVRPosition, vr_preVRHeading, vr_preVRPitch, vr_preVRRoll, cVR;
 
  	// Plotting
  	var init_plot, generate_plot_button, bind_plot_buttons, load_plot, fit_plot, update_plot, show_plot, hide_plot;
@@ -302,6 +316,203 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         return fid;
+    };
+
+    // VR
+    vr_init_xr = function() {
+        // Adds a helper button to the page that indicates if any XRDevices are
+        // available and let's the user pick between them if there's multiple.
+         vr_xrButton = new WebXRButton({
+          onRequestSession: vr_onRequestSession,
+          onEndSession: vr_onEndSession
+        });
+        document.querySelector('#vr-button-container').appendChild(vr_xrButton.domElement);
+
+        // Is WebXR available on this UA?
+        if (navigator.xr) {
+          // If the device allows creation of exclusive sessions set it as the
+          // target of the 'Enter XR' button.
+          navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+            vr_xrButton.enabled = supported;
+          });
+        }
+      };
+
+    vr_onRequestSession = function() {
+      return navigator.xr.requestSession('immersive-vr').then(vr_onSessionStarted);
+    };
+
+    vr_onSessionStarted = function(session) {
+      // This informs the 'Enter XR' button that the session has started and
+      // that it should display 'Exit XR' instead.
+      vr_xrButton.setSession(session);
+
+      vr_preVRPosition = vr_cesiumCamera.positionCartographic;
+      vr_preVRHeading = vr_cesiumCamera.heading;
+      vr_preVRPitch = vr_cesiumCamera.pitch;
+      vr_preVRRoll = vr_cesiumCamera.roll;
+
+
+      var terrain_elevation = vr_cesiumScene.sampleHeight(vr_cesiumCamera.positionCartographic);
+
+      var new_location = Cesium.Cartesian3.fromRadians(
+                vr_cesiumCamera.positionCartographic.longitude,
+                vr_cesiumCamera.positionCartographic.latitude,
+                terrain_elevation + 1.5
+              );
+      vr_cesiumCamera.setView({
+          destination: new_location,
+          orientation : {
+            heading : vr_cesiumCamera.heading,
+            pitch : Cesium.Math.toRadians(0.0),
+            roll : 0.0
+          }
+      });
+
+
+      // Listen for the sessions 'end' event so we can respond if the user
+      // or UA ends the session for any reason.
+      session.addEventListener('end', vr_onSessionEnded);
+
+      vr_updateRenderer(session, false);
+
+      vr_cesiumScene.useWebVR = true;
+      cVR = new CesiumVR(100, session);
+
+      // Get a frame of reference, which is required for querying poses. In
+      // this case an 'local' frame of reference means that all poses will
+      // be relative to the location where the XRDevice was first detected.
+      session.requestReferenceSpace('local').then((refSpace) => {
+        vr_xrRefSpace = refSpace;
+
+        // Inform the session that we're ready to begin drawing.
+        session.requestAnimationFrame(vr_onXRFrame);
+      });
+    }
+
+    vr_updateRenderer = function(session) {
+      // Create a WebGL context to render with, initialized to be compatible
+      // with the XRDisplay we're presenting to.
+
+        // ###### CESIUM ######
+      vr_gl = vr_cesiumScene.context._gl;
+      // Create a renderer with that GL context (this is just for the samples
+      // framework and has nothing to do with WebXR specifically.)
+      // renderer = new Renderer(gl);
+      vr_renderer = new Renderer(vr_gl);
+
+      // Set the scene's renderer, which creates the necessary GPU resources.
+      vr_scene.setRenderer(vr_renderer);
+
+      // Use the new WebGL context to create a XRWebGLLayer and set it as the
+      // sessions baseLayer. This allows any content rendered to the layer to
+      // be displayed on the XRDevice.
+       session.updateRenderState({ baseLayer: new XRWebGLLayer(session, vr_cesiumScene.context._originalGLContext) });
+    };
+
+    vr_onEndSession = function(session) {
+      session.end();
+    };
+
+    vr_onSessionEnded = function(event) {
+      vr_cesiumScene.useWebVR = false;
+      var pre_vr_location = Cesium.Cartesian3.fromRadians(
+                vr_preVRPosition.longitude,
+                vr_preVRPosition.latitude,
+                vr_preVRPosition.height
+              );
+      vr_cesiumCamera.setView({
+          destination: pre_vr_location,
+          orientation : {
+            heading : vr_preVRHeading,
+            pitch : vr_preVRPitch,
+            roll : vr_preVRRoll
+          }
+      });
+
+      vr_xrButton.setSession(null);
+    };
+
+    vr_onXRFrame = function(t, frame) {
+      let session = frame.session;
+
+      // Inform the session that we're ready for the next frame.
+      session.requestAnimationFrame(vr_onXRFrame);
+
+      // Get the XRDevice pose relative to the Frame of Reference we created
+      // earlier.
+      let pose = frame.getViewerPose(vr_xrRefSpace);
+
+      if (pose) {
+        let glLayer = session.renderState.baseLayer;
+
+        vr_gl.bindFramebuffer(vr_gl.FRAMEBUFFER, glLayer.framebuffer);
+
+        for (let view of pose.views) {
+          let viewport = glLayer.getViewport(view);
+          vr_gl.viewport(viewport.x, viewport.y,
+                      viewport.width, viewport.height);
+
+          for (let source of session.inputSources) {
+            if (source.gamepad && source.handedness == 'right') {
+              // let gamepad_pose = frame.getPose(source.gripSpace, xrRefSpace);
+              var axes = source.gamepad.axes;
+              var new_position = Cesium.Cartesian3.fromRadians(
+                vr_cesiumCamera.positionCartographic.longitude + (axes[2] * 0.0001)*-1,
+                vr_cesiumCamera.positionCartographic.latitude + (axes[3] * 0.0001),
+                vr_cesiumCamera.positionCartographic.height
+              );
+              //var new_position =  Cesium.Cartesian3.fromDegrees(-111.645898, 40.390810, 3600)
+              vr_cesiumCamera.position = new_position;
+            }
+          }
+          vr_cesiumScene.initializeFrame();
+
+          var orignalCesiumCam = Cesium.Camera.clone(vr_cesiumCamera);
+          cVR.deriveRecommendedParameters(pose);
+          cVR.applyVRRotation(vr_cesiumCamera, pose);
+          vr_cesiumScene.render();
+          cVR.configureSlaveCamera(orignalCesiumCam, vr_cesiumCamera);
+        }
+      } else {
+
+      }
+      vr_scene.endFrame();
+    };
+
+    init_cesium_vr = function() {
+        if (QueryArgs.getBool('usePolyfill', true)) {
+            let polyfill = new WebXRPolyfill();
+        }
+
+        vr_lofi = false;
+        vr_Enabled = false;
+        vr_useWebGL = true;
+
+        var WakeLock = CesiumVRUtil.getWakeLock();
+        vr_wakelock = new WakeLock();
+
+        vr_ellipsoid = Cesium.Ellipsoid.clone(Cesium.Ellipsoid.WGS84);
+        vr_imageryUrl = 'lib/cesium/Source/Assets/Textures/';
+
+        // XR globals.
+        vr_xrButton = null;
+        vr_xrRefSpace = null;
+
+        // WebGL scene globals.
+        vr_gl = null;
+        vr_renderer = null;
+        vr_scene = new Scene();
+        vr_cesiumScene = CESIUM_MAP_VIEW.getMap().scene;
+        vr_cesiumScene.useWebGL = true;
+//        vr_cesiumScene.useWebVR = true;
+        vr_cesiumCamera = vr_cesiumScene.camera;
+
+        vr_setup = false;
+
+        cVR = null;
+
+        vr_init_xr();
     };
 
     // Plotting
@@ -1749,6 +1960,7 @@ var ATCORE_MAP_VIEW = (function() {
 		// Initialize
 		init_layers_tab();
         //init_geocode();
+        init_cesium_vr();
         init_plot();
         init_draw_controls();
         sync_layer_visibility();

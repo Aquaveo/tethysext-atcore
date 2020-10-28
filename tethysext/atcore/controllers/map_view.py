@@ -134,14 +134,24 @@ class MapView(ResourceView):
             cesium_map_view = CesiumMapView(
                 cesium_ion_token=map_manager.get_cesium_token(),
                 options={
-                    'vrButton': True,
+                    'contextOptions': {
+                        'webgl': {
+                            'xrCompatible': True,
+                            'alpha': True,
+                            'preserveDrawingBuffer': True,
+                        }
+                    },
+                    'vrButton': False,
+                    'scene3DOnly': True,
                 },
-                terrain={'terrainProvider': {
-                    'Cesium.createWorldTerrain': {
-                        'requestVertexNormals': True,
-                        'requestWaterMask': True
+                terrain={
+                    'terrainProvider': {
+                        'Cesium.createWorldTerrain': {
+                            'requestVertexNormals': True,
+                            'requestWaterMask': True
+                        }
                     }
-                }},
+                },
                 layers=layers,
                 entities=entities
             )

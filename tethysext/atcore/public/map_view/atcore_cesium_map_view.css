@@ -17,3 +17,10 @@
 .cesium-viewer-vrContainer {
   bottom: 37px;
 }
+
+#vr-button-container {
+    position: absolute;
+    bottom: 137px!important;
+    right: 450px;
+    z-index: 99;
+}
