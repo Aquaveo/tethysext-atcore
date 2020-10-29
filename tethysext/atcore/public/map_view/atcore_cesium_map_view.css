@@ -17,3 +17,14 @@
 .cesium-viewer-vrContainer {
   bottom: 37px;
 }
+
+#app-content-wrapper #vr-button-container {
+    position: absolute;
+    bottom: 137px!important;
+    right: 25px;
+    z-index: 99;
+}
+
+#app-content-wrapper.show-nav #vr-button-container {
+    right: 425px;
+}
