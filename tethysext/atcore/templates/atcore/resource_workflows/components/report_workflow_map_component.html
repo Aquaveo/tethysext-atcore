@@ -1,4 +1,4 @@
-<div class="col-xs-9 nopadding" id="openLayerMap{{ forloop.counter }}" style="width:700px; height:600px;"></div>
+<div class="col-xs-9 nopadding" id="openLayerMap{{ forloop.counter }}" class='map-view-result'></div>
 <div class="col-xs-3" id="legend-{{ legend.legend_id }}" style="width:220px;">
   <li class="legend-group-item">
     <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
@@ -23,17 +23,25 @@
                                         })
   maps[{{ forloop.counter }}] = new ol.Map({
         interactions: ol.interaction.defaults({
-          mouseWheelZoom:false,
-          doubleClickZoom: false,
-          dragPan: false,
-          keyboardPan: false,
-          keyboardZoom: false,
-          select: false,
-          pointer: false,
+          //mouseWheelZoom:false,
+          //doubleClickZoom: false,
+          //dragPan: false,
+          //keyboardPan: false,
+          //keyboardZoom: false,
+          //select: false,
+          //pointer: false,
         }),
-        controls: [],
+        controls: ol.control.defaults().extend([new ol.control.ScaleLine({units: 'us',
+                                                                          bar: true,
+                                                                          steps: 4,
+                                                                          minWidth: 140,
+                                                                         }),
+                                                new ol.control.Rotate({autoHide: false,
+                                                                       tipLabel: 'North Up',
+                                                }),
+                                                ]),
         layers: [
-          new ol.layer.Tile({
+           new ol.layer.Tile({
             source: new ol.source.XYZ({
               attributions:
                 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/' +
@@ -43,6 +51,18 @@
                 'World_Imagery/MapServer/tile/{z}/{y}/{x}',
             }),
           }),
+          new ol.layer.Tile({
+            source: new ol.source.XYZ({
+              attributions:
+                'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/' +
+                'rest/services/Reference/World_Boundaries_and_Places/MapServer">ArcGIS</a>',
+              url:
+                'https://server.arcgisonline.com/ArcGIS/rest/services/' +
+                'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+            }),
+          }),
+
+
           new ol.layer.Image({
             source: wmsSource,
           }),

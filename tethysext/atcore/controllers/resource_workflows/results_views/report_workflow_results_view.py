@@ -141,7 +141,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                             legend_info['divisions'] = OrderedDict(
                                 sorted(legend_info['divisions'].items())
                             )
-
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
                         # Add layer to beginning the map's of layer list
                         map_view.layers.insert(0, result_layer)
