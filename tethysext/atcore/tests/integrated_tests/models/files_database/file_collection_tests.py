@@ -27,6 +27,7 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.session.add(self.file_database_instance)
         self.session.commit()
         self.instance = FileCollection(
+            id=uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}'),
             file_database_id=self.file_database_instance.id,
             meta='{"JsonKey": "JsonValue"}',
         )
@@ -37,7 +38,8 @@ class FileCollectionTests(SqlAlchemyTestCase):
         """Test the path property of the file collection works correctly."""
         expected_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                      '..', '..', '..', 'files', 'file_database_tests',
-                                                     'file_generator_test', str(self.file_database_instance.id)))
+                                                     'file_generator_test', str(self.file_database_instance.id),
+                                                     str(self.instance.id)))
         self.assertEqual(self.instance.path, expected_path)
 
     def test_files_generator(self):

@@ -31,7 +31,7 @@ class FileCollection(FileDatabaseBase):
     @property
     def path(self) -> str:
         """The root directory of the file database."""
-        return self.database.path
+        return os.path.join(self.database.path, str(self.id))
 
     @property
     def files(self) -> Generator[str, None, None]:

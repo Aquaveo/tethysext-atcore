@@ -1,4 +1,3 @@
-from sqlalchemy.orm import sessionmaker
 from .base import FileDatabaseBase
 
 
@@ -12,8 +11,3 @@ def initialize_file_database_db(engine):
     """
     # Create tables
     FileDatabaseBase.metadata.create_all(engine)
-
-    Session = sessionmaker(engine)
-    session = Session()
-
-    session.close()
