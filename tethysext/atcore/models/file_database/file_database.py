@@ -35,7 +35,7 @@ class FileDatabase(FileDatabaseBase):
         return self._path
 
     @path.setter
-    def path(self, root_dir) -> None:
+    def path(self, root_dir: str) -> None:
         """
         Set the path to the root directory for the file database.
 
