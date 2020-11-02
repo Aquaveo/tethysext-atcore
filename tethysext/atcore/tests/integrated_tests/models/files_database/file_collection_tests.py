@@ -46,11 +46,11 @@ class FileCollectionTests(SqlAlchemyTestCase):
         """Test the file generator works as expected."""
         files = [x for x in self.instance.files]
         expected_files = [
-            os.path.join(self.instance.path, 'file5.txt'),
-            os.path.join(self.instance.path, 'dir3', 'file4.txt'),
-            os.path.join(self.instance.path, 'dir1', 'file2.txt'),
-            os.path.join(self.instance.path, 'dir1', 'file1.txt'),
-            os.path.join(self.instance.path, 'dir1', 'dir2', 'file3.txt')
+            os.path.join('file5.txt'),
+            os.path.join('dir3', 'file4.txt'),
+            os.path.join('dir1', 'file2.txt'),
+            os.path.join('dir1', 'file1.txt'),
+            os.path.join('dir1', 'dir2', 'file3.txt')
         ]
         self.assertListEqual(files, expected_files)
 

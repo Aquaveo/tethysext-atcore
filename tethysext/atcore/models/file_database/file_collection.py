@@ -38,4 +38,4 @@ class FileCollection(FileDatabaseBase):
         """Generator that iterates recursively through all files (ignoring empty directories)."""
         for root, dirs, files in os.walk(self.path):
             for file in files:
-                yield os.path.join(root, file)
+                yield os.path.relpath(os.path.join(root, file), self.path)
