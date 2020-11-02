@@ -7,7 +7,6 @@
 ********************************************************************************
 """
 import copy
-from math import ceil
 from abc import ABCMeta, abstractmethod
 from tethys_gizmos.gizmo_options import MVView, MVLayer
 
