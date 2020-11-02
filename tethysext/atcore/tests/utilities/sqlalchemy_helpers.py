@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.models.app_users import initialize_app_users_db
+from tethysext.atcore.models.file_database import initialize_file_database_db
 from tethysext.atcore.tests import TEST_DB_URL
 
 
@@ -13,6 +14,7 @@ def setup_module_for_sqlalchemy_tests():
     transaction = connection.begin()
     # Initialize db with staff user
     initialize_app_users_db(connection)
+    initialize_file_database_db(connection)
     return engine, connection, transaction
 
 
