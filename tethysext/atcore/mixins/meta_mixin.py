@@ -14,7 +14,7 @@ log = logging.getLogger('tethys.' + __name__)
 
 
 class MetaMixin(object):
-    path = '../models/file_database'
+    path = '.'
     meta = dict()
 
     def write_meta(self):
