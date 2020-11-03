@@ -123,7 +123,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
                             legend_info = {
                                 'legend_id': legend_key,
-                                'title': result_layer['legend_title'],
+                                'title': result_layer['legend_title'].replace("_", " "),
                                 'divisions': dict()
                             }
 

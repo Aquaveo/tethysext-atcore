@@ -1,7 +1,7 @@
 <div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.counter }}" class='map-view-result'></div>
 <div class="col-xs-4" id="legend-{{ legend.legend_id }}" style="width:220px;">
   <li class="legend-group-item">
-    <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
+    <label class="flatmark"><span class="display-name">{{ legend.title|title }}</span>
     </label>
   </li>
   <ul class="legend-list" data-collapsed="false">
