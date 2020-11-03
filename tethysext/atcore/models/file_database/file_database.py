@@ -13,11 +13,12 @@ from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 
+from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database.base import FileDatabaseBase
 from tethysext.atcore.models.types import GUID
 
 
-class FileDatabase(FileDatabaseBase):
+class FileDatabase(MetaMixin, FileDatabaseBase):
     """A model representing a FileDatabase"""
     __tablename__ = "file_databases"
 

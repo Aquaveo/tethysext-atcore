@@ -14,11 +14,12 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 
+from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database.base import FileDatabaseBase
 from tethysext.atcore.models.types import GUID
 
 
-class FileCollection(FileDatabaseBase):
+class FileCollection(MetaMixin, FileDatabaseBase):
     """A model representing a FileCollection"""
     __tablename__ = "file_collections"
 
