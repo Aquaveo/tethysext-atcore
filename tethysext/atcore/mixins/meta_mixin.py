@@ -10,14 +10,12 @@ import json
 import logging
 import os
 
-from sqlalchemy import Column
-from sqlalchemy.dialects.postgresql import JSON
-
 log = logging.getLogger('tethys.' + __name__)
 
 
 class MetaMixin(object):
-    meta = Column('metadata', JSON)
+    path = '../models/file_database'
+    meta = dict()
 
     def write_meta(self):
         """Write a __meta__.json file. Create it if it does not exist."""
