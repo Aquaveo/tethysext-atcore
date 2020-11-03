@@ -10,20 +10,19 @@ import os
 import uuid
 
 from sqlalchemy import Column, String
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 
 from tethysext.atcore.models.file_database.base import FileDatabaseBase
+from tethysext.atcore.models.file_database.meta_mixin import MetaMixin
 from tethysext.atcore.models.types import GUID
 
 
-class FileDatabase(FileDatabaseBase):
+class FileDatabase(MetaMixin, FileDatabaseBase):
     """A model representing a FileDatabase"""
     __tablename__ = "file_databases"
 
     id = Column('id', GUID, primary_key=True, default=uuid.uuid4)
     root_directory = Column('root_directory', String)
-    meta = Column('metadata', JSON)
 
     collections = relationship("FileCollection", back_populates="database")
 
