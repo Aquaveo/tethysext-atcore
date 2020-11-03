@@ -30,6 +30,12 @@
     </style>
   {% endif %}
   <style>
+    #inner-app-content {
+			overflow:auto;
+		}
+		#app-content {
+		  height:100%;
+		}
     h4 {
       font-size: 20px;
     }
@@ -204,12 +210,8 @@
             {% if v.1 %}
               <h4>Description: {{ v.1 }}</h4>
             {% endif %}
-            <div class="container-fluid">
-              <div class="row">
-                <div class="col-xs-12" id="resultPlotDiv{{ forloop.counter }}">
-                  {% gizmo v.2 %}
-                </div>
-                </div>
+              <div id="resultPlotDiv{{ forloop.counter }}" style="width:800px;">
+                {% gizmo v.2 %}
               </div>
             </div>
             <div contentEditable=true class="add-border" data-ph="Plot Note"></div>
