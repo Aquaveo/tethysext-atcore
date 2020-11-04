@@ -1,4 +1,4 @@
-<div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.counter }}" class='map-view-result'></div>
+<div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.parentloop.counter }}" class='map-view-result'></div>
 <div class="col-xs-4" id="legend-{{ legend.legend_id }}" style="width:220px;">
   <li class="legend-group-item" style="list-style-type:none;">
     <label class="flatmark"><span class="display-name">{{ legend.title|title }}{% if legend.units %} ({{legend.units}}){% endif %}</span>
@@ -16,12 +16,12 @@
   </ul>
 </div>
 <script>
-  let wmsSource = new ol.source.ImageWMS({url: '{{ map_layer.options.url|safe }}',
+  wmsSources[{{ forloop.parentloop.counter }}] = new ol.source.ImageWMS({url: '{{ map_layer.options.url|safe }}',
                                           params: {{ map_layer.options.params|safe }},
                                           ratio: 1,
                                           serverType: 'geoserver',
                                         })
-  maps[{{ forloop.counter }}] = new ol.Map({
+  maps[{{ forloop.parentloop.counter }}] = new ol.Map({
         interactions: ol.interaction.defaults({
           //mouseWheelZoom:false,
           //doubleClickZoom: false,
@@ -64,16 +64,16 @@
 
 
           new ol.layer.Image({
-            source: wmsSource,
+            source: wmsSources[{{ forloop.parentloop.counter }}],
           }),
         ],
-        target: 'openLayerMap{{ forloop.counter }}',
+        target: 'openLayerMap{{ forloop.parentloop.counter }}',
         view: new ol.View({
           center: ol.proj.fromLonLat([({{map_layer.legend_extent.0}} + {{map_layer.legend_extent.2}})/2, ({{map_layer.legend_extent.1}} + {{map_layer.legend_extent.3}})/2]),
           zoom: 12,
         }),
       });
   // Find wms layer extent and fit the map to it.
-  let extent = ol.proj.transformExtent({{map_layer.legend_extent}}, 'EPSG:4326', 'EPSG:3857');
-  console.log(maps[{{ forloop.counter }}].getView().fit(extent, maps[{{ forloop.counter }}].getSize()));
+  extents[{{ forloop.parentloop.counter }}] = ol.proj.transformExtent({{map_layer.legend_extent}}, 'EPSG:4326', 'EPSG:3857');
+  maps[{{ forloop.parentloop.counter }}].getView().fit(extents[{{ forloop.parentloop.counter }}], maps[{{ forloop.parentloop.counter }}].getSize());
 </script>
