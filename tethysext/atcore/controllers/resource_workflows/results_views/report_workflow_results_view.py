@@ -120,10 +120,10 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                             legend_key = result_layer['data']['layer_id']
                             if ":" in legend_key:
                                 legend_key = legend_key.replace(":", "_")
-
                             legend_info = {
                                 'legend_id': legend_key,
                                 'title': result_layer['legend_title'].replace("_", " "),
+                                'units': result.options['units'] if 'units' in result.options.keys() else "",
                                 'divisions': dict()
                             }
 
