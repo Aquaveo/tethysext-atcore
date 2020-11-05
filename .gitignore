@@ -12,3 +12,5 @@
 build
 dist
 working_dir
+tethysext/atcore/tests/files/file_database_tests/temp
+tethysext/atcore/tests/files/file_collection_tests/temp
