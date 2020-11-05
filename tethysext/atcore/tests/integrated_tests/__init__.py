@@ -48,6 +48,7 @@ from .models.initializer import AppUserInitializerTests  # noqa: F401
 from .models.resource_workflow_results.dataset_workflow_result_tests import DatasetWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.plot_workflow_result_tests import PlotWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.spatial_workflow_result_tests import SpatialWorkflowResultTests  # noqa: F401
+from .models.resource_workflow_results.report_workflow_result_tests import ReportWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_steps.results_rws_tests import ResultsResourceWorkflowStepTests  # noqa: F401
 from .models.resource_workflow_steps.spatial_attributes_rws_tests import SpatialAttributesRWSTests  # noqa: F401
 from .models.resource_workflow_steps.spatial_condor_job_rws_test import SpatialCondorJobRWSTests  # noqa: F401

@@ -232,7 +232,8 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
-        mock_context = mock.MagicMock()
+        mock_context = {'layer_groups': [{"id": "depth", "layers": [{"options": {"params": mock.MagicMock()}}]}],
+                        'map_view': mock.MagicMock()}
         mock_current_step = mock.MagicMock()
         mock_previous_step = mock.MagicMock()
         mock_next_step = mock.MagicMock()
@@ -245,12 +246,12 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_tabular.return_value = 'tabular_data'
 
         mock_data = SpatialWorkflowResult(
-            name='Depth',
-            codename='depth',
-            description='Description for result 2',
+            name='Test Name',
+            codename='test_codename',
+            description='Test description',
             order=10,
             options={
-                'layer_group_title': 'Depth',
+                'layer_group_title': 'Test Legend Title',
             },
             geoserver_name=mock_geoserver,
             map_manager=mock_map_manager,
@@ -300,10 +301,12 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
             next_step=mock_next_step,
         )
 
-        self.assertEqual(mock_context.update.call_args[0][0]['can_run_workflows'], True)
-        self.assertEqual(mock_context.update.call_args[0][0]['has_tabular_data'], False)
-        self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['map'],
-                         ['Depth', 'Description for result 2', None, mock_build_wms_layer])
+        self.assertEqual(mock_context['can_run_workflows'], True)
+        self.assertEqual(mock_context['has_tabular_data'], False)
+        self.assertEqual(mock_context['report_results'][0]['map'][0], "Test Name")
+        self.assertEqual(mock_context['report_results'][0]['map'][1], "Test description")
+        self.assertIsNone(mock_context['report_results'][0]['map'][2])
+        self.assertEqual(mock_context['report_results'][0]['map'][3], mock_build_wms_layer)
 
     @mock.patch('tethysext.atcore.controllers.utilities.get_tabular_data_for_previous_steps')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
