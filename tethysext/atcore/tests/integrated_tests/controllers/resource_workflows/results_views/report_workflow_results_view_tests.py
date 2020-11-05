@@ -6,8 +6,6 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult, DatasetWorkflowResult, \
     PlotWorkflowResult
-from tethys_sdk.gizmos import DataTableView
-from collections import OrderedDict
 
 
 def setUpModule():
@@ -51,18 +49,11 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_result.options = mock_options
         mock_options.get.side_effect = ['bokeh', 'lines', ['x', 'y'], 'linear', 'linear', 'page title',
                                         'No dataset found.']
-        baseline = {
-            'no_dataset_message': 'No dataset found.',
-            'datasets': [{
-                'title': 'series title',
-                'dataset': mock_pandas_data,
-            }],
-            'plot_view_input': 'BokehView',
-        }
+
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
-        ret = self.instance.get_context(
+        self.instance.get_context(
             request=mock_request,
             session=mock_session,
             resource=mock_resource,
@@ -81,7 +72,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_process_step_options_dataframe(self, mock_sup_get_context, mock_mapWV_get_context, _,
-                                  mock_is_read_only, mock_get_managers, mock_bokeh, mock_tabular):
+                                            mock_is_read_only, mock_get_managers, mock_bokeh, mock_tabular):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -134,7 +125,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
-        ret = self.instance.process_step_options(
+        self.instance.process_step_options(
             request=mock_request,
             session=mock_session,
             context=mock_context,
@@ -206,7 +197,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
-        ret = self.instance.process_step_options(
+        self.instance.process_step_options(
             request=mock_request,
             session=mock_session,
             context=mock_context,
@@ -261,22 +252,22 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         mock_data.layers = [{'type': 'wms', 'endpoint': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
-                            'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
-                            'layer_variable': 'depth', 'viewparams': None, 'env': None, 'layer_id': '',
-                            'visible': True, 'tiled': True, 'public': True, 'geometry_attribute': 'geometry',
-                            'selectable': False, 'plottable': False, 'has_action': False,
-                            'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
-                            'excluded_properties': None}]
+                             'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
+                             'layer_variable': 'depth', 'viewparams': None, 'env': None, 'layer_id': '',
+                             'visible': True, 'tiled': True, 'public': True, 'geometry_attribute': 'geometry',
+                             'selectable': False, 'plottable': False, 'has_action': False,
+                             'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
+                             'excluded_properties': None}]
         mock_current_step.results = [mock_data]
 
         mock_get_managers.return_value = ['model_db', mock_map_manager]
         mock_options = {'url': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
-                                        'params': {'LAYERS': 'steem:depth_test', 'TILED': True,
-                                                   'TILESORIGIN': '0.0,0.0'}, 'serverType': 'geoserver',
-                                        'crossOrigin': 'anonymous',
-                                        'tileGrid': {'resolutions': [0, 0],
-                                                     'extent': [0, 1, 2, 3],
-                                                     'origin': [0.0, 0.0], 'tileSize': [256, 256]}}
+                        'params': {'LAYERS': 'steem:depth_test', 'TILED': True,
+                                   'TILESORIGIN': '0.0,0.0'}, 'serverType': 'geoserver',
+                        'crossOrigin': 'anonymous',
+                        'tileGrid': {'resolutions': [0, 0],
+                                     'extent': [0, 1, 2, 3],
+                                     'origin': [0.0, 0.0], 'tileSize': [256, 256]}}
         mock_build_wms_layer = mock.MagicMock(source='TileWMS', legend_title='100yr_flow_depth_10m',
                                               options=mock_options)
         mock_map_manager.build_wms_layer.return_value = mock_build_wms_layer
@@ -291,7 +282,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
-        ret = self.instance.process_step_options(
+        self.instance.process_step_options(
             request=mock_request,
             session=mock_session,
             context=mock_context,
@@ -316,7 +307,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_process_step_options_map_geojson(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                      mock_get_managers, mock_bokeh, mock_tabular):
+                                              mock_get_managers, mock_bokeh, mock_tabular):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -348,12 +339,12 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         mock_data.layers = [{'type': 'geojson', 'endpoint': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
-                            'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
-                            'layer_variable': 'depth', 'viewparams': None, 'env': None, 'layer_id': '',
-                            'visible': True, 'tiled': True, 'public': True, 'geometry_attribute': 'geometry',
-                            'selectable': False, 'plottable': False, 'has_action': False,
-                            'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
-                            'excluded_properties': None}]
+                             'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
+                             'layer_variable': 'depth', 'viewparams': None, 'env': None, 'layer_id': '',
+                             'visible': True, 'tiled': True, 'public': True, 'geometry_attribute': 'geometry',
+                             'selectable': False, 'plottable': False, 'has_action': False,
+                             'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
+                             'excluded_properties': None}]
         mock_current_step.results = [mock_data]
 
         mock_get_managers.return_value = ['model_db', mock_map_manager]
@@ -370,7 +361,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
-        ret = self.instance.process_step_options(
+        self.instance.process_step_options(
             request=mock_request,
             session=mock_session,
             context=mock_context,

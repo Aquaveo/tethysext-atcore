@@ -11,15 +11,6 @@ from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.controllers.utilities import get_plot_object_from_result
 
-from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource
-from bokeh.palettes import Category10
-import plotly.graph_objs as go
-import pandas as pd
-
-from tethys_sdk.gizmos import BokehView
-from tethys_sdk.gizmos import PlotlyView
-
 log = logging.getLogger(__name__)
 
 

@@ -6,7 +6,6 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-import copy
 from tethysext.atcore.models.app_users.resource_workflow_result import ResourceWorkflowResult
 
 

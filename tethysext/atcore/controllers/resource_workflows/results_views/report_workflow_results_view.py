@@ -7,16 +7,14 @@
 ********************************************************************************
 """
 import logging
-from django.http import JsonResponse
 from tethysext.atcore.models.resource_workflow_results import ReportWorkflowResult
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult,\
     SpatialWorkflowResult
 from tethysext.atcore.controllers.utilities import get_plot_object_from_result, get_tabular_data_for_previous_steps
 
-from tethys_sdk.gizmos import DataTableView, MapView
+from tethys_sdk.gizmos import DataTableView
 from collections import OrderedDict
 
 
