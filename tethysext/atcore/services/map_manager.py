@@ -9,6 +9,8 @@
 import copy
 from abc import ABCMeta, abstractmethod
 from tethys_gizmos.gizmo_options import MVView, MVLayer
+from tethysext.atcore.services.color_ramps import COLOR_RAMPS
+import collections
 
 
 class MapManagerBase(object):
@@ -27,6 +29,7 @@ class MapManagerBase(object):
 
     LAYER_SOURCE_TYPE = 'TileWMS'
 
+    COLOR_RAMPS = COLOR_RAMPS
     DEFAULT_TILE_GRID = {
         'resolutions': [
             156543.03390625,
@@ -181,9 +184,10 @@ class MapManagerBase(object):
         return mv_layer
 
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
-                        public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
-                        popup_title=None):
+                        color_ramp=None, visible=True, tiled=True, selectable=False, plottable=False,
+                        has_action=False, extent=None, public=True, geometry_attribute='geometry', layer_id='',
+                        excluded_properties=None, popup_title=None, minimum=None, maximum=None, num_divisions=10,
+                        value_precision=2):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -194,6 +198,7 @@ class MapManagerBase(object):
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
+            color_ramp(dict): color_ramp_division generated using color_ramp_divisions function. 
             visible(bool): Layer is visible when True. Defaults to True.
             public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
             tiled(bool): Configure as tiled layer if True. Defaults to True.
@@ -204,6 +209,10 @@ class MapManagerBase(object):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+            minimum(float): minimum threshold for the raster.
+            maximum(float): maximum threshold for the raster.
+            num_divisions(int): number of division for raster.
+            value_precision(int): significant digit or the legend.
 
         Returns:
             MVLayer: the MVLayer object.
@@ -224,6 +233,15 @@ class MapManagerBase(object):
         if env:
             params['ENV'] = env
 
+        if color_ramp:
+            color_ramp_divisions = self.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
+                                                                             num_divisions=num_divisions,
+                                                                             value_precision=value_precision,
+                                                                             colors=color_ramp)
+            if 'ENV' in params.keys():
+                params['ENV'] += self.build_param_string(**color_ramp_divisions)
+            else:
+                params['ENV'] = self.build_param_string(**color_ramp_divisions)
         # Build options
         options = {
             'url': endpoint,
@@ -497,7 +515,30 @@ class MapManagerBase(object):
 
         return view, extent
 
-    def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions, value_precision=2,
+    def build_legend(self, layer):
+        legend_key = layer['layer_variable']
+        if ":" in legend_key:
+            legend_key = legend_key.replace(":", "_")
+
+        legend_info = {
+            'legend_id': legend_key,
+            'title': layer['layer_title'],
+            'divisions': dict()
+        }
+
+        divisions = self.generate_custom_color_ramp_divisions(min_value=layer['minimum'], max_value=layer['maximum'],
+                                                              colors=layer['color_ramp'])
+
+        for k, v in divisions.items():
+            if 'val' in k and k[:11] != 'val_no_data':
+                legend_info['divisions'][float(v)] = divisions[k.replace('val', 'color')]
+        legend_info['divisions'] = collections.OrderedDict(
+            sorted(legend_info['divisions'].items())
+        )
+
+        return legend_info
+
+    def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2,
                                              first_division=1, top_offset=0, bottom_offset=0, prefix='val', colors=[],
                                              color_prefix='color'):
         """
@@ -529,13 +570,17 @@ class MapManagerBase(object):
         x2_minus_x1 = max_div - min_div
         m = y2_minus_y1 / x2_minus_x1
         b = max_val - (m * max_div)
-
         for i in range(min_div, max_div + 1):
             divisions[f'{prefix}{i}'] = f"{(m * i + b):.{value_precision}f}"
-
-            if colors:
+            is_color_list = isinstance(colors, list) and len(colors) > 0
+            is_color_ramp = isinstance(colors, str) and colors in COLOR_RAMPS.keys()
+            if is_color_list:
                 divisions[f'{color_prefix}{i}'] = f"{colors[(i - 1) % len(colors)]}"
-
+            elif is_color_ramp:
+                divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS[colors][(i - 1) % len(colors)]}"
+            else:
+                # use default color ramp
+                divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS['Default'][(i - 1) % len(colors)]}"
         return divisions
 
     def get_plot_for_layer_feature(self, layer_name, feature_id):

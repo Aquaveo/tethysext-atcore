@@ -74,7 +74,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         # Get the result object for this view
         result = self.get_result(request, result_id, session)
-
         # Get managers
         _, map_manager = self.get_managers(
             request=request,
@@ -84,10 +83,9 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         # Get Map View and Layer Groups
         layer_groups = base_context['layer_groups']
-
         # Generate MVLayers for spatial data
         results_layers = []
-
+        legends = []
         # Build MVLayers for map
         for layer in result.layers:
             layer_type = layer.pop('type', None)
@@ -103,6 +101,9 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
             elif layer_type == 'wms':
                 result_layer = map_manager.build_wms_layer(**layer)
+
+            # build legend:
+            legends.append(map_manager.build_legend(layer))
 
             if result_layer:
                 # Add layer to beginning the map's of layer list
@@ -120,6 +121,9 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
             layer_groups.insert(0, results_layer_group)
 
+        base_context.update({
+            'legends': legends
+        })
         return base_context
 
     def get_plot_data(self, request, session, resource, result_id, *args, **kwargs):
