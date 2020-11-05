@@ -102,7 +102,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                             params = result_layer['options']['params']
 
                         # Update env param
-                        legend_info = None
                         if params:
                             if 'TILED' in params.keys():
                                 params.pop('TILED')
@@ -110,30 +109,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                                 params.pop('TILESORIGIN')
                             result_layer['options']['params'] = params
 
-                            legend_key = result_layer['data']['layer_id']
-                            if ":" in legend_key:
-                                legend_key = legend_key.replace(":", "_")
-                            legend_info = {
-                                'legend_id': legend_key,
-                                'title': result_layer['legend_title'].replace("_", " "),
-                                'units': result.options['units'] if 'units' in result.options.keys() else "",
-                                'divisions': dict()
-                            }
+                        legend_info = map_manager.build_legend(layer)
 
-                            # Uses param ENV to create the scale
-                            divisions = params['ENV'].split(";")
-                            divisions_dict = {}
-
-                            for division in divisions:
-                                division = division.split(":")
-                                divisions_dict[division[0]] = division[1]
-
-                            for k, v in divisions_dict.items():
-                                if 'val' in k and k[:11] != 'val_no_data':
-                                    legend_info['divisions'][float(v)] = divisions_dict[k.replace('val', 'color')]
-                            legend_info['divisions'] = OrderedDict(
-                                sorted(legend_info['divisions'].items())
-                            )
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
                         # Add layer to beginning the map's of layer list
                         # map_view.layers.insert(0, result_layer)

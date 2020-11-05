@@ -184,10 +184,10 @@ class MapManagerBase(object):
         return mv_layer
 
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                        color_ramp=None, visible=True, tiled=True, selectable=False, plottable=False,
-                        has_action=False, extent=None, public=True, geometry_attribute='geometry', layer_id='',
-                        excluded_properties=None, popup_title=None, minimum=None, maximum=None, num_divisions=10,
-                        value_precision=2):
+                        custom_color_ramp=[], color_ramp='', visible=True, tiled=True, selectable=False,
+                        plottable=False, has_action=False, extent=None, public=True, geometry_attribute='geometry',
+                        layer_id='', excluded_properties=None, popup_title=None, minimum=None, maximum=None,
+                        num_divisions=10, value_precision=2):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -198,7 +198,8 @@ class MapManagerBase(object):
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
-            color_ramp(dict): color_ramp_division generated using color_ramp_divisions function. 
+            custom_color_ramp(list): hexadecimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
+            color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
             visible(bool): Layer is visible when True. Defaults to True.
             public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
             tiled(bool): Configure as tiled layer if True. Defaults to True.
@@ -237,7 +238,9 @@ class MapManagerBase(object):
             color_ramp_divisions = self.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
                                                                              num_divisions=num_divisions,
                                                                              value_precision=value_precision,
-                                                                             colors=color_ramp)
+                                                                             color_ramp=color_ramp,
+                                                                             custom_color_ramp=custom_color_ramp,
+                                                                             )
             if 'ENV' in params.keys():
                 params['ENV'] += self.build_param_string(**color_ramp_divisions)
             else:
@@ -527,7 +530,7 @@ class MapManagerBase(object):
         }
 
         divisions = self.generate_custom_color_ramp_divisions(min_value=layer['minimum'], max_value=layer['maximum'],
-                                                              colors=layer['color_ramp'])
+                                                              color_ramp=layer['color_ramp'])
 
         for k, v in divisions.items():
             if 'val' in k and k[:11] != 'val_no_data':
@@ -539,8 +542,8 @@ class MapManagerBase(object):
         return legend_info
 
     def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2,
-                                             first_division=1, top_offset=0, bottom_offset=0, prefix='val', colors=[],
-                                             color_prefix='color'):
+                                             first_division=1, top_offset=0, bottom_offset=0, prefix='val',
+                                             custom_color_ramp=[], color_ramp="", color_prefix='color'):
         """
         Generate custom elevation divisions.
 
@@ -553,12 +556,13 @@ class MapManagerBase(object):
             top_offset(number): offset from top of color ramp (defaults to 0).
             bottom_offset(number): offset from bottom of color ramp (defaults to 0).
             prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
-            colors(list): hexadesimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
+            custom_color_ramp(list): hexadecimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
+            color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
             color_prefix(str): name of color variable prefix (i.e.: 'color' for pattern 'color1').
 
         Returns:
             dict<name, value>: custom divisions
-        """
+        """  # noqa: E501
         divisions = {}
 
         # Equation of a Line
@@ -572,15 +576,18 @@ class MapManagerBase(object):
         b = max_val - (m * max_div)
         for i in range(min_div, max_div + 1):
             divisions[f'{prefix}{i}'] = f"{(m * i + b):.{value_precision}f}"
-            is_color_list = isinstance(colors, list) and len(colors) > 0
-            is_color_ramp = isinstance(colors, str) and colors in COLOR_RAMPS.keys()
-            if is_color_list:
-                divisions[f'{color_prefix}{i}'] = f"{colors[(i - 1) % len(colors)]}"
-            elif is_color_ramp:
-                divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS[colors][(i - 1) % len(colors)]}"
-            else:
-                # use default color ramp
-                divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS['Default'][(i - 1) % len(colors)]}"
+
+            # is_color_ramp check if the string belongs to COLOR_RAMPS dictionary.
+            is_color_ramp = isinstance(color_ramp, str) and color_ramp in COLOR_RAMPS.keys()
+
+            if custom_color_ramp:
+                divisions[f'{color_prefix}{i}'] = f"{custom_color_ramp[(i - 1) % len(custom_color_ramp)]}"
+            elif color_ramp:
+                if is_color_ramp:
+                    divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS[color_ramp][(i - 1) % len(COLOR_RAMPS[color_ramp])]}"
+                else:
+                    # use default color ramp
+                    divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS['Default'][(i - 1) % len(COLOR_RAMPS['Default'])]}"
         return divisions
 
     def get_plot_for_layer_feature(self, layer_name, feature_id):

@@ -93,7 +93,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers, hide_layers, show_layers;
+ 	var generate_uuid, load_layers, hide_layers, show_layers, load_legend;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1671,6 +1671,24 @@ var ATCORE_MAP_VIEW = (function() {
             }
         });
         init_new_layers_tab(layer_group_id);
+    }
+
+    // Create new layer groups with layers
+    // This method allows user to load the legend for an associated layer_id
+    load_legend = function (layer_id) {
+        // layer_ids: layer id
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_legend_item',
+                'status': status,
+                'layer_id': JSON.stringify(layer_id),
+            },
+        }).done(function(data){
+          console.log(data);
+        });
     }
 
     hide_layers = function(layer_ids) {

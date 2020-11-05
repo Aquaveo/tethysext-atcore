@@ -22,6 +22,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
     """
     template_name = 'atcore/resource_workflows/map_workflow_results_view.html'
     valid_result_classes = [SpatialWorkflowResult]
+    show_legends = True
 
     def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
                     **kwargs):
@@ -122,7 +123,8 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             layer_groups.insert(0, results_layer_group)
 
         base_context.update({
-            'legends': legends
+            'legends': legends,
+            'show_legends': self.show_legends,
         })
         return base_context
 
