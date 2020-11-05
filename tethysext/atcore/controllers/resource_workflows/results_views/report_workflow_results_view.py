@@ -82,12 +82,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 results.append({'plot': {'name': result.name, 'description': result.description,
                                          'plot': result.get_plot_object()}})
             elif isinstance(result, SpatialWorkflowResult):
-                params = ""
-                # Get layer params
-                for param_layer in context['layer_groups']:
-                    if param_layer['id'] in result.codename:
-                        params = param_layer['layers'][0]['options']['params']
-
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
 
@@ -95,15 +89,18 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         log.warning('Unsupported layer type will be skipped: {}'.format(layer))
                         continue
 
-                    result_layer = None
+                    result_layer = ''
 
                     if layer_type == 'geojson':
                         result_layer = map_manager.build_geojson_layer(**layer)
 
                     elif layer_type == 'wms':
                         result_layer = map_manager.build_wms_layer(**layer)
-
                     if result_layer:
+                        params = ""
+                        if 'params' in result_layer['options'].keys():
+                            params = result_layer['options']['params']
+
                         # Update env param
                         legend_info = None
                         if params:
@@ -139,7 +136,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                             )
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
                         # Add layer to beginning the map's of layer list
-                        map_view.layers.insert(0, result_layer)
+                        # map_view.layers.insert(0, result_layer)
                         # Append to final results list.
                         results.append({'map': {'name': result.name, 'description': result.description,
                                                 'legend': legend_info, 'map': result_layer}})
