@@ -44,6 +44,7 @@ class MapView(ResourceView):
     mutiselect = False
     properties_popup_enabled = True
     show_custom_layer = True
+    show_legends = False
 
     _MapManager = None
     _ModelDatabase = ModelDatabase
@@ -174,6 +175,7 @@ class MapView(ResourceView):
             'layer_tab_name': self.layer_tab_name,
             'map_type': self.map_type,
             'geocode_enabled': self.geocode_enabled,
+            'show_legends': self.show_legends,
         })
 
         if resource:
@@ -296,6 +298,19 @@ class MapView(ResourceView):
                 resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()
         return JsonResponse({'success': True})
+
+    def build_legend_item(self, request, session, resource, *args, **kwargs):
+        """
+        Render the HTML for a legend.
+        """
+        # Get Managers Hook
+        model_db, map_manager = self.get_managers(
+            request=request,
+            resource=resource,
+            *args, **kwargs
+        )
+        breakpoint()
+        return JsonResponse({'success': True, 'response': ''})
 
     def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
         """
