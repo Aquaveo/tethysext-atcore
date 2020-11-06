@@ -26,12 +26,14 @@ var SLIDE_SHEET = (function() {
     *                    PRIVATE FUNCTION IMPLEMENTATIONS
     *************************************************************************/
     open = function(id) {
+        // Check that id is not empty
         if (id.length) {
             $('#' + id + '.slide-sheet').addClass('show');
         }
     };
 
     close = function(id) {
+        // Check that id is not empty
         if (id.length) {
             $('#' + id + '.slide-sheet').removeClass('show');
         }

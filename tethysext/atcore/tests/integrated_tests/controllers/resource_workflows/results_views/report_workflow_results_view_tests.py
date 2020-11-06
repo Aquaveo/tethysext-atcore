@@ -64,7 +64,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
             result_id=mock_result_id
         )
 
-    @mock.patch('tethysext.atcore.controllers.utilities.get_tabular_data_for_previous_steps')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
@@ -72,7 +71,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_process_step_options_dataframe(self, mock_sup_get_context, mock_mapWV_get_context, _,
-                                            mock_is_read_only, mock_get_managers, mock_bokeh, mock_tabular):
+                                            mock_is_read_only, mock_get_managers, mock_bokeh):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -83,7 +82,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_result = mock.MagicMock()
         mock_is_read_only.return_value = False
         mock_bokeh.return_value = 'BokehView'
-        mock_tabular.return_value = 'tabular_data'
         data = [
             [
                 'reach_1', 'reach_1', 'reach_11',
@@ -140,7 +138,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['dataset']['data_description'],
                          'test description')
 
-    @mock.patch('tethysext.atcore.controllers.utilities.get_tabular_data_for_previous_steps')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
@@ -148,7 +145,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_process_step_options_plot(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                       mock_get_managers, mock_bokeh, mock_tabular):
+                                       mock_get_managers, mock_bokeh):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -159,7 +156,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_result = mock.MagicMock()
         mock_is_read_only.return_value = False
         mock_bokeh.return_value = 'BokehView'
-        mock_tabular.return_value = 'tabular_data'
 
         mock_data = PlotWorkflowResult(
             name='Cross Section of Stream',
@@ -211,7 +207,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['plot'],
                          ['Cross Section of Stream', 'Description for result 4', 'BokehView'])
 
-    @mock.patch('tethysext.atcore.controllers.utilities.get_tabular_data_for_previous_steps')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
@@ -219,7 +214,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_process_step_options_map(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                      mock_get_managers, mock_bokeh, mock_tabular):
+                                      mock_get_managers, mock_bokeh):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -234,7 +229,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_spatial_manager = mock.MagicMock()
         mock_is_read_only.return_value = False
         mock_bokeh.return_value = 'BokehView'
-        mock_tabular.return_value = 'tabular_data'
 
         mock_data = SpatialWorkflowResult(
             name='Test Name',
@@ -299,7 +293,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIsNone(mock_context['report_results'][0]['map'][2])
         self.assertEqual(mock_context['report_results'][0]['map'][3], mock_build_wms_layer)
 
-    @mock.patch('tethysext.atcore.controllers.utilities.get_tabular_data_for_previous_steps')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.utilities.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
@@ -307,7 +300,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_process_step_options_map_geojson(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                              mock_get_managers, mock_bokeh, mock_tabular):
+                                              mock_get_managers, mock_bokeh):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -321,7 +314,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_spatial_manager = mock.MagicMock()
         mock_is_read_only.return_value = False
         mock_bokeh.return_value = 'BokehView'
-        mock_tabular.return_value = 'tabular_data'
 
         mock_data = SpatialWorkflowResult(
             name='Depth',

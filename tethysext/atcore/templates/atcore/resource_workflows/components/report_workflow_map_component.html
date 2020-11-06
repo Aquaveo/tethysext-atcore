@@ -22,15 +22,6 @@
                                           serverType: 'geoserver',
                                         })
   maps[{{ forloop.parentloop.counter }}] = new ol.Map({
-        interactions: ol.interaction.defaults({
-          //mouseWheelZoom:false,
-          //doubleClickZoom: false,
-          //dragPan: false,
-          //keyboardPan: false,
-          //keyboardZoom: false,
-          //select: false,
-          //pointer: false,
-        }),
         controls: ol.control.defaults().extend([new ol.control.ScaleLine({units: 'us',
                                                                           bar: true,
                                                                           steps: 4,

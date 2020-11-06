@@ -10,9 +10,8 @@ import logging
 from tethysext.atcore.models.resource_workflow_results import ReportWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
-from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult,\
+from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowResult, PlotWorkflowResult, \
     SpatialWorkflowResult
-from tethysext.atcore.controllers.utilities import get_plot_object_from_result, get_tabular_data_for_previous_steps
 
 from tethys_sdk.gizmos import DataTableView
 from collections import OrderedDict
@@ -51,9 +50,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         can_run_workflows = not self.is_read_only(request, current_step)
 
         # get tabular data if any
-        tabular_data = get_tabular_data_for_previous_steps(
-            current_step=current_step,
-        )
+        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step)
         has_tabular_data = len(tabular_data) > 0
 
         # Generate MVLayers for spatial data
@@ -82,7 +79,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                     ds.update({'data_description': result.description})
                     results.append({'dataset': ds})
             elif isinstance(result, PlotWorkflowResult):
-                results.append({'plot': [result.name, result.description, get_plot_object_from_result(result)]})
+                results.append({'plot': [result.name, result.description, result.get_plot_object()]})
             elif isinstance(result, SpatialWorkflowResult):
                 params = ""
                 # Get layer params

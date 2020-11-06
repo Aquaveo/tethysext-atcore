@@ -17,7 +17,7 @@ from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
-
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 
 log = logging.getLogger(__name__)
 __all__ = ['ResourceWorkflow']
@@ -166,6 +166,34 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         step_index = self.steps.index(step)
         previous_steps = self.steps[:step_index]
         return previous_steps
+
+    def get_tabular_data_for_previous_steps(self, step):
+        """
+        Get all tabular data for previous steps based on the given step.
+
+        Args:
+           step(ResourceWorkflowStep): A step belonging to this workflow.
+
+        Returns:
+            dict: a dictionary with tabular data per step.
+        """
+        if step not in self.steps:
+            raise ValueError('Step {} does not belong to this workflow.'.format(step))
+
+        previous_steps = self.get_previous_steps(step)
+        steps_to_skip = set()
+        mappable_tabular_step_types = (FormInputRWS,)
+        step_data = {}
+        for step in previous_steps:
+            # skip non form steps
+            if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
+                continue
+
+            step_params = step.get_parameter('form-values')
+            fixed_params = {x.replace('_', ' ').title(): step_params[x] for x in step_params}
+            step_data[step.name] = fixed_params
+
+        return step_data
 
     def get_next_steps(self, step):
         """
