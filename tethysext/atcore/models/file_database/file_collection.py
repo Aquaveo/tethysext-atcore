@@ -12,7 +12,7 @@ import shutil
 from typing import Generator
 import uuid
 
-from sqlalchemy import event, select, Column, ForeignKey
+from sqlalchemy import engine, event, select, Column, ForeignKey
 from sqlalchemy.types import JSON
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
@@ -94,7 +94,14 @@ def _file_collection_after_delete(target, connection):
                         f'file database directory: {target_path}')
 
 
-def _get_database_row_from_connection_and_id(connection, database_id):
+def _get_database_row_from_connection_and_id(connection: engine.Connection, database_id: uuid):
+    """
+    A helper function to get a database row from the connection based on the database ID.
+
+    Args:
+        connection(engine.Connection): an sqlalchemy connection
+        database_id(uuid): a uuid for the database
+    """
     db_table = FileDatabase.__table__
     s = select([db_table]).where(db_table.c.id == database_id)
     result = connection.execute(s)
