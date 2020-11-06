@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 import uuid
 
 from tethysext.atcore.models.file_database import FileCollection, FileDatabase
@@ -50,7 +51,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
 
         return database_instance, collection_instance
 
-    def test_path_property(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_path_property(self, mock_db_insert, mock_insert):
         """Test the path property of the file collection works correctly."""
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         collection_id = uuid.UUID('{a5a99e1c-3d17-4fbb-88b7-d3d264e825ff}')
@@ -62,7 +65,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
         expected_path = os.path.abspath(os.path.join(root_dir, str(database_id), str(collection_id)))
         self.assertEqual(collection_instance.path, expected_path)
 
-    def test_files_generator(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_files_generator(self, mock_db_insert, mock_insert):
         """Test the file generator works as expected."""
         """Test the path property of the file collection works correctly."""
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
@@ -85,14 +90,11 @@ class FileCollectionTests(SqlAlchemyTestCase):
 
     def test_database_round_trip(self):
         """Test the FileCollection in a round trip through the database"""
-        database_id = uuid.UUID('{bb7c67a9-9d51-4baa-96a9-d38d56b8c79c}')
-        collection_id = uuid.UUID('{c675abc8-59b6-4ecd-a568-c01c9c1ec49f}')
-        root_dir = os.path.join(self.test_files_base, 'test_database_round_trip')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={}, collection_meta={}
-        )
-        new_instance = FileCollection(file_database_id=database_id,
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_database_round_trip')
+        database_instance = FileDatabase(root_directory=root_dir, meta={"TestKey": "TestValue"})
+        self.session.add(database_instance)
+        self.session.commit()
+        new_instance = FileCollection(file_database_id=database_instance.id,
                                       meta={"TestKey": "TestValue"})
         self.session.add(new_instance)
         self.session.commit()
@@ -101,7 +103,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.assertEqual(new_instance.path, instance_from_db.path)
         self.assertEqual(new_instance.meta, instance_from_db.meta)
 
-    def test_write_meta(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_write_meta(self, mock_db_insert, mock_insert):
         """Test the the write_meta functionality"""
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
@@ -118,7 +122,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
         collection_instance.write_meta()
         self.assertTrue(os.path.exists(meta_file))
 
-    def test_read_meta(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_read_meta(self, mock_db_insert, mock_insert):
         """Test the the read_meta functionality."""
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
@@ -134,7 +140,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.assertDictEqual(collection_instance.meta,
                              {'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23})
 
-    def test_read_meta_overwrite(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_read_meta_overwrite(self, mock_db_insert, mock_insert):
         """Test the the read_meta functionality."""
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
@@ -150,7 +158,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.assertDictEqual(collection_instance.meta,
                              {'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23})
 
-    def test_read_meta_empty(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_read_meta_empty(self, mock_db_insert, mock_insert):
         """Test the the read_meta functionality with an empty file."""
         database_id = uuid.UUID('{12856d36-cb6d-4a5e-84a6-6ee3696a67f1}')
         collection_id = uuid.UUID('{eab613c8-da79-48e0-9db0-1ac854efd966}')
@@ -165,7 +175,9 @@ class FileCollectionTests(SqlAlchemyTestCase):
         collection_instance.read_meta()
         self.assertDictEqual(collection_instance.meta, {})
 
-    def test_read_meta_no_file(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_read_meta_no_file(self, mock_db_insert, mock_insert):
         """Test the the read_meta functionality with no meta file."""
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
@@ -183,12 +195,14 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(meta_file))
         self.assertDictEqual(collection_instance.meta, {})
 
-    def test_read_meta_bad_file(self):
+    @mock.patch('tethysext.atcore.models.file_database.file_database._file_database_after_insert')
+    @mock.patch('tethysext.atcore.models.file_database.file_collection._file_collection_after_insert')
+    def test_read_meta_bad_file(self, mock_db_insert, mock_insert):
         """Test the the read_meta functionality when the JSON is invalid."""
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_bad_file')
-        database_instance, collection_instance = self.get_database_and_collection(
+        _, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'KeyYouWillNotSee': 'ValueYouWillNotSee'}
@@ -197,3 +211,59 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(meta_file))
         collection_instance.read_meta()
         self.assertDictEqual(collection_instance.meta, {})
+
+    def test_file_collection_after_insert(self):
+        database_id = uuid.UUID('{e5bc841e-eeb7-4211-951f-d7e5a4ad08f2}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_file_database_after_insert')
+        _, _ = self.get_database_and_collection(
+            database_id=database_id,  collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'Value1', 'Key2': 2.7}
+        )
+        meta_file = os.path.join(root_dir, str(database_id), str(collection_id), '__meta__.json')
+        self.assertTrue(os.path.exists(meta_file))
+        with open(meta_file, 'r') as f:
+            file_text = f.read()
+            expected_text = '{"Key1": "Value1", "Key2": 2.7}'
+            self.assertEqual(file_text, expected_text)
+
+    def test_file_collection_after_update(self):
+        database_id = uuid.UUID('{e5bc841e-eeb7-4211-951f-d7e5a4ad08f2}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_file_database_after_update')
+        database_instance, collection_instance = self.get_database_and_collection(
+            database_id=database_id,  collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'Value1', 'Key2': 2.7}
+        )
+        meta_file = os.path.join(root_dir, str(database_id), str(collection_id), '__meta__.json')
+        self.assertTrue(os.path.exists(meta_file))
+        with open(meta_file, 'r') as f:
+            file_text = f.read()
+            expected_text = '{"Key1": "Value1", "Key2": 2.7}'
+            self.assertEqual(file_text, expected_text)
+        collection_instance.meta["Key1"] = 1.73
+        collection_instance.meta["Key2"] = "Value4"
+        self.session.commit()
+        with open(meta_file, 'r') as f:
+            file_text = f.read()
+            expected_text = '{"Key1": 1.73, "Key2": "Value4"}'
+            self.assertEqual(file_text, expected_text)
+
+    def test_file_collection_after_delete(self):
+        database_id = uuid.UUID('{e5bc841e-eeb7-4211-951f-d7e5a4ad08f2}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_file_database_after_delete')
+        _, collection_instance = self.get_database_and_collection(
+            database_id=database_id,  collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'Value1', 'Key2': 2.7}
+        )
+        meta_file = os.path.join(root_dir, str(database_id), str(collection_id), '__meta__.json')
+        self.assertTrue(os.path.exists(meta_file))
+
+        self.session.delete(collection_instance)
+        self.session.commit()
+        self.assertFalse(os.path.exists(meta_file))
+        self.assertFalse(os.path.exists(os.path.join(root_dir, str(database_id), str(collection_id))))

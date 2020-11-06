@@ -6,16 +6,21 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+import logging
 import os
+import shutil
 import uuid
 
-from sqlalchemy import Column, String
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy import event, Column, String
+from sqlalchemy.types import JSON
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database.base import FileDatabaseBase
 from tethysext.atcore.models.types import GUID
+
+log = logging.getLogger('tethys.' + __name__)
 
 
 class FileDatabase(MetaMixin, FileDatabaseBase):
@@ -24,7 +29,7 @@ class FileDatabase(MetaMixin, FileDatabaseBase):
 
     id = Column('id', GUID, primary_key=True, default=uuid.uuid4)
     root_directory = Column('root_directory', String)
-    meta = Column('metadata', JSON)
+    meta = Column('metadata', MutableDict.as_mutable(JSON))
 
     collections = relationship("FileCollection", back_populates="database")
 
@@ -43,3 +48,43 @@ class FileDatabase(MetaMixin, FileDatabaseBase):
         root_dir (str): the directory to be the root directory of the file database.
         """
         self._path = os.path.join(root_dir, str(self.id))
+
+
+@event.listens_for(FileDatabase, 'after_insert')
+def file_database_after_insert(mapper, connection, target):
+    """SQL event listener for after insert event."""
+    _file_database_after_insert(target)
+
+
+def _file_database_after_insert(target):
+    """A small wrapper function used so we can mock for testing."""
+    if not os.path.exists(target.path):
+        os.makedirs(target.path)
+    target.write_meta()
+
+
+@event.listens_for(FileDatabase, 'before_update')
+def file_database_after_update(mapper, connection, target):
+    """SQL event listener for after update event."""
+    _file_database_after_update(target)
+
+
+def _file_database_after_update(target):
+    """A small wrapper function used so we can mock for testing."""
+    target.write_meta()
+
+
+@event.listens_for(FileDatabase, 'after_delete')
+def file_database_after_delete(mapper, connection, target):
+    """SQL event listener for after delete event."""
+    _file_database_after_delete(target)
+
+
+def _file_database_after_delete(target):
+    """A small wrapper function used so we can mock for testing."""
+    if os.path.exists(target.path):
+        try:
+            shutil.rmtree(target.path)
+        except OSError:
+            log.warning(f'An error occurred while removing the '
+                        f'file database directory: {target.path}')
