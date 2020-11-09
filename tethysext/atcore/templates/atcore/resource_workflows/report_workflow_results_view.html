@@ -36,8 +36,8 @@
       <div class="tab-data">
         {% for tab_data_title, tab_data in tabular_data.items %}
         <h2>{{ tab_data_title }}</h2>
-        {% for k, v in tab_data.items %}
-        <p><b>{{ k|title }}:</b> {{ v }}</p>
+        {% for parameter, value in tab_data.items %}
+        <p><b>{{ parameter|title }}:</b> {{ value }}</p>
         {% endfor %}
         {% endfor %}
       </div>
@@ -50,41 +50,58 @@
       var extents = [];
     </script>
     {% for result in report_results %}
-      {% for k, v in result.items %}
-        {% if k == 'map' %}
-          <div id="resultType-map-{{ forloop.parentloop.counter }}">
-          <h3>{{ v.0 }}</h3>
-          {% if v.1 %}
-            <h4>Description: {{ v.1 }}</h4>
+      {% for type, value in result.items %}
+        {% if type == 'map' %}
+          <div id="resultType-map-{{ forloop.parentloop.counter }}" class="resultType-map" data-layer-url="{{ value.map.options.url|safe }}" data-layer-params="{{ value.map.options.params|safe }}" data-layer-extent="{{ value.map.legend_extent }}">
+          <h3>{{ value.name }}</h3>
+          {% if value.description %}
+            <h4>Description: {{ value.description }}</h4>
           {% endif %}
           <div class="container-fluid">
             <div class="row">
-            {% set map_layer = v.3 %}
-            {% set legend = v.2 %}
-            {% include "./components/report_workflow_map_component.html" %}
+              <div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.parentloop.counter }}" class='map-view-result'></div>
+              <div class="col-xs-4" id="legend-{{ value.legend.legend_id }}" style="width:220px;">
+                <li class="legend-group-item" style="list-style-type:none;">
+                  <label class="flatmark">
+                    <span class="display-name">
+                      {{ value.legend.title|title }}{% if value.legend.units %} ({{value.legend.units}}){% endif %}
+                    </span>
+                  </label>
+                </li>
+                <ul class="legend-list" data-collapsed="false">
+                  {% for division, color in value.legend.divisions.items  %}
+                    <div class="legend-item">
+                      <li class="legend-list-item">
+                        <p>{{ division }} </p>
+                        <div class="color-box" style="background-color: {{ color }} !important;"></div>
+                      </li>
+                    </div>
+                  {% endfor %}
+                </ul>
+              </div>
             </div>
           </div>
           <div contentEditable=true class="add-border" data-ph="Map Note"></div>
           </div>
-        {% elif k == 'dataset' %}
+        {% elif type == 'dataset' %}
           <div id="resultType-table-{{ forloop.counter }}">
-            <h3>{{ v.title }}</h3>
-            {% if v.data_description %}
-              <h4>Description: {{ v.data_description }}</h4>
+            <h3>{{ value.title }}</h3>
+            {% if value.data_description %}
+              <h4>Description: {{ value.data_description }}</h4>
             {% endif %}
             <div>
-              {% gizmo v.data_table %}
+              {% gizmo value.data_table %}
             </div>
             <div contentEditable=true class="add-border" data-ph="Data Note"></div>
           </div>
-        {% elif k == 'plot' %}
+        {% elif type == 'plot' %}
           <div id="resultType-plot-{{ forloop.counter }}">
-            <h3>{{ v.0 }}</h3>
-            {% if v.1 %}
-              <h4>Description: {{ v.1 }}</h4>
+            <h3>{{ value.name }}</h3>
+            {% if value.description %}
+              <h4>Description: {{ value.description }}</h4>
             {% endif %}
               <div id="resultPlotDiv{{ forloop.counter }}" style="width:800px;">
-                {% gizmo v.2 %}
+                {% gizmo value.plot %}
               </div>
             </div>
             <div contentEditable=true class="add-border" data-ph="Plot Note"></div>
@@ -94,4 +111,9 @@
     {% endfor %}
   </div>
   </form>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/resource_workflows/report_workflow_results_view.js' %}" type="text/javascript"></script>
 {% endblock %}

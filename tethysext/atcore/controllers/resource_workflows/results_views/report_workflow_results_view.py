@@ -79,7 +79,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                     ds.update({'data_description': result.description})
                     results.append({'dataset': ds})
             elif isinstance(result, PlotWorkflowResult):
-                results.append({'plot': [result.name, result.description, result.get_plot_object()]})
+                results.append({'plot': {'name': result.name, 'description': result.description,
+                                         'plot': result.get_plot_object()}})
             elif isinstance(result, SpatialWorkflowResult):
                 params = ""
                 # Get layer params
@@ -140,7 +141,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         # Add layer to beginning the map's of layer list
                         map_view.layers.insert(0, result_layer)
                         # Append to final results list.
-                        results.append({'map': [result.name, result.description, legend_info, result_layer]})
+                        results.append({'map': {'name': result.name, 'description': result.description,
+                                                'legend': legend_info, 'map': result_layer}})
 
         # Save changes to map view and layer groups
         context.update({
