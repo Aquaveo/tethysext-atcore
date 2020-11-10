@@ -250,7 +250,10 @@ class MapManagerBase(object):
             'url': endpoint,
             'params': params,
             'serverType': 'geoserver',
-            'crossOrigin': 'anonymous'
+            'crossOrigin': 'anonymous',
+            'minimum': minimum,
+            'maximum': maximum,
+            'color_ramp': color_ramp,
         }
 
         layer_source = 'TileWMS' if tiled else 'ImageWMS'
@@ -520,13 +523,19 @@ class MapManagerBase(object):
 
     def build_legend(self, layer):
         legend_key = layer['layer_variable']
+        layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
         if ":" in legend_key:
             legend_key = legend_key.replace(":", "_")
 
         legend_info = {
             'legend_id': legend_key,
             'title': layer['layer_title'],
-            'divisions': dict()
+            'divisions': dict(),
+            'minimum': layer['minimum'],
+            'maximum': layer['maximum'],
+            'color_ramp': layer['color_ramp'],
+            'color_list': COLOR_RAMPS.keys(),
+            'layer_id': layer_id,
         }
 
         divisions = self.generate_custom_color_ramp_divisions(min_value=layer['minimum'], max_value=layer['maximum'],

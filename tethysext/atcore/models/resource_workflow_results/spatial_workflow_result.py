@@ -195,3 +195,19 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         }
 
         self._add_layer(layer)
+
+    def update_layer(self, layer_id, color_ramp):
+        layer = self.get_layer(layer_id)
+        new_layer = layer
+        new_layer['color_ramp'] = color_ramp
+        new_data = list()
+
+        for layer in self.layers:
+            if_match_layer_id = new_layer['layer_id'] and new_layer['layer_id'] == layer['layer_id']
+            if_match_layer_name = new_layer['layer_name'] and new_layer['layer_name'] == layer['layer_name']
+            if if_match_layer_id or if_match_layer_name:
+                new_data.append(new_layer)
+            else:
+                new_data.append(layer)
+
+        self.layers = new_data

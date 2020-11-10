@@ -109,7 +109,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers, hide_layers, show_layers;
+ 	var generate_uuid, load_layers, hide_layers, show_layers, load_legend, update_result_layer;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1878,6 +1878,106 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
+    load_legend = function (selectLegend, minimum, maximum, layer_id) {
+      const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+      const color_ramp = selectLegend.value
+      update_result_layer(layer_id, color_ramp)
+      $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_legend_item',
+                'div_id': JSON.stringify(div_id),
+                'minimum': JSON.stringify(minimum),
+                'maximum': JSON.stringify(maximum),
+                'color_ramp': JSON.stringify(color_ramp),
+            },
+        }).done(function(data){
+//            window.location.reload();
+//            reload_cesium_image_layer(data.div_id);
+            $(`#${data.div_id}`).html(data.response);
+        });
+    }
+
+//    const reload_cesium_image_layer = function(id) {
+//      console.log(m_map)
+//      const remove_all = m_viewer.imageryLayers.removeAll(true);
+//
+//        m_image_layer_options = $map_element.data('layer');
+//
+//        if(is_empty_or_undefined(m_image_layer_options))
+//        {
+//            return;
+//        }
+//
+//        for (var i = 0; i < m_image_layer_options.length; i++) {
+//            var curr_layer = m_image_layer_options[i];
+//
+//            if ('source' in curr_layer) {
+//                if (curr_layer.source == 'TileWMS' || curr_layer.source == 'ImageWMS') {
+//                    var parameters = {
+//                        format: 'image/png',
+//                        transparent: true,
+//                    }
+//
+//                    if (curr_layer.options.params.ENV) {
+//                        parameters.ENV = curr_layer.options.params.ENV;
+//                    }
+//
+//                    if (curr_layer.options.params.VIEWPARAMS) {
+//                        parameters.VIEWPARAMS = curr_layer.options.params.VIEWPARAMS;
+//                    }
+//
+//                    var tile_wms = new Cesium.WebMapServiceImageryProvider({
+//                        url: curr_layer.options.url,
+//                        layers: curr_layer.options.params.LAYERS,
+//                        parameters: parameters
+//                    });
+//                    var img_layer = m_viewer.imageryLayers.addImageryProvider(tile_wms);
+//                    img_layer['tethys_data'] = curr_layer.data;
+//                    img_layer['legend_title'] = curr_layer.legend_title;
+//                    img_layer['legend_classes'] = curr_layer.legend_classes;
+//                    img_layer['legend_extent'] = curr_layer.legend_extent;
+//                    img_layer['legend_extent_projection'] = curr_layer.legend_extent_projection;
+//                    img_layer['feature_selection'] = curr_layer.feature_selection;
+//                    img_layer['geometry_attribute'] = curr_layer.geometry_attribute;
+//                }
+//
+//            } else {
+//                var layer_options = cesium_options(curr_layer);
+//                for (var layer_option in layer_options) {
+//                    var imagery_provider = layer_options[layer_option]['imageryProvider'];
+//                    var key = layer_options[layer_option]['imageryProvider']['key'];
+//                    if (key) {
+//                        Cesium.MapboxApi.defaultAccessToken = key;
+//                    }
+//                    var img_layer = m_viewer.imageryLayers.addImageryProvider(
+//                        layer_options[layer_option]['imageryProvider']);
+//                    img_layer['tethys_data'] = curr_layer.data;
+//                    img_layer['legend_title'] = curr_layer.legend_title;
+//                    img_layer['legend_classes'] = curr_layer.legend_classes;
+//                    img_layer['legend_extent'] = curr_layer.legend_extent;
+//                    img_layer['legend_extent_projection'] = curr_layer.legend_extent_projection;
+//                    img_layer['feature_selection'] = curr_layer.feature_selection;
+//                    img_layer['geometry_attribute'] = curr_layer.geometry_attribute;
+//                }
+//            }
+//        }
+//    }
+    update_result_layer = function(layer_id, color_ramp) {
+      $.ajax({
+      type: 'POST',
+      url: ".",
+      async: false,
+      data: {
+          'method': 'update_result_layer',
+          'layer_id': JSON.stringify(layer_id),
+          'color_ramp': JSON.stringify(color_ramp),
+      },
+      })
+    }
+
     hide_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Set layer to be visible first
@@ -1943,6 +2043,7 @@ var ATCORE_MAP_VIEW = (function() {
         reset_properties_pop_up: reset_properties_pop_up,
         close_properties_pop_up: close_properties_pop_up,
         load_layers: load_layers,
+        load_legend: load_legend,
         hide_layers: hide_layers,
         show_layers: show_layers,
         remove_layer_from_map: remove_layer_from_map,

@@ -8,6 +8,8 @@
 """
 import logging
 from django.http import JsonResponse
+import json
+
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
@@ -226,3 +228,18 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         layout = plot.get('layout', {}) if plot else None
 
         return title, data, layout
+
+    def update_result_layer(self, request, session, resource, *args, **kwargs):
+        # Get Managers Hook
+        model_db, map_manager = self.get_managers(
+            request=request,
+            resource=resource,
+            *args, **kwargs
+        )
+        result = self.get_result(request, kwargs['result_id'], session)
+        layer_id = json.loads(request.POST.get('layer_id'))
+        color_ramp = json.loads(request.POST.get('color_ramp'))
+
+        result.update_layer(layer_id=layer_id, color_ramp=color_ramp)
+
+        return JsonResponse({'success': True})
