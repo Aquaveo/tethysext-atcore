@@ -178,16 +178,14 @@
                       <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
                       </label>
                     </li>
-                    <ul class="legend-list" data-collapsed="false">
-                      {% for value, color in legend.divisions.items  %}
-                        <div class="legend-item">
-                          <li class="legend-list-item">
-                            <p>{{ value }} </p>
-                            <div class="color-box" style="background-color: {{ color }};"></div>
-                          </li>
-                        </div>
+                    <select id="tethys-color-ramp-picker-{{ legend.legend_id }}" onchange="ATCORE_MAP_VIEW.load_legend(this, {{ legend.minimum }}, {{ legend.maximum}}, '{{ legend.layer_id }}' )">
+                      {% for color_ramp in legend.color_list %}
+                        <option value="{{ color_ramp }}" {% if legend.color_ramp == color_ramp %} selected {% endif %}>{{ color_ramp }}</option>
                       {% endfor %}
-                    </ul>
+                    </select>
+                    <div id="color-ramp-component-{{ legend.legend_id }}">
+                      {% include "atcore/resource_workflows/components/map_view_color_ramp_component.html" %}
+                    </div>
                 </div>
               {% endfor %}
               {% endblock %}

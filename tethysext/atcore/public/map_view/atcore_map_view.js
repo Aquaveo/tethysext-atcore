@@ -1675,20 +1675,25 @@ var ATCORE_MAP_VIEW = (function() {
 
     // Create new layer groups with layers
     // This method allows user to load the legend for an associated layer_id
-    load_legend = function (layer_id) {
+    load_legend = function (selectLegend) {
+      let value = selectLegend.value;
+      console.log(value);
         // layer_ids: layer id
-        $.ajax({
-            type: 'POST',
-            url: ".",
-            async: false,
-            data: {
-                'method': 'build_legend_item',
-                'status': status,
-                'layer_id': JSON.stringify(layer_id),
-            },
-        }).done(function(data){
-          console.log(data);
-        });
+//        $.ajax({
+//            type: 'POST',
+//            url: ".",
+//            async: false,
+//            data: {
+//                'method': 'build_legend_item',
+//                'status': status,
+//                'layer_id': JSON.stringify(layer_id),
+//                'minimun': JSON.stringify(minimum),
+//                'maximum': JSON.stringify(maximum),
+//                'color_ramp': JSON.stringify(color_ramp),
+//            },
+//        }).done(function(data){
+//          console.log(data);
+//        });
     }
 
     hide_layers = function(layer_ids) {
@@ -1752,18 +1757,19 @@ var ATCORE_MAP_VIEW = (function() {
 	    action_loader: function(f) {
 	        load_action = f;
 	    },
-        get_layer_name_from_feature: get_layer_name_from_feature,
-        get_layer_id_from_layer: get_layer_id_from_layer,
-        get_feature_id_from_feature: get_feature_id_from_feature,
-        hide_properties_pop_up: hide_properties_pop_up,
-        reset_properties_pop_up: reset_properties_pop_up,
-        close_properties_pop_up: close_properties_pop_up,
-        load_layers: load_layers,
-        hide_layers: hide_layers,
-        show_layers: show_layers,
-        remove_layer_from_map: remove_layer_from_map,
-        init_layers_tab: init_layers_tab,
-        init_download_layer_action: init_download_layer_action,
+      get_layer_name_from_feature: get_layer_name_from_feature,
+      get_layer_id_from_layer: get_layer_id_from_layer,
+      get_feature_id_from_feature: get_feature_id_from_feature,
+      hide_properties_pop_up: hide_properties_pop_up,
+      reset_properties_pop_up: reset_properties_pop_up,
+      close_properties_pop_up: close_properties_pop_up,
+      load_layers: load_layers,
+      load_legend: load_legend,
+      hide_layers: hide_layers,
+      show_layers: show_layers,
+      remove_layer_from_map: remove_layer_from_map,
+      init_layers_tab: init_layers_tab,
+      init_download_layer_action: init_download_layer_action,
 	};
 
 	/************************************************************************
