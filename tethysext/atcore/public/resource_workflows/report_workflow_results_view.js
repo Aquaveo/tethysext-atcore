@@ -1,4 +1,5 @@
 $(function() {
+    var wmsSources = [], maps = [], extents = [];
     $('.resultType-map').each(function(i, obj) {
         wmsSources[i] = new ol.source.ImageWMS({url: $(obj).data("layer-url"),
             params: JSON.parse($(obj).data("layer-params").replace(/'/g, '"')),

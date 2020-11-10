@@ -43,12 +43,6 @@
       </div>
     {% endif %}
     <div contentEditable=true class="add-border" data-ph="General Note"></div>
-    <!-- Try to find a way to move the script (one line below) into the component. -->
-    <script>
-      var maps = [];
-      var wmsSources = [];
-      var extents = [];
-    </script>
     {% for result in report_results %}
       {% for type, value in result.items %}
         {% if type == 'map' %}
