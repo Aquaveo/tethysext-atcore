@@ -13,7 +13,6 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
@@ -50,9 +49,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         can_run_workflows = not self.is_read_only(request, current_step)
 
         # get tabular data if any
-        tabular_data = self.get_tabular_data_for_previous_steps(
-            current_step=current_step,
-        )
+        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step)
 
         has_tabular_data = len(tabular_data) > 0
         # Save changes to map view and layer groups
@@ -72,23 +69,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
             previous_step=previous_step,
             next_step=next_step
         )
-
-    def get_tabular_data_for_previous_steps(self, current_step):
-        previous_steps = current_step.workflow.get_previous_steps(current_step)
-        steps_to_skip = set()
-        mappable_tabular_step_types = (FormInputRWS,)
-        step_data = {}
-
-        for step in previous_steps:
-            # skip non form steps
-            if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
-                continue
-
-            step_params = step.get_parameter('form-values')
-            fixed_params = {x.replace('_', ' ').title(): step_params[x] for x in step_params}
-            step_data[step.name] = fixed_params
-
-        return step_data
 
     def on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step,
                     *args, **kwargs):

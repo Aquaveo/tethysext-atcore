@@ -27,6 +27,7 @@ from .controllers.resource_workflows.resource_workflow_router_tests import Resou
 from .controllers.resource_workflows.results_views.dataset_workflow_results_view_tests import DatasetWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.plot_workflow_results_view_tests import PlotWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
+from .controllers.resource_workflows.results_views.report_workflow_results_view_tests import ReportWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBaseMethodsTests  # noqa: F401
@@ -47,6 +48,7 @@ from .models.initializer import AppUserInitializerTests  # noqa: F401
 from .models.resource_workflow_results.dataset_workflow_result_tests import DatasetWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.plot_workflow_result_tests import PlotWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.spatial_workflow_result_tests import SpatialWorkflowResultTests  # noqa: F401
+from .models.resource_workflow_results.report_workflow_result_tests import ReportWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_steps.results_rws_tests import ResultsResourceWorkflowStepTests  # noqa: F401
 from .models.resource_workflow_steps.spatial_attributes_rws_tests import SpatialAttributesRWSTests  # noqa: F401
 from .models.resource_workflow_steps.spatial_condor_job_rws_test import SpatialCondorJobRWSTests  # noqa: F401

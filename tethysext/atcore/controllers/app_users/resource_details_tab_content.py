@@ -13,7 +13,7 @@ from tethys_sdk.permissions import permission_required, has_permission
 from tethysext.atcore.models.app_users import ResourceWorkflow
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.controllers.app_users import ResourceDetails
-from tethysext.atcore.controllers.utiltities import get_style_for_status
+from tethysext.atcore.controllers.utilities import get_style_for_status
 from tethysext.atcore.services.app_users.roles import Roles
 
 log = logging.getLogger(__name__)

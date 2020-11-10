@@ -26,11 +26,17 @@ var SLIDE_SHEET = (function() {
     *                    PRIVATE FUNCTION IMPLEMENTATIONS
     *************************************************************************/
     open = function(id) {
-        $('#' + id + '.slide-sheet').addClass('show');
+        // Check that id is not empty
+        if (id.length) {
+            $('#' + id + '.slide-sheet').addClass('show');
+        }
     };
 
     close = function(id) {
-        $('#' + id + '.slide-sheet').removeClass('show');
+        // Check that id is not empty
+        if (id.length) {
+            $('#' + id + '.slide-sheet').removeClass('show');
+        }
     };
 
 
