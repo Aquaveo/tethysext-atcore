@@ -133,7 +133,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
-        self.assertDictEqual(database_client.meta,
+        self.assertDictEqual(database_client.instance.meta,
                              {"DatabaseKey1": "Value1", "DatabaseKey2": 2.3})
 
     def test_read_meta_empty(self):
@@ -180,3 +180,56 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
         self.assertDictEqual(database_client.meta, {})
+
+    def test_get_meta(self):
+        """Test get_meta function"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        _ = self.get_database_instance(
+            database_id=database_id, root_directory=root_dir,
+            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        database_client = FileDatabaseClient(self.session, database_id)
+        meta_value = database_client.get_meta('Key2')
+        self.assertEqual(meta_value, 1234)
+
+    def test_get_meta_bad_key(self):
+        """Test get_meta function with a bad key"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        _ = self.get_database_instance(
+            database_id=database_id, root_directory=root_dir,
+            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        database_client = FileDatabaseClient(self.session, database_id)
+        with self.assertRaises(KeyError) as exc:
+            _ = database_client.get_meta('Key2345')
+        self.assertTrue('Key2345' in str(exc.exception))
+
+    def test_set_meta(self):
+        """Test set_meta function"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        _ = self.get_database_instance(
+            database_id=database_id, root_directory=root_dir,
+            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        database_client = FileDatabaseClient(self.session, database_id)
+        database_client.set_meta('Key3', 'NewValue')
+
+        altered_collection = self.session.query(FileDatabase).get(database_id)
+        self.assertEqual(altered_collection.meta.get('Key3', None), 'NewValue')
+
+    def test_set_meta_new_value(self):
+        """Test get_meta function with a new key"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_write_meta')
+        _ = self.get_database_instance(
+            database_id=database_id, root_directory=root_dir,
+            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        database_client = FileDatabaseClient(self.session, database_id)
+        database_client.set_meta('NewKey', 'AddedValue')
+
+        altered_collection = self.session.query(FileDatabase).get(database_id)
+        self.assertEqual(altered_collection.meta.get('NewKey', None), 'AddedValue')

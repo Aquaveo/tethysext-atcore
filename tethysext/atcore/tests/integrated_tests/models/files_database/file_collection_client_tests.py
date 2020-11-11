@@ -132,7 +132,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
-        self.assertDictEqual(collection_client.meta,
+        self.assertDictEqual(collection_client.instance.meta,
                              {'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23})
 
     def test_read_meta_overwrite(self):
@@ -149,7 +149,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
-        self.assertDictEqual(collection_client.meta,
+        self.assertDictEqual(collection_client.instance.meta,
                              {'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23})
 
     def test_read_meta_empty(self):
@@ -202,3 +202,64 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
         self.assertDictEqual(collection_client.meta, {})
+
+    def test_get_meta(self):
+        """Test the the write_meta functionality"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_write_meta')
+        _ = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        meta_value = collection_client.get_meta('Key2')
+        self.assertEqual(meta_value, 1234)
+
+    def test_get_meta_bad_key(self):
+        """Test the the write_meta functionality"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        _ = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        with self.assertRaises(KeyError) as exc:
+            _ = collection_client.get_meta('Key2345')
+        self.assertTrue('Key2345' in str(exc.exception))
+
+    def test_set_meta(self):
+        """Test the the write_meta functionality"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        _ = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client.set_meta('Key3', 'NewValue')
+
+        altered_collection = self.session.query(FileCollection).get(collection_id)
+        self.assertEqual(altered_collection.meta.get('Key3', None), 'NewValue')
+
+    def test_set_meta_new_value(self):
+        """Test the the write_meta functionality"""
+        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
+        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        _ = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={},
+            collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client.set_meta('NewKey', 'AddedValue')
+
+        altered_collection = self.session.query(FileCollection).get(collection_id)
+        self.assertEqual(altered_collection.meta.get('NewKey', None), 'AddedValue')

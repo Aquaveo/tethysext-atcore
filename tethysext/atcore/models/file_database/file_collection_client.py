@@ -54,16 +54,6 @@ class FileCollectionClient(MetaMixin):
         return self._instance
 
     @property
-    def meta(self) -> dict:
-        """Property to get the meta from the underlying instance."""
-        return self.instance.meta
-
-    @meta.setter
-    def meta(self, new_meta: dict):
-        """Setter to set the meta on the underlying instance."""
-        self.instance.meta = new_meta
-
-    @property
     def path(self) -> str:
         """The root directory of the file database."""
         return os.path.join(self.instance.database.root_directory, str(self.instance.database.id),
