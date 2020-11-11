@@ -148,7 +148,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
-        self.assertDictEqual(database_client.meta, {})
+        self.assertDictEqual(database_client.instance.meta, {})
 
     def test_read_meta_no_file(self):
         """Test the read_meta function for the FileDatabase with no file."""
@@ -165,7 +165,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         self.assertFalse(os.path.exists(meta_file))
         database_client.read_meta()
         self.assertTrue(os.path.exists(meta_file))
-        self.assertDictEqual(database_client.meta, {})
+        self.assertDictEqual(database_client.instance.meta, {})
 
     def test_read_meta_bad_file(self):
         """Test the read_meta function for the FileDatabase."""
@@ -179,7 +179,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
-        self.assertDictEqual(database_client.meta, {})
+        self.assertDictEqual(database_client.instance.meta, {})
 
     def test_get_meta(self):
         """Test get_meta function"""

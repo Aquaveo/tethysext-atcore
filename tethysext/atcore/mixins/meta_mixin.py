@@ -16,7 +16,6 @@ log = logging.getLogger('tethys.' + __name__)
 
 class MetaMixin(object):
     path = '.'
-    meta = dict()
     instance = None
     _session = None
 
@@ -57,3 +56,4 @@ class MetaMixin(object):
         local_meta[key] = value
         self.instance.meta = local_meta
         self._session.commit()
+        self.write_meta()

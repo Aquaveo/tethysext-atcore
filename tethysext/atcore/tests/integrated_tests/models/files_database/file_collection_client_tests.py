@@ -166,7 +166,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
-        self.assertDictEqual(collection_client.meta, {})
+        self.assertDictEqual(collection_client.instance.meta, {})
 
     def test_read_meta_no_file(self):
         """Test the the read_meta functionality with no meta file."""
@@ -185,7 +185,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertFalse(os.path.exists(meta_file))
         collection_client.read_meta()
         self.assertTrue(os.path.exists(meta_file))
-        self.assertDictEqual(collection_client.meta, {})
+        self.assertDictEqual(collection_client.instance.meta, {})
 
     def test_read_meta_bad_file(self):
         """Test the the read_meta functionality when the JSON is invalid."""
@@ -201,7 +201,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
-        self.assertDictEqual(collection_client.meta, {})
+        self.assertDictEqual(collection_client.instance.meta, {})
 
     def test_get_meta(self):
         """Test the the write_meta functionality"""
