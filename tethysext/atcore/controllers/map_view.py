@@ -314,6 +314,7 @@ class MapView(ResourceView):
         minimum = json.loads(request.POST.get('minimum'))
         maximum = json.loads(request.POST.get('maximum'))
         color_ramp = json.loads(request.POST.get('color_ramp'))
+        layer_id = json.loads(request.POST.get('layer_id'))
 
         legend = {
             'divisions': dict(),
@@ -321,7 +322,7 @@ class MapView(ResourceView):
 
         divisions = map_manager.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
                                                                      color_ramp=color_ramp)
-
+        division_string = map_manager.build_param_string(**divisions)
         for k, v in divisions.items():
             if 'val' in k and k[:11] != 'val_no_data':
                 legend['divisions'][float(v)] = divisions[k.replace('val', 'color')]
@@ -335,7 +336,8 @@ class MapView(ResourceView):
         html = render(request, html_link, context)
 
         response = str(html.content, 'utf-8')
-        return JsonResponse({'success': True, 'response': response, 'div_id': div_id})
+        return JsonResponse({'success': True, 'response': response, 'div_id': div_id,
+                             'division_string': division_string, 'layer_id': layer_id})
 
     def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
         """
