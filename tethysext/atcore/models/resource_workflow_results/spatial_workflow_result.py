@@ -142,9 +142,9 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         self._add_layer(layer)
 
     def add_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, layer_id='', viewparams=None, env=None,
-                      color_ramp=None, visible=True, public=True, tiled=True, selectable=False, plottable=False,
-                      has_action=False, extent=None, popup_title=None, excluded_properties=None, minimum=None,
-                      maximum=None, geometry_attribute='geometry'):
+                      color_ramp_division_kwargs=None, visible=True, public=True, tiled=True, selectable=False,
+                      plottable=False, has_action=False, extent=None, popup_title=None, excluded_properties=None,
+                      geometry_attribute='geometry'):
         """
         Add a wms layer to display on the map of this result view.
 
@@ -156,7 +156,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
-            color_ramp(str): color ramp from tethysext.atcore.services.color_ramps
+            color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
             visible(bool): Layer is visible when True. Defaults to True.
             public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
             tiled(bool): Configure as tiled layer if True. Defaults to True.
@@ -178,7 +178,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             'layer_variable': layer_variable,
             'viewparams': viewparams,
             'env': env,
-            'color_ramp': color_ramp,
+            'color_ramp_division_kwargs': color_ramp_division_kwargs,
             'layer_id': layer_id,
             'visible': visible,
             'tiled': tiled,
@@ -189,8 +189,6 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             'has_action': has_action,
             'extent': extent,
             'popup_title': popup_title,
-            'minimum': minimum,
-            'maximum': maximum,
             'excluded_properties': excluded_properties
         }
 

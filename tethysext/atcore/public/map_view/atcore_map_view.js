@@ -93,7 +93,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers, hide_layers, show_layers, load_legend;
+ 	var generate_uuid, load_layers, hide_layers, show_layers, reload_legend, update_result_layer, reload_image_layer;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1674,26 +1674,122 @@ var ATCORE_MAP_VIEW = (function() {
     }
 
     // Create new layer groups with layers
-    // This method allows user to load the legend for an associated layer_id
-    load_legend = function (selectLegend) {
-      let value = selectLegend.value;
-      console.log(value);
-        // layer_ids: layer id
-//        $.ajax({
-//            type: 'POST',
-//            url: ".",
-//            async: false,
-//            data: {
-//                'method': 'build_legend_item',
-//                'status': status,
-//                'layer_id': JSON.stringify(layer_id),
-//                'minimun': JSON.stringify(minimum),
-//                'maximum': JSON.stringify(maximum),
-//                'color_ramp': JSON.stringify(color_ramp),
-//            },
-//        }).done(function(data){
-//          console.log(data);
-//        });
+    // This method allows user to create tree items and have them linked to the tree items created in this method.
+    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends) {
+        // layer_group_name: name of the layer group - Ex: My Layer Group
+        // layer_group_id: id of the layer group - Ex: my_layer_group_123456
+        // layer_data: list of openlayer layers
+        // layer_names: list of the name of the openlayer layers
+        // layer_ids: list of the id of the open layer layers
+        // layer_legends: list of the legend name of the open layer layers Ex: my-legend -> your legend id is going to be (#legend-my-legend)
+        // Add layers to map
+        var i = 0;
+        for (i = 0; i < layer_data.length; i++) {
+            m_layers[layer_ids[i]] = layer_data[i];
+            m_map.addLayer(layer_data[i]);
+        }
+        var status = 'create'
+        // If the layer group is already created, we will have the solution added to the same layer groups
+        if ($('#' + layer_group_id).length){
+            status = 'append'
+        }
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_layer_group_tree_item',
+                'status': status,
+                'layer_group_id': layer_group_id,
+                'layer_group_name': layer_group_name,
+                'layer_names': JSON.stringify(layer_names),
+                'layer_ids': JSON.stringify(layer_ids),
+                'layer_legends': JSON.stringify(layer_legends),
+            },
+        }).done(function(data){
+            if (status == 'create') {
+                $('#layers-tab-panel').prepend(data.response);
+            }
+            else {
+                $('#' + layer_group_id + '_associated_layers').prepend(data.response);
+            }
+        });
+        init_new_layers_tab(layer_group_id);
+    }
+
+    reload_legend = function (selectLegend, minimum, maximum, layer_id) {
+        const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+        const color_ramp = selectLegend.value;
+        update_result_layer(layer_id, color_ramp);
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_legend_item',
+                'div_id': JSON.stringify(div_id),
+                'minimum': JSON.stringify(minimum),
+                'maximum': JSON.stringify(maximum),
+                'color_ramp': JSON.stringify(color_ramp),
+                'layer_id': JSON.stringify(layer_id),
+            },
+        }).done(function(data){
+            reload_image_layer(`${data.layer_id}`, data.division_string);
+            $(`#${data.div_id}`).html(data.response);
+        });
+    }
+
+    reload_image_layer = function(id, division_string) {
+        // Get THE layer and create a clone of it with new division string
+        const existingImageryLayer = m_layers[id];
+
+        // Update division string in the env
+        existingImageryLayer.imageryProvider._resource._queryParameters['env'] = division_string;
+
+        const tile_wms = new Cesium.WebMapServiceImageryProvider({
+            url: existingImageryLayer.imageryProvider._resource._url,
+            layers: existingImageryLayer.imageryProvider._layers,
+            parameters:  existingImageryLayer.imageryProvider._resource._queryParameters,
+        });
+
+        // copy of existing layer data
+        const tethys_data = existingImageryLayer.tethys_data;
+        const legend_title = existingImageryLayer.legend_title;
+        const legend_classes = existingImageryLayer.legend_classes;
+        const legend_extent = existingImageryLayer.legend_extent;
+        const legend_extent_projection = existingImageryLayer.legend_extent_projection;
+        const feature_selection = existingImageryLayer.feature_selection;
+        const geometry_attribute = existingImageryLayer.geometry_attribute;
+
+        // Remove existing Layer
+        m_map.imageryLayers.remove(existingImageryLayer, true);
+
+        // Add new layer
+        let new_layer = m_map.imageryLayers.addImageryProvider(tile_wms);
+
+        // Appending existing data into new layer
+        new_layer['tethys_data'] = tethys_data;
+        new_layer['legend_title'] = legend_title;
+        new_layer['legend_classes'] = legend_classes;
+        new_layer['legend_extent'] = legend_extent;
+        new_layer['legend_extent_projection'] = legend_extent_projection;
+        new_layer['feature_selection'] = feature_selection;
+        new_layer['geometry_attribute'] = geometry_attribute;
+
+        m_layers[id] = new_layer;
+    }
+
+    update_result_layer = function(layer_id, color_ramp) {
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'update_result_layer',
+                'layer_id': JSON.stringify(layer_id),
+                'color_ramp': JSON.stringify(color_ramp),
+            },
+        })
     }
 
     hide_layers = function(layer_ids) {
@@ -1764,7 +1860,7 @@ var ATCORE_MAP_VIEW = (function() {
       reset_properties_pop_up: reset_properties_pop_up,
       close_properties_pop_up: close_properties_pop_up,
       load_layers: load_layers,
-      load_legend: load_legend,
+      reload_legend: reload_legend,
       hide_layers: hide_layers,
       show_layers: show_layers,
       remove_layer_from_map: remove_layer_from_map,

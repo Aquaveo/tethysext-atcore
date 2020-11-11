@@ -1,7 +1,7 @@
 /*****************************************************************************
  * FILE:    atcore_map_view.js
  * DATE:    October, 19, 2018
- * AUTHOR:  Nathan Swain
+ * AUTHOR:  Nathan Swainf
  * COPYRIGHT: (c) Aquaveo 2018
  * LICENSE:
  *****************************************************************************/
@@ -109,7 +109,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers, hide_layers, show_layers, load_legend, update_result_layer;
+ 	var generate_uuid, load_layers, hide_layers, show_layers, reload_legend, update_result_layer, reload_cesium_image_layer;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1670,7 +1670,7 @@ var ATCORE_MAP_VIEW = (function() {
         ];
     };
 
- 	// Geocode Methods
+ 	  // Geocode Methods
     init_geocode = function() {
         if (p_can_geocode) {
             // Add Geocode Control to OpenLayers controls container
@@ -1878,11 +1878,11 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
-    load_legend = function (selectLegend, minimum, maximum, layer_id) {
-      const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
-      const color_ramp = selectLegend.value
-      update_result_layer(layer_id, color_ramp)
-      $.ajax({
+    reload_legend = function (selectLegend, minimum, maximum, layer_id) {
+        const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+        const color_ramp = selectLegend.value;
+        update_result_layer(layer_id, color_ramp);
+        $.ajax({
             type: 'POST',
             url: ".",
             async: false,
@@ -1892,90 +1892,65 @@ var ATCORE_MAP_VIEW = (function() {
                 'minimum': JSON.stringify(minimum),
                 'maximum': JSON.stringify(maximum),
                 'color_ramp': JSON.stringify(color_ramp),
+                'layer_id': JSON.stringify(layer_id),
             },
         }).done(function(data){
-//            window.location.reload();
-//            reload_cesium_image_layer(data.div_id);
+            reload_cesium_image_layer(`${data.layer_id}`, data.division_string);
             $(`#${data.div_id}`).html(data.response);
         });
     }
 
-//    const reload_cesium_image_layer = function(id) {
-//      console.log(m_map)
-//      const remove_all = m_viewer.imageryLayers.removeAll(true);
-//
-//        m_image_layer_options = $map_element.data('layer');
-//
-//        if(is_empty_or_undefined(m_image_layer_options))
-//        {
-//            return;
-//        }
-//
-//        for (var i = 0; i < m_image_layer_options.length; i++) {
-//            var curr_layer = m_image_layer_options[i];
-//
-//            if ('source' in curr_layer) {
-//                if (curr_layer.source == 'TileWMS' || curr_layer.source == 'ImageWMS') {
-//                    var parameters = {
-//                        format: 'image/png',
-//                        transparent: true,
-//                    }
-//
-//                    if (curr_layer.options.params.ENV) {
-//                        parameters.ENV = curr_layer.options.params.ENV;
-//                    }
-//
-//                    if (curr_layer.options.params.VIEWPARAMS) {
-//                        parameters.VIEWPARAMS = curr_layer.options.params.VIEWPARAMS;
-//                    }
-//
-//                    var tile_wms = new Cesium.WebMapServiceImageryProvider({
-//                        url: curr_layer.options.url,
-//                        layers: curr_layer.options.params.LAYERS,
-//                        parameters: parameters
-//                    });
-//                    var img_layer = m_viewer.imageryLayers.addImageryProvider(tile_wms);
-//                    img_layer['tethys_data'] = curr_layer.data;
-//                    img_layer['legend_title'] = curr_layer.legend_title;
-//                    img_layer['legend_classes'] = curr_layer.legend_classes;
-//                    img_layer['legend_extent'] = curr_layer.legend_extent;
-//                    img_layer['legend_extent_projection'] = curr_layer.legend_extent_projection;
-//                    img_layer['feature_selection'] = curr_layer.feature_selection;
-//                    img_layer['geometry_attribute'] = curr_layer.geometry_attribute;
-//                }
-//
-//            } else {
-//                var layer_options = cesium_options(curr_layer);
-//                for (var layer_option in layer_options) {
-//                    var imagery_provider = layer_options[layer_option]['imageryProvider'];
-//                    var key = layer_options[layer_option]['imageryProvider']['key'];
-//                    if (key) {
-//                        Cesium.MapboxApi.defaultAccessToken = key;
-//                    }
-//                    var img_layer = m_viewer.imageryLayers.addImageryProvider(
-//                        layer_options[layer_option]['imageryProvider']);
-//                    img_layer['tethys_data'] = curr_layer.data;
-//                    img_layer['legend_title'] = curr_layer.legend_title;
-//                    img_layer['legend_classes'] = curr_layer.legend_classes;
-//                    img_layer['legend_extent'] = curr_layer.legend_extent;
-//                    img_layer['legend_extent_projection'] = curr_layer.legend_extent_projection;
-//                    img_layer['feature_selection'] = curr_layer.feature_selection;
-//                    img_layer['geometry_attribute'] = curr_layer.geometry_attribute;
-//                }
-//            }
-//        }
-//    }
+    reload_cesium_image_layer = function(id, division_string) {
+        // Get THE layer and create a clone of it with new division string
+        const existingImageryLayer = m_layers[id];
+
+        // Update division string in the env
+        existingImageryLayer.imageryProvider._resource._queryParameters['env'] = division_string;
+
+        const tile_wms = new Cesium.WebMapServiceImageryProvider({
+            url: existingImageryLayer.imageryProvider._resource._url,
+            layers: existingImageryLayer.imageryProvider._layers,
+            parameters:  existingImageryLayer.imageryProvider._resource._queryParameters,
+        });
+
+        // copy of existing layer data
+        const tethys_data = existingImageryLayer.tethys_data;
+        const legend_title = existingImageryLayer.legend_title;
+        const legend_classes = existingImageryLayer.legend_classes;
+        const legend_extent = existingImageryLayer.legend_extent;
+        const legend_extent_projection = existingImageryLayer.legend_extent_projection;
+        const feature_selection = existingImageryLayer.feature_selection;
+        const geometry_attribute = existingImageryLayer.geometry_attribute;
+
+        // Remove existing Layer
+        m_map.imageryLayers.remove(existingImageryLayer, true);
+
+        // Add new layer
+        let new_layer = m_map.imageryLayers.addImageryProvider(tile_wms);
+
+        // Appending existing data into new layer
+        new_layer['tethys_data'] = tethys_data;
+        new_layer['legend_title'] = legend_title;
+        new_layer['legend_classes'] = legend_classes;
+        new_layer['legend_extent'] = legend_extent;
+        new_layer['legend_extent_projection'] = legend_extent_projection;
+        new_layer['feature_selection'] = feature_selection;
+        new_layer['geometry_attribute'] = geometry_attribute;
+
+        m_layers[id] = new_layer;
+    }
+
     update_result_layer = function(layer_id, color_ramp) {
-      $.ajax({
-      type: 'POST',
-      url: ".",
-      async: false,
-      data: {
-          'method': 'update_result_layer',
-          'layer_id': JSON.stringify(layer_id),
-          'color_ramp': JSON.stringify(color_ramp),
-      },
-      })
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'update_result_layer',
+                'layer_id': JSON.stringify(layer_id),
+                'color_ramp': JSON.stringify(color_ramp),
+            },
+        })
     }
 
     hide_layers = function(layer_ids) {
@@ -2036,18 +2011,18 @@ var ATCORE_MAP_VIEW = (function() {
 	    action_loader: function(f) {
 	        load_action = f;
 	    },
-        get_layer_name_from_feature: get_layer_name_from_feature,
-        get_layer_id_from_layer: get_layer_id_from_layer,
-        get_feature_id_from_feature: get_feature_id_from_feature,
-        hide_properties_pop_up: hide_properties_pop_up,
-        reset_properties_pop_up: reset_properties_pop_up,
-        close_properties_pop_up: close_properties_pop_up,
-        load_layers: load_layers,
-        load_legend: load_legend,
-        hide_layers: hide_layers,
-        show_layers: show_layers,
-        remove_layer_from_map: remove_layer_from_map,
-        init_layers_tab: init_layers_tab,
+      get_layer_name_from_feature: get_layer_name_from_feature,
+      get_layer_id_from_layer: get_layer_id_from_layer,
+      get_feature_id_from_feature: get_feature_id_from_feature,
+      hide_properties_pop_up: hide_properties_pop_up,
+      reset_properties_pop_up: reset_properties_pop_up,
+      close_properties_pop_up: close_properties_pop_up,
+      load_layers: load_layers,
+      reload_legend: reload_legend,
+      hide_layers: hide_layers,
+      show_layers: show_layers,
+      remove_layer_from_map: remove_layer_from_map,
+      init_layers_tab: init_layers_tab,
 	};
 
 	/************************************************************************
@@ -2065,17 +2040,22 @@ var ATCORE_MAP_VIEW = (function() {
 	    setup_ajax();
 	    setup_map();
 
-		// Initialize
-		init_layers_tab();
-        //init_geocode();
-        init_cesium_vr();
-        init_plot();
-        init_draw_controls();
-        sync_layer_visibility();
+      // Initialize
+      init_layers_tab();
+      //init_geocode();
+      init_cesium_vr();
+      init_plot();
+      init_draw_controls();
+      sync_layer_visibility();
 	});
 
 	return m_public_interface;
 
-}()); // End of package wrapper
+}());
+
+// Export it to global
+window.ATCORE_MAP_VIEW = ATCORE_MAP_VIEW;
+
+// End of package wrapper
 // NOTE: that the call operator (open-closed parenthesis) is used to invoke the library wrapper
 // function immediately after being parsed.

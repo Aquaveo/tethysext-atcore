@@ -531,15 +531,11 @@ class MapManagerBase(object):
             'legend_id': legend_key,
             'title': layer['layer_title'],
             'divisions': dict(),
-            'minimum': layer['minimum'],
-            'maximum': layer['maximum'],
-            'color_ramp': layer['color_ramp'],
-            'color_list': COLOR_RAMPS.keys(),
+            'color_list': self.COLOR_RAMPS.keys(),
             'layer_id': layer_id,
         }
 
-        divisions = self.generate_custom_color_ramp_divisions(min_value=layer['minimum'], max_value=layer['maximum'],
-                                                              color_ramp=layer['color_ramp'])
+        divisions = self.s(**layer['color_ramp_division_kwargs'])
 
         for k, v in divisions.items():
             if 'val' in k and k[:11] != 'val_no_data':
@@ -552,7 +548,7 @@ class MapManagerBase(object):
 
     def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2,
                                              first_division=1, top_offset=0, bottom_offset=0, prefix='val',
-                                             custom_color_ramp=[], color_ramp="", color_prefix='color'):
+                                             color_ramp="", color_prefix='color'):
         """
         Generate custom elevation divisions.
 
@@ -565,7 +561,6 @@ class MapManagerBase(object):
             top_offset(number): offset from top of color ramp (defaults to 0).
             bottom_offset(number): offset from bottom of color ramp (defaults to 0).
             prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
-            custom_color_ramp(list): hexadecimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
             color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
             color_prefix(str): name of color variable prefix (i.e.: 'color' for pattern 'color1').
 
@@ -587,16 +582,15 @@ class MapManagerBase(object):
             divisions[f'{prefix}{i}'] = f"{(m * i + b):.{value_precision}f}"
 
             # is_color_ramp check if the string belongs to COLOR_RAMPS dictionary.
-            is_color_ramp = isinstance(color_ramp, str) and color_ramp in COLOR_RAMPS.keys()
+            is_color_ramp = isinstance(color_ramp, str) and color_ramp in self.COLOR_RAMPS.keys()
 
-            if custom_color_ramp:
-                divisions[f'{color_prefix}{i}'] = f"{custom_color_ramp[(i - 1) % len(custom_color_ramp)]}"
-            elif color_ramp:
-                if is_color_ramp:
-                    divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS[color_ramp][(i - 1) % len(COLOR_RAMPS[color_ramp])]}"
-                else:
-                    # use default color ramp
-                    divisions[f'{color_prefix}{i}'] = f"{COLOR_RAMPS['Default'][(i - 1) % len(COLOR_RAMPS['Default'])]}"
+            if is_color_ramp:
+                divisions[f'{color_prefix}{i}'] =\
+                    f"{self.COLOR_RAMPS[color_ramp][(i - 1) % len(self.COLOR_RAMPS[color_ramp])]}"
+            else:
+                # use default color ramp
+                divisions[f'{color_prefix}{i}'] =\
+                    f"{self.COLOR_RAMPS['Default'][(i - 1) % len(self.COLOR_RAMPS['Default'])]}"
         return divisions
 
     def get_plot_for_layer_feature(self, layer_name, feature_id):

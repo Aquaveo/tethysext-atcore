@@ -215,6 +215,12 @@
     margin-bottom: 5px;
 }
 
+.select-color-ramp {
+    padding: 5px;
+    margin-left: 30px;
+    margin-bottom: 5px;
+}
+
 .legend-group-item .flatmark {
     display: inline-block;
     font-weight: 700;
