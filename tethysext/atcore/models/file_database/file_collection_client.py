@@ -31,7 +31,7 @@ class FileCollectionClient(MetaMixin):
         session.commit()
         client = cls(session, new_file_collection.id)
 
-        client.write_meta()
+        client.instance.write_meta(client.path)
 
         return client
 
@@ -42,9 +42,18 @@ class FileCollectionClient(MetaMixin):
         return self._instance
 
     @property
+    def meta(self):
+        return self.instance.meta
+
+    @meta.setter
+    def meta(self, new_meta):
+        self.instance.meta = new_meta
+
+    @property
     def path(self) -> str:
         """The root directory of the file database."""
-        return os.path.join(self._instance.database.path, str(self._collection_id))
+        return os.path.join(self.instance.database.root_directory, str(self.instance.database.id),
+                            str(self._collection_id))
 
     @property
     def files(self) -> Generator[str, None, None]:

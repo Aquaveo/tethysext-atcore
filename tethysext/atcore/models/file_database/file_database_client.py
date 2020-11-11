@@ -45,6 +45,14 @@ class FileDatabaseClient(MetaMixin):
         return self._instance
 
     @property
+    def meta(self):
+        return self.instance.meta
+
+    @meta.setter
+    def meta(self, new_meta):
+        self.instance.meta = new_meta
+
+    @property
     def path(self) -> str:
         """The root directory of the file database."""
         if not getattr(self, '_path', None):
@@ -58,4 +66,4 @@ class FileDatabaseClient(MetaMixin):
 
         root_dir (str): the directory to be the root directory of the file database.
         """
-        self._path = os.path.join(root_dir, str(self._instance.id))
+        self._path = os.path.join(root_dir, str(self.instance.id))

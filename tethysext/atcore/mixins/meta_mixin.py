@@ -19,6 +19,8 @@ class MetaMixin(object):
 
     def write_meta(self):
         """Write a __meta__.json file. Create it if it does not exist."""
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
         with open(os.path.join(self.path, '__meta__.json'), 'w') as f:
             json.dump(self.meta, f)
 
