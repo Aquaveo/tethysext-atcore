@@ -1,5 +1,3 @@
-import os
-
 from tethysext.atcore.models.file_database import FileDatabase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -15,29 +13,9 @@ def tearDownModule():
 
 
 class FileDatabaseTests(SqlAlchemyTestCase):
-    def setUp(self):
-        super().setUp()
-        self.test_files_base = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..',
-                         'files', 'file_database_tests')
-        )
-
-    def get_database_and_collection(self, database_id, root_directory, database_meta=None):
-        if database_meta is None:
-            database_meta = {}
-
-        database_instance = FileDatabase(
-            id=database_id,  # We need to set the id here for the test path.
-            root_directory=root_directory,
-            meta=database_meta,
-        )
-
-        self.session.add(database_instance)
-        self.session.commit()
-
-        return database_instance
 
     def test_database_round_trip(self):
+        """Test a round trip through the database for the FileDatabase model"""
         new_instance = FileDatabase(root_directory='.', meta={"TestKey": "TestValue"})
         self.session.add(new_instance)
         self.session.commit()

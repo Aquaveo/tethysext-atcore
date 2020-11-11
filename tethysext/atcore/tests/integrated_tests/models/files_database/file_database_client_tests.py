@@ -24,6 +24,14 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         )
 
     def get_database_instance(self, database_id, root_directory, database_meta=None):
+        """
+        A helper function to generate a FileDatabase in the database.
+
+        Args:
+            database_id (uuid.UUID): a UUID to assign the id for the FileDatabase object
+            root_directory (str): root directory for a FileDatabase
+            database_meta (dict): A dictionary of meta for the FileDatabase object
+        """
         if database_meta is None:
             database_meta = {}
 
@@ -39,13 +47,16 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         return database_instance
 
     def test_new_file_database_client(self):
+        """Test the new function on the file database client."""
         self.assertTrue(self.session.query(FileDatabase).count() == 0)
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_database_client')
         database_client = FileDatabaseClient.new(self.session, root_dir)
         self.assertTrue(self.session.query(FileDatabase).count() == 1)
         self.assertTrue(os.path.exists(database_client.path))
+        self.assertTrue(os.path.exists(database_client.path))
 
     def test_existing_file_database_client(self):
+        """Test Generating a FileDatabaseClient from and existing FileDatabase."""
         database_id = uuid.UUID('{4b62335d-5b43-4e3b-bba7-07cd88cc2205}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_database_client')
         database_instance = self.get_database_instance(database_id, root_dir, {'TestKey': 'TestVal'})

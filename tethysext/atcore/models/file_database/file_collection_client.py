@@ -10,43 +10,57 @@ import os
 from typing import Generator
 import uuid
 
+from sqlalchemy.orm.session import Session
+
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection
 
 
 class FileCollectionClient(MetaMixin):
-    def __init__(self, session, file_collection_id: uuid.UUID):
+    def __init__(self, session: Session, file_collection_id: uuid.UUID):
+        """Init function for the FileCollectionClient"""
         self._collection_id = file_collection_id
         self._instance = None
         self._session = session
 
     @classmethod
-    def new(cls, session, file_database_id, meta=dict):
+    def new(cls, session: Session, file_database_id: uuid.UUID, meta: dict = None) -> 'FileCollectionClient':
+        """
+        Class method for creating a new instance of the FileCollectionClient class.
+
+        Args:
+            session: The session for the database.
+            file_database_id (uuid.UUID): The uuid for the FileDatabase connected to this FileCollection
+            meta (dict): The meta for the FileCollection
+        """
         meta = meta or {}
         new_file_collection = FileCollection(
             file_database_id=file_database_id,
-            mata=meta
+            meta=meta
         )
         session.add(new_file_collection)
         session.commit()
         client = cls(session, new_file_collection.id)
 
-        client.instance.write_meta(client.path)
+        client.write_meta()
 
         return client
 
     @property
     def instance(self) -> FileCollection:
+        """Property to get the underlying instance so it can be lazy loaded."""
         if not self._instance:
             self._instance = self._session.query(FileCollection).get(self._collection_id)
         return self._instance
 
     @property
-    def meta(self):
+    def meta(self) -> dict:
+        """Property to get the meta from the underlying instance."""
         return self.instance.meta
 
     @meta.setter
-    def meta(self, new_meta):
+    def meta(self, new_meta: dict):
+        """Setter to set the meta on the underlying instance."""
         self.instance.meta = new_meta
 
     @property

@@ -10,6 +10,8 @@ import os
 import logging
 import uuid
 
+from sqlalchemy.orm.session import Session
+
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileDatabase
 
@@ -17,14 +19,23 @@ log = logging.getLogger('tethys.' + __name__)
 
 
 class FileDatabaseClient(MetaMixin):
-    def __init__(self, session, file_database_id: uuid.UUID):
+    def __init__(self, session: Session, file_database_id: uuid.UUID):
+        """Init function for the FileDatabaseClient"""
         self._database_id = file_database_id
         self._instance = None
         self._session = session
         self._path = None
 
     @classmethod
-    def new(cls, session, root_directory, meta=None):
+    def new(cls, session: Session, root_directory: str, meta: dict = None) -> 'FileDatabaseClient':
+        """
+        Class method for creating a new instance of the FileCollectionClient class.
+
+        Args:
+            session: The session for the database.
+            root_directory (str): Directory for the files for this FileDatabase
+            meta (dict): The meta for the FileCollection
+        """
         meta = meta or {}
         new_file_database = FileDatabase(
             root_directory=root_directory,
@@ -40,16 +51,19 @@ class FileDatabaseClient(MetaMixin):
 
     @property
     def instance(self) -> FileDatabase:
+        """Property to get the underlying instance so it can be lazy loaded."""
         if not self._instance:
             self._instance = self._session.query(FileDatabase).get(self._database_id)
         return self._instance
 
     @property
-    def meta(self):
+    def meta(self) -> dict:
+        """Property to get the meta from the underlying instance."""
         return self.instance.meta
 
     @meta.setter
-    def meta(self, new_meta):
+    def meta(self, new_meta: dict):
+        """Setter to set the meta on the underlying instance."""
         self.instance.meta = new_meta
 
     @property

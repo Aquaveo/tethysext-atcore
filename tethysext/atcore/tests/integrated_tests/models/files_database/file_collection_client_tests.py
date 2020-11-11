@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase
+from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -25,6 +25,16 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
 
     def get_database_and_collection(self, database_id, root_directory, collection_id,
                                     database_meta=None, collection_meta=None):
+        """
+        A helper function to generate a FileDatabase and a FileCollection in the database.
+
+        Args:
+            database_id (uuid.UUID): a UUID to assign the id for the FileDatabase object
+            root_directory (str): root directory for a FileDatabase
+            collection_id (uuid.UUID): a UUID to assign the id for the FileCollection object
+            database_meta (dict): A dictionary of meta for the FileDatabase object
+            collection_meta (dict): A dictionary of meta for the FileCollection object
+        """
         database_meta = database_meta or {}
         collection_meta = collection_meta or {}
         database_instance = FileDatabase(
@@ -48,7 +58,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         return database_instance, collection_instance
 
     def test_new_file_collection_client(self):
-        pass
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_collection_client')
+        database_client = FileDatabaseClient.new(self.session, root_dir)
+        self.assertTrue(self.session.query(FileCollection).count() == 0)
+        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        self.assertTrue(self.session.query(FileCollection).count() == 1)
+        self.assertTrue(os.path.exists(collection_client.path))
 
     def test_path_property(self):
         """Test the path property of the file collection works correctly."""
