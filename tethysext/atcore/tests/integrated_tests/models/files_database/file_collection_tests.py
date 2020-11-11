@@ -25,11 +25,8 @@ class FileCollectionTests(SqlAlchemyTestCase):
 
     def get_database_and_collection(self, database_id, root_directory, collection_id,
                                     database_meta=None, collection_meta=None):
-        if database_meta is None:
-            database_meta = {}
-        if collection_meta is None:
-            collection_meta = {}
-
+        database_meta = database_meta or {}
+        collection_meta = collection_meta or {}
         database_instance = FileDatabase(
             id=database_id,  # We need to set the id here for the test path.
             root_directory=root_directory,
@@ -50,39 +47,6 @@ class FileCollectionTests(SqlAlchemyTestCase):
 
         return database_instance, collection_instance
 
-    def test_path_property(self):
-        """Test the path property of the file collection works correctly."""
-        database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
-        collection_id = uuid.UUID('{a5a99e1c-3d17-4fbb-88b7-d3d264e825ff}')
-        root_dir = os.path.join(self.test_files_base, 'test_path_property')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={}, collection_meta={}
-        )
-        expected_path = os.path.abspath(os.path.join(root_dir, str(database_id), str(collection_id)))
-        self.assertEqual(collection_instance.path, expected_path)
-
-    def test_files_generator(self):
-        """Test the file generator works as expected."""
-        """Test the path property of the file collection works correctly."""
-        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
-        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-        root_dir = os.path.join(self.test_files_base, 'test_files_generator')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={}, collection_meta={}
-        )
-
-        files = [x for x in collection_instance.files]
-        expected_files = [
-            os.path.join('file5.txt'),
-            os.path.join('dir3', 'file4.txt'),
-            os.path.join('dir1', 'file2.txt'),
-            os.path.join('dir1', 'file1.txt'),
-            os.path.join('dir1', 'dir2', 'file3.txt')
-        ]
-        self.assertListEqual(files, expected_files)
-
     def test_database_round_trip(self):
         """Test the FileCollection in a round trip through the database"""
         database_id = uuid.UUID('{bb7c67a9-9d51-4baa-96a9-d38d56b8c79c}')
@@ -90,7 +54,7 @@ class FileCollectionTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'test_database_round_trip')
         database_instance, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={}, collection_meta={}
+            root_directory=root_dir
         )
         new_instance = FileCollection(file_database_id=database_id,
                                       meta={"TestKey": "TestValue"})
@@ -98,102 +62,4 @@ class FileCollectionTests(SqlAlchemyTestCase):
         self.session.commit()
         instance_from_db = self.session.query(FileCollection).get(new_instance.id)
         self.assertEqual(new_instance.file_database_id, instance_from_db.file_database_id)
-        self.assertEqual(new_instance.path, instance_from_db.path)
         self.assertEqual(new_instance.meta, instance_from_db.meta)
-
-    def test_write_meta(self):
-        """Test the the write_meta functionality"""
-        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
-        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
-        root_dir = os.path.join(self.test_files_base, 'test_write_meta')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={},
-            collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
-        )
-        meta_file = os.path.join(collection_instance.path, '__meta__.json')
-        if os.path.exists(meta_file):
-            os.remove(meta_file)
-        self.assertFalse(os.path.exists(meta_file))
-        collection_instance.write_meta()
-        self.assertTrue(os.path.exists(meta_file))
-
-    def test_read_meta(self):
-        """Test the the read_meta functionality."""
-        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
-        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
-        root_dir = os.path.join(self.test_files_base, 'test_read_meta')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={},
-            collection_meta={}
-        )
-        meta_file = os.path.join(collection_instance.path, '__meta__.json')
-        self.assertTrue(os.path.exists(meta_file))
-        collection_instance.read_meta()
-        self.assertDictEqual(collection_instance.meta,
-                             {'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23})
-
-    def test_read_meta_overwrite(self):
-        """Test the the read_meta functionality."""
-        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
-        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
-        root_dir = os.path.join(self.test_files_base, 'test_read_meta_overwrite')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={},
-            collection_meta={'ThisKey': 'ShouldNotExist'}
-        )
-        meta_file = os.path.join(collection_instance.path, '__meta__.json')
-        self.assertTrue(os.path.exists(meta_file))
-        collection_instance.read_meta()
-        self.assertDictEqual(collection_instance.meta,
-                             {'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23})
-
-    def test_read_meta_empty(self):
-        """Test the the read_meta functionality with an empty file."""
-        database_id = uuid.UUID('{12856d36-cb6d-4a5e-84a6-6ee3696a67f1}')
-        collection_id = uuid.UUID('{eab613c8-da79-48e0-9db0-1ac854efd966}')
-        root_dir = os.path.join(self.test_files_base, 'test_read_meta_empty')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={},
-            collection_meta={"DatabaseKey1": "Value1", "DatabaseKey2": 2.3}
-        )
-        meta_file = os.path.join(collection_instance.path, '__meta__.json')
-        self.assertTrue(os.path.exists(meta_file))
-        collection_instance.read_meta()
-        self.assertDictEqual(collection_instance.meta, {})
-
-    def test_read_meta_no_file(self):
-        """Test the the read_meta functionality with no meta file."""
-        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
-        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
-        root_dir = os.path.join(self.test_files_base, 'test_read_meta_no_file')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={},
-            collection_meta={}
-        )
-        meta_file = os.path.join(collection_instance.path, '__meta__.json')
-        if os.path.exists(meta_file):
-            os.remove(meta_file)
-        self.assertFalse(os.path.exists(meta_file))
-        collection_instance.read_meta()
-        self.assertTrue(os.path.exists(meta_file))
-        self.assertDictEqual(collection_instance.meta, {})
-
-    def test_read_meta_bad_file(self):
-        """Test the the read_meta functionality when the JSON is invalid."""
-        database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
-        collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
-        root_dir = os.path.join(self.test_files_base, 'test_read_meta_bad_file')
-        database_instance, collection_instance = self.get_database_and_collection(
-            database_id=database_id, collection_id=collection_id,
-            root_directory=root_dir, database_meta={},
-            collection_meta={'KeyYouWillNotSee': 'ValueYouWillNotSee'}
-        )
-        meta_file = os.path.join(collection_instance.path, '__meta__.json')
-        self.assertTrue(os.path.exists(meta_file))
-        collection_instance.read_meta()
-        self.assertDictEqual(collection_instance.meta, {})
