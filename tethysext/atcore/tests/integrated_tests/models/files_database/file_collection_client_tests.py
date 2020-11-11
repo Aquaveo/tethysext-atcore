@@ -47,6 +47,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
 
         return database_instance, collection_instance
 
+    def test_new_file_collection_client(self):
+        pass
+
     # def test_path_property(self):
     #     """Test the path property of the file collection works correctly."""
     #     database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')

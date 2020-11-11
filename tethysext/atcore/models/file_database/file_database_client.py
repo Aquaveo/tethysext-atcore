@@ -16,7 +16,7 @@ from tethysext.atcore.models.file_database import FileDatabase
 log = logging.getLogger('tethys.' + __name__)
 
 
-class FileDatabaseClient(object, MetaMixin):
+class FileDatabaseClient(MetaMixin):
     def __init__(self, session, file_database_id: uuid.UUID):
         self._database_id = file_database_id
         self._instance = None
@@ -48,7 +48,7 @@ class FileDatabaseClient(object, MetaMixin):
     def path(self) -> str:
         """The root directory of the file database."""
         if not getattr(self, '_path', None):
-            self._path = os.path.join(self._instance.root_directory, str(self._instance.id))
+            self._path = os.path.join(self.instance.root_directory, str(self.instance.id))
         return self._path
 
     @path.setter

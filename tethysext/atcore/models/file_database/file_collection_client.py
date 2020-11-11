@@ -14,7 +14,7 @@ from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection
 
 
-class FileCollectionClient(object, MetaMixin):
+class FileCollectionClient(MetaMixin):
     def __init__(self, session, file_collection_id: uuid.UUID):
         self._collection_id = file_collection_id
         self._instance = None

@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from tethysext.atcore.models.file_database import FileDatabase
+from tethysext.atcore.models.file_database import FileDatabase, FileDatabaseClient
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -37,6 +37,15 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         self.session.commit()
 
         return database_instance
+
+    def test_new_file_database_client(self):
+        self.assertTrue(self.session.query(FileDatabase).count() == 0)
+        root_dir = os.path.join(self.test_files_base, 'test_new_file_database_client')
+        new_database_client = FileDatabaseClient.new(self.session, root_dir)
+        self.assertTrue(self.session.query(FileDatabase).count() == 1)
+
+    def test_existing_file_database_client(self):
+        pass
 
     # def test_path_property(self):
     #     """Test the path property of the file collection works correctly."""
