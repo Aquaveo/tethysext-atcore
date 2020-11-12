@@ -1,4 +1,5 @@
 import os
+import shutil
 import uuid
 
 from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
@@ -59,6 +60,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
 
     def test_new_file_collection_client(self):
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_collection_client')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
         database_client = FileDatabaseClient.new(self.session, root_dir)
         self.assertTrue(self.session.query(FileCollection).count() == 0)
         collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
@@ -70,6 +73,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         collection_id = uuid.UUID('{a5a99e1c-3d17-4fbb-88b7-d3d264e825ff}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_path_property')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
         _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
@@ -208,6 +213,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_write_meta')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
         _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
@@ -222,6 +229,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
         _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
@@ -237,6 +246,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
         _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
@@ -253,6 +264,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
         _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
@@ -263,3 +276,45 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
 
         altered_collection = self.session.query(FileCollection).get(collection_id)
         self.assertEqual(altered_collection.meta.get('NewKey', None), 'AddedValue')
+
+    def test_collection_delete(self):
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_collection_delete')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        database_client = FileDatabaseClient.new(self.session, root_dir)
+        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        collection_path = os.path.join(root_dir, str(database_client.instance.id), str(collection_client.instance.id))
+        self.assertTrue(os.path.exists(collection_path))
+        collection_client.delete()
+        self.assertFalse(os.path.exists(collection_path))
+
+        with self.assertRaises(Exception) as exc:
+            _ = collection_client.path
+
+        self.assertTrue('The collection has been deleted.' in str(exc.exception))
+
+    def test_collection_export(self):
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_collection_export')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        database_client = FileDatabaseClient.new(self.session, root_dir)
+        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        collection_path = os.path.join(root_dir, str(database_client.instance.id), str(collection_client.instance.id))
+        export_path = os.path.join(self.test_files_base, 'temp', 'exported_files', 'test_collection_export')
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        self.assertTrue(os.path.exists(collection_path))
+        collection_client.export(export_path)
+        self.assertTrue(os.path.exists(export_path))
+        self.assertTrue(os.path.exists(os.path.join(export_path, '__meta__.json')))
+
+    def test_collection_duplicate(self):
+        root_dir = os.path.join(self.test_files_base, 'temp',  'test_collection_duplicate')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        database_client = FileDatabaseClient.new(self.session, root_dir)
+        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        new_collection_client = collection_client.duplicate()
+        new_collection_path = os.path.join(root_dir, database_client.path, str(new_collection_client.instance.id))
+        self.assertTrue(new_collection_path == new_collection_client.path)
+        self.assertTrue(os.path.exists(new_collection_client.path))

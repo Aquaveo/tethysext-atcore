@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import os
+import shutil
 from typing import Generator
 import uuid
 
@@ -22,6 +23,7 @@ class FileCollectionClient(MetaMixin):
         self._collection_id = file_collection_id
         self._instance = None
         self._session = session
+        self.__deleted = False
 
     @classmethod
     def new(cls, session: Session, file_database_id: uuid.UUID, meta: dict = None) -> 'FileCollectionClient':
@@ -56,7 +58,12 @@ class FileCollectionClient(MetaMixin):
 
         Returns:
             The underlying FileCollection instance.
+
+        Raises:
+            Exception: If the the instance has been deleted.
         """
+        if self.__deleted:
+            raise Exception('The collection has been deleted.')
         if not self._instance:
             self._instance = self._session.query(FileCollection).get(self._collection_id)
         return self._instance
@@ -86,7 +93,10 @@ class FileCollectionClient(MetaMixin):
 
     def delete(self):
         """Delete this CollectionInstance"""
-        pass
+        shutil.rmtree(self.path)
+        self._session.delete(self.instance)
+        self._session.commit()
+        self.__deleted = True
 
     def export(self, target):
         """
@@ -95,7 +105,11 @@ class FileCollectionClient(MetaMixin):
         Args:
             target (str): location of the newly exported FileCollection.
         """
-        pass
+        for file in self.files:
+            src_file = os.path.join(self.path, file)
+            dst_file = os.path.join(target, file)
+            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            shutil.copyfile(src_file, dst_file)
 
     def duplicate(self):
         """
@@ -104,4 +118,10 @@ class FileCollectionClient(MetaMixin):
         Returns:
             A client for the newly duplicated FileCollection
         """
-        pass
+        duplicated_client = FileCollectionClient.new(
+            session=self._session,
+            file_database_id=self.instance.file_database_id,
+            meta=self.instance.meta,
+        )
+        self.export(duplicated_client.path)
+        return duplicated_client
