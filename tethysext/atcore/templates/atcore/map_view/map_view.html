@@ -172,17 +172,12 @@
             {% if legends %}
             <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
               {% block legend_items %}
-              {% for legend in legends %}
+              {% for legend, legend_select_input in legends %}
                 <div id="legend-{{ legend.legend_id }}" class="hidden">
                     <li class="legend-group-item">
-                      <label class="flatmark"><span class="display-name">{{ legend.title }}</span>
-                      </label>
+                      <label class="flatmark"><span class="display-name">{{ legend.title|title }}{% if legend.units %} ({{ legend.units }}){% endif %}</span></label>
                     </li>
-                    <select class="select-color-ramp" id="tethys-color-ramp-picker-{{ legend.legend_id }}" onchange="ATCORE_MAP_VIEW.reload_legend(this, {{ legend.min_value }}, {{ legend.max_value}}, '{{ legend.layer_id }}' )">
-                      {% for color_ramp in legend.color_list %}
-                        <option value="{{ color_ramp }}" {% if legend.color_ramp == color_ramp %} selected {% endif %}>{{ color_ramp }}</option>
-                      {% endfor %}
-                    </select>
+                    {% gizmo legend_select_input %}
                     <div id="color-ramp-component-{{ legend.legend_id }}">
                       {% include "atcore/resource_workflows/components/map_view_color_ramp_component.html" %}
                     </div>

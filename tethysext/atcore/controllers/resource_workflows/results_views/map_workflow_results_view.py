@@ -10,6 +10,7 @@ import logging
 from django.http import JsonResponse
 import json
 
+from tethys_sdk.gizmos import SelectInput
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
@@ -88,6 +89,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         layer_groups = base_context['layer_groups']
         # Generate MVLayers for spatial data
         results_layers = []
+        legends_select_input = []
         legends = []
         # Build MVLayers for map
         for layer in result.layers:
@@ -106,7 +108,18 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 result_layer = map_manager.build_wms_layer(**layer)
 
             # build legend:
-            legends.append(map_manager.build_legend(layer))
+            legend = map_manager.build_legend(layer, units=result.options.get('units', ''))
+            legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
+            legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend(this, {legend['min_value']}, "
+                                        f"{legend['max_value']}, '{legend['layer_id']}' )"}
+
+            legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
+                                              options=legend_input_options,
+                                              initial=[legend['color_ramp']],
+                                              attributes=legend_attrs)
+
+            legends_select_input.append(legend_select_input)
+            legends.append(legend)
 
             if result_layer:
                 # Add layer to beginning the map's of layer list
@@ -125,7 +138,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             layer_groups.insert(0, results_layer_group)
 
         base_context.update({
-            'legends': legends,
+            'legends': zip(legends, legends_select_input),
             'show_legends': self.show_legends,
         })
         return base_context

@@ -511,7 +511,7 @@ class MapManagerBase(object):
 
         return view, extent
 
-    def build_legend(self, layer):
+    def build_legend(self, layer, units=""):
         """
         Build Legend data for a given layer
 
@@ -527,13 +527,14 @@ class MapManagerBase(object):
             legend_key = legend_key.replace(":", "_")
         legend_info = {
             'legend_id': legend_key,
-            'title': layer['layer_title'],
+            'title': layer['layer_title'].replace("_", " "),
             'divisions': dict(),
             'color_list': self.COLOR_RAMPS.keys(),
             'layer_id': layer_id,
             'color_ramp': layer['color_ramp_division_kwargs']['color_ramp'],
             'min_value': layer['color_ramp_division_kwargs']['min_value'],
             'max_value': layer['color_ramp_division_kwargs']['max_value'],
+            'units': units,
         }
 
         divisions = self.generate_custom_color_ramp_divisions(**layer['color_ramp_division_kwargs'])
