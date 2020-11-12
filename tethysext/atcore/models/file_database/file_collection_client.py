@@ -32,6 +32,9 @@ class FileCollectionClient(MetaMixin):
             session: The session for the database.
             file_database_id (uuid.UUID): The uuid for the FileDatabase connected to this FileCollection
             meta (dict): The meta for the FileCollection
+
+        Returns:
+            A client to a newly generated FileCollection.
         """
         meta = meta or {}
         new_file_collection = FileCollection(
@@ -48,20 +51,57 @@ class FileCollectionClient(MetaMixin):
 
     @property
     def instance(self) -> FileCollection:
-        """Property to get the underlying instance so it can be lazy loaded."""
+        """
+        Property to get the underlying instance so it can be lazy loaded.
+
+        Returns:
+            The underlying FileCollection instance.
+        """
         if not self._instance:
             self._instance = self._session.query(FileCollection).get(self._collection_id)
         return self._instance
 
     @property
     def path(self) -> str:
-        """The root directory of the file database."""
+        """
+        The root directory of the file database.
+
+        Returns:
+            The path to the FileCollection
+        """
         return os.path.join(self.instance.database.root_directory, str(self.instance.database.id),
                             str(self._collection_id))
 
     @property
     def files(self) -> Generator[str, None, None]:
-        """Generator that iterates recursively through all files (ignoring empty directories)."""
+        """
+        Generator that iterates recursively through all files (ignoring empty directories).
+
+        Returns:
+            Generate giving a list of files in the FileCollection
+        """
         for root, dirs, files in os.walk(self.path):
             for file in files:
                 yield os.path.relpath(os.path.join(root, file), self.path)
+
+    def delete(self):
+        """Delete this CollectionInstance"""
+        pass
+
+    def export(self, target):
+        """
+        Copy the FileCollection to the target.
+
+        Args:
+            target (str): location of the newly exported FileCollection.
+        """
+        pass
+
+    def duplicate(self):
+        """
+        Duplicate collection with a new ID and associate it with the current FileDatabase
+
+        Returns:
+            A client for the newly duplicated FileCollection
+        """
+        pass
