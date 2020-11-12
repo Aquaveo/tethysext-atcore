@@ -9,6 +9,8 @@
 import logging
 from tethysext.atcore.models.resource_workflow_results import PlotWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
+from tethys_sdk.gizmos import BokehView
+from tethys_sdk.gizmos import PlotlyView
 
 log = logging.getLogger(__name__)
 
@@ -49,10 +51,14 @@ class PlotWorkflowResultView(WorkflowResultsView):
         # Get the result
         result = self.get_result(request=request, result_id=result_id, session=session)
 
-        plot_view = result.get_plot_object()
-
         # Get options.
         options = result.options
+
+        # Get plot view gizmo
+        renderer = options.get('renderer', 'plotly')
+        plot_view_params = dict(plot_input=result.get_plot_object(), height='95%', width='95%')
+        plot_view = BokehView(**plot_view_params) if renderer == 'bokeh' else PlotlyView(**plot_view_params)
+
         # Page title same as result name.
         page_title = options.get('page_title', result.name)
 
