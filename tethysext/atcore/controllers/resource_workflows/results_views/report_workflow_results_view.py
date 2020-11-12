@@ -103,7 +103,9 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         result_layer = map_manager.build_wms_layer(**layer)
                     if result_layer:
                         # Update env param
-                        params = result_layer['options']['params']
+                        params = ""
+                        if 'params' in result_layer['options'].keys():
+                            params = result_layer['options']['params']
                         if params:
                             if 'TILED' in params.keys():
                                 params.pop('TILED')

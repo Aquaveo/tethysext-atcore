@@ -512,6 +512,15 @@ class MapManagerBase(object):
         return view, extent
 
     def build_legend(self, layer):
+        """
+        Build Legend data for a given layer
+
+        Args:
+            layer: result.layer object
+        Returns:
+            Legend data associate with the layer.
+        """
+
         legend_key = layer['layer_variable']
         layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
         if ":" in legend_key:
