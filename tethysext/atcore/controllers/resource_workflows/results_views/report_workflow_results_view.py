@@ -14,6 +14,8 @@ from tethysext.atcore.models.resource_workflow_results import DatasetWorkflowRes
     SpatialWorkflowResult
 
 from tethys_sdk.gizmos import DataTableView
+from tethys_sdk.gizmos import BokehView
+from tethys_sdk.gizmos import PlotlyView
 from collections import OrderedDict
 
 
@@ -79,8 +81,10 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                     ds.update({'data_description': result.description})
                     results.append({'dataset': ds})
             elif isinstance(result, PlotWorkflowResult):
-                results.append({'plot': {'name': result.name, 'description': result.description,
-                                         'plot': result.get_plot_object()}})
+                renderer = result.options.get('renderer', 'plotly')
+                plot_view_params = dict(plot_input=result.get_plot_object(), height='95%', width='95%')
+                plot_view = BokehView(**plot_view_params) if renderer == 'bokeh' else PlotlyView(**plot_view_params)
+                results.append({'plot': {'name': result.name, 'description': result.description, 'plot': plot_view}})
             elif isinstance(result, SpatialWorkflowResult):
                 params = ""
                 # Get layer params

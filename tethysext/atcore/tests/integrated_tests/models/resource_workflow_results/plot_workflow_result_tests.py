@@ -122,20 +122,19 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
         self.assertRaises(ValueError, self.instance.add_plot, 'foo')
 
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotlyView')
-    def test_get_plot_object_dict(self, mock_plotly_view, mock_options):
+    def test_get_plot_object_dict(self, mock_options):
         mock_plotly_plot = mock.MagicMock(spec=go.Figure, empty=False)
         mock_options.get = mock.MagicMock(side_effect=['plotly', 'lines', ['x', 'y'], 'linear', 'linear'])
 
         self.instance.add_plot(mock_plotly_plot)
-        self.instance.get_plot_object()
 
-        mock_plotly_view.assert_called_with(mock_plotly_plot, height='95%', width='95%')
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_plotly_plot)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.figure')
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.BokehView')
-    def test_get_plot_object_bokeh_line(self, mock_bokeh_view, mock_bokeh_figure, mock_options):
+    def test_get_plot_object_bokeh_line(self, mock_bokeh_figure, mock_options):
         mock_bokeh_plot = mock.MagicMock(
             spec=figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
             line=mock.MagicMock(return_value='test line type')
@@ -155,14 +154,14 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
 
         self.instance.plot = mock_bokeh_plot
         self.instance.datasets = mock_datasets
-        self.instance.get_plot_object()
 
-        mock_bokeh_view.assert_called_with(mock_bokeh_plot, height='95%', width='95%')
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_bokeh_plot)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.figure')
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.BokehView')
-    def test_get_plot_object_bokeh_scatter(self, mock_bokeh_view, mock_bokeh_figure, mock_options):
+    def test_get_plot_object_bokeh_scatter(self, mock_bokeh_figure, mock_options):
         mock_bokeh_plot = mock.MagicMock(
             spec=figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
             scatter=mock.MagicMock(return_value='test scatter type')
@@ -182,15 +181,15 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
 
         self.instance.plot = mock_bokeh_plot
         self.instance.datasets = mock_datasets
-        self.instance.get_plot_object()
 
-        mock_bokeh_view.assert_called_with(mock_bokeh_plot, height='95%', width='95%')
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_bokeh_plot)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Figure')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Scatter')
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotlyView')
-    def test_get_plot_object_plotly_line(self, mock_plotly_view, mock_scatter_plot, mock_plotly_figure, mock_options):
+    def test_get_plot_object_plotly_line(self, mock_scatter_plot, mock_plotly_figure, mock_options):
         mock_plotly_plot = mock.MagicMock(
             spec=go.Figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
             add_trace=mock.MagicMock(return_value=mock_scatter_plot)
@@ -210,15 +209,15 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
 
         self.instance.plot = mock_plotly_plot
         self.instance.datasets = mock_datasets
-        self.instance.get_plot_object()
 
-        mock_plotly_view.assert_called_with(mock_plotly_plot, height='95%', width='95%')
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_plotly_plot)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Figure')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Scatter')
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotlyView')
-    def test_get_plot_object_plotly_list_dataset(self, mock_plotly_view, mock_scatter_plot, mock_plotly_figure,
+    def test_get_plot_object_plotly_list_dataset(self, mock_scatter_plot, mock_plotly_figure,
                                                  mock_options):
         mock_plotly_plot = mock.MagicMock(
             spec=go.Figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
@@ -239,6 +238,7 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
 
         self.instance.plot = mock_plotly_plot
         self.instance.datasets = mock_datasets
-        self.instance.get_plot_object()
 
-        mock_plotly_view.assert_called_with(mock_plotly_plot, height='95%', width='95%')
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_plotly_plot)

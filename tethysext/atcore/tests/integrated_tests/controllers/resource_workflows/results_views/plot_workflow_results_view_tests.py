@@ -21,9 +21,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         super().setUp()
         self.instance = PlotWorkflowResultView()
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_bokeh(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_bokeh(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -32,7 +33,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='BokehView')
+        mock_plot.return_value = 'BokehView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -45,7 +46,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['bokeh', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -89,9 +90,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_plotly(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_plotly(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -100,7 +102,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='PlotlyView')
+        mock_plot.return_value = 'PlotlyView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -119,7 +121,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['plotly', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -159,9 +161,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_plot_object(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_plot_object(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -170,7 +173,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='PlotlyView')
+        mock_plot.return_value = 'PlotlyView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -180,7 +183,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['plotly', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -219,9 +222,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_bokeh_add_series_list(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_bokeh_add_series_list(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -230,7 +234,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='BokehView')
+        mock_plot.return_value = 'BokehView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -244,7 +248,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
 
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['bokeh', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -283,9 +287,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.BokehView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_bokeh_scatter_add_series_list(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_bokeh_scatter_add_series_list(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -294,7 +299,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='BokehView')
+        mock_plot.return_value = 'BokehView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -308,7 +313,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
 
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['bokeh', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -347,9 +352,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_add_series_list(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_add_series_list(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -358,7 +364,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='PlotlyView')
+        mock_plot.return_value = 'PlotlyView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -372,7 +378,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
 
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['plotly', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -411,9 +417,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_add_series_numpy(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_add_series_numpy(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -422,7 +429,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='PlotlyView')
+        mock_plot.return_value = 'PlotlyView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -435,7 +442,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
 
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['plotly', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
@@ -474,9 +481,10 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(baseline['no_dataset_message'], ret['no_dataset_message'])
         self.assertEqual(baseline['plot_view_input'], ret['plot_view_input'])
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotlyView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view.PlotWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context_add_series_pandas_multiple_columns(self, mock_sup_get_context, mock_get_result):
+    def test_get_context_add_series_pandas_multiple_columns(self, mock_sup_get_context, mock_get_result, mock_plot):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -485,7 +493,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
-        mock_plot = mock.MagicMock(return_value='PlotlyView')
+        mock_plot.return_value = 'PlotlyView'
         mock_result = mock.MagicMock(get_plot_object=mock_plot)
         mock_get_result.return_value = mock_result
 
@@ -505,7 +513,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
 
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['page title', 'No dataset found.']
+        mock_options.get.side_effect = ['plotly', 'page title', 'No dataset found.']
         baseline = {
             'page_title': 'page title',
             'no_dataset_message': 'No dataset found.',
