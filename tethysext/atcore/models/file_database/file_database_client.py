@@ -13,7 +13,7 @@ import uuid
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
-from tethysext.atcore.models.file_database import FileDatabase
+from tethysext.atcore.models.file_database import FileDatabase, FileCollectionClient
 
 log = logging.getLogger('tethys.' + __name__)
 
@@ -71,3 +71,59 @@ class FileDatabaseClient(MetaMixin):
         root_dir (str): the directory to be the root directory of the file database.
         """
         self._path = os.path.join(root_dir, str(self.instance.id))
+
+    def get_collection(self, collection_id: uuid.UUID) -> FileCollectionClient:
+        """
+        Get a FileCollectionClient owned by this FileDatabase by its collection_id
+
+        Args:
+            collection_id (uuid.UUID): The id for the file collection owned by this FileDatabase.
+
+        Returns:
+            The FileCollectionClient for the FileCollection.
+        """
+        raise NotImplementedError("WRITE THIS FUNCTION")
+
+    def new_collection(self, items: list = None, meta: dict = None) -> FileCollectionClient:
+        """
+        Create a new collection copying any files and meta data passed in.
+
+        Args:
+            items (list): A list of files or paths to be copied to the file collection.
+            meta: (dict): The meta data to be stored in the FileCollection
+
+        Returns:
+            A new FileCollectionClient object for the FileCollection.
+        """
+        raise NotImplementedError("WRITE THIS FUNCTION")
+
+    def delete_collection(self, collection_id: uuid.UUID) -> None:
+        """
+        Delete a specified FileCollection from the FileDatabase
+
+        Args:
+            collection_id (uuid.UUID): The id for the collection to be deleted.
+        """
+        raise NotImplementedError("WRITE THIS FUNCTION")
+
+    def export_collection(self, collection_id: uuid.UUID, target: str) -> None:
+        """
+        Export the collection to a target location.
+
+        Args:
+            collection_id (uuid.UUID): The id for the file collection to be exported.
+            target (str): Path to the target location.
+        """
+        raise NotImplementedError("WRITE THIS FUNCTION")
+
+    def duplicate_collection(self, collection_id: uuid.UUID) -> FileCollectionClient:
+        """
+        Duplicate a collection and add it to the FileDatabase
+
+        Args:
+            collection_id (uuid.UUID): The id for the collection to be duplicated.
+
+        Returns:
+            A FileCollectionClient for the newly duplicated FileCollect
+        """
+        raise NotImplementedError("WRITE THIS FUNCTION")

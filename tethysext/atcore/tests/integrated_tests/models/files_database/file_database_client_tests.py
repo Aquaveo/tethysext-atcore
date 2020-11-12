@@ -233,3 +233,48 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
 
         altered_collection = self.session.query(FileDatabase).get(database_id)
         self.assertEqual(altered_collection.meta.get('NewKey', None), 'AddedValue')
+
+    def test_new_collection(self):
+        pass
+
+    def test_new_collection_with_files(self):
+        pass
+
+    def test_new_collection_with_meta(self):
+        pass
+
+    def test_new_collection_fail_no_commit(self):
+        pass
+
+    def test_get_collection(self):
+        pass
+
+    def test_get_collection_does_not_exist(self):
+        pass
+
+    def test_get_collection_not_owned_by_this_db(self):
+        pass
+
+    def test_export_collection(self):
+        pass
+
+    def test_get_export_does_not_exist(self):
+        pass
+
+    def test_get_export_not_owned_by_this_db(self):
+        pass
+
+    def test_duplicate_collection(self):
+        pass
+
+    def test_duplicate_collection_fail_no_commit(self):
+        pass
+
+    def test_delete_collection(self):
+        pass
+
+    def test_get_delete_does_not_exist(self):
+        pass
+
+    def test_get_delete_not_owned_by_this_db(self):
+        pass

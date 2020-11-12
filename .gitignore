@@ -12,3 +12,4 @@
 build
 dist
 working_dir
+test_local.sh
