@@ -83,6 +83,7 @@ class ResourceStatus(ResourceViewMixin):
             striped=False,
             bordered=False,
             condensed=False,
+            show_status=True,
             show_detailed_status=self.show_detailed_status
         )
 
