@@ -86,6 +86,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 plot_view = BokehView(**plot_view_params) if renderer == 'bokeh' else PlotlyView(**plot_view_params)
                 results.append({'plot': {'name': result.name, 'description': result.description, 'plot': plot_view}})
             elif isinstance(result, SpatialWorkflowResult):
+                # Get layer params
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
 
@@ -93,7 +94,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         log.warning('Unsupported layer type will be skipped: {}'.format(layer))
                         continue
 
-                    result_layer = ''
+                    result_layer = None
 
                     if layer_type == 'geojson':
                         result_layer = map_manager.build_geojson_layer(**layer)
@@ -101,18 +102,16 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                     elif layer_type == 'wms':
                         result_layer = map_manager.build_wms_layer(**layer)
                     if result_layer:
-                        params = ""
-                        if 'params' in result_layer['options'].keys():
-                            params = result_layer['options']['params']
-
                         # Update env param
+                        params = result_layer['options']['params']
                         if params:
                             if 'TILED' in params.keys():
                                 params.pop('TILED')
                             if 'TILESORIGIN' in params.keys():
                                 params.pop('TILESORIGIN')
-                            result_layer['options']['params'] = params
+                        result_layer['options']['params'] = params
 
+                        # Build Legend
                         legend_info = map_manager.build_legend(layer)
 
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])

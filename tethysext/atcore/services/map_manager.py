@@ -184,10 +184,9 @@ class MapManagerBase(object):
         return mv_layer
 
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                        custom_color_ramp=[], color_ramp='', visible=True, tiled=True, selectable=False,
+                        color_ramp_division_kwargs='', visible=True, tiled=True, selectable=False,
                         plottable=False, has_action=False, extent=None, public=True, geometry_attribute='geometry',
-                        layer_id='', excluded_properties=None, popup_title=None, minimum=None, maximum=None,
-                        num_divisions=10, value_precision=2):
+                        layer_id='', excluded_properties=None, popup_title=None):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -198,8 +197,7 @@ class MapManagerBase(object):
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
-            custom_color_ramp(list): hexadecimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
-            color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
+            color_ramp_division_kwargs(list): hexadecimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
             visible(bool): Layer is visible when True. Defaults to True.
             public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
             tiled(bool): Configure as tiled layer if True. Defaults to True.
@@ -210,9 +208,6 @@ class MapManagerBase(object):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
-            minimum(float): minimum threshold for the raster.
-            maximum(float): maximum threshold for the raster.
-            num_divisions(int): number of division for raster.
             value_precision(int): significant digit or the legend.
 
         Returns:
@@ -234,13 +229,8 @@ class MapManagerBase(object):
         if env:
             params['ENV'] = env
 
-        if color_ramp:
-            color_ramp_divisions = self.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
-                                                                             num_divisions=num_divisions,
-                                                                             value_precision=value_precision,
-                                                                             color_ramp=color_ramp,
-                                                                             custom_color_ramp=custom_color_ramp,
-                                                                             )
+        if color_ramp_division_kwargs:
+            color_ramp_divisions = self.generate_custom_color_ramp_divisions(**color_ramp_division_kwargs)
             if 'ENV' in params.keys():
                 params['ENV'] += self.build_param_string(**color_ramp_divisions)
             else:
@@ -251,9 +241,9 @@ class MapManagerBase(object):
             'params': params,
             'serverType': 'geoserver',
             'crossOrigin': 'anonymous',
-            'minimum': minimum,
-            'maximum': maximum,
-            'color_ramp': color_ramp,
+            'minimum': color_ramp_division_kwargs['min_value'],
+            'maximum': color_ramp_division_kwargs['max_value'],
+            'color_ramp': color_ramp_division_kwargs['color_ramp'],
         }
 
         layer_source = 'TileWMS' if tiled else 'ImageWMS'
@@ -526,16 +516,18 @@ class MapManagerBase(object):
         layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
         if ":" in legend_key:
             legend_key = legend_key.replace(":", "_")
-
         legend_info = {
             'legend_id': legend_key,
             'title': layer['layer_title'],
             'divisions': dict(),
             'color_list': self.COLOR_RAMPS.keys(),
             'layer_id': layer_id,
+            'color_ramp': layer['color_ramp_division_kwargs']['color_ramp'],
+            'min_value': layer['color_ramp_division_kwargs']['min_value'],
+            'max_value': layer['color_ramp_division_kwargs']['max_value'],
         }
 
-        divisions = self.s(**layer['color_ramp_division_kwargs'])
+        divisions = self.generate_custom_color_ramp_divisions(**layer['color_ramp_division_kwargs'])
 
         for k, v in divisions.items():
             if 'val' in k and k[:11] != 'val_no_data':
