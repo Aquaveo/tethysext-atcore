@@ -13,6 +13,7 @@ import uuid
 
 from sqlalchemy.orm.session import Session
 
+from tethysext.atcore.exceptions import UnboundFileCollectionError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection
 
@@ -63,7 +64,7 @@ class FileCollectionClient(MetaMixin):
             Exception: If the the instance has been deleted.
         """
         if self.__deleted:
-            raise Exception('The collection has been deleted.')
+            raise UnboundFileCollectionError('The collection has been deleted.')
         if not self._instance:
             self._instance = self._session.query(FileCollection).get(self._collection_id)
         return self._instance

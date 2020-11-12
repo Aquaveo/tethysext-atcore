@@ -2,6 +2,7 @@ import os
 import shutil
 import uuid
 
+from tethysext.atcore.exceptions import UnboundFileCollectionError
 from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -288,7 +289,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_client.delete()
         self.assertFalse(os.path.exists(collection_path))
 
-        with self.assertRaises(Exception) as exc:
+        with self.assertRaises(UnboundFileCollectionError) as exc:
             _ = collection_client.path
 
         self.assertTrue('The collection has been deleted.' in str(exc.exception))
@@ -318,3 +319,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         new_collection_path = os.path.join(root_dir, database_client.path, str(new_collection_client.instance.id))
         self.assertTrue(new_collection_path == new_collection_client.path)
         self.assertTrue(os.path.exists(new_collection_client.path))
+
+    def test_duplicate_with_files(self):
+        pass
+
+    def test_export_with_files(self):
+        pass
