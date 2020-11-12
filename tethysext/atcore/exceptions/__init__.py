@@ -22,3 +22,11 @@ class ModelDatabaseInitializationError(ModelDatabaseError):
 
 class ModelFileDatabaseInitializationError(ModelDatabaseError):
     pass
+
+
+class UnboundFileCollectionError(Exception):
+    pass
+
+
+class UnboundFileDatabaseError(Exception):
+    pass
