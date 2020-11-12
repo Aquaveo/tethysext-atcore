@@ -13,8 +13,6 @@ from bokeh.models import ColumnDataSource
 from bokeh.palettes import Category10
 import plotly.graph_objs as go
 
-from tethys_sdk.gizmos import BokehView
-from tethys_sdk.gizmos import PlotlyView
 from tethysext.atcore.models.app_users.resource_workflow_result import ResourceWorkflowResult
 
 __all__ = ['PlotWorkflowResult']
@@ -195,26 +193,26 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         axis_labels = options.get('axis_labels', ['x', 'y'])
         line_shape = options.get('line_shape', 'linear')
         x_axis_type = options.get('x_axis_type', 'linear')
-        plot_view = None
+        plot_figure = None
 
         # Handle the case where the user just provide a plotly object.
         if isinstance(plot_object, dict):
             if 'plot_object' in plot_object.keys():
                 # Only support Plotly for now because we can't serialize bokeh plot.
-                plot_view = PlotlyView(plot_object['plot_object'], height='95%', width='95%')
+                plot_figure = plot_object['plot_object']
         else:
             # Set layout such as axis label for x and y axis.
             if renderer == 'bokeh':
-                plot = figure(x_axis_type=x_axis_type, plot_width=900)
-                plot.xaxis.axis_label = axis_labels[0]
-                plot.yaxis.axis_label = axis_labels[1]
+                plot_figure = figure(x_axis_type=x_axis_type, plot_width=900)
+                plot_figure.xaxis.axis_label = axis_labels[0]
+                plot_figure.yaxis.axis_label = axis_labels[1]
             elif renderer == 'plotly':
-                plot = go.Figure(layout=go.Layout(xaxis={'title': {'text': axis_labels[0]}},
-                                                  yaxis={'title': {'text': axis_labels[1]}},
-                                                  legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02,
-                                                          'xanchor': 'right', 'x': 1},
-                                                  margin={'r': 0},
-                                                  height=600))
+                plot_figure = go.Figure(layout=go.Layout(xaxis={'title': {'text': axis_labels[0]}},
+                                                         yaxis={'title': {'text': axis_labels[1]}},
+                                                         legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02,
+                                                                 'xanchor': 'right', 'x': 1},
+                                                         margin={'r': 0},
+                                                         height=600))
 
             # Plot count variable to keep track of the series color in bokeh.
             plot_count = 0
@@ -263,12 +261,13 @@ class PlotWorkflowResult(ResourceWorkflowResult):
                                     series_label = series_labels[i]
 
                                 if plot_type == 'lines':
-                                    plot.line("x", "y", source=ColumnDataSource(data), legend_label=series_label,
-                                              color=Category10[10][plot_count % 10])
+                                    plot_figure.line("x", "y", source=ColumnDataSource(data), legend_label=series_label,
+                                                     color=Category10[10][plot_count % 10])
                                     plot_count += 1
                                 else:
-                                    plot.scatter("x", "y", source=ColumnDataSource(data), legend_label=series_label,
-                                                 color=Category10[10][plot_count % 10])
+                                    plot_figure.scatter("x", "y", source=ColumnDataSource(data),
+                                                        legend_label=series_label,
+                                                        color=Category10[10][plot_count % 10])
                                     plot_count += 1
                         else:
                             plot_mode = 'lines' if plot_type == 'lines' else 'markers'
@@ -279,17 +278,11 @@ class PlotWorkflowResult(ResourceWorkflowResult):
                                 if isinstance(plot_data, pd.DataFrame):
                                     x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
                                     y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
-                                    plot.add_trace(go.Scatter(x=plot_data[x_axis].to_list(),
-                                                              y=plot_data[y_axis].to_list(), name=series_label,
-                                                              mode=plot_mode, line_shape=line_shape))
+                                    plot_figure.add_trace(go.Scatter(x=plot_data[x_axis].to_list(),
+                                                                     y=plot_data[y_axis].to_list(), name=series_label,
+                                                                     mode=plot_mode, line_shape=line_shape))
                                 else:
-                                    plot.add_trace(go.Scatter(x=plot_data[0], y=plot_data[1], name=series_label,
-                                                              mode=plot_mode, line_shape=line_shape))
+                                    plot_figure.add_trace(go.Scatter(x=plot_data[0], y=plot_data[1], name=series_label,
+                                                                     mode=plot_mode, line_shape=line_shape))
 
-            # Plot the chart.
-            if renderer == 'bokeh':
-                plot_view = BokehView(plot, height='95%', width='95%')
-            elif renderer == 'plotly':
-                plot_view = PlotlyView(plot, height='95%', width='95%')
-
-        return plot_view
+        return plot_figure
