@@ -12,6 +12,19 @@ from .resource_tab import ResourceTab
 
 
 class ResourceSummaryTab(ResourceTab):
+    """
+    Description.
+
+    Properties:
+        template_name:
+        base_template:
+        css_requirements:
+        js_requirements:
+        modal_templates:
+        post_load_callback:
+        has_preview_image:
+        preview_image_title:
+    """
     template_name = 'atcore/resources/tabs/summary_tab.html'
     post_load_callback = "summary_tab_loaded"
     js_requirements = ResourceTab.js_requirements + [

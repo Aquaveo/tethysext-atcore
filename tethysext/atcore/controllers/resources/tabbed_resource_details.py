@@ -32,13 +32,11 @@ class TabbedResourceDetails(ResourceDetails):
     template_name = 'atcore/resources/tabbed_resource_details.html'
     css_requirements = [
         'atcore/css/center.css',
-        'atcore/css/flat-modal.css',
         'atcore/app_users/css/app_users.css',
         'atcore/app_users/css/resource_details.css'
     ]
     js_requirements = [
         'atcore/js/enable-tabs.js',
-        'atcore/js/enable-tooltips.js',
         'atcore/js/csrf.js',
         'atcore/resources/lazy_load_tabs.js'
     ]
@@ -92,7 +90,7 @@ class TabbedResourceDetails(ResourceDetails):
             'tabs': tabs,
             'active_tab': tab_slug,
             'css_requirements': css_requirements,
-            'js_requirements': js_requirements
+            'js_requirements': js_requirements,
         }
 
         context = self.get_context(request, context)
@@ -224,6 +222,15 @@ class TabbedResourceDetails(ResourceDetails):
         css_requirements = []
         js_requirements = []
 
+        # Add unique requirements from self
+        for css_requirement in self.css_requirements:
+            if css_requirement not in css_requirements:
+                css_requirements.append(css_requirement)
+
+        for js_requirement in self.js_requirements:
+            if js_requirement not in js_requirements:
+                js_requirements.append(js_requirement)
+
         # Add unique requirements from tabs
         for tab in tabs:
             tab_view = tab.get('view')
@@ -234,15 +241,6 @@ class TabbedResourceDetails(ResourceDetails):
             for js_requirement in tab_view.js_requirements:
                 if js_requirement not in js_requirements:
                     js_requirements.append(js_requirement)
-
-        # Add unique requirements from self
-        for css_requirement in self.css_requirements:
-            if css_requirement not in css_requirements:
-                css_requirements.append(css_requirement)
-
-        for js_requirement in self.js_requirements:
-            if js_requirement not in js_requirements:
-                js_requirements.append(js_requirement)
 
         return css_requirements, js_requirements
 

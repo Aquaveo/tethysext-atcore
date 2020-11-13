@@ -3,7 +3,6 @@
  * DATE:    August 8, 2018
  * AUTHOR:  nswain
  * COPYRIGHT: (c) Aquaveo 2018
- * LICENSE:
  *****************************************************************************/
 
 /*****************************************************************************
@@ -53,7 +52,6 @@ let LAZY_LOAD_TABS = (function() {
         let tab_content = get_tab_content_from_tab(this);
         let tab_name = get_tab_name_from_tab(this);
 
-        m_active_tab = tab_name;
         set_url_to_tab(tab_name);
 
         // Skip load if tab is already loaded
@@ -79,6 +77,7 @@ let LAZY_LOAD_TABS = (function() {
         let url = window.location.href;
         let old_path = window.location.pathname;
         let new_path = old_path.replace(m_active_tab, tab);
+        m_active_tab = tab;
 
         let state = null;
         if (old_path !== new_path) {

@@ -36,20 +36,6 @@ class ResourceDetails(ResourceViewMixin):
     http_method_names = ['get']
     resource_workflows = None
 
-    @abstractmethod
-    def get_map_manager(self):
-        """
-        Map manager for resource
-        """
-        pass
-
-    @abstractmethod
-    def get_spatial_manager(self):
-        """
-        Get model spatial manager
-        """
-        pass
-
     def get(self, request, *args, **kwargs):
         """
         Route get requests.
@@ -104,6 +90,7 @@ class ResourceDetails(ResourceViewMixin):
         Returns:
             dict: context
         """
+        # TODO: move to method on tabs that is called by tabbed view to add additional context items for root view.
         if self.resource_workflows is not None:
             context.update({'workflow_types': self.resource_workflows})
         return context

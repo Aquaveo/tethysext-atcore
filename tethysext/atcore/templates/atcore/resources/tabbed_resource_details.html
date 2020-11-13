@@ -40,8 +40,7 @@
   {% endfor %}
 </div>
 
-<div id="lazy-load-config"
-     data-active-tab="{{ active_tab }}"></div>
+<div id="lazy-load-config" data-active-tab="{{ active_tab }}"></div>
 
 {% endblock %}
 
@@ -53,7 +52,7 @@
 
 {% block after_app_content %}
   {% for tab in tabs %}
-    {% for modal_template in tab.view.modal_tamplates %}
+    {% for modal_template in tab.view.modal_templates %}
       {% include modal_template %}
     {% endfor %}
   {% endfor %}

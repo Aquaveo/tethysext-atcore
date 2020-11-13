@@ -8,3 +8,4 @@
 """
 from .resource_tab import ResourceTab
 from .summary_tab import ResourceSummaryTab
+from .workflows_tab import ResourceWorkflowsTab
