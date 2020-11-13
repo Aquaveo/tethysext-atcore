@@ -25,4 +25,3 @@ COLOR_RAMPS = {
                     "#c5d96d", "#ebdc78"],
 
     }
-
