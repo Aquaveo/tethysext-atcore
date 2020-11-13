@@ -2,7 +2,7 @@ import os
 import shutil
 import uuid
 
-from tethysext.atcore.exceptions import UnboundFileCollectionError
+from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError
 from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -362,3 +362,104 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
 
         for file in collection_client.files:
             self.assertTrue(os.path.exists(os.path.join(new_collection_path, file)))
+
+    def test_add_item(self):
+        """Test exporting a collection."""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item')
+        files_dir = os.path.join(root_dir, 'files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client.add_item(os.path.join(files_dir, 'file1.txt'))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
+        self.assertTrue(os.path.exists(os.path.join(files_dir, 'file1.txt')))
+
+    def test_add_item_dir(self):
+        """Test exporting a collection."""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item_dir')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item_dir')
+        files_dir = os.path.join(root_dir, 'files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client.add_item(os.path.join(files_dir, 'dir1'))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'file1.txt')))
+        self.assertTrue(os.path.exists(os.path.join(files_dir, 'dir1', 'file1.txt')))
+
+    def test_add_item_in_collection(self):
+        """Test exporting a collection."""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item_in_collection')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item_in_collection')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        with self.assertRaises(FileExistsError) as exc:
+            collection_client.add_item(os.path.join(collection_client.path, 'file1.txt'))
+        self.assertTrue('Item to be added must not already be contained in the FileCollection.' in str(exc.exception))
+
+    def test_add_item_no_file(self):
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item_no_file')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item_no_file')
+        files_dir = os.path.join(root_dir, 'files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        with self.assertRaises(FileNotFoundError) as exc:
+            collection_client.add_item(os.path.join(files_dir, 'dir1', 'file1.txt'))
+        self.assertTrue('Item to be added does not exist.' in str(exc.exception))
+
+    def test_add_item_move(self):
+        """Test exporting a collection."""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item_move')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item_move')
+        files_dir = os.path.join(root_dir, 'files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client.add_item(os.path.join(files_dir, 'file1.txt'), move=True)
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
+        self.assertFalse(os.path.exists(os.path.join(files_dir, 'file1.txt')))
+
+    def test_bad_collection_client(self):
+        """Test Generating a FileCollectionClient from and existing FileCollection."""
+        collection_id = uuid.UUID('{4b62335d-5b43-4e3b-bba7-07cd88cc2205}')
+        database_client = FileCollectionClient(self.session, collection_id)
+        with self.assertRaises(FileCollectionNotFoundError) as exc:
+            _ = database_client.instance
+        self.assertTrue(f'FileCollection with id "{str(collection_id)}" not found.' in str(exc.exception))
