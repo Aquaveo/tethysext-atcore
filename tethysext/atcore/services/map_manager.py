@@ -229,22 +229,27 @@ class MapManagerBase(object):
         if env:
             params['ENV'] = env
 
-        if color_ramp_division_kwargs:
-            color_ramp_divisions = self.generate_custom_color_ramp_divisions(**color_ramp_division_kwargs)
-            if 'ENV' in params.keys():
-                params['ENV'] += self.build_param_string(**color_ramp_divisions)
-            else:
-                params['ENV'] = self.build_param_string(**color_ramp_divisions)
         # Build options
         options = {
             'url': endpoint,
             'params': params,
             'serverType': 'geoserver',
             'crossOrigin': 'anonymous',
-            'minimum': color_ramp_division_kwargs['min_value'],
-            'maximum': color_ramp_division_kwargs['max_value'],
-            'color_ramp': color_ramp_division_kwargs['color_ramp'],
         }
+
+        if color_ramp_division_kwargs:
+            # Add color ramp options
+            options['minimum'] = color_ramp_division_kwargs['min_value']
+            options['maximum'] = color_ramp_division_kwargs['max_value']
+            if 'color_ramp' in color_ramp_division_kwargs.keys():
+                options['color_ramp'] = color_ramp_division_kwargs['color_ramp']
+
+            # Create color ramp and add them to ENV
+            color_ramp_divisions = self.generate_custom_color_ramp_divisions(**color_ramp_division_kwargs)
+            if 'ENV' in params.keys():
+                params['ENV'] += self.build_param_string(**color_ramp_divisions)
+            else:
+                params['ENV'] = self.build_param_string(**color_ramp_divisions)
 
         layer_source = 'TileWMS' if tiled else 'ImageWMS'
 
