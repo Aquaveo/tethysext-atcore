@@ -12,8 +12,9 @@ import uuid
 
 from sqlalchemy.orm.session import Session
 
+from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabaseNotFoundError, UnboundFileDatabaseError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
-from tethysext.atcore.models.file_database import FileDatabase, FileCollectionClient
+from tethysext.atcore.models.file_database import FileCollection, FileDatabase, FileCollectionClient
 
 log = logging.getLogger('tethys.' + __name__)
 
@@ -25,6 +26,7 @@ class FileDatabaseClient(MetaMixin):
         self._instance = None
         self._session = session
         self._path = None
+        self.__deleted = False
 
     @classmethod
     def new(cls, session: Session, root_directory: str, meta: dict = None) -> 'FileDatabaseClient':
@@ -52,8 +54,12 @@ class FileDatabaseClient(MetaMixin):
     @property
     def instance(self) -> FileDatabase:
         """Property to get the underlying instance so it can be lazy loaded."""
+        if self.__deleted:
+            raise UnboundFileDatabaseError('The file database has been deleted.')
         if not self._instance:
             self._instance = self._session.query(FileDatabase).get(self._database_id)
+            if self._instance is None:
+                raise FileDatabaseNotFoundError(f'FileDatabase with id "{str(self._database_id)}" not found.')
         return self._instance
 
     @property
@@ -82,7 +88,17 @@ class FileDatabaseClient(MetaMixin):
         Returns:
             The FileCollectionClient for the FileCollection.
         """
-        raise NotImplementedError("WRITE THIS FUNCTION")
+        collection_query = self._session.query(FileCollection).filter_by(
+            id=collection_id, file_database_id=self.instance.id
+        )
+        if collection_query.count() == 0:
+            raise FileCollectionNotFoundError(f'Collection with id "{str(collection_id)}" could not '
+                                              f'be found with this database.')
+        file_collection = collection_query.first()
+        collection_client = FileCollectionClient(
+            self._session, file_collection.id
+        )
+        return collection_client
 
     def new_collection(self, items: list = None, meta: dict = None) -> FileCollectionClient:
         """
@@ -95,7 +111,12 @@ class FileDatabaseClient(MetaMixin):
         Returns:
             A new FileCollectionClient object for the FileCollection.
         """
-        raise NotImplementedError("WRITE THIS FUNCTION")
+        meta = meta or dict()
+        items = items or list()
+        new_collection = FileCollectionClient.new(self._session, self.instance.id, meta)
+        for item in items:
+            new_collection.add_item(item)
+        return new_collection
 
     def delete_collection(self, collection_id: uuid.UUID) -> None:
         """
@@ -104,7 +125,8 @@ class FileDatabaseClient(MetaMixin):
         Args:
             collection_id (uuid.UUID): The id for the collection to be deleted.
         """
-        raise NotImplementedError("WRITE THIS FUNCTION")
+        file_collection = self.get_collection(collection_id)
+        file_collection.delete()
 
     def export_collection(self, collection_id: uuid.UUID, target: str) -> None:
         """
@@ -114,7 +136,8 @@ class FileDatabaseClient(MetaMixin):
             collection_id (uuid.UUID): The id for the file collection to be exported.
             target (str): Path to the target location.
         """
-        raise NotImplementedError("WRITE THIS FUNCTION")
+        file_collection = self.get_collection(collection_id)
+        file_collection.export(target)
 
     def duplicate_collection(self, collection_id: uuid.UUID) -> FileCollectionClient:
         """
@@ -126,4 +149,6 @@ class FileDatabaseClient(MetaMixin):
         Returns:
             A FileCollectionClient for the newly duplicated FileCollect
         """
-        raise NotImplementedError("WRITE THIS FUNCTION")
+        file_collection = self.get_collection(collection_id)
+        new_collection = file_collection.duplicate()
+        return new_collection

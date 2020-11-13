@@ -13,7 +13,7 @@ import uuid
 
 from sqlalchemy.orm.session import Session
 
-from tethysext.atcore.exceptions import UnboundFileCollectionError
+from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection
 
@@ -67,6 +67,8 @@ class FileCollectionClient(MetaMixin):
             raise UnboundFileCollectionError('The collection has been deleted.')
         if not self._instance:
             self._instance = self._session.query(FileCollection).get(self._collection_id)
+            if self._instance is None:
+                raise FileCollectionNotFoundError(f'FileCollection with id "{str(self._collection_id)}" not found.')
         return self._instance
 
     @property
@@ -126,3 +128,25 @@ class FileCollectionClient(MetaMixin):
         )
         self.export(duplicated_client.path)
         return duplicated_client
+
+    def add_item(self, item: str, move: bool = False) -> None:
+        """
+        Add an item to the file collection.
+
+        Args:
+            item: A path to the item to be added.
+            move: Move the file if True, otherwise just copy.
+        """
+        if not os.path.exists(item):
+            raise FileNotFoundError('Item to be added does not exist.')
+
+        if self.path in item:
+            raise FileExistsError('Item to be added must not already be contained in the FileCollection.')
+
+        if move:
+            shutil.move(item, self.path)
+        else:
+            if os.path.isdir(item):
+                shutil.copytree(item, os.path.join(self.path, os.path.split(item)[-1]))
+            else:
+                shutil.copy(item, self.path)

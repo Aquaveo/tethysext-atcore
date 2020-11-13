@@ -32,5 +32,9 @@ class UnboundFileDatabaseError(Exception):
     pass
 
 
-class FileCollectionNotFound(Exception):
+class FileCollectionNotFoundError(Exception):
+    pass
+
+
+class FileDatabaseNotFoundError(Exception):
     pass
