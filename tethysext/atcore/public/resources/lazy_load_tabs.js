@@ -59,8 +59,7 @@ let LAZY_LOAD_TABS = (function() {
         // Skip load if tab is already loaded
         if (tab_is_loaded(tab_name)) { return; }
 
-        let tab_url = m_get_tab_url_template
-            .replace('{tab}', tab_name);
+        let tab_url = '?load_tab=' + tab_name;
 
         $(tab_content).load(tab_url, function() {
             let callback = $(that).attr('data-callback');
@@ -128,7 +127,6 @@ let LAZY_LOAD_TABS = (function() {
     // Initialization: jQuery function that gets called when
     // the DOM tree finishes loading
     $(document).ready(function() {
-        console.log("Deprecation Warning: Use of this script is deprecated.");
         // Cache the js scripts that are fetched for tabs
         $.ajaxSetup({
           cache: true

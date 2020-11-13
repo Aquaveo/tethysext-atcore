@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import logging
+import warnings
 from django.shortcuts import render, reverse
 from django.http import HttpResponseNotFound, HttpResponse
 from tethys_sdk.permissions import permission_required, has_permission
@@ -98,6 +99,8 @@ class ResourceDetailsTabContent(ResourceDetails):
         Returns:
             HttpResponse: rendered template.
         """
+        warnings.warn("Use of the ResourceDetailsTabContent class is deprecated. "
+                      "Use TabbedResourceDetails instead.", DeprecationWarning)
         resource = context['resource']
         preview_image = self.preview_image(request, context)
         has_preview_image = preview_image is not None
@@ -149,7 +152,8 @@ class ResourceDetailsTabContent(ResourceDetails):
         Returns:
             HttpResponse: rendered template.
         """
-
+        warnings.warn("Use of the ResourceDetailsTabContent class is deprecated. "
+                      "Use TabbedResourceDetails instead.", DeprecationWarning)
         make_session = self.get_sessionmaker()
         session = make_session()
         _AppUser = self.get_app_user_model()
