@@ -57,13 +57,22 @@ class TabbedResourceDetails(ResourceDetails):
         """
         Handle GET requests.
         """
-        from django.shortcuts import HttpResponse
         # Reroute tab load requests to ResourceTabs
-        if request.GET and request.GET.get('load_tab', None):
+        if request.GET and request.GET.get('load-tab', None):
             return self._handle_load_tab_request(
                 request=request,
                 resource=resource,
-                tab_slug=request.GET.get('load_tab'),
+                tab_slug=request.GET.get('load-tab'),
+                *args, **kwargs
+            )
+
+        # Reroute tab action requests to ResourceTab methods
+        if request.GET and request.GET.get('tab-action', None):
+            return self._handle_tab_action_request(
+                request=request,
+                resource=resource,
+                tab_slug=tab_slug,
+                tab_action=request.GET.get('tab-action'),
                 *args, **kwargs
             )
 
@@ -101,24 +110,17 @@ class TabbedResourceDetails(ResourceDetails):
         Returns:
             HttpResponse: The tab HTML
         """
-        tabs = self.get_tabs(
+        TabView = self.get_tab_view(
             request=request,
             resource=resource,
             tab_slug=tab_slug,
             *args, **kwargs
         )
 
-        tab_view = None
+        if not TabView:
+            return HttpResponseNotFound(f'"{tab_slug}" is not a valid tab.')
 
-        for tab in tabs:
-            if tab.get('slug') == tab_slug:
-                tab_view = tab.get('view')
-                break
-
-        if not tab_view:
-            return HttpResponseNotFound('"{}" is not a valid tab.'.format(tab_slug))
-
-        tab_controller = tab_view.as_controller(
+        tab_controller = TabView.as_controller(
             _app=self._app,
             _AppUser=self._AppUser,
             _Organization=self._Organization,
@@ -137,11 +139,85 @@ class TabbedResourceDetails(ResourceDetails):
 
         return response
 
+    def _handle_tab_action_request(self, request, resource, tab_slug, tab_action, *args, **kwargs):
+        """
+        Route to the method on the ResourceTab method matching action value.
+        Args:
+            request (HttpRequest): The request.
+            resource (str): Resource instance.
+            tab_slug (str): Portion of URL that denotes which tab is active.
+            tab_action (str): Name of method to call to handle action (may use hyphens instead of underscores).
+
+        Returns:
+            HttpResponse: Response to action request.
+        """
+        TabView = self.get_tab_view(
+            request=request,
+            resource=resource,
+            tab_slug=tab_slug,
+            *args, **kwargs
+        )
+
+        if not TabView:
+            return HttpResponseNotFound(f'"{tab_slug}" is not a valid tab.')
+
+        view_instance = TabView(
+            _app=self._app,
+            _AppUser=self._AppUser,
+            _Organization=self._Organization,
+            _Resource=self._Resource,
+            _PermissionsManager=self._PermissionsManager,
+            _persistent_store_name=self._persistent_store_name,
+            base_template=self.base_template
+        )
+
+        # Get method matching action (e.g.: "a-tab-action" => "TabView.a_tab_action")
+        tab_method = tab_action.replace('-', '_')
+        action_handler = getattr(view_instance, tab_method, None)
+
+        if not action_handler:
+            return HttpResponseNotFound(f'"{tab_action}" is not a valid action for tab "{tab_slug}"')
+
+        response = action_handler(
+            request=request,
+            resource=resource,
+            tab_slug=tab_slug,
+            *args,  **kwargs
+        )
+
+        return response
+
+    def get_tab_view(self, request, resource, tab_slug, *args, **kwargs):
+        """
+        Retrieve tab view that matches given tab_slug.
+
+        Args:
+            request (HttpRequest): The request.
+            resource (str): Resource instance.
+            tab_slug (str): Portion of URL that denotes which tab is active.
+
+        Returns:
+            ResourceTabView: The ResourceTabView class or None if not found.
+        """
+        tabs = self.get_tabs(
+            request=request,
+            resource=resource,
+            tab_slug=tab_slug,
+            *args, **kwargs
+        )
+
+        for tab in tabs:
+            if tab.get('slug') == tab_slug:
+                return tab.get('view')
+
+        return None
+
     def build_static_requirements(self, tabs):
         """
         Build the static (css and js) requirement lists.
         Args:
-          tabs (iterable): List of ResourceTabViews.
+            tabs (iterable): List of ResourceTabViews.
+
         Returns:
             2-tuple: List of combined CSS requirements, List of combined JS requirements.
         """

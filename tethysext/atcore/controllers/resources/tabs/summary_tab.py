@@ -6,18 +6,26 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+from django.shortcuts import render
+
 from .resource_tab import ResourceTab
 
 
 class ResourceSummaryTab(ResourceTab):
-    template_name = 'atcore/templates/resources/tabs/summary_tab.html'
+    template_name = 'atcore/resources/tabs/summary_tab.html'
     post_load_callback = "summary_tab_loaded"
+    js_requirements = ResourceTab.js_requirements + [
+        'atcore/resources/summary_tab.js'
+    ]
+    has_preview_image = False
+    preview_image_title = "Preview"
 
-    def preview_image(self, request, resource, *args, **kwargs):
+    def get_preview_image_url(self, request, resource, *args, **kwargs):
         """
-        Preview image for summary tab
+        Define preview image URL for the summary tab.
 
-        Override this to get an image back, return a a tuple of (Image Title, URL)
+        Returns:
+            str: the image URL.
         """
         return None
 
@@ -42,11 +50,9 @@ class ResourceSummaryTab(ResourceTab):
         """
         Build context for Summary Tab template.
         """
-        preview_image = self.preview_image(request, context)
-        has_preview_image = preview_image is not None
-        context['has_preview_image'] = has_preview_image
-        if has_preview_image:
-            context['preview_image_title'] = preview_image[0]
+        if self.has_preview_image:
+            context['has_preview_image'] = self.has_preview_image
+            context['preview_image_title'] = self.preview_image_title
 
         general_summary_tab_info = ('Description', {'Name': resource.name, 'Description': resource.description,
                                                     'Created By': resource.created_by,
@@ -75,3 +81,21 @@ class ResourceSummaryTab(ResourceTab):
         context['columns'] = summary_tab_info
 
         return context
+
+    def load_summary_tab_preview_image(self, request, resource, *args, **kwargs):
+        """
+        Render the summary tab preview image.
+
+        Returns:
+            HttpResponse: rendered template.
+        """
+        preview_map_url = self.get_preview_image_url(
+            request=request,
+            resource=resource
+        )
+
+        context = {
+            'preview_title': self.preview_image_title,
+            'preview_map_url': preview_map_url
+        }
+        return render(request, 'atcore/resources/tabs/summary_preview_image.html', context)

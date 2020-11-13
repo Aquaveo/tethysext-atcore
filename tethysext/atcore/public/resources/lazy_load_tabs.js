@@ -59,7 +59,7 @@ let LAZY_LOAD_TABS = (function() {
         // Skip load if tab is already loaded
         if (tab_is_loaded(tab_name)) { return; }
 
-        let tab_url = '?load_tab=' + tab_name;
+        let tab_url = '?load-tab=' + tab_name;
 
         $(tab_content).load(tab_url, function() {
             let callback = $(that).attr('data-callback');
