@@ -10,6 +10,7 @@ import os
 import logging
 import uuid
 
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabaseNotFoundError, UnboundFileDatabaseError
@@ -88,13 +89,13 @@ class FileDatabaseClient(MetaMixin):
         Returns:
             The FileCollectionClient for the FileCollection.
         """
-        collection_query = self._session.query(FileCollection).filter_by(
-            id=collection_id, file_database_id=self.instance.id
-        )
-        if collection_query.count() == 0:
+        try:
+            file_collection = self._session.query(FileCollection).filter_by(
+                id=collection_id, file_database_id=self.instance.id
+            ).one()
+        except NoResultFound:
             raise FileCollectionNotFoundError(f'Collection with id "{str(collection_id)}" could not '
                                               f'be found with this database.')
-        file_collection = collection_query.first()
         collection_client = FileCollectionClient(
             self._session, file_collection.id
         )
