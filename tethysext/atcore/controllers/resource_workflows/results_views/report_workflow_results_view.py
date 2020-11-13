@@ -89,9 +89,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 # Get layer params
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
-
                     if not layer_type or layer_type not in ['geojson', 'wms']:
-                        log.warning('Unsupported layer type will be skipped: {}'.format(layer))
+                        log.warning(f'Unsupported layer type will be skipped: {layer_type}')
                         continue
 
                     result_layer = None
@@ -104,14 +103,14 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                     if result_layer:
                         # Update env param
                         params = ""
-                        if 'params' in result_layer['options'].keys():
-                            params = result_layer['options']['params']
+                        if 'params' in result_layer.options.keys():
+                            params = result_layer.options['params']
                         if params:
                             if 'TILED' in params.keys():
                                 params.pop('TILED')
                             if 'TILESORIGIN' in params.keys():
                                 params.pop('TILESORIGIN')
-                        result_layer['options']['params'] = params
+                        result_layer.options['params'] = params
 
                         # Build Legend
                         legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))

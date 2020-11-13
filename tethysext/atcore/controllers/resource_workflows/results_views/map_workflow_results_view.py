@@ -243,16 +243,13 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         return title, data, layout
 
     def update_result_layer(self, request, session, resource, *args, **kwargs):
+        """
+        Update color ramp of a layer in the result. In the future, we can add more things to update here.
+        """
         # Get Managers Hook
-        model_db, map_manager = self.get_managers(
-            request=request,
-            resource=resource,
-            *args, **kwargs
-        )
         result = self.get_result(request, kwargs['result_id'], session)
         layer_id = json.loads(request.POST.get('layer_id'))
         color_ramp = json.loads(request.POST.get('color_ramp'))
 
         result.update_layer(layer_id=layer_id, color_ramp=color_ramp)
-
         return JsonResponse({'success': True})
