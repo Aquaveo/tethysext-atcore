@@ -78,7 +78,7 @@ let LAZY_LOAD_TABS = (function() {
     set_url_to_tab = function (tab, reload) {
         let url = window.location.href;
         let old_path = window.location.pathname;
-        let new_path = m_tab_page_url_template.replace("{tab}", tab);
+        let new_path = old_path.replace(m_active_tab, tab);
 
         let state = null;
         if (old_path !== new_path) {
@@ -94,15 +94,8 @@ let LAZY_LOAD_TABS = (function() {
     };
 
     restore_tab_from_url = function (e) {
-        let pattern_parts = m_tab_page_url_template.split("{tab}");
-        let tab_name = window.location.pathname;
-        for (var i = 0; i < pattern_parts.length; i++) {
-            tab_name = tab_name.replace(pattern_parts[i], '');
-        }
-        tab_name = tab_name.replace('/', '');
-
-        if (tab_name) {
-            $('a[href="#' + tab_name + '"]').trigger('click');
+        if (m_active_tab) {
+            $('a[href="#' + m_active_tab + '"]').trigger('click');
         } else {
             $('a[href="#' + m_default_tab + '"]').trigger('click');
         }
@@ -138,12 +131,7 @@ let LAZY_LOAD_TABS = (function() {
         // Derive default tab from active class or first
         let default_tab = cur_active.length ? cur_active : $(".lazy-load-tab").first();
         m_default_tab = get_tab_name_from_tab(default_tab);
-        // Derive active tab from url pattern or default
         m_active_tab = config.attr('data-active-tab');
-        // e.g.: /apps/foo/resources/346e3988-6fe3-48a3-ab9d-4c67258ea43e/details/{tab}/
-        m_tab_page_url_template = decodeURI(config.attr('data-tab-page-url-template'));
-        // e.g.: /aps/foo/resources/346e3988-6fe3-48a3-ab9d-4c67258ea43e/get-tab/{tab}/
-        m_get_tab_url_template = decodeURI(config.attr('data-get-tab-url-template'));
         m_loaded_tabs = [];
 
         // Bind tab loading

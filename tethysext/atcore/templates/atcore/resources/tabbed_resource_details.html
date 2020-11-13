@@ -19,7 +19,8 @@
 <!-- Tabs -->
 <ul class="nav nav-tabs" role="tablist">
   {% for tab in tabs %}
-  <li role="presentation" class="lazy-load-tab" data-callback="{{ tab.view.post_load_callback }}">
+  <li role="presentation" class="lazy-load-tab"
+      data-callback="{{ tab.view.post_load_callback }}">
     <a href="#{{ tab.slug }}"
        aria-controls="tab.slug"
        role="tab"
@@ -40,8 +41,7 @@
 </div>
 
 <div id="lazy-load-config"
-     data-tab-page-url-template="{% url 'agwa:app_users_resource_details' resource.id %}{tab}/"
-     data-get-tab-url-template="{% url 'agwa:app_users_resource_details' resource.id %}{tab}/"></div>
+     data-active-tab="{{ active_tab }}"></div>
 
 {% endblock %}
 
