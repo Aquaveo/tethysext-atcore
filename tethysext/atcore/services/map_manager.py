@@ -588,16 +588,13 @@ class MapManagerBase(object):
         for i in range(min_div, max_div + 1):
             divisions[f'{prefix}{i}'] = f"{(m * i + b):.{value_precision}f}"
 
-            # is_color_ramp check if the string belongs to COLOR_RAMPS dictionary.
-            is_color_ramp = isinstance(color_ramp, str) and color_ramp in self.COLOR_RAMPS.keys()
-
-            if is_color_ramp:
+            if color_ramp in self.COLOR_RAMPS.keys():
                 divisions[f'{color_prefix}{i}'] =\
-                    f"{self.COLOR_RAMPS[color_ramp][(i - 1) % len(self.COLOR_RAMPS[color_ramp])]}"
+                    f"{self.COLOR_RAMPS[color_ramp][(i - first_division) % len(self.COLOR_RAMPS[color_ramp])]}"
             else:
                 # use default color ramp
                 divisions[f'{color_prefix}{i}'] =\
-                    f"{self.COLOR_RAMPS['Default'][(i - 1) % len(self.COLOR_RAMPS['Default'])]}"
+                    f"{self.COLOR_RAMPS['Default'][(i - first_division) % len(self.COLOR_RAMPS['Default'])]}"
         return divisions
 
     def get_plot_for_layer_feature(self, layer_name, feature_id):

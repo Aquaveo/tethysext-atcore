@@ -11,17 +11,17 @@
         <sld:Rule>
           <sld:RasterSymbolizer>
             <sld:ColorMap>
-              <sld:ColorMapEntry color="${env('color0','#9EACFF')}" opacity="0" quantity="${env('val_no_data',0)}" label="nodata"/>
-              <sld:ColorMapEntry color="${env('color1','#8F9BF5')}" quantity="${env('val1',0.1)}" label="Low"/>
-              <sld:ColorMapEntry color="${env('color2','#808BEC')}" quantity="${env('val2',1)}"/>
-              <sld:ColorMapEntry color="${env('color3','#717BE2')}" quantity="${env('val3',5)}"/>
-              <sld:ColorMapEntry color="${env('color4','#636BD9')}" quantity="${env('val4',10)}"/>
-              <sld:ColorMapEntry color="${env('color5','#545BCF')}" quantity="${env('val5',25)}"/>
-              <sld:ColorMapEntry color="${env('color6','#454BC6')}" quantity="${env('val6',50)}"/>
-              <sld:ColorMapEntry color="${env('color7','#373BBC')}" quantity="${env('val7',100)}"/>
-              <sld:ColorMapEntry color="${env('color8','#282BB3')}" quantity="${env('val8',200)}"/>
-              <sld:ColorMapEntry color="${env('color9','#191BA9')}" quantity="${env('val9',500)}"/>
-              <sld:ColorMapEntry color="${env('color10','#0B0BA0')}" quantity="${env('val10',1000)}"  label="High"/>
+              <sld:ColorMapEntry color="${env('color0','#fff100')}" opacity="0" quantity="${env('val_no_data',0)}" label="nodata"/>
+              <sld:ColorMapEntry color="${env('color1','#fff100')}" quantity="${env('val1',0.1)}" label="Low"/>
+              <sld:ColorMapEntry color="${env('color2','#ff8c00')}" quantity="${env('val2',1)}"/>
+              <sld:ColorMapEntry color="${env('color3','#e81123')}" quantity="${env('val3',5)}"/>
+              <sld:ColorMapEntry color="${env('color4','#ec008c')}" quantity="${env('val4',10)}"/>
+              <sld:ColorMapEntry color="${env('color5','#68217a')}" quantity="${env('val5',25)}"/>
+              <sld:ColorMapEntry color="${env('color6','#00188f')}" quantity="${env('val6',50)}"/>
+              <sld:ColorMapEntry color="${env('color7','#00bcf2')}" quantity="${env('val7',100)}"/>
+              <sld:ColorMapEntry color="${env('color8','#00b294')}" quantity="${env('val8',200)}"/>
+              <sld:ColorMapEntry color="${env('color9','#009e49')}" quantity="${env('val9',500)}"/>
+              <sld:ColorMapEntry color="${env('color10','#bad80a')}" quantity="${env('val10',1000)}"  label="High"/>
             </sld:ColorMap>
             <sld:ContrastEnhancement/>
           </sld:RasterSymbolizer>
