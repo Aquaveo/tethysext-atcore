@@ -313,9 +313,8 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         self.assertTrue(new_file_collection is not None)
         self.assertDictEqual(collection_client.instance.meta, {'Key1': 'Val1', 'Key2': 'Val2'})
 
-    @mock.patch('tethysext.atcore.models.file_database.file_collection_client.FileCollectionClient.new')
-    @mock.patch('tethysext.atcore.models.file_database.file_collection_client.Session.commit')
-    def test_new_collection_fail_no_commit(self, mock_commit, mock_new_collection):
+    @mock.patch('tethysext.atcore.models.file_database.file_collection_client.FileCollectionClient.add_item')
+    def test_new_collection_fail_no_commit(self, mock_new_collection):
         """Test the new_collection function when something fails."""
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
         base_files_root_dir = os.path.join(self.test_files_base, 'test_new_collection_fail_no_commit')
@@ -328,11 +327,16 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         database_client = FileDatabaseClient(self.session, database_id)
-        mock_new_collection.side_effect = Exception('Mock Exception')
-        with self.assertRaises(Exception):
-            _ = database_client.new_collection()
-        # TODO: Fix this assert...
-        # self.assertFalse(mock_commit.called)
+        pre_count = self.session.query(FileCollection).count()
+        collection_files = [
+            os.path.join(root_dir, 'files', 'file1.txt'),
+            os.path.join(root_dir, 'files', 'dir1'),
+        ]
+        mock_new_collection.side_effect = FileNotFoundError('Mock Exception')
+        with self.assertRaises(FileNotFoundError):
+            _ = database_client.new_collection(items=collection_files)
+        post_count = self.session.query(FileCollection).count()
+        self.assertEqual(pre_count, post_count)
 
     def test_get_collection(self):
         """Test getting a collection."""
@@ -513,28 +517,6 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             database_client.duplicate_collection(collection_id)
         self.assertTrue(f'Collection with id "{str(collection_id)}" could not be found with '
                         f'this database.' in str(exc.exception))
-
-    @mock.patch('tethysext.atcore.models.file_database.file_collection_client.FileCollectionClient.new')
-    def test_duplicate_collection_fail_no_commit(self, mock_new_collection):
-        """Test duplicating collection fail doesn't commit."""
-        mock_new_collection.side_effect = Exception('Mock Exception')
-        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
-        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-        root_dir = os.path.join(self.test_files_base, 'test_duplicate_collection_fail_no_commit')
-        _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
-            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
-        )
-        _ = self.get_collection_instance(
-            collection_id=collection_id, database_id=database_id,
-            collection_meta={'TestKey1': 'TestVal1'}
-        )
-        database_client = FileDatabaseClient(self.session, database_id)
-        _ = FileDatabaseClient(self.session, collection_id)
-        with self.assertRaises(Exception):
-            _ = database_client.duplicate_collection(collection_id)
-        # TODO: Fix this assert...
-        # self.assertFalse(mock_commit.called)
 
     def test_delete_collection(self):
         """Test deleting a file collection"""

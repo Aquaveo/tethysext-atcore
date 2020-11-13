@@ -8,9 +8,9 @@
 """
 import os
 import logging
+from shutil import Error as ShutilErrors
 import uuid
 
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
 from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabaseNotFoundError, UnboundFileDatabaseError
@@ -89,15 +89,14 @@ class FileDatabaseClient(MetaMixin):
         Returns:
             The FileCollectionClient for the FileCollection.
         """
-        try:
-            file_collection = self._session.query(FileCollection).filter_by(
-                id=collection_id, file_database_id=self.instance.id
-            ).one()
-        except NoResultFound:
+        file_collection_count = self._session.query(FileCollection).filter_by(
+            id=collection_id, file_database_id=self.instance.id
+        ).count()
+        if file_collection_count != 1:
             raise FileCollectionNotFoundError(f'Collection with id "{str(collection_id)}" could not '
                                               f'be found with this database.')
         collection_client = FileCollectionClient(
-            self._session, file_collection.id
+            self._session, collection_id
         )
         return collection_client
 
@@ -116,7 +115,11 @@ class FileDatabaseClient(MetaMixin):
         items = items or list()
         new_collection = FileCollectionClient.new(self._session, self.instance.id, meta)
         for item in items:
-            new_collection.add_item(item)
+            try:
+                new_collection.add_item(item)
+            except (FileNotFoundError, FileExistsError, ShutilErrors) as exc:
+                new_collection.delete()
+                raise exc
         return new_collection
 
     def delete_collection(self, collection_id: uuid.UUID) -> None:
