@@ -530,15 +530,23 @@ class MapManagerBase(object):
         layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
         if ":" in legend_key:
             legend_key = legend_key.replace(":", "_")
+
+        if 'color_ramp' in layer['color_ramp_division_kwargs'].keys():
+            color_ramp = layer['color_ramp_division_kwargs']['color_ramp']
+        else:
+            color_ramp = 'Default'
+
+        min_value = layer['color_ramp_division_kwargs']['min_value']
+        max_value = layer['color_ramp_division_kwargs']['max_value']
         legend_info = {
             'legend_id': legend_key,
             'title': layer['layer_title'].replace("_", " "),
             'divisions': dict(),
             'color_list': self.COLOR_RAMPS.keys(),
             'layer_id': layer_id,
-            'color_ramp': layer['color_ramp_division_kwargs']['color_ramp'],
-            'min_value': layer['color_ramp_division_kwargs']['min_value'],
-            'max_value': layer['color_ramp_division_kwargs']['max_value'],
+            'color_ramp': color_ramp,
+            'min_value': min_value,
+            'max_value': max_value,
             'units': units,
         }
 

@@ -8,6 +8,7 @@
 """
 import copy
 import uuid
+from collections import OrderedDict
 from unittest import mock
 import unittest
 from tethys_gizmos.gizmo_options import MVLayer
@@ -1218,3 +1219,65 @@ class MapManagerBaseTests(unittest.TestCase):
         ret = self.map_manager.get_plot_for_layer_feature(layer_name='layer1', feature_id='F001')
         self.assertEqual('F001', ret[1][0]['name'])
         self.assertEqual('layer1', ret[2]['xaxis']['title'])
+
+    @mock.patch.dict('tethysext.atcore.services.map_manager.MapManagerBase.COLOR_RAMPS', values={'Default': ''}, clear=True)  # noqa: E501
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.generate_custom_color_ramp_divisions')
+    def test_build_legend(self, mock_gccrd):
+        mock_gccrd.return_value = {'val1': '100', 'val2': '200', 'color1': '#fff100', 'color2': '#ff8c00'}
+        mock_COLOR_RAMPS = {'Default': ''}
+        mock_crd_kwargs = {'min_value': 100, 'max_value': 200, 'num_divisions': 2}
+        mock_layer = {
+            'layer_name': 'test:layer_name', 'layer_title': 'Test_Title', 'layer_variable': 'test:layer_variable',
+            'layer_id': '', 'viewparams': None, 'env': None, 'color_ramp_division_kwargs': mock_crd_kwargs
+        }
+
+        expected = {
+            'legend_id': 'test_layer_variable',
+            'title': 'Test Title',
+            'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
+            'color_list': mock_COLOR_RAMPS.keys(),
+            'layer_id': 'test:layer_name',
+            'color_ramp': 'Default',
+            'min_value': 100,
+            'max_value': 200,
+            'units': 'Ft',
+        }
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            model_db=self.model_db
+        )
+
+        ret = map_manager.build_legend(mock_layer, units='Ft')
+        self.assertEqual(ret, expected)
+
+    @mock.patch.dict('tethysext.atcore.services.map_manager.MapManagerBase.COLOR_RAMPS', values={'Default': ''}, clear=True)  # noqa: E501
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.generate_custom_color_ramp_divisions')
+    def test_build_legend_with_color_ramp(self, mock_gccrd):
+        mock_gccrd.return_value = {'val1': '100', 'val2': '200', 'color1': '#fff100', 'color2': '#ff8c00'}
+        mock_COLOR_RAMPS = {'Default': ''}
+        mock_crd_kwargs = {'min_value': 100, 'max_value': 200, 'num_divisions': 2, 'color_ramp': 'Default'}
+        mock_layer = {
+            'layer_name': 'test:layer_name', 'layer_title': 'Test_Title', 'layer_variable': 'test:layer_variable',
+            'layer_id': '', 'viewparams': None, 'env': None, 'color_ramp_division_kwargs': mock_crd_kwargs
+        }
+
+        expected = {
+            'legend_id': 'test_layer_variable',
+            'title': 'Test Title',
+            'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
+            'color_list': mock_COLOR_RAMPS.keys(),
+            'layer_id': 'test:layer_name',
+            'color_ramp': 'Default',
+            'min_value': 100,
+            'max_value': 200,
+            'units': 'Ft',
+        }
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            model_db=self.model_db
+        )
+
+        ret = map_manager.build_legend(mock_layer, units='Ft')
+        self.assertEqual(ret, expected)
