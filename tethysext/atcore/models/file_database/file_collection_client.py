@@ -191,6 +191,7 @@ class FileCollectionClient(MetaMixin):
             if os.path.exists(target):
                 if os.path.isdir(target):
                     # copy file to directory
+                    breakpoint()
                     shutil.copy(item_full_path, target)
                 else:
                     raise FileExistsError(f'Target already exists: "{target}"')
@@ -235,4 +236,5 @@ class FileCollectionClient(MetaMixin):
 
     def walk(self):
         """Walk through the files, and directories of the collection recursively."""
-        raise NotImplementedError("IMPLEMENT THIS FUNCTION")
+        for root, dirs, files in os.walk(self.path):
+            yield '.', dirs, files

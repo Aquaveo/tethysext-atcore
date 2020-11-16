@@ -34,7 +34,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
     def copy_files_to_temp_directory(root_dir, temp_dir):
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
-        shutil.copytree(root_dir, temp_dir)
+        shutil.copytree(root_dir, temp_dir, ignore=shutil.ignore_patterns('.keep'))
 
     def get_database_and_collection(self, database_id, root_directory, collection_id,
                                     database_meta=None, collection_meta=None):
@@ -476,6 +476,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(f'FileCollection with id "{str(collection_id)}" not found.' in str(exc.exception))
 
     def test_export_item_new_name(self):
+        """Test exporting an item with a new name."""
         test_dir_name = 'test_export_item_new_name'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -490,6 +491,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(exported_file))
 
     def test_export_item_does_not_exist(self):
+        """Test exporting an item that does not exist throws the correct error."""
         test_dir_name = 'test_export_item_does_not_exist'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -505,6 +507,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue('"file1.txt" not found in this collection.' in str(exc.exception))
 
     def test_export_item_to_directory(self):
+        """Test exporting a file to a non existent directory."""
         test_dir_name = 'test_export_item_new_name'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -519,6 +522,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(os.path.join(export_dir, 'file1.txt')))
 
     def test_export_directory(self):
+        """Test exporting a directory."""
         test_dir_name = 'test_export_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -533,7 +537,40 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(exported_directory))
         self.assertTrue(os.path.exists(os.path.join(exported_directory, 'file1.txt')))
 
+    def test_export_directory_already_exists(self):
+        """Test exporting a directory to one that exists throws the correct error."""
+        test_dir_name = 'test_export_directory_already_exists'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
+        os.makedirs(exported_directory)
+        with self.assertRaises(IsADirectoryError):
+            collection_client.export_item('dir1', exported_directory)
+
+    def test_export_file_to_existing_directory(self):
+        """Test exporting an item to a directory that exists."""
+        test_dir_name = 'test_export_file_to_existing_directory'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
+        os.makedirs(exported_directory)
+        collection_client.export_item('file1.txt', exported_directory)
+        self.assertTrue(os.path.exists(os.path.join(exported_directory, 'file1.txt')))
+
     def test_duplicate_item(self):
+        """Test duplicating and item."""
         test_dir_name = 'test_duplicate_item'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -547,6 +584,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'duplicated_file1.txt')))
 
     def test_duplicate_item_directory(self):
+        """Test duplicating a directory item."""
         test_dir_name = 'test_duplicate_item_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -560,6 +598,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'duplicated_dir')))
 
     def test_duplicate_item_does_not_exist(self):
+        """Test duplicating and item that does not exist throws the correct error."""
         test_dir_name = 'test_duplicate_item_does_not_exist'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -575,6 +614,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'duplicated_file2.txt')))
 
     def test_duplicate_item_directory_does_not_exist(self):
+        """Test duplicating and item that does not exist throws the correct error."""
         test_dir_name = 'test_duplicate_item_directory_does_not_exist'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -590,6 +630,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'duplicated_dir2')))
 
     def test_duplicate_item_already_exists(self):
+        """Test duplicating and item to a target that exists throws the correct error."""
         test_dir_name = 'test_duplicate_item_already_exists'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -604,6 +645,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue('Collection duplication target already exists.' in str(exc.exception))
 
     def test_delete_item(self):
+        """Test deleting an item."""
         test_dir_name = 'test_delete_item'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -617,6 +659,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
 
     def test_delete_item_does_not_exist(self):
+        """Test deleting an item that doesn't exist throws the correct error."""
         test_dir_name = 'test_delete_item_does_not_exist'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -631,6 +674,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue('"file2.txt" not found in this collection.' in str(exc.exception))
 
     def test_delete_item_directory(self):
+        """Test deleting an item directory."""
         test_dir_name = 'test_delete_item_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -644,6 +688,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1')))
 
     def test_delete_item_directory_does_not_exist(self):
+        """Test deleting a directory item that doesn't exist throws the correct error."""
         test_dir_name = 'test_delete_item_directory_does_not_exist'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -658,6 +703,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue('"dir1" not found in this collection.' in str(exc.exception))
 
     def test_open_file_read(self):
+        """Test opening a file for reading."""
         test_dir_name = 'test_open_file_read'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -672,6 +718,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             self.assertEqual('This text should be read from file.', file_text)
 
     def test_open_file_write(self):
+        """Test opening a file for writing."""
         test_dir_name = 'test_open_file_write'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -688,6 +735,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             self.assertEqual('This text should be written to file.', file_text)
 
     def test_open_file_does_not_exist(self):
+        """Test opening a file that doesn't exist throws the correct error."""
         test_dir_name = 'test_open_file_does_not_exist'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -703,6 +751,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue('"file1.txt" not found in this collection.' in str(exc.exception))
 
     def test_open_file_directory(self):
+        """Test opening a directory throws an error."""
         test_dir_name = 'test_open_file_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
@@ -712,9 +761,40 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
         collection_client = FileCollectionClient(self.session, self.general_collection_id)
-        with self.assertRaises(IsADirectoryError) as exc:
+        with self.assertRaises(IsADirectoryError):
             with collection_client.open_file('dir1', 'r') as _:
                 pass
 
     def test_walk(self):
-        pass
+        """Test walking a collection."""
+        test_dir_name = 'test_walk'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        walk_output = [x for x in collection_client.walk()]
+        expected_walk_output = [
+            ('.', ['dir1'], ['file1.txt']),
+            ('.', ['dir2'], ['file2.txt']),
+            ('.', [], ['file3.txt']),
+        ]
+        self.assertListEqual(walk_output, expected_walk_output)
+
+    def test_walk_empty(self):
+        """Test walking an empty collection."""
+        test_dir_name = 'test_walk_empty'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        walk_output = [x for x in collection_client.walk()]
+        expected_walk_output = [('.', [], [])]
+        self.assertListEqual(walk_output, expected_walk_output)
