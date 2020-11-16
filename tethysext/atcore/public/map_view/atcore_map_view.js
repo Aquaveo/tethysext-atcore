@@ -1742,41 +1742,10 @@ var ATCORE_MAP_VIEW = (function() {
     reload_image_layer = function(id, division_string) {
         // Get THE layer and create a clone of it with new division string
         const existingImageryLayer = m_layers[id];
-
+        const params = existingImageryLayer.getSource().getParams()
+        params['ENV'] = division_string
         // Update division string in the env
-        existingImageryLayer.imageryProvider._resource._queryParameters['env'] = division_string;
-
-        const tile_wms = new Cesium.WebMapServiceImageryProvider({
-            url: existingImageryLayer.imageryProvider._resource._url,
-            layers: existingImageryLayer.imageryProvider._layers,
-            parameters:  existingImageryLayer.imageryProvider._resource._queryParameters,
-        });
-
-        // copy of existing layer data
-        const tethys_data = existingImageryLayer.tethys_data;
-        const legend_title = existingImageryLayer.legend_title;
-        const legend_classes = existingImageryLayer.legend_classes;
-        const legend_extent = existingImageryLayer.legend_extent;
-        const legend_extent_projection = existingImageryLayer.legend_extent_projection;
-        const feature_selection = existingImageryLayer.feature_selection;
-        const geometry_attribute = existingImageryLayer.geometry_attribute;
-
-        // Remove existing Layer
-        m_map.imageryLayers.remove(existingImageryLayer, true);
-
-        // Add new layer
-        let new_layer = m_map.imageryLayers.addImageryProvider(tile_wms);
-
-        // Appending existing data into new layer
-        new_layer['tethys_data'] = tethys_data;
-        new_layer['legend_title'] = legend_title;
-        new_layer['legend_classes'] = legend_classes;
-        new_layer['legend_extent'] = legend_extent;
-        new_layer['legend_extent_projection'] = legend_extent_projection;
-        new_layer['feature_selection'] = feature_selection;
-        new_layer['geometry_attribute'] = geometry_attribute;
-
-        m_layers[id] = new_layer;
+        existingImageryLayer.getSource().updateParams(params);
     }
 
     update_result_layer = function(layer_id, color_ramp) {
