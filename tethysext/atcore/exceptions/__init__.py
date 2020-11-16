@@ -36,5 +36,13 @@ class FileCollectionNotFoundError(Exception):
     pass
 
 
+class FileCollectionItemNotFoundError(Exception):
+    pass
+
+
 class FileDatabaseNotFoundError(Exception):
+    pass
+
+
+class FileCollectionItemAlreadyExistsError(Exception):
     pass

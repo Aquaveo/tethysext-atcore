@@ -2,7 +2,8 @@ import os
 import shutil
 import uuid
 
-from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError
+from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError, \
+    FileCollectionItemNotFoundError, FileCollectionItemAlreadyExistsError
 from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -24,6 +25,16 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..',
                          'files', 'file_collection_client_tests')
         )
+
+        # ID's to use for testing. Directories will need to be named this.
+        self.general_database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        self.general_collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+
+    @staticmethod
+    def copy_files_to_temp_directory(root_dir, temp_dir):
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        shutil.copytree(root_dir, temp_dir)
 
     def get_database_and_collection(self, database_id, root_directory, collection_id,
                                     database_meta=None, collection_meta=None):
@@ -463,3 +474,140 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         with self.assertRaises(FileCollectionNotFoundError) as exc:
             _ = database_client.instance
         self.assertTrue(f'FileCollection with id "{str(collection_id)}" not found.' in str(exc.exception))
+
+    def test_export_item_new_name(self):
+        test_dir_name = 'test_export_item_new_name'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        exported_file = os.path.join(root_dir, 'exported', 'exported_file.txt')
+        collection_client.export_item('file1.txt', exported_file)
+        self.assertTrue(os.path.exists(exported_file))
+
+    def test_export_item_does_not_exist(self):
+        test_dir_name = 'test_export_item_does_not_exist'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        exported_file = os.path.join(root_dir, 'exported', 'file1.txt')
+        with self.assertRaises(FileCollectionItemNotFoundError) as exc:
+            collection_client.export_item('file1.txt', exported_file)
+        self.assertTrue('"file1.txt" not found in this collection.' in str(exc.exception))
+
+    def test_export_item_to_directory(self):
+        test_dir_name = 'test_export_item_new_name'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        export_dir = os.path.join(root_dir, 'exported')
+        collection_client.export_item('file1.txt', export_dir)
+        self.assertTrue(os.path.exists(os.path.join(export_dir, 'file1.txt')))
+
+    def test_export_directory(self):
+        test_dir_name = 'test_export_directory'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
+        collection_client.export_item('file1.txt', exported_directory)
+        self.assertTrue(os.path.exists(exported_directory))
+        self.assertTrue(os.path.exists(os.path.join(exported_directory, 'file1.txt')))
+
+    def test_duplicate_item(self):
+        test_dir_name = 'test_duplicate_item'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client.duplicate_item('file1.txt', 'duplicated_file1.txt')
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'duplicated_file1.txt')))
+
+    def test_duplicate_item_directory(self):
+        test_dir_name = 'test_duplicate_item_directory'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client.duplicate_item('dir1', 'duplicated_dir')
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'duplicated_dir')))
+
+    def test_duplicate_item_does_not_exist(self):
+        test_dir_name = 'test_duplicate_item_does_not_exist'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(FileCollectionItemNotFoundError) as exc:
+            collection_client.duplicate_item('file2.txt', 'duplicated_file2.txt')
+        self.assertTrue('"file2.txt" not found in this collection.' in str(exc.exception))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'duplicated_file2.txt')))
+
+    def test_duplicate_item_directory_does_not_exist(self):
+        test_dir_name = 'test_duplicate_item_directory_does_not_exist'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(FileCollectionItemNotFoundError) as exc:
+            collection_client.duplicate_item('dir2', 'duplicated_dir2')
+        self.assertTrue('"dir2" not found in this collection.' in str(exc.exception))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'duplicated_dir2')))
+
+    def test_duplicate_item_already_exists(self):
+        test_dir_name = 'test_duplicate_item_already_exists'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(FileCollectionItemAlreadyExistsError) as exc:
+            collection_client.duplicate_item('file1.txt', 'duplicated_file1.txt')
+        self.assertTrue('Collection duplication target already exists.' in str(exc.exception))
+
+    def test_delete_item(self):
+        pass
+
+    def test_open_file(self):
+        pass
+
+    def test_walk(self):
+        pass
