@@ -695,40 +695,34 @@ class MapViewTests(SqlAlchemyTestCase):
         mv = MapView()
         mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
 
-        expected_result = '{"success": true, "response": "<ul class=\\"legend-list\\" data-collapsed=\\"false\\">\\n' \
-                          '  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        ' \
-                          '<p>0.1 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #f7fbff;\\">' \
-                          '</div>\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>1.2 </p>\\n        <div class=\\"color-box\\"' \
-                          ' style=\\"background-color: #deebf7;\\"></div>\\n      </li>\\n    </div>\\n  \\n    ' \
-                          '<div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        ' \
-                          '<p>2.3 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #c6dbef;\\">' \
-                          '</div>\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>3.4 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #9ecae1;\\"></div>\\n      </li>' \
-                          '\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>4.5 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #6baed6;\\"></div>\\n      </li>\\n' \
-                          '    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>5.6 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #4292c6;\\"></div>\\n      ' \
-                          '</li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>6.7 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #2171b5;\\"></div>\\n      </li>' \
-                          '\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>7.8 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #08519c;\\"></div>\\n      </li>\\n' \
-                          '    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>8.9 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #083582;\\"></div>\\n      ' \
-                          '</li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
-                          '<li class=\\"legend-list-item\\">\\n        <p>10.0 </p>\\n        ' \
-                          '<div class=\\"color-box\\" style=\\"background-color: #022259;\\"></div>\\n      </li>\\n' \
-                          '    </div>\\n  \\n</ul>", "div_id": "legend_div_id", ' \
-                          '"division_string": "val1:0.10;color1:#f7fbff;val2:1.20;color2:#deebf7;val3:2.30;' \
-                          'color3:#c6dbef;val4:3.40;color4:#9ecae1;val5:4.50;color5:#6baed6;val6:5.60;' \
-                          'color6:#4292c6;val7:6.70;color7:#2171b5;val8:7.80;color8:#08519c;val9:8.90;' \
-                          'color9:#083582;val10:10.00;color10:#022259", "layer_id": "layer_id"}'
+        expected_result = \
+            '{"success": true, "response": "<ul class=\\"legend-list\\" data-collapsed=\\"false\\">\\n  \\n    ' \
+            '<div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>0.1 </p>\\n        ' \
+            '<div class=\\"color-box\\" style=\\"background-color: #f7fbff;\\"></div>\\n      </li>\\n    </div>\\n  ' \
+            '\\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>1.2 </p>\\n' \
+            '        <div class=\\"color-box\\" style=\\"background-color: #deebf7;\\"></div>\\n      </li>\\n    ' \
+            '</div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        ' \
+            '<p>2.3 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #c6dbef;\\"></div>\\n      ' \
+            '</li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n' \
+            '        <p>3.4 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #9ecae1;\\"></div>' \
+            '\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
+            '<li class=\\"legend-list-item\\">\\n        <p>4.5 </p>\\n        <div class=\\"color-box\\" ' \
+            'style=\\"background-color: #6baed6;\\"></div>\\n      </li>\\n    </div>\\n  \\n    ' \
+            '<div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>5.6 </p>\\n        ' \
+            '<div class=\\"color-box\\" style=\\"background-color: #4292c6;\\"></div>\\n      </li>\\n    </div>\\n  ' \
+            '\\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>6.7 </p>\\n' \
+            '        <div class=\\"color-box\\" style=\\"background-color: #2171b5;\\"></div>\\n      </li>\\n' \
+            '    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        ' \
+            '<p>7.8 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #08519c;\\"></div>\\n      ' \
+            '</li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n' \
+            '        <p>8.9 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #083582;\\"></div>' \
+            '\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
+            '<li class=\\"legend-list-item\\">\\n        <p>10.0 </p>\\n        <div class=\\"color-box\\" ' \
+            'style=\\"background-color: #022259;\\"></div>\\n      </li>\\n    </div>\\n  \\n</ul>", "div_id": ' \
+            '"legend_div_id", "division_string": "val1:0.10;color1:#f7fbff;val2:1.20;color2:#deebf7;val3:2.30;' \
+            'color3:#c6dbef;val4:3.40;color4:#9ecae1;val5:4.50;color5:#6baed6;val6:5.60;' \
+            'color6:#4292c6;val7:6.70;color7:#2171b5;val8:7.80;color8:#08519c;val9:8.90;' \
+            'color9:#083582;val10:10.00;color10:#022259", "layer_id": "layer_id"}'
 
         response = mv.build_legend_item(mock_request, self.session, mock_resource)
         self.assertEqual(response.content.decode('utf-8'), expected_result)

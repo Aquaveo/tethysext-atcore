@@ -6,10 +6,6 @@ def print_success(statement):
     print('{}{}{}'.format('\033[92m', statement, '\033[0m'))
 
 
-def print_warning(statement):
-    print('{}{}{}'.format('\033[93m', statement, '\033[0m'))
-
-
 def print_info(statement):
     print('{}{}{}'.format('\033[94m', statement, '\033[0m'))
 

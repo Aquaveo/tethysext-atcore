@@ -145,7 +145,7 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
 
         mock_add_layer.assert_called_with(kwargs)
 
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.spatial_workflow_result.SpatialWorkflowResult.get_layer')
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.spatial_workflow_result.SpatialWorkflowResult.get_layer')  # noqa: E501
     @mock.patch('tethysext.atcore.models.resource_workflow_results.spatial_workflow_result.SpatialWorkflowResult._add_layer')  # noqa: E501
     def test_update_layer(self, mock_add_layer, mock_get_layer):
         layer_data = {'type': 'wms', 'endpoint': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
