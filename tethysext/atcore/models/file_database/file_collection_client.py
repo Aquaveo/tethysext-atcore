@@ -240,5 +240,5 @@ class FileCollectionClient(MetaMixin):
     def walk(self):
         """Walk through the files, and directories of the collection recursively."""
         for root, dirs, files in os.walk(self.path):
-            relative_root = root.replace(self.path, '.')
+            relative_root = os.path.relpath(root, start=self.path)
             yield relative_root, dirs, files

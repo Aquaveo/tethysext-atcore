@@ -521,9 +521,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_client.export_item('file1.txt', export_dir)
         self.assertTrue(os.path.exists(os.path.join(export_dir, 'file1.txt')))
 
-    def test_export_to_directory(self):
+    def test_export_directory(self):
         """Test exporting to a directory."""
-        test_dir_name = 'test_export_to_directory'
+        test_dir_name = 'test_export_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
@@ -533,7 +533,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         )
         collection_client = FileCollectionClient(self.session, self.general_collection_id)
         exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
-        collection_client.export_item('file1.txt', exported_directory)
+        collection_client.export_item('dir1', exported_directory)
         self.assertTrue(os.path.exists(exported_directory))
         self.assertTrue(os.path.exists(os.path.join(exported_directory, 'file1.txt')))
 
@@ -780,11 +780,27 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         walk_output = [x for x in collection_client.walk()]
         expected_walk_output = [
             ('.', ['dir1'], ['file1.txt']),
-            ('./dir1', ['dir3', 'dir2'], ['file2.txt']),
-            ('./dir1/dir3', [], ['file4.txt']),
-            ('./dir1/dir2', [], ['file3.txt']),
+            ('dir1', ['dir3', 'dir2'], ['file2.txt']),
+            ('dir1/dir3', [], ['file4.txt']),
+            ('dir1/dir2', [], ['file3.txt']),
         ]
         self.assertListEqual(walk_output, expected_walk_output)
+
+    def test_walk_and_open(self):
+        """Test walking a collection."""
+        test_dir_name = 'test_walk'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        for root, dirs, files in collection_client.walk():
+            for file in files:
+                with collection_client.open_file(os.path.join(root, file), 'r') as _:
+                    pass
 
     def test_walk_empty(self):
         """Test walking an empty collection."""
