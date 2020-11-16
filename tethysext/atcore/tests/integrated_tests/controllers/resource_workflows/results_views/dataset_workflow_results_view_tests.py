@@ -22,7 +22,7 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.has_permission')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.DatasetWorkflowResultView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
-    def test_get_context(self, mock_sup_get_context, mock_get_result, _):
+    def test_get_context(self, mock_sup_get_context, mock_get_result, mock_permission):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -39,8 +39,10 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_pandas_data.columns = ['foo', 'bar', 'baz']
         mock_result.name = 'bar'
         mock_result.datasets = [{
-            'dataset': mock_pandas_data
+            'dataset': mock_pandas_data,
+            'show_export_button': True,
         }]
+        mock_permission.return_value = True
         mock_options = mock.MagicMock()
         mock_result.options = mock_options
         data_table_options = {
@@ -53,6 +55,7 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
             'page_title': 'bar',
             'datasets': [{
                 'dataset': mock_pandas_data,
+                'show_export_button': True,
                 'data_table': {
                     'attributes': {},
                     'classes': '',
@@ -60,7 +63,7 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
                     'column_names': ['foo', 'bar', 'baz'],
                     'footer': False,
                     'datatable_options': {
-                        'dom': '""',
+                        'dom': '"Bfrtip"',
                         'data_table_kwargs': '{"foo": true}'
                     }
                 }

@@ -310,7 +310,7 @@ class MapView(ResourceView):
             resource=resource,
             *args, **kwargs
         )
-        div_id = json.loads(request.POST.get('div_id'))
+        legend_div_id = json.loads(request.POST.get('div_id'))
         minimum = json.loads(request.POST.get('minimum'))
         maximum = json.loads(request.POST.get('maximum'))
         color_ramp = json.loads(request.POST.get('color_ramp'))
@@ -332,11 +332,10 @@ class MapView(ResourceView):
 
         html_link = 'atcore/resource_workflows/components/map_view_color_ramp_component.html'
         context = {'legend': legend}
-
         html = render(request, html_link, context)
 
         response = str(html.content, 'utf-8')
-        return JsonResponse({'success': True, 'response': response, 'div_id': div_id,
+        return JsonResponse({'success': True, 'response': response, 'div_id': legend_div_id,
                              'division_string': division_string, 'layer_id': layer_id})
 
     def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
