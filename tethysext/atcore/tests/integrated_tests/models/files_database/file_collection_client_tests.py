@@ -604,7 +604,58 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue('Collection duplication target already exists.' in str(exc.exception))
 
     def test_delete_item(self):
-        pass
+        test_dir_name = 'test_delete_item'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client.delete_item('file1.txt')
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
+
+    def test_delete_item_does_not_exist(self):
+        test_dir_name = 'test_delete_item_does_not_exist'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(FileCollectionItemNotFoundError) as exc:
+            collection_client.delete_item('file2.txt')
+        self.assertTrue('"file2.txt" not found in this collection.' in str(exc.exception))
+
+    def test_delete_item_directory(self):
+        test_dir_name = 'test_delete_item_directory'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client.delete_item('dir1')
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1')))
+
+    def test_delete_item_directory_does_not_exist(self):
+        test_dir_name = 'test_delete_item_directory_does_not_exist'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(FileCollectionItemNotFoundError) as exc:
+            collection_client.delete_item('dir1')
+        self.assertTrue('"dir1" not found in this collection.' in str(exc.exception))
 
     def test_open_file(self):
         pass

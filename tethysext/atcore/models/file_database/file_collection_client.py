@@ -159,7 +159,14 @@ class FileCollectionClient(MetaMixin):
         Args:
             item (str): Path to the item to be deleted, relative to the collection.
         """
-        raise NotImplementedError("IMPLEMENT THIS FUNCTION")
+        item_path = os.path.join(self.path, item)
+        if not os.path.exists(item_path):
+            raise FileCollectionItemNotFoundError(f'"{item}" not found in this collection.')
+
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+        else:
+            os.remove(item_path)
 
     def export_item(self, item: str, target: str):
         """
