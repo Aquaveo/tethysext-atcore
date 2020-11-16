@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+from contextlib import contextmanager
 import os
 import shutil
 from typing import Generator
@@ -210,19 +211,27 @@ class FileCollectionClient(MetaMixin):
         except (FileExistsError, IsADirectoryError):
             raise FileCollectionItemAlreadyExistsError('Collection duplication target already exists.')
 
+    @contextmanager
     def open_file(self, file, *args, **kwargs):
         """
         Open a file in the collection for reading/writing.
 
         Args:
             file: The file to be opened, relative to the collection.
-            *args: Passed through to the file open function.
-            **kwargs: Passed through to the file open function.
+            args, kwargs: Additional arguments passed to open function.
 
         Returns:
             A handle to the file that has been opened.
         """
-        raise NotImplementedError("IMPLEMENT THIS FUNCTION")
+        item_path = os.path.join(self.path, file)
+        if not os.path.exists(item_path):
+            raise FileCollectionItemNotFoundError(f'"{file}" not found in this collection.')
+
+        f = open(item_path, *args, **kwargs)
+        try:
+            yield f
+        finally:
+            f.close()
 
     def walk(self):
         """Walk through the files, and directories of the collection recursively."""

@@ -657,8 +657,64 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             collection_client.delete_item('dir1')
         self.assertTrue('"dir1" not found in this collection.' in str(exc.exception))
 
-    def test_open_file(self):
-        pass
+    def test_open_file_read(self):
+        test_dir_name = 'test_open_file_read'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with collection_client.open_file('file1.txt', 'r') as f:
+            file_text = f.read()
+            self.assertEqual('This text should be read from file.', file_text)
+
+    def test_open_file_write(self):
+        test_dir_name = 'test_open_file_write'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with collection_client.open_file('file1.txt', 'w') as f:
+            file_text = f.write('This text should be written to file.')
+        with open(os.path.join(collection_client.path, 'file1.txt')) as of:
+            file_text = of.read()
+            self.assertEqual('This text should be written to file.', file_text)
+
+    def test_open_file_does_not_exist(self):
+        test_dir_name = 'test_open_file_does_not_exist'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(FileCollectionItemNotFoundError) as exc:
+            with collection_client.open_file('file1.txt', 'w') as _:
+                pass
+        self.assertTrue('"file1.txt" not found in this collection.' in str(exc.exception))
+
+    def test_open_file_directory(self):
+        test_dir_name = 'test_open_file_directory'
+        base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
+        root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
+        self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
+        _, collection_instance = self.get_database_and_collection(
+            database_id=self.general_database_id, collection_id=self.general_collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        with self.assertRaises(IsADirectoryError) as exc:
+            with collection_client.open_file('dir1', 'r') as _:
+                pass
 
     def test_walk(self):
         pass
