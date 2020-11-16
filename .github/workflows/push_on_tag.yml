@@ -19,12 +19,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set Env
       run: |
-        echo ::exportVariable name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
-        echo ::exportVariable name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
+        echo ::export-variable name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
+        echo ::export-variable name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
     - name: Set Tag
       run: |
-        echo ::exportVariable name=TAG::${GITHUB_REF:10}
-        echo ::exportVariable name=TAG_LATEST::latest
+        echo ::export-variable name=TAG::${GITHUB_REF:10}
+        echo ::export-variable name=TAG_LATEST::latest
     - name: Test Tag
       run: |
         echo $TAG
