@@ -191,12 +191,15 @@ class FileCollectionClient(MetaMixin):
             if os.path.exists(target):
                 if os.path.isdir(target):
                     # copy file to directory
-                    breakpoint()
                     shutil.copy(item_full_path, target)
                 else:
                     raise FileExistsError(f'Target already exists: "{target}"')
             else:
-                os.makedirs(target)
+                if os.path.splitext(target)[-1] == '':
+                    if not os.path.exists(target):
+                        os.makedirs(target)
+                else:
+                    os.makedirs(os.path.dirname(target), exist_ok=True)
                 shutil.copy(item_full_path, target)
 
     def duplicate_item(self, item, new_item):
@@ -237,4 +240,5 @@ class FileCollectionClient(MetaMixin):
     def walk(self):
         """Walk through the files, and directories of the collection recursively."""
         for root, dirs, files in os.walk(self.path):
-            yield '.', dirs, files
+            relative_root = root.replace(self.path, '.')
+            yield relative_root, dirs, files

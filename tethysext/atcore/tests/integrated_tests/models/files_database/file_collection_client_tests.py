@@ -508,7 +508,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
 
     def test_export_item_to_directory(self):
         """Test exporting a file to a non existent directory."""
-        test_dir_name = 'test_export_item_new_name'
+        test_dir_name = 'test_export_item_to_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
@@ -521,9 +521,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_client.export_item('file1.txt', export_dir)
         self.assertTrue(os.path.exists(os.path.join(export_dir, 'file1.txt')))
 
-    def test_export_directory(self):
-        """Test exporting a directory."""
-        test_dir_name = 'test_export_directory'
+    def test_export_to_directory(self):
+        """Test exporting to a directory."""
+        test_dir_name = 'test_export_to_directory'
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
@@ -655,6 +655,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
         collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
         collection_client.delete_item('file1.txt')
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
 
@@ -779,8 +780,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         walk_output = [x for x in collection_client.walk()]
         expected_walk_output = [
             ('.', ['dir1'], ['file1.txt']),
-            ('.', ['dir2'], ['file2.txt']),
-            ('.', [], ['file3.txt']),
+            ('./dir1', ['dir3', 'dir2'], ['file2.txt']),
+            ('./dir1/dir3', [], ['file4.txt']),
+            ('./dir1/dir2', [], ['file3.txt']),
         ]
         self.assertListEqual(walk_output, expected_walk_output)
 
