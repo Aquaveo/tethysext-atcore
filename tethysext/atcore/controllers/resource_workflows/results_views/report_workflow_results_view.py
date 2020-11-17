@@ -86,7 +86,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 plot_view = BokehView(**plot_view_params) if renderer == 'bokeh' else PlotlyView(**plot_view_params)
                 results.append({'plot': {'name': result.name, 'description': result.description, 'plot': plot_view}})
             elif isinstance(result, SpatialWorkflowResult):
-                # Get layer params
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
                     if not layer_type or layer_type not in ['geojson', 'wms']:
@@ -101,7 +100,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                     elif layer_type == 'wms':
                         result_layer = map_manager.build_wms_layer(**layer)
                     if result_layer:
-                        # Update env param
+                        # Get layer params
                         params = ""
                         if 'params' in result_layer.options.keys():
                             params = result_layer.options['params']
@@ -110,14 +109,14 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                                 params.pop('TILED')
                             if 'TILESORIGIN' in params.keys():
                                 params.pop('TILESORIGIN')
+
+                        # Update env param
                         result_layer.options['params'] = params
 
                         # Build Legend
                         legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))
 
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
-                        # Add layer to beginning the map's of layer list
-                        # map_view.layers.insert(0, result_layer)
                         # Append to final results list.
                         results.append({'map': {'name': result.name, 'description': result.description,
                                                 'legend': legend_info, 'map': result_layer}})

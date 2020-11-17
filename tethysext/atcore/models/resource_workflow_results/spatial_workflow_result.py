@@ -142,9 +142,9 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         self._add_layer(layer)
 
     def add_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, layer_id='', viewparams=None, env=None,
-                      color_ramp_division_kwargs=None, visible=True, public=True, tiled=True, selectable=False,
-                      plottable=False, has_action=False, extent=None, popup_title=None, excluded_properties=None,
-                      geometry_attribute='geometry'):
+                      visible=True, public=True, tiled=True, selectable=False, plottable=False, has_action=False,
+                      extent=None, popup_title=None, excluded_properties=None, geometry_attribute='geometry',
+                      color_ramp_division_kwargs=None):
         """
         Add a wms layer to display on the map of this result view.
 
@@ -156,7 +156,6 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
-            color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
             visible(bool): Layer is visible when True. Defaults to True.
             public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
             tiled(bool): Configure as tiled layer if True. Defaults to True.
@@ -166,10 +165,9 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             extent(list): Extent for the layer. Optional.
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
-            minimum(float): Minimum value of the wms layer
-            maximum(float): Maximum value of the wms layer
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
-        """  # noqa: E501\
+            color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
+        """  # noqa: E501
         layer = {
             'type': 'wms',
             'endpoint': endpoint,

@@ -89,7 +89,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         layer_groups = base_context['layer_groups']
         # Generate MVLayers for spatial data
         results_layers = []
-        legends_select_input = []
+        legends_select_inputs = []
         legends = []
         # Build MVLayers for map
         for layer in result.layers:
@@ -109,17 +109,19 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
             # build legend:
             legend = map_manager.build_legend(layer, units=result.options.get('units', ''))
-            legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
-            legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend( this, {legend['min_value']}, "
-                                        f"{legend['max_value']}, '{legend['prefix']}', '{legend['color_prefix']}', "
-                                        f"{legend['first_division']}, '{legend['layer_id']}' )"}
 
-            legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
-                                              options=legend_input_options,
-                                              initial=[legend['color_ramp']],
-                                              attributes=legend_attrs)
+            if legend:
+                legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
+                legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend( this, {legend['min_value']}, "
+                                            f"{legend['max_value']}, '{legend['prefix']}', '{legend['color_prefix']}', "
+                                            f"{legend['first_division']}, '{legend['layer_id']}' )"}
 
-            legends_select_input.append(legend_select_input)
+                legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
+                                                  options=legend_input_options,
+                                                  initial=[legend['color_ramp']],
+                                                  attributes=legend_attrs)
+
+                legends_select_inputs.append(legend_select_input)
             legends.append(legend)
 
             if result_layer:
@@ -139,8 +141,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             layer_groups.insert(0, results_layer_group)
 
         base_context.update({
-            'legends': zip(legends, legends_select_input),
-            'show_legends': self.show_legends,
+            'legends': list(zip(legends, legends_select_inputs)),
         })
         return base_context
 

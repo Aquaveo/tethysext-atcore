@@ -1453,7 +1453,7 @@ var ATCORE_MAP_VIEW = (function() {
         ];
     };
 
- 	// Geocode Methods
+ 	  // Geocode Methods
     init_geocode = function() {
         if (p_can_geocode) {
             // Add Geocode Control to OpenLayers controls container
@@ -1717,10 +1717,9 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
-    reload_legend = function (selectLegend, minimum, maximum, layer_id) {
-        const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
-        const color_ramp = selectLegend.value;
-        update_result_layer(layer_id, color_ramp);
+    reload_legend = function (select_legend, minimum, maximum, layer_id) {
+        const div_id = select_legend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+        const color_ramp = select_legend.value;
         $.ajax({
             type: 'POST',
             url: ".",
@@ -1734,6 +1733,7 @@ var ATCORE_MAP_VIEW = (function() {
                 'layer_id': JSON.stringify(layer_id),
             },
         }).done(function(data){
+            update_result_layer(`${data.layer_id}`, `${data.color_ramp}`);
             reload_image_layer(`${data.layer_id}`, data.division_string);
             $(`#${data.div_id}`).html(data.response);
         });
@@ -1741,11 +1741,11 @@ var ATCORE_MAP_VIEW = (function() {
 
     reload_image_layer = function(id, division_string) {
         // Get THE layer and create a clone of it with new division string
-        const existingImageryLayer = m_layers[id];
-        const params = existingImageryLayer.getSource().getParams()
+        const existing_imagery_layer = m_layers[id];
+        const params = existing_imagery_layer.getSource().getParams()
         params['ENV'] = division_string
         // Update division string in the env
-        existingImageryLayer.getSource().updateParams(params);
+        existing_imagery_layer.getSource().updateParams(params);
     }
 
     update_result_layer = function(layer_id, color_ramp) {

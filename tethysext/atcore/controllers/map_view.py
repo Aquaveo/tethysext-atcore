@@ -324,7 +324,10 @@ class MapView(ResourceView):
         }
 
         divisions = map_manager.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
-                                                                     color_ramp=color_ramp)
+                                                                     color_ramp=color_ramp, prefix=prefix,
+                                                                     color_prefix=color_prefix,
+                                                                     first_division=first_division)
+
         division_string = map_manager.build_param_string(**divisions)
         for label in divisions.keys():
             if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
@@ -340,7 +343,7 @@ class MapView(ResourceView):
         )
 
         response = str(html.content, 'utf-8')
-        return JsonResponse({'success': True, 'response': response, 'div_id': legend_div_id,
+        return JsonResponse({'success': True, 'response': response, 'div_id': legend_div_id, 'color_ramp': color_ramp,
                              'division_string': division_string, 'layer_id': layer_id})
 
     def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):

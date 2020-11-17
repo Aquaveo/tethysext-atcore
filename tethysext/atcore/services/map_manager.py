@@ -184,9 +184,9 @@ class MapManagerBase(object):
         return mv_layer
 
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
-                        color_ramp_division_kwargs='', visible=True, tiled=True, selectable=False,
-                        plottable=False, has_action=False, extent=None, public=True, geometry_attribute='geometry',
-                        layer_id='', excluded_properties=None, popup_title=None):
+                        visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
+                        public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
+                        popup_title=None, color_ramp_division_kwargs=''):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -197,7 +197,6 @@ class MapManagerBase(object):
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
-            color_ramp_division_kwargs(list): hexadecimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
             visible(bool): Layer is visible when True. Defaults to True.
             public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
             tiled(bool): Configure as tiled layer if True. Defaults to True.
@@ -208,7 +207,7 @@ class MapManagerBase(object):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
-            value_precision(int): significant digit or the legend.
+            color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
 
         Returns:
             MVLayer: the MVLayer object.
@@ -522,46 +521,48 @@ class MapManagerBase(object):
 
         Args:
             layer: result.layer object
+            units: unit for the legend.
         Returns:
             Legend data associate with the layer.
         """
+        legend_info = ""
+        if 'color_ramp_division_kwargs' in layer.keys():
+            legend_key = layer['layer_variable']
+            layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
+            if ":" in legend_key:
+                legend_key = legend_key.replace(":", "_")
 
-        legend_key = layer['layer_variable']
-        layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
-        if ":" in legend_key:
-            legend_key = legend_key.replace(":", "_")
+            div_kwargs = layer['color_ramp_division_kwargs']
+            min_value = div_kwargs['min_value']
+            max_value = div_kwargs['max_value']
+            color_ramp = div_kwargs['color_ramp'] if 'color_ramp' in div_kwargs.keys() else 'Default'
+            prefix = div_kwargs['prefix'] if 'prefix' in div_kwargs.keys() else 'val'
+            color_prefix = div_kwargs['color_prefix'] if 'color_prefix' in div_kwargs.keys() else 'color'
+            first_division = div_kwargs['first_division'] if 'first_division' in div_kwargs.keys() else 1
 
-        div_kwargs = layer['color_ramp_division_kwargs']
-        min_value = div_kwargs['min_value']
-        max_value = div_kwargs['max_value']
-        color_ramp = div_kwargs['color_ramp'] if 'color_ramp' in div_kwargs.keys() else 'Default'
-        prefix = div_kwargs['prefix'] if 'prefix' in div_kwargs.keys() else 'val'
-        color_prefix = div_kwargs['color_prefix'] if 'color_prefix' in div_kwargs.keys() else 'color'
-        first_division = div_kwargs['first_division'] if 'first_division' in div_kwargs.keys() else 1
+            legend_info = {
+                'legend_id': legend_key,
+                'title': layer['layer_title'].replace("_", " "),
+                'divisions': dict(),
+                'color_list': self.COLOR_RAMPS.keys(),
+                'layer_id': layer_id,
+                'min_value': min_value,
+                'max_value': max_value,
+                'color_ramp': color_ramp,
+                'prefix': prefix,
+                'color_prefix': color_prefix,
+                'first_division': first_division,
+                'units': units,
+            }
 
-        legend_info = {
-            'legend_id': legend_key,
-            'title': layer['layer_title'].replace("_", " "),
-            'divisions': dict(),
-            'color_list': self.COLOR_RAMPS.keys(),
-            'layer_id': layer_id,
-            'min_value': min_value,
-            'max_value': max_value,
-            'color_ramp': color_ramp,
-            'prefix': prefix,
-            'color_prefix': color_prefix,
-            'first_division': first_division,
-            'units': units,
-        }
+            divisions = self.generate_custom_color_ramp_divisions(**layer['color_ramp_division_kwargs'])
 
-        divisions = self.generate_custom_color_ramp_divisions(**layer['color_ramp_division_kwargs'])
-
-        for label in divisions.keys():
-            if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
-                legend_info['divisions'][float(divisions[label.replace(color_prefix, prefix)])] = divisions[label]
-        legend_info['divisions'] = collections.OrderedDict(
-            sorted(legend_info['divisions'].items())
-        )
+            for label in divisions.keys():
+                if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
+                    legend_info['divisions'][float(divisions[label.replace(color_prefix, prefix)])] = divisions[label]
+            legend_info['divisions'] = collections.OrderedDict(
+                sorted(legend_info['divisions'].items())
+            )
 
         return legend_info
 

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * FILE:    atcore_map_view.js
  * DATE:    October, 19, 2018
- * AUTHOR:  Nathan Swainf
+ * AUTHOR:  Nathan Swain
  * COPYRIGHT: (c) Aquaveo 2018
  * LICENSE:
  *****************************************************************************/
@@ -1878,10 +1878,9 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
-    reload_legend = function (selectLegend, minimum, maximum, prefix, color_prefix, first_division, layer_id) {
-        const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
-        const color_ramp = selectLegend.value;
-        update_result_layer(layer_id, color_ramp);
+    reload_legend = function (select_legend, minimum, maximum, prefix, color_prefix, first_division, layer_id) {
+        const div_id = select_legend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+        const color_ramp = select_legend.value;
         $.ajax({
             type: 'POST',
             url: ".",
@@ -1898,6 +1897,7 @@ var ATCORE_MAP_VIEW = (function() {
                 'layer_id': JSON.stringify(layer_id),
             },
         }).done(function(data){
+            update_result_layer(`${data.layer_id}`, `${data.color_ramp}`);
             reload_cesium_image_layer(`${data.layer_id}`, data.division_string);
             $(`#${data.div_id}`).html(data.response);
         });
@@ -1905,28 +1905,28 @@ var ATCORE_MAP_VIEW = (function() {
 
     reload_cesium_image_layer = function(id, division_string) {
         // Get THE layer and create a clone of it with new division string
-        const existingImageryLayer = m_layers[id];
+        const existing_imagery_layer = m_layers[id];
 
         // Update division string in the env
-        existingImageryLayer.imageryProvider._resource._queryParameters['env'] = division_string;
+        existing_imagery_layer.imageryProvider._resource._queryParameters['env'] = division_string;
 
         const tile_wms = new Cesium.WebMapServiceImageryProvider({
-            url: existingImageryLayer.imageryProvider._resource._url,
-            layers: existingImageryLayer.imageryProvider._layers,
-            parameters:  existingImageryLayer.imageryProvider._resource._queryParameters,
+            url: existing_imagery_layer.imageryProvider._resource._url,
+            layers: existing_imagery_layer.imageryProvider._layers,
+            parameters:  existing_imagery_layer.imageryProvider._resource._queryParameters,
         });
 
         // copy of existing layer data
-        const tethys_data = existingImageryLayer.tethys_data;
-        const legend_title = existingImageryLayer.legend_title;
-        const legend_classes = existingImageryLayer.legend_classes;
-        const legend_extent = existingImageryLayer.legend_extent;
-        const legend_extent_projection = existingImageryLayer.legend_extent_projection;
-        const feature_selection = existingImageryLayer.feature_selection;
-        const geometry_attribute = existingImageryLayer.geometry_attribute;
+        const tethys_data = existing_imagery_layer.tethys_data;
+        const legend_title = existing_imagery_layer.legend_title;
+        const legend_classes = existing_imagery_layer.legend_classes;
+        const legend_extent = existing_imagery_layer.legend_extent;
+        const legend_extent_projection = existing_imagery_layer.legend_extent_projection;
+        const feature_selection = existing_imagery_layer.feature_selection;
+        const geometry_attribute = existing_imagery_layer.geometry_attribute;
 
         // Remove existing Layer
-        m_map.imageryLayers.remove(existingImageryLayer, true);
+        m_map.imageryLayers.remove(existing_imagery_layer, true);
 
         // Add new layer
         let new_layer = m_map.imageryLayers.addImageryProvider(tile_wms);
