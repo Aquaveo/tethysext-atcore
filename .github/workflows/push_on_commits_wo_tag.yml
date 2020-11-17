@@ -150,7 +150,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . ${CONDA_HOME}/bin/activate tethys && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
+        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . /opt/conda/bin/activate tethys && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
 
   cleanup:
     needs: [build]
