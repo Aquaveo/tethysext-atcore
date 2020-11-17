@@ -151,7 +151,7 @@ jobs:
       run: |
         docker exec tethys_atcore bash -c "echo $ATCORE_TEST_DATABASE"
         docker exec tethys_atcore bash -c "echo $TETHYS_MANAGE"
-        docker exec tethys_atcore bash -c "conda run -n tethys cd /var/www/tethys/exts/tethysext-atcore && source ./ci-test.sh $TETHYS_MANAGE"
+        docker exec tethys_atcore bash -c "conda run -n tethys cd /var/www/tethys/exts/tethysext-atcore && bash ci-test.sh $TETHYS_MANAGE"
 
   cleanup:
     needs: [build]
