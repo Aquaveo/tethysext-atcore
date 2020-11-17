@@ -115,6 +115,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             os.path.join('dir1', 'file1.txt'),
             os.path.join('dir1', 'dir2', 'file3.txt')
         ]
+        files.sort()
+        expected_files.sort()
         self.assertListEqual(files, expected_files)
 
     def test_write_meta(self):
@@ -784,7 +786,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             ('dir1/dir3', [], ['file4.txt']),
             ('dir1/dir2', [], ['file3.txt']),
         ]
-        self.assertListEqual(walk_output, expected_walk_output)
+        walk_set = set(map(tuple, walk_output))
+        expected_set = set(map(tuple, expected_walk_output))
+        self.assertSetEqual(walk_set, expected_set)
 
     def test_walk_and_open(self):
         """Test walking a collection."""
