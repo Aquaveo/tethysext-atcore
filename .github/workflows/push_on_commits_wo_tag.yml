@@ -27,6 +27,7 @@ env:
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
+  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@172.17.0.1:5432/tethys_postgis
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -149,9 +150,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        docker exec tethys_atcore bash -c "echo $ATCORE_TEST_DATABASE"
-        docker exec tethys_atcore bash -c "echo $TETHYS_MANAGE"
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && conda activate tethys && ATCORE_TEST_DATABASE=postgresql://postgres:please_dont_use_default_passwords@${TETHYS_DB_HOST}:5432/tethys_postgis source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
+        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . ${CONDA_HOME}/bin/activate tethys && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
 
   cleanup:
     needs: [build]
