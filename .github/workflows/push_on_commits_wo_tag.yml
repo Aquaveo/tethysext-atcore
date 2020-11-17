@@ -137,7 +137,7 @@ jobs:
 
     - name: Run Docker Image
       run: |
-        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} -e ATCORE_TEST_DATABASE=postgresql://postgres:please_dont_use_default_passwords@${{ env.TETHYS_DB_HOST }}:5432/tethys_postgis -e TETHYS_MANAGE=/usr/lib/tethys/tethys/tethys_portal/manage.py ${{ env.TEST_IMAGE }}
+        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
         sleep 120s
         docker logs tethys_atcore
 
@@ -151,7 +151,7 @@ jobs:
       run: |
         docker exec tethys_atcore bash -c "echo $ATCORE_TEST_DATABASE"
         docker exec tethys_atcore bash -c "echo $TETHYS_MANAGE"
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys source ci-test.sh $TETHYS_MANAGE"
+        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE=postgresql://postgres:please_dont_use_default_passwords@${TETHYS_DB_HOST}:5432/tethys_postgis conda run -n tethys source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
 
   cleanup:
     needs: [build]
