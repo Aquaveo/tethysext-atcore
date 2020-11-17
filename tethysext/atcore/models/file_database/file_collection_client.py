@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+from contextlib import contextmanager
 import os
 import shutil
 from typing import Generator
@@ -13,7 +14,8 @@ import uuid
 
 from sqlalchemy.orm.session import Session
 
-from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError
+from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError, \
+    FileCollectionItemNotFoundError, FileCollectionItemAlreadyExistsError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection
 
@@ -150,3 +152,93 @@ class FileCollectionClient(MetaMixin):
                 shutil.copytree(item, os.path.join(self.path, os.path.split(item)[-1]))
             else:
                 shutil.copy(item, self.path)
+
+    def delete_item(self, item: str):
+        """
+        Delete an item from the file collection.
+
+        Args:
+            item (str): Path to the item to be deleted, relative to the collection.
+        """
+        item_path = os.path.join(self.path, item)
+        if not os.path.exists(item_path):
+            raise FileCollectionItemNotFoundError(f'"{item}" not found in this collection.')
+
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+        else:
+            os.remove(item_path)
+
+    def export_item(self, item: str, target: str):
+        """
+        Export an item from the collection to a new location.
+
+        Args:
+            item (str): Path to the item to be exported, relative to the collection.
+            target (str): Path to the export location.
+        """
+        item_full_path = os.path.join(self.path, item)
+        if not os.path.exists(item_full_path):
+            raise FileCollectionItemNotFoundError(f'"{item}" not found in this collection.')
+
+        item_is_dir = os.path.isdir(item_full_path)
+
+        if item_is_dir:
+            if os.path.exists(target):
+                raise IsADirectoryError(f'The directory to you are trying to export to already exists. {target}')
+            shutil.copytree(item_full_path, target)
+        else:
+            if os.path.exists(target):
+                if os.path.isdir(target):
+                    # copy file to directory
+                    shutil.copy(item_full_path, target)
+                else:
+                    raise FileExistsError(f'Target already exists: "{target}"')
+            else:
+                if os.path.splitext(target)[-1] == '':
+                    if not os.path.exists(target):
+                        os.makedirs(target)
+                else:
+                    os.makedirs(os.path.dirname(target), exist_ok=True)
+                shutil.copy(item_full_path, target)
+
+    def duplicate_item(self, item, new_item):
+        """
+        Duplicate an item in the collection.
+
+        Args:
+            item (str): Path to the item to duplicate, relative to the collection.
+            new_item (str): Path to the new item, relative to the collection.
+        """
+        try:
+            self.export_item(item, os.path.join(self.path, new_item))
+        except (FileExistsError, IsADirectoryError):
+            raise FileCollectionItemAlreadyExistsError('Collection duplication target already exists.')
+
+    @contextmanager
+    def open_file(self, file, *args, **kwargs):
+        """
+        Open a file in the collection for reading/writing.
+
+        Args:
+            file: The file to be opened, relative to the collection.
+            args, kwargs: Additional arguments passed to open function.
+
+        Returns:
+            A handle to the file that has been opened.
+        """
+        item_path = os.path.join(self.path, file)
+        if not os.path.exists(item_path):
+            raise FileCollectionItemNotFoundError(f'"{file}" not found in this collection.')
+
+        f = open(item_path, *args, **kwargs)
+        try:
+            yield f
+        finally:
+            f.close()
+
+    def walk(self):
+        """Walk through the files, and directories of the collection recursively."""
+        for root, dirs, files in os.walk(self.path):
+            relative_root = os.path.relpath(root, start=self.path)
+            yield relative_root, dirs, files

@@ -27,6 +27,7 @@ env:
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
+  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@172.17.0.1:5432/tethys_postgis
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -40,16 +41,16 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set Env
       run: |
-        echo ::set-env name=KANIKO_CACHE_REGISTRY::aquaveollc/tethysext-atcore-cache
-        echo ::set-env name=KANIKO_IMAGE::aquaveollc/tethysext-atcore
+        echo "KANIKO_CACHE_REGISTRY=aquaveollc/tethysext-atcore-cache" >> $GITHUB_ENV
+        echo "KANIKO_IMAGE=aquaveollc/tethysext-atcore" >> $GITHUB_ENV
     - name: Set Tag
       run: |
-        echo ::set-env name=TAG::dev_${GITHUB_SHA}
+        echo "TAG=dev_${GITHUB_SHA}" >> $GITHUB_ENV
       # If the branch is stable, we'll overwrite the TAG to include stable.
     - name: Set Stable Tag
       if: endsWith(github.ref, '/stable')
       run: |
-        echo ::set-env name=TAG::stable
+        echo "TAG=stable" >> $GITHUB_ENV
     - name: Test Tag
       run: |
         echo $TAG
@@ -73,7 +74,7 @@ jobs:
         # Dockerfile filename
         build_file: Dockerfile
 
-  salt_tests:
+  startup_test:
     needs: [build]
     runs-on: ubuntu-latest
     services:
@@ -102,14 +103,9 @@ jobs:
       run: |
         docker pull ${{ env.TEST_IMAGE }}
 
-    - name: Run Docker Image
-      run: |
-        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
-        sleep 60s
-        docker logs tethys_atcore
     - name: Run Salt Test
       run: |
-        docker exec tethys_atcore bash -c 'printenv && . ${TETHYS_HOME}/run.sh --test'
+        docker run --rm --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }} /bin/bash -c "cd /usr/lib/tethys && source ./run.sh --test"
 
   unit_tests:
     needs: [build]
@@ -146,14 +142,15 @@ jobs:
         sleep 120s
         docker logs tethys_atcore
 
-    - name: Run Test
+    - name: Tweak Install for Testing
       run: |
         docker exec tethys_atcore bash -c 'conda run -n tethys pip list'
-        docker exec tethys_atcore bash -c '. ${TETHYS_HOME}/run.sh --test && cd /var/www/tethys/exts/tethysext-atcore && ls && conda run -n tethys tethys install -d -q -w'
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys tethys install -d -q -w'
         docker exec tethys_atcore bash -c 'touch /var/www/tethys/exts/tethysext-atcore/tethysext/atcore/tests/files/arc_grid/precip30min.*'
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE='postgresql://postgres:please_dont_use_default_passwords@${TETHYS_DB_HOST}:5432/tethys_postgis' conda run -n tethys coverage run --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests"
-        docker exec tethys_atcore bash -c "cd /usr/lib/tethys/tethys/tethys_portal && ATCORE_TEST_DATABASE='postgresql://postgres:please_dont_use_default_passwords@${TETHYS_DB_HOST}:5432/tethys_postgis' conda run -n tethys coverage run -a --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini manage.py test -v 2 tethysext.atcore.tests.integrated_tests"
-        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys coverage report --rcfile=/var/www/tethys/exts/tethysext-atcore/ci-coverage.ini'
+
+    - name: Run Tests
+      run: |
+        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . /opt/conda/bin/activate tethys && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
 
   cleanup:
     needs: [build]
@@ -162,7 +159,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: only keeps the first 5 image
         run: |
-          echo ::set-env name=TAG::dev_${GITHUB_SHA}
+          echo "TAG=dev_${GITHUB_SHA}" >> $GITHUB_ENV
           echo $TAG
           . .github/scripts/clean_up_docker_hub.sh '${{ secrets.DOCKER_BUILDER_USERNAME }}' '${{ secrets.DOCKER_BUILDER_PASSWORD }}' '${{ env.DOCKER_HUB_ORG }}' '${{ env.DOCKER_REPO }}' '${{ env.MAX_NUMBER_IMAGE }}'
 
