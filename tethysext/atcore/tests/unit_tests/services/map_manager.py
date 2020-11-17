@@ -1237,9 +1237,12 @@ class MapManagerBaseTests(unittest.TestCase):
             'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
             'color_list': mock_COLOR_RAMPS.keys(),
             'layer_id': 'test:layer_name',
-            'color_ramp': 'Default',
             'min_value': 100,
             'max_value': 200,
+            'color_ramp': 'Default',
+            'prefix': 'val',
+            'color_prefix': 'color',
+            'first_division': 1,
             'units': 'Ft',
         }
 
@@ -1268,9 +1271,12 @@ class MapManagerBaseTests(unittest.TestCase):
             'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
             'color_list': mock_COLOR_RAMPS.keys(),
             'layer_id': 'test:layer_name',
-            'color_ramp': 'Default',
             'min_value': 100,
             'max_value': 200,
+            'color_ramp': 'Default',
+            'prefix': 'val',
+            'color_prefix': 'color',
+            'first_division': 1,
             'units': 'Ft',
         }
 
