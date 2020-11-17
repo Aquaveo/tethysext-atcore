@@ -16,8 +16,8 @@ coverage run -a --rcfile=ci-coverage.ini "$1" test -v 2 tethysext.atcore.tests.i
 intermediate_ret_val=$?
 
 # Minimum Required Coverage
-minimum_required_coverage=80
-coverage report -m --skip-covered --fail-under $minimum_required_coverage
+minimum_required_coverage=90
+coverage report -m --rcfile=ci-coverage.ini --skip-covered --fail-under $minimum_required_coverage
 coverage_ret_val=$?
 
 #echo "Linting..."
