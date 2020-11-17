@@ -786,9 +786,15 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             ('dir1/dir3', [], ['file4.txt']),
             ('dir1/dir2', [], ['file3.txt']),
         ]
-        walk_set = set(map(tuple, walk_output))
-        expected_set = set(map(tuple, expected_walk_output))
-        self.assertSetEqual(walk_set, expected_set)
+        self.assertEqual(len(walk_output), len(expected_walk_output))
+        for x in range(len(expected_walk_output)):
+            expected_walk_output[x][1].sort()
+            expected_walk_output[x][2].sort()
+        for x in range(len(walk_output)):
+            out = walk_output[x]
+            out[1].sort()
+            out[2].sort()
+            self.assertTrue(out in expected_walk_output)
 
     def test_walk_and_open(self):
         """Test walking a collection."""
