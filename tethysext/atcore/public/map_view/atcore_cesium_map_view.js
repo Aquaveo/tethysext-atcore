@@ -1878,7 +1878,7 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
-    reload_legend = function (selectLegend, minimum, maximum, layer_id) {
+    reload_legend = function (selectLegend, minimum, maximum, prefix, color_prefix, first_division, layer_id) {
         const div_id = selectLegend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
         const color_ramp = selectLegend.value;
         update_result_layer(layer_id, color_ramp);
@@ -1892,6 +1892,9 @@ var ATCORE_MAP_VIEW = (function() {
                 'minimum': JSON.stringify(minimum),
                 'maximum': JSON.stringify(maximum),
                 'color_ramp': JSON.stringify(color_ramp),
+                'prefix': JSON.stringify(prefix),
+                'color_prefix': JSON.stringify(color_prefix),
+                'first_division': JSON.stringify(first_division),
                 'layer_id': JSON.stringify(layer_id),
             },
         }).done(function(data){

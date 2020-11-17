@@ -314,6 +314,9 @@ class MapView(ResourceView):
         minimum = json.loads(request.POST.get('minimum'))
         maximum = json.loads(request.POST.get('maximum'))
         color_ramp = json.loads(request.POST.get('color_ramp'))
+        prefix = json.loads(request.POST.get('prefix'))
+        color_prefix = json.loads(request.POST.get('color_prefix'))
+        first_division = json.loads(request.POST.get('first_division'))
         layer_id = json.loads(request.POST.get('layer_id'))
 
         legend = {
@@ -323,16 +326,18 @@ class MapView(ResourceView):
         divisions = map_manager.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
                                                                      color_ramp=color_ramp)
         division_string = map_manager.build_param_string(**divisions)
-        for k, v in divisions.items():
-            if 'val' in k and k[:11] != 'val_no_data':
-                legend['divisions'][float(v)] = divisions[k.replace('val', 'color')]
+        for label in divisions.keys():
+            if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
+                legend['divisions'][float(divisions[label.replace(color_prefix, prefix)])] = divisions[label]
         legend['divisions'] = collections.OrderedDict(
             sorted(legend['divisions'].items())
         )
 
-        html_link = 'atcore/resource_workflows/components/map_view_color_ramp_component.html'
-        context = {'legend': legend}
-        html = render(request, html_link, context)
+        html = render(
+            request,
+            'atcore/resource_workflows/components/map_view_color_ramp_component.html',
+            {'legend': legend}
+        )
 
         response = str(html.content, 'utf-8')
         return JsonResponse({'success': True, 'response': response, 'div_id': legend_div_id,

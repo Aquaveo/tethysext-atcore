@@ -531,30 +531,34 @@ class MapManagerBase(object):
         if ":" in legend_key:
             legend_key = legend_key.replace(":", "_")
 
-        if 'color_ramp' in layer['color_ramp_division_kwargs'].keys():
-            color_ramp = layer['color_ramp_division_kwargs']['color_ramp']
-        else:
-            color_ramp = 'Default'
+        div_kwargs = layer['color_ramp_division_kwargs']
+        min_value = div_kwargs['min_value']
+        max_value = div_kwargs['max_value']
+        color_ramp = div_kwargs['color_ramp'] if 'color_ramp' in div_kwargs.keys() else 'Default'
+        prefix = div_kwargs['prefix'] if 'prefix' in div_kwargs.keys() else 'val'
+        color_prefix = div_kwargs['color_prefix'] if 'color_prefix' in div_kwargs.keys() else 'color'
+        first_division = div_kwargs['first_division'] if 'first_division' in div_kwargs.keys() else 1
 
-        min_value = layer['color_ramp_division_kwargs']['min_value']
-        max_value = layer['color_ramp_division_kwargs']['max_value']
         legend_info = {
             'legend_id': legend_key,
             'title': layer['layer_title'].replace("_", " "),
             'divisions': dict(),
             'color_list': self.COLOR_RAMPS.keys(),
             'layer_id': layer_id,
-            'color_ramp': color_ramp,
             'min_value': min_value,
             'max_value': max_value,
+            'color_ramp': color_ramp,
+            'prefix': prefix,
+            'color_prefix': color_prefix,
+            'first_division': first_division,
             'units': units,
         }
 
         divisions = self.generate_custom_color_ramp_divisions(**layer['color_ramp_division_kwargs'])
 
-        for k, v in divisions.items():
-            if 'val' in k and k[:11] != 'val_no_data':
-                legend_info['divisions'][float(v)] = divisions[k.replace('val', 'color')]
+        for label in divisions.keys():
+            if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
+                legend_info['divisions'][float(divisions[label.replace(color_prefix, prefix)])] = divisions[label]
         legend_info['divisions'] = collections.OrderedDict(
             sorted(legend_info['divisions'].items())
         )

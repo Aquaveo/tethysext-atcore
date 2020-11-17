@@ -110,8 +110,9 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             # build legend:
             legend = map_manager.build_legend(layer, units=result.options.get('units', ''))
             legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
-            legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend(this, {legend['min_value']}, "
-                                        f"{legend['max_value']}, '{legend['layer_id']}' )"}
+            legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend( this, {legend['min_value']}, "
+                                        f"{legend['max_value']}, '{legend['prefix']}', '{legend['color_prefix']}', "
+                                        f"{legend['first_division']}, '{legend['layer_id']}' )"}
 
             legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
                                               options=legend_input_options,
