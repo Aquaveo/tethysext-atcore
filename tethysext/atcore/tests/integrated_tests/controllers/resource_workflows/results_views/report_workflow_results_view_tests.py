@@ -167,6 +167,8 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
                 'axis_labels': ['Distance from left bank (ft)', 'Depth (ft)'],
             },
         )
+        mock_current_step.results = mock_data
+
         reach_9 = [[0, 1101.88, 2998.66, 4842.02, 6367.66, 7792.57, 8500], [3, 2.46, 0.17, 0.3, 0.41, 0.76, 3]]
         water_surface = [[270, 8480], [2.9, 2.9]]
 
@@ -185,8 +187,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         }]
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['bokeh', 'lines', ['x', 'y'], 'linear', 'linear', 'page title',
-                                        'No dataset found.']
+        mock_options.get.side_effect = ['bokeh']
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
@@ -265,6 +266,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_build_wms_layer = mock.MagicMock(source='TileWMS', legend_title='100yr_flow_depth_10m',
                                               options=mock_options)
         mock_map_manager.build_wms_layer.return_value = mock_build_wms_layer
+        mock_map_manager.build_legend.return_value = "legend_wms"
 
         mock_pandas_data = mock.MagicMock(spec=pd.DataFrame)
         mock_pandas_data.columns = ['foo', 'bar', 'baz']
@@ -290,8 +292,63 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context['has_tabular_data'], False)
         self.assertEqual(mock_context['report_results'][0]['map']['name'], "Test Name")
         self.assertEqual(mock_context['report_results'][0]['map']['description'], "Test description")
-        self.assertIsNone(mock_context['report_results'][0]['map']['legend'])
+        self.assertEqual(mock_context['report_results'][0]['map']['legend'], 'legend_wms')
         self.assertEqual(mock_context['report_results'][0]['map']['map'], mock_build_wms_layer)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.log')   # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.process_step_options')   # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    def test_process_step_options_map_wrong_type(self, mock_sup_get_context, mock_mapWV_get_context, _,
+                                                 mock_is_read_only, mock_get_managers, mock_log):
+        mock_resource = mock.MagicMock()
+        mock_request = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_context = {'layer_groups': [{"id": "depth", "layers": [{"options": {"params": mock.MagicMock()}}]}],
+                        'map_view': mock.MagicMock()}
+        mock_current_step = mock.MagicMock()
+        mock_previous_step = mock.MagicMock()
+        mock_next_step = mock.MagicMock()
+        mock_geoserver = mock.MagicMock()
+        mock_map_manager = mock.MagicMock()
+        mock_spatial_manager = mock.MagicMock()
+        mock_is_read_only.return_value = False
+
+        mock_data = SpatialWorkflowResult(
+            name='Test Name',
+            codename='test_codename',
+            description='Test description',
+            order=10,
+            options={
+                'layer_group_title': 'Test Legend Title',
+            },
+            geoserver_name=mock_geoserver,
+            map_manager=mock_map_manager,
+            map_renderer='cesium_map_view',
+            spatial_manager=mock_spatial_manager,
+            controller='tethysapp.steem.controllers.map_view.steem_result_map_view.SteemResultMapView',
+        )
+
+        mock_data.layers = [{'type': 'test_type'}]
+        mock_current_step.results = [mock_data]
+
+        mock_get_managers.return_value = ['model_db', mock_map_manager]
+
+        mock_sup_get_context.return_value = {}
+        mock_mapWV_get_context.return_value = {}
+
+        self.instance.process_step_options(
+            request=mock_request,
+            session=mock_session,
+            context=mock_context,
+            resource=mock_resource,
+            current_step=mock_current_step,
+            previous_step=mock_previous_step,
+            next_step=mock_next_step,
+        )
+        mock_log.warning.assert_called_with('Unsupported layer type will be skipped: test_type')
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
@@ -341,14 +398,14 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_get_managers.return_value = ['model_db', mock_map_manager]
         mock_build_geojson_layer = mock.MagicMock()
         mock_map_manager.build_geojson_layer.return_value = mock_build_geojson_layer
+        mock_map_manager.build_legend.return_value = 'legend'
 
         mock_pandas_data = mock.MagicMock(spec=pd.DataFrame)
         mock_pandas_data.columns = ['foo', 'bar', 'baz']
         mock_result.name = 'title'
         mock_options = mock.MagicMock(get=mock.MagicMock())
         mock_result.options = mock_options
-        mock_options.get.side_effect = ['bokeh', 'lines', ['x', 'y'], 'linear', 'linear', 'page title',
-                                        'No dataset found.']
+        mock_options.get.side_effect = ['bokeh', 'ft']
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
 
@@ -365,5 +422,5 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context.update.call_args[0][0]['can_run_workflows'], True)
         self.assertEqual(mock_context.update.call_args[0][0]['has_tabular_data'], False)
         self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['map'],
-                         {'name': 'Depth', 'description': 'Description for result 2', 'legend': None,
+                         {'name': 'Depth', 'description': 'Description for result 2', 'legend': 'legend',
                           'map': mock_build_geojson_layer})

@@ -37,7 +37,7 @@ def init_atcore(arguments):
         print_success('Successfully initialized ATCORE GeoServer workspace.')
     except Exception as e:
         errors_occurred = True
-        print_error('An error occurred during workspace creation: {}'.format(e))
+        print_error(f'An error occurred during workspace creation: {e}')
 
     # Initialize styles
     print_info('Initializing ATCORE GeoServer Styles...')

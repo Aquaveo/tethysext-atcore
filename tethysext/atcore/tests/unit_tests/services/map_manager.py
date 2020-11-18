@@ -8,6 +8,7 @@
 """
 import copy
 import uuid
+from collections import OrderedDict
 from unittest import mock
 import unittest
 from tethys_gizmos.gizmo_options import MVLayer
@@ -135,16 +136,16 @@ class MapManagerBaseTests(unittest.TestCase):
             num_divisions=10
         )
         expected = {
-            'val1': '100.0',
-            'val2': '200.0',
-            'val3': '300.0',
-            'val4': '400.0',
-            'val5': '500.0',
-            'val6': '600.0',
-            'val7': '700.0',
-            'val8': '800.0',
-            'val9': '900.0',
-            'val10': '1000.0'
+            'val1': '100.0', 'color1': '#fff100',
+            'val2': '200.0', 'color2': '#ff8c00',
+            'val3': '300.0', 'color3': '#e81123',
+            'val4': '400.0', 'color4': '#ec008c',
+            'val5': '500.0', 'color5': '#68217a',
+            'val6': '600.0', 'color6': '#00188f',
+            'val7': '700.0', 'color7': '#00bcf2',
+            'val8': '800.0', 'color8': '#00b294',
+            'val9': '900.0', 'color9': '#009e49',
+            'val10': '1000.0', 'color10': '#bad80a'
         }
         self.assertEqual(expected, val)
 
@@ -155,20 +156,19 @@ class MapManagerBaseTests(unittest.TestCase):
             min_value=min_elevation,
             max_value=max_elevation,
             num_divisions=10,
-            colors=['#FF3000', '#FF7000', '#FFA200', '#FFD000', '#FFFF00', '#A2D05C', '#45A2B9',
-                    '#0080FF',  '#003ea3', '#003ea3']
+            color_ramp="Blue and Red"
         )
         expected = {
-            'val1': '100.00', 'color1': '#FF3000',
-            'val2': '200.00', 'color2': '#FF7000',
-            'val3': '300.00', 'color3': '#FFA200',
-            'val4': '400.00', 'color4': '#FFD000',
-            'val5': '500.00', 'color5': '#FFFF00',
-            'val6': '600.00', 'color6': '#A2D05C',
-            'val7': '700.00', 'color7': '#45A2B9',
-            'val8': '800.00', 'color8': '#0080FF',
-            'val9': '900.00', 'color9': '#003ea3',
-            'val10': '1000.00', 'color10': '#003ea3'
+            'val1': '100.00', 'color1': '#a50026',
+            'val2': '200.00', 'color2': '#d73027',
+            'val3': '300.00', 'color3': '#f46d43',
+            'val4': '400.00', 'color4': '#fdae61',
+            'val5': '500.00', 'color5': '#fee090',
+            'val6': '600.00', 'color6': '#e0f3f8',
+            'val7': '700.00', 'color7': '#abd9e9',
+            'val8': '800.00', 'color8': '#74add1',
+            'val9': '900.00', 'color9': '#4575b4',
+            'val10': '1000.00', 'color10': '#313695'
         }
         self.assertEqual(expected, val)
 
@@ -183,17 +183,18 @@ class MapManagerBaseTests(unittest.TestCase):
             first_division=0
         )
         expected = {
-            'val0': '100.0',
-            'val1': '200.0',
-            'val2': '300.0',
-            'val3': '400.0',
-            'val4': '500.0',
-            'val5': '600.0',
-            'val6': '700.0',
-            'val7': '800.0',
-            'val8': '900.0',
-            'val9': '1000.0'
+            'val0': '100.0', 'color0': '#fff100',
+            'val1': '200.0', 'color1': '#ff8c00',
+            'val2': '300.0', 'color2': '#e81123',
+            'val3': '400.0', 'color3': '#ec008c',
+            'val4': '500.0', 'color4': '#68217a',
+            'val5': '600.0', 'color5': '#00188f',
+            'val6': '700.0', 'color6': '#00bcf2',
+            'val7': '800.0', 'color7': '#00b294',
+            'val8': '900.0', 'color8': '#009e49',
+            'val9': '1000.0', 'color9': '#bad80a'
         }
+
         self.assertEqual(expected, val)
 
     def test_generate_custom_color_ramp_divisions_prefix(self):
@@ -207,16 +208,16 @@ class MapManagerBaseTests(unittest.TestCase):
             prefix='foo'
         )
         expected = {
-            'foo1': '100.0',
-            'foo2': '200.0',
-            'foo3': '300.0',
-            'foo4': '400.0',
-            'foo5': '500.0',
-            'foo6': '600.0',
-            'foo7': '700.0',
-            'foo8': '800.0',
-            'foo9': '900.0',
-            'foo10': '1000.0'
+            'foo1': '100.0', 'color1': '#fff100',
+            'foo2': '200.0', 'color2': '#ff8c00',
+            'foo3': '300.0', 'color3': '#e81123',
+            'foo4': '400.0', 'color4': '#ec008c',
+            'foo5': '500.0', 'color5': '#68217a',
+            'foo6': '600.0', 'color6': '#00188f',
+            'foo7': '700.0', 'color7': '#00bcf2',
+            'foo8': '800.0', 'color8': '#00b294',
+            'foo9': '900.0', 'color9': '#009e49',
+            'foo10': '1000.0', 'color10': '#bad80a'
         }
         self.assertEqual(expected, val)
 
@@ -231,16 +232,16 @@ class MapManagerBaseTests(unittest.TestCase):
             top_offset=900
         )
         expected = {
-            'val1': '10.0',
-            'val2': '20.0',
-            'val3': '30.0',
-            'val4': '40.0',
-            'val5': '50.0',
-            'val6': '60.0',
-            'val7': '70.0',
-            'val8': '80.0',
-            'val9': '90.0',
-            'val10': '100.0'
+            'val1': '10.0', 'color1': '#fff100',
+            'val2': '20.0', 'color2': '#ff8c00',
+            'val3': '30.0', 'color3': '#e81123',
+            'val4': '40.0', 'color4': '#ec008c',
+            'val5': '50.0', 'color5': '#68217a',
+            'val6': '60.0', 'color6': '#00188f',
+            'val7': '70.0', 'color7': '#00bcf2',
+            'val8': '80.0', 'color8': '#00b294',
+            'val9': '90.0', 'color9': '#009e49',
+            'val10': '100.0', 'color10': '#bad80a'
         }
         self.assertEqual(expected, val)
 
@@ -256,16 +257,16 @@ class MapManagerBaseTests(unittest.TestCase):
         )
 
         expected = {
-            'val1': '910.0',
-            'val2': '920.0',
-            'val3': '930.0',
-            'val4': '940.0',
-            'val5': '950.0',
-            'val6': '960.0',
-            'val7': '970.0',
-            'val8': '980.0',
-            'val9': '990.0',
-            'val10': '1000.0'
+            'val1': '910.0', 'color1': '#fff100',
+            'val2': '920.0', 'color2': '#ff8c00',
+            'val3': '930.0', 'color3': '#e81123',
+            'val4': '940.0', 'color4': '#ec008c',
+            'val5': '950.0', 'color5': '#68217a',
+            'val6': '960.0', 'color6': '#00188f',
+            'val7': '970.0', 'color7': '#00bcf2',
+            'val8': '980.0', 'color8': '#00b294',
+            'val9': '990.0', 'color9': '#009e49',
+            'val10': '1000.0', 'color10': '#bad80a'
         }
         self.assertEqual(expected, val)
 
@@ -539,6 +540,7 @@ class MapManagerBaseTests(unittest.TestCase):
             layer_name=layer_name,
             layer_title=layer_title,
             layer_variable=layer_variable,
+            color_ramp_division_kwargs={'min_value': 1, 'max_value': 10, 'color_ramp': 'Blue and Red'},
             tiled=False
         )
 
@@ -591,6 +593,7 @@ class MapManagerBaseTests(unittest.TestCase):
             layer_name=layer_name,
             layer_title=layer_title,
             layer_variable=layer_variable,
+            color_ramp_division_kwargs={'min_value': 1, 'max_value': 10, 'color_ramp': 'Blue and Red'},
             viewparams=viewparams
         )
 
@@ -647,6 +650,7 @@ class MapManagerBaseTests(unittest.TestCase):
             layer_name=layer_name,
             layer_title=layer_title,
             layer_variable=layer_variable,
+            color_ramp_division_kwargs={'min_value': 1, 'max_value': 10, 'color_ramp': 'Blue and Red'},
             env=env
         )
 
@@ -1215,3 +1219,71 @@ class MapManagerBaseTests(unittest.TestCase):
         ret = self.map_manager.get_plot_for_layer_feature(layer_name='layer1', feature_id='F001')
         self.assertEqual('F001', ret[1][0]['name'])
         self.assertEqual('layer1', ret[2]['xaxis']['title'])
+
+    @mock.patch.dict('tethysext.atcore.services.map_manager.MapManagerBase.COLOR_RAMPS', values={'Default': ''}, clear=True)  # noqa: E501
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.generate_custom_color_ramp_divisions')
+    def test_build_legend(self, mock_gccrd):
+        mock_gccrd.return_value = {'val1': '100', 'val2': '200', 'color1': '#fff100', 'color2': '#ff8c00'}
+        mock_COLOR_RAMPS = {'Default': ''}
+        mock_crd_kwargs = {'min_value': 100, 'max_value': 200, 'num_divisions': 2}
+        mock_layer = {
+            'layer_name': 'test:layer_name', 'layer_title': 'Test_Title', 'layer_variable': 'test:layer_variable',
+            'layer_id': '', 'viewparams': None, 'env': None, 'color_ramp_division_kwargs': mock_crd_kwargs
+        }
+
+        expected = {
+            'legend_id': 'test_layer_variable',
+            'title': 'Test Title',
+            'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
+            'color_list': mock_COLOR_RAMPS.keys(),
+            'layer_id': 'test:layer_name',
+            'min_value': 100,
+            'max_value': 200,
+            'color_ramp': 'Default',
+            'prefix': 'val',
+            'color_prefix': 'color',
+            'first_division': 1,
+            'units': 'Ft',
+        }
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            model_db=self.model_db
+        )
+
+        ret = map_manager.build_legend(mock_layer, units='Ft')
+        self.assertEqual(ret, expected)
+
+    @mock.patch.dict('tethysext.atcore.services.map_manager.MapManagerBase.COLOR_RAMPS', values={'Default': ''}, clear=True)  # noqa: E501
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.generate_custom_color_ramp_divisions')
+    def test_build_legend_with_color_ramp(self, mock_gccrd):
+        mock_gccrd.return_value = {'val1': '100', 'val2': '200', 'color1': '#fff100', 'color2': '#ff8c00'}
+        mock_COLOR_RAMPS = {'Default': ''}
+        mock_crd_kwargs = {'min_value': 100, 'max_value': 200, 'num_divisions': 2, 'color_ramp': 'Default'}
+        mock_layer = {
+            'layer_name': 'test:layer_name', 'layer_title': 'Test_Title', 'layer_variable': 'test:layer_variable',
+            'layer_id': '', 'viewparams': None, 'env': None, 'color_ramp_division_kwargs': mock_crd_kwargs
+        }
+
+        expected = {
+            'legend_id': 'test_layer_variable',
+            'title': 'Test Title',
+            'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
+            'color_list': mock_COLOR_RAMPS.keys(),
+            'layer_id': 'test:layer_name',
+            'min_value': 100,
+            'max_value': 200,
+            'color_ramp': 'Default',
+            'prefix': 'val',
+            'color_prefix': 'color',
+            'first_division': 1,
+            'units': 'Ft',
+        }
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            model_db=self.model_db
+        )
+
+        ret = map_manager.build_legend(mock_layer, units='Ft')
+        self.assertEqual(ret, expected)

@@ -8,6 +8,9 @@
 """
 import logging
 from django.http import JsonResponse
+import json
+
+from tethys_sdk.gizmos import SelectInput
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
@@ -22,6 +25,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
     """
     template_name = 'atcore/resource_workflows/map_workflow_results_view.html'
     valid_result_classes = [SpatialWorkflowResult]
+    show_legends = True
 
     def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
                     **kwargs):
@@ -74,7 +78,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         # Get the result object for this view
         result = self.get_result(request, result_id, session)
-
         # Get managers
         _, map_manager = self.get_managers(
             request=request,
@@ -84,10 +87,10 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         # Get Map View and Layer Groups
         layer_groups = base_context['layer_groups']
-
         # Generate MVLayers for spatial data
         results_layers = []
-
+        legends_select_inputs = []
+        legends = []
         # Build MVLayers for map
         for layer in result.layers:
             layer_type = layer.pop('type', None)
@@ -103,6 +106,23 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
             elif layer_type == 'wms':
                 result_layer = map_manager.build_wms_layer(**layer)
+
+            # build legend:
+            legend = map_manager.build_legend(layer, units=result.options.get('units', ''))
+
+            if legend:
+                legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
+                legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend( this, {legend['min_value']}, "
+                                            f"{legend['max_value']}, '{legend['prefix']}', '{legend['color_prefix']}', "
+                                            f"{legend['first_division']}, '{legend['layer_id']}' )"}
+
+                legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
+                                                  options=legend_input_options,
+                                                  initial=[legend['color_ramp']],
+                                                  attributes=legend_attrs)
+
+                legends_select_inputs.append(legend_select_input)
+            legends.append(legend)
 
             if result_layer:
                 # Add layer to beginning the map's of layer list
@@ -120,6 +140,9 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
             layer_groups.insert(0, results_layer_group)
 
+        base_context.update({
+            'legends': list(zip(legends, legends_select_inputs)),
+        })
         return base_context
 
     def get_plot_data(self, request, session, resource, result_id, *args, **kwargs):
@@ -220,3 +243,25 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         layout = plot.get('layout', {}) if plot else None
 
         return title, data, layout
+
+    def update_result_layer(self, request, session, resource, *args, **kwargs):
+        """
+        Update color ramp of a layer in the result. In the future, we can add more things to update here.
+        """
+        # Get Managers Hook
+        result = self.get_result(request, kwargs['result_id'], session)
+        layer_id = json.loads(request.POST.get('layer_id'))
+        color_ramp = json.loads(request.POST.get('color_ramp'))
+        update_layer = ''
+
+        # Find the layer based on layer_id and update its color ramp.
+        for layer in result.layers:
+            if layer['layer_id'] == layer_id or layer['layer_name'] == layer_id:
+                update_layer = layer
+                update_layer['color_ramp_division_kwargs']['color_ramp'] = color_ramp
+                break
+
+        if update_layer:
+            result.update_layer(update_layer=update_layer)
+
+        return JsonResponse({'success': True})

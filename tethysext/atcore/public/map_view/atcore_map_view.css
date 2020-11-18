@@ -215,6 +215,12 @@
     margin-bottom: 5px;
 }
 
+[id^="form-group-tethys-color-ramp-picker-"] {
+    width: 50%;
+    padding-bottom: 5px;
+    margin-left: 30px !important;
+}
+
 .legend-group-item .flatmark {
     display: inline-block;
     font-weight: 700;

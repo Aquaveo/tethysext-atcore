@@ -93,7 +93,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers, hide_layers, show_layers;
+ 	var generate_uuid, load_layers, hide_layers, show_layers, reload_legend, update_result_layer, reload_image_layer;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1453,7 +1453,7 @@ var ATCORE_MAP_VIEW = (function() {
         ];
     };
 
- 	// Geocode Methods
+ 	  // Geocode Methods
     init_geocode = function() {
         if (p_can_geocode) {
             // Add Geocode Control to OpenLayers controls container
@@ -1673,6 +1673,94 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
+    // Create new layer groups with layers
+    // This method allows user to create tree items and have them linked to the tree items created in this method.
+    load_layers = function (layer_group_name, layer_group_id, layer_data, layer_names, layer_ids, layer_legends) {
+        // layer_group_name: name of the layer group - Ex: My Layer Group
+        // layer_group_id: id of the layer group - Ex: my_layer_group_123456
+        // layer_data: list of openlayer layers
+        // layer_names: list of the name of the openlayer layers
+        // layer_ids: list of the id of the open layer layers
+        // layer_legends: list of the legend name of the open layer layers Ex: my-legend -> your legend id is going to be (#legend-my-legend)
+        // Add layers to map
+        var i = 0;
+        for (i = 0; i < layer_data.length; i++) {
+            m_layers[layer_ids[i]] = layer_data[i];
+            m_map.addLayer(layer_data[i]);
+        }
+        var status = 'create'
+        // If the layer group is already created, we will have the solution added to the same layer groups
+        if ($('#' + layer_group_id).length){
+            status = 'append'
+        }
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_layer_group_tree_item',
+                'status': status,
+                'layer_group_id': layer_group_id,
+                'layer_group_name': layer_group_name,
+                'layer_names': JSON.stringify(layer_names),
+                'layer_ids': JSON.stringify(layer_ids),
+                'layer_legends': JSON.stringify(layer_legends),
+            },
+        }).done(function(data){
+            if (status == 'create') {
+                $('#layers-tab-panel').prepend(data.response);
+            }
+            else {
+                $('#' + layer_group_id + '_associated_layers').prepend(data.response);
+            }
+        });
+        init_new_layers_tab(layer_group_id);
+    }
+
+    reload_legend = function (select_legend, minimum, maximum, layer_id) {
+        const div_id = select_legend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+        const color_ramp = select_legend.value;
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_legend_item',
+                'div_id': JSON.stringify(div_id),
+                'minimum': JSON.stringify(minimum),
+                'maximum': JSON.stringify(maximum),
+                'color_ramp': JSON.stringify(color_ramp),
+                'layer_id': JSON.stringify(layer_id),
+            },
+        }).done(function(data){
+            update_result_layer(`${data.layer_id}`, `${data.color_ramp}`);
+            reload_image_layer(`${data.layer_id}`, data.division_string);
+            $(`#${data.div_id}`).html(data.response);
+        });
+    }
+
+    reload_image_layer = function(id, division_string) {
+        // Get THE layer and create a clone of it with new division string
+        const existing_imagery_layer = m_layers[id];
+        const params = existing_imagery_layer.getSource().getParams()
+        params['ENV'] = division_string
+        // Update division string in the env
+        existing_imagery_layer.getSource().updateParams(params);
+    }
+
+    update_result_layer = function(layer_id, color_ramp) {
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'update_result_layer',
+                'layer_id': JSON.stringify(layer_id),
+                'color_ramp': JSON.stringify(color_ramp),
+            },
+        })
+    }
+
     hide_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Set layer to be visible first
@@ -1734,18 +1822,19 @@ var ATCORE_MAP_VIEW = (function() {
 	    action_loader: function(f) {
 	        load_action = f;
 	    },
-        get_layer_name_from_feature: get_layer_name_from_feature,
-        get_layer_id_from_layer: get_layer_id_from_layer,
-        get_feature_id_from_feature: get_feature_id_from_feature,
-        hide_properties_pop_up: hide_properties_pop_up,
-        reset_properties_pop_up: reset_properties_pop_up,
-        close_properties_pop_up: close_properties_pop_up,
-        load_layers: load_layers,
-        hide_layers: hide_layers,
-        show_layers: show_layers,
-        remove_layer_from_map: remove_layer_from_map,
-        init_layers_tab: init_layers_tab,
-        init_download_layer_action: init_download_layer_action,
+      get_layer_name_from_feature: get_layer_name_from_feature,
+      get_layer_id_from_layer: get_layer_id_from_layer,
+      get_feature_id_from_feature: get_feature_id_from_feature,
+      hide_properties_pop_up: hide_properties_pop_up,
+      reset_properties_pop_up: reset_properties_pop_up,
+      close_properties_pop_up: close_properties_pop_up,
+      load_layers: load_layers,
+      reload_legend: reload_legend,
+      hide_layers: hide_layers,
+      show_layers: show_layers,
+      remove_layer_from_map: remove_layer_from_map,
+      init_layers_tab: init_layers_tab,
+      init_download_layer_action: init_download_layer_action,
 	};
 
 	/************************************************************************

@@ -143,7 +143,8 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
     def add_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, layer_id='', viewparams=None, env=None,
                       visible=True, public=True, tiled=True, selectable=False, plottable=False, has_action=False,
-                      extent=None, popup_title=None, excluded_properties=None, geometry_attribute='geometry'):
+                      extent=None, popup_title=None, excluded_properties=None, geometry_attribute='geometry',
+                      color_ramp_division_kwargs=None):
         """
         Add a wms layer to display on the map of this result view.
 
@@ -165,6 +166,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+            color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
         """  # noqa: E501
         layer = {
             'type': 'wms',
@@ -174,6 +176,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             'layer_variable': layer_variable,
             'viewparams': viewparams,
             'env': env,
+            'color_ramp_division_kwargs': color_ramp_division_kwargs,
             'layer_id': layer_id,
             'visible': visible,
             'tiled': tiled,
@@ -188,3 +191,22 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         }
 
         self._add_layer(layer)
+
+    def update_layer(self, update_layer):
+        """
+        Update color ramp for layer.
+
+        Args:
+            update_layer: layer to update.
+        """  # noqa: E501\
+        new_data = list()
+
+        for layer in self.layers:
+            if_match_layer_id = update_layer['layer_id'] and update_layer['layer_id'] == layer['layer_id']
+            if_match_layer_name = update_layer['layer_name'] and update_layer['layer_name'] == layer['layer_name']
+            if if_match_layer_id or if_match_layer_name:
+                new_data.append(update_layer)
+            else:
+                new_data.append(layer)
+
+        self.layers = new_data

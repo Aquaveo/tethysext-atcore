@@ -109,7 +109,7 @@ var ATCORE_MAP_VIEW = (function() {
  	var init_draw_controls;
 
  	// Utility Methods
- 	var generate_uuid, load_layers, hide_layers, show_layers;
+ 	var generate_uuid, load_layers, hide_layers, show_layers, reload_legend, update_result_layer, reload_cesium_image_layer;
 
  	/************************************************************************
  	*                    PRIVATE FUNCTION IMPLEMENTATIONS
@@ -1670,7 +1670,7 @@ var ATCORE_MAP_VIEW = (function() {
         ];
     };
 
- 	// Geocode Methods
+ 	  // Geocode Methods
     init_geocode = function() {
         if (p_can_geocode) {
             // Add Geocode Control to OpenLayers controls container
@@ -1878,6 +1878,84 @@ var ATCORE_MAP_VIEW = (function() {
         init_new_layers_tab(layer_group_id);
     }
 
+    reload_legend = function (select_legend, minimum, maximum, prefix, color_prefix, first_division, layer_id) {
+        const div_id = select_legend.id.replace('tethys-color-ramp-picker', 'color-ramp-component');
+        const color_ramp = select_legend.value;
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'build_legend_item',
+                'div_id': JSON.stringify(div_id),
+                'minimum': JSON.stringify(minimum),
+                'maximum': JSON.stringify(maximum),
+                'color_ramp': JSON.stringify(color_ramp),
+                'prefix': JSON.stringify(prefix),
+                'color_prefix': JSON.stringify(color_prefix),
+                'first_division': JSON.stringify(first_division),
+                'layer_id': JSON.stringify(layer_id),
+            },
+        }).done(function(data){
+            update_result_layer(`${data.layer_id}`, `${data.color_ramp}`);
+            reload_cesium_image_layer(`${data.layer_id}`, data.division_string);
+            $(`#${data.div_id}`).html(data.response);
+        });
+    }
+
+    reload_cesium_image_layer = function(id, division_string) {
+        // Get THE layer and create a clone of it with new division string
+        const existing_imagery_layer = m_layers[id];
+
+        // Update division string in the env
+        existing_imagery_layer.imageryProvider._resource._queryParameters['env'] = division_string;
+
+        const tile_wms = new Cesium.WebMapServiceImageryProvider({
+            url: existing_imagery_layer.imageryProvider._resource._url,
+            layers: existing_imagery_layer.imageryProvider._layers,
+            parameters:  existing_imagery_layer.imageryProvider._resource._queryParameters,
+        });
+
+        // copy of existing layer data
+        const tethys_data = existing_imagery_layer.tethys_data;
+        const legend_title = existing_imagery_layer.legend_title;
+        const legend_classes = existing_imagery_layer.legend_classes;
+        const legend_extent = existing_imagery_layer.legend_extent;
+        const legend_extent_projection = existing_imagery_layer.legend_extent_projection;
+        const feature_selection = existing_imagery_layer.feature_selection;
+        const geometry_attribute = existing_imagery_layer.geometry_attribute;
+
+        // Remove existing Layer
+        m_map.imageryLayers.remove(existing_imagery_layer, true);
+
+        // Add new layer
+        let new_layer = m_map.imageryLayers.addImageryProvider(tile_wms);
+
+        // Appending existing data into new layer
+        new_layer['tethys_data'] = tethys_data;
+        new_layer['legend_title'] = legend_title;
+        new_layer['legend_classes'] = legend_classes;
+        new_layer['legend_extent'] = legend_extent;
+        new_layer['legend_extent_projection'] = legend_extent_projection;
+        new_layer['feature_selection'] = feature_selection;
+        new_layer['geometry_attribute'] = geometry_attribute;
+
+        m_layers[id] = new_layer;
+    }
+
+    update_result_layer = function(layer_id, color_ramp) {
+        $.ajax({
+            type: 'POST',
+            url: ".",
+            async: false,
+            data: {
+                'method': 'update_result_layer',
+                'layer_id': JSON.stringify(layer_id),
+                'color_ramp': JSON.stringify(color_ramp),
+            },
+        })
+    }
+
     hide_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Set layer to be visible first
@@ -1936,17 +2014,18 @@ var ATCORE_MAP_VIEW = (function() {
 	    action_loader: function(f) {
 	        load_action = f;
 	    },
-        get_layer_name_from_feature: get_layer_name_from_feature,
-        get_layer_id_from_layer: get_layer_id_from_layer,
-        get_feature_id_from_feature: get_feature_id_from_feature,
-        hide_properties_pop_up: hide_properties_pop_up,
-        reset_properties_pop_up: reset_properties_pop_up,
-        close_properties_pop_up: close_properties_pop_up,
-        load_layers: load_layers,
-        hide_layers: hide_layers,
-        show_layers: show_layers,
-        remove_layer_from_map: remove_layer_from_map,
-        init_layers_tab: init_layers_tab,
+      get_layer_name_from_feature: get_layer_name_from_feature,
+      get_layer_id_from_layer: get_layer_id_from_layer,
+      get_feature_id_from_feature: get_feature_id_from_feature,
+      hide_properties_pop_up: hide_properties_pop_up,
+      reset_properties_pop_up: reset_properties_pop_up,
+      close_properties_pop_up: close_properties_pop_up,
+      load_layers: load_layers,
+      reload_legend: reload_legend,
+      hide_layers: hide_layers,
+      show_layers: show_layers,
+      remove_layer_from_map: remove_layer_from_map,
+      init_layers_tab: init_layers_tab,
 	};
 
 	/************************************************************************
@@ -1964,17 +2043,22 @@ var ATCORE_MAP_VIEW = (function() {
 	    setup_ajax();
 	    setup_map();
 
-		// Initialize
-		init_layers_tab();
-        //init_geocode();
-        init_cesium_vr();
-        init_plot();
-        init_draw_controls();
-        sync_layer_visibility();
+      // Initialize
+      init_layers_tab();
+      //init_geocode();
+      init_cesium_vr();
+      init_plot();
+      init_draw_controls();
+      sync_layer_visibility();
 	});
 
 	return m_public_interface;
 
-}()); // End of package wrapper
+}());
+
+// Export it to global
+window.ATCORE_MAP_VIEW = ATCORE_MAP_VIEW;
+
+// End of package wrapper
 // NOTE: that the call operator (open-closed parenthesis) is used to invoke the library wrapper
 // function immediately after being parsed.

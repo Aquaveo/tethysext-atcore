@@ -9,6 +9,8 @@
 import copy
 from abc import ABCMeta, abstractmethod
 from tethys_gizmos.gizmo_options import MVView, MVLayer
+from tethysext.atcore.services.color_ramps import COLOR_RAMPS
+import collections
 
 
 class MapManagerBase(object):
@@ -27,6 +29,7 @@ class MapManagerBase(object):
 
     LAYER_SOURCE_TYPE = 'TileWMS'
 
+    COLOR_RAMPS = COLOR_RAMPS
     DEFAULT_TILE_GRID = {
         'resolutions': [
             156543.03390625,
@@ -183,7 +186,7 @@ class MapManagerBase(object):
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
-                        popup_title=None):
+                        popup_title=None, color_ramp_division_kwargs=dict):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -204,6 +207,7 @@ class MapManagerBase(object):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+            color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
 
         Returns:
             MVLayer: the MVLayer object.
@@ -229,8 +233,19 @@ class MapManagerBase(object):
             'url': endpoint,
             'params': params,
             'serverType': 'geoserver',
-            'crossOrigin': 'anonymous'
+            'crossOrigin': 'anonymous',
         }
+
+        if color_ramp_division_kwargs:
+            # Create color ramp and add them to ENV
+            color_ramp_divisions = self.generate_custom_color_ramp_divisions(**color_ramp_division_kwargs)
+            if 'ENV' in params.keys():
+                if params['ENV']:
+                    params['ENV'] += ";" + self.build_param_string(**color_ramp_divisions)
+                else:
+                    params['ENV'] = self.build_param_string(**color_ramp_divisions)
+            else:
+                params['ENV'] = self.build_param_string(**color_ramp_divisions)
 
         layer_source = 'TileWMS' if tiled else 'ImageWMS'
 
@@ -497,9 +512,60 @@ class MapManagerBase(object):
 
         return view, extent
 
-    def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions, value_precision=2,
-                                             first_division=1, top_offset=0, bottom_offset=0, prefix='val', colors=[],
-                                             color_prefix='color'):
+    def build_legend(self, layer, units=""):
+        """
+        Build Legend data for a given layer
+
+        Args:
+            layer: result.layer object
+            units: unit for the legend.
+        Returns:
+            Legend data associate with the layer.
+        """
+        legend_info = ""
+        if 'color_ramp_division_kwargs' in layer.keys():
+            legend_key = layer['layer_variable']
+            layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
+            if ":" in legend_key:
+                legend_key = legend_key.replace(":", "_")
+
+            div_kwargs = layer['color_ramp_division_kwargs']
+            min_value = div_kwargs['min_value']
+            max_value = div_kwargs['max_value']
+            color_ramp = div_kwargs['color_ramp'] if 'color_ramp' in div_kwargs.keys() else 'Default'
+            prefix = div_kwargs['prefix'] if 'prefix' in div_kwargs.keys() else 'val'
+            color_prefix = div_kwargs['color_prefix'] if 'color_prefix' in div_kwargs.keys() else 'color'
+            first_division = div_kwargs['first_division'] if 'first_division' in div_kwargs.keys() else 1
+
+            legend_info = {
+                'legend_id': legend_key,
+                'title': layer['layer_title'].replace("_", " "),
+                'divisions': dict(),
+                'color_list': self.COLOR_RAMPS.keys(),
+                'layer_id': layer_id,
+                'min_value': min_value,
+                'max_value': max_value,
+                'color_ramp': color_ramp,
+                'prefix': prefix,
+                'color_prefix': color_prefix,
+                'first_division': first_division,
+                'units': units,
+            }
+
+            divisions = self.generate_custom_color_ramp_divisions(**layer['color_ramp_division_kwargs'])
+
+            for label in divisions.keys():
+                if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
+                    legend_info['divisions'][float(divisions[label.replace(color_prefix, prefix)])] = divisions[label]
+            legend_info['divisions'] = collections.OrderedDict(
+                sorted(legend_info['divisions'].items())
+            )
+
+        return legend_info
+
+    def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2,
+                                             first_division=1, top_offset=0, bottom_offset=0, prefix='val',
+                                             color_ramp="", color_prefix='color'):
         """
         Generate custom elevation divisions.
 
@@ -512,12 +578,12 @@ class MapManagerBase(object):
             top_offset(number): offset from top of color ramp (defaults to 0).
             bottom_offset(number): offset from bottom of color ramp (defaults to 0).
             prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
-            colors(list): hexadesimal colors to build color scale (i.e.: ['#FF0000', '#00FF00', '#0000FF']).
+            color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
             color_prefix(str): name of color variable prefix (i.e.: 'color' for pattern 'color1').
 
         Returns:
             dict<name, value>: custom divisions
-        """
+        """  # noqa: E501
         divisions = {}
 
         # Equation of a Line
@@ -529,13 +595,16 @@ class MapManagerBase(object):
         x2_minus_x1 = max_div - min_div
         m = y2_minus_y1 / x2_minus_x1
         b = max_val - (m * max_div)
-
         for i in range(min_div, max_div + 1):
             divisions[f'{prefix}{i}'] = f"{(m * i + b):.{value_precision}f}"
 
-            if colors:
-                divisions[f'{color_prefix}{i}'] = f"{colors[(i - 1) % len(colors)]}"
-
+            if color_ramp in self.COLOR_RAMPS.keys():
+                divisions[f'{color_prefix}{i}'] =\
+                    f"{self.COLOR_RAMPS[color_ramp][(i - first_division) % len(self.COLOR_RAMPS[color_ramp])]}"
+            else:
+                # use default color ramp
+                divisions[f'{color_prefix}{i}'] =\
+                    f"{self.COLOR_RAMPS['Default'][(i - first_division) % len(self.COLOR_RAMPS['Default'])]}"
         return divisions
 
     def get_plot_for_layer_feature(self, layer_name, feature_id):

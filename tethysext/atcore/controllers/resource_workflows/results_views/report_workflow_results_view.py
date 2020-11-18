@@ -86,17 +86,10 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 plot_view = BokehView(**plot_view_params) if renderer == 'bokeh' else PlotlyView(**plot_view_params)
                 results.append({'plot': {'name': result.name, 'description': result.description, 'plot': plot_view}})
             elif isinstance(result, SpatialWorkflowResult):
-                params = ""
-                # Get layer params
-                for param_layer in context['layer_groups']:
-                    if param_layer['id'] in result.codename:
-                        params = param_layer['layers'][0]['options']['params']
-
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
-
                     if not layer_type or layer_type not in ['geojson', 'wms']:
-                        log.warning('Unsupported layer type will be skipped: {}'.format(layer))
+                        log.warning(f'Unsupported layer type will be skipped: {layer_type}')
                         continue
 
                     result_layer = None
@@ -106,44 +99,24 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
                     elif layer_type == 'wms':
                         result_layer = map_manager.build_wms_layer(**layer)
-
                     if result_layer:
-                        # Update env param
-                        legend_info = None
+                        # Get layer params
+                        params = ""
+                        if 'params' in result_layer.options.keys():
+                            params = result_layer.options['params']
                         if params:
                             if 'TILED' in params.keys():
                                 params.pop('TILED')
                             if 'TILESORIGIN' in params.keys():
                                 params.pop('TILESORIGIN')
-                            result_layer['options']['params'] = params
 
-                            legend_key = result_layer['data']['layer_id']
-                            if ":" in legend_key:
-                                legend_key = legend_key.replace(":", "_")
-                            legend_info = {
-                                'legend_id': legend_key,
-                                'title': result_layer['legend_title'].replace("_", " "),
-                                'units': result.options['units'] if 'units' in result.options.keys() else "",
-                                'divisions': dict()
-                            }
+                        # Update env param
+                        result_layer.options['params'] = params
 
-                            # Uses param ENV to create the scale
-                            divisions = params['ENV'].split(";")
-                            divisions_dict = {}
+                        # Build Legend
+                        legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))
 
-                            for division in divisions:
-                                division = division.split(":")
-                                divisions_dict[division[0]] = division[1]
-
-                            for k, v in divisions_dict.items():
-                                if 'val' in k and k[:11] != 'val_no_data':
-                                    legend_info['divisions'][float(v)] = divisions_dict[k.replace('val', 'color')]
-                            legend_info['divisions'] = OrderedDict(
-                                sorted(legend_info['divisions'].items())
-                            )
                         result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
-                        # Add layer to beginning the map's of layer list
-                        map_view.layers.insert(0, result_layer)
                         # Append to final results list.
                         results.append({'map': {'name': result.name, 'description': result.description,
                                                 'legend': legend_info, 'map': result_layer}})

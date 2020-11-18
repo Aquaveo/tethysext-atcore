@@ -9,6 +9,7 @@
 import logging
 import requests
 import uuid
+import collections
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
@@ -44,6 +45,7 @@ class MapView(ResourceView):
     mutiselect = False
     properties_popup_enabled = True
     show_custom_layer = True
+    show_legends = False
 
     _MapManager = None
     _ModelDatabase = ModelDatabase
@@ -174,6 +176,7 @@ class MapView(ResourceView):
             'layer_tab_name': self.layer_tab_name,
             'map_type': self.map_type,
             'geocode_enabled': self.geocode_enabled,
+            'show_legends': self.show_legends,
         })
 
         if resource:
@@ -296,6 +299,52 @@ class MapView(ResourceView):
                 resource.set_attribute(layer_group_type, new_custom_layers)
         session.commit()
         return JsonResponse({'success': True})
+
+    def build_legend_item(self, request, session, resource, *args, **kwargs):
+        """
+        Render the HTML for a legend.
+        """
+        # Get Managers Hook
+        model_db, map_manager = self.get_managers(
+            request=request,
+            resource=resource,
+            *args, **kwargs
+        )
+        legend_div_id = json.loads(request.POST.get('div_id'))
+        minimum = json.loads(request.POST.get('minimum'))
+        maximum = json.loads(request.POST.get('maximum'))
+        color_ramp = json.loads(request.POST.get('color_ramp'))
+        prefix = json.loads(request.POST.get('prefix'))
+        color_prefix = json.loads(request.POST.get('color_prefix'))
+        first_division = json.loads(request.POST.get('first_division'))
+        layer_id = json.loads(request.POST.get('layer_id'))
+
+        legend = {
+            'divisions': dict(),
+        }
+
+        divisions = map_manager.generate_custom_color_ramp_divisions(min_value=minimum, max_value=maximum,
+                                                                     color_ramp=color_ramp, prefix=prefix,
+                                                                     color_prefix=color_prefix,
+                                                                     first_division=first_division)
+
+        division_string = map_manager.build_param_string(**divisions)
+        for label in divisions.keys():
+            if color_prefix in label and int(label.replace(color_prefix, '')) >= first_division:
+                legend['divisions'][float(divisions[label.replace(color_prefix, prefix)])] = divisions[label]
+        legend['divisions'] = collections.OrderedDict(
+            sorted(legend['divisions'].items())
+        )
+
+        html = render(
+            request,
+            'atcore/map_view/color_ramp_component.html',
+            {'legend': legend}
+        )
+
+        response = str(html.content, 'utf-8')
+        return JsonResponse({'success': True, 'response': response, 'div_id': legend_div_id, 'color_ramp': color_ramp,
+                             'division_string': division_string, 'layer_id': layer_id})
 
     def build_layer_group_tree_item(self, request, session, resource, *args, **kwargs):
         """

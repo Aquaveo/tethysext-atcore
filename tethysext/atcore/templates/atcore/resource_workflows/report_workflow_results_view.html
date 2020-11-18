@@ -54,25 +54,27 @@
           <div class="container-fluid">
             <div class="row">
               <div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.parentloop.counter }}" class='map-view-result'></div>
-              <div class="col-xs-4" id="legend-{{ value.legend.legend_id }}" style="width:220px;">
-                <li class="legend-group-item" style="list-style-type:none;">
-                  <label class="flatmark">
-                    <span class="display-name">
-                      {{ value.legend.title|title }}{% if value.legend.units %} ({{value.legend.units}}){% endif %}
-                    </span>
-                  </label>
-                </li>
-                <ul class="legend-list" data-collapsed="false">
-                  {% for division, color in value.legend.divisions.items  %}
-                    <div class="legend-item">
-                      <li class="legend-list-item">
-                        <p>{{ division }} </p>
-                        <div class="color-box" style="background-color: {{ color }} !important;"></div>
-                      </li>
-                    </div>
-                  {% endfor %}
-                </ul>
-              </div>
+              {% if value.legend %}
+                <div class="col-xs-4" id="legend-{{ value.legend.legend_id }}" style="width:220px;">
+                  <li class="legend-group-item" style="list-style-type:none;">
+                    <label class="flatmark">
+                      <span class="display-name">
+                        {{ value.legend.title|title }}{% if value.legend.units %} ({{value.legend.units}}){% endif %}
+                      </span>
+                    </label>
+                  </li>
+                  <ul class="legend-list" data-collapsed="false">
+                    {% for division, color in value.legend.divisions.items  %}
+                      <div class="legend-item">
+                        <li class="legend-list-item">
+                          <p>{{ division }} </p>
+                          <div class="color-box" style="background-color: {{ color }} !important;"></div>
+                        </li>
+                      </div>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
             </div>
           </div>
           <div contentEditable=true class="add-border" data-ph="Map Note"></div>

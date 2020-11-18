@@ -418,3 +418,22 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIsNone(title)
         self.assertIsNone(data)
         self.assertIsNone(layout)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.ResultViewMixin.get_result')
+    def test_update_result_layer(self, mock_get_result):
+        mock_request = mock.MagicMock()
+        mock_request.POST.get.side_effect = ['"foo"', '"color_ramp"']
+        mock_session = mock.MagicMock()
+        mock_resource = mock.MagicMock()
+
+        update_layer = {'layer_id': 'foo', 'color_ramp_division_kwargs': {'color_ramp': 'color_ramp'}}
+        mock_result = mock.MagicMock()
+        mock_result.layers = [update_layer, {'layer_id': 'bar'}]
+        mock_get_result.return_value = mock_result
+
+        self.instance.update_result_layer(request=mock_request,
+                                          session=mock_session,
+                                          resource=mock_resource,
+                                          result_id='test_id')
+
+        mock_result.update_layer.assert_called_with(update_layer=update_layer)
