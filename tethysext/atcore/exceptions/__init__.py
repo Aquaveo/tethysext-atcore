@@ -22,3 +22,31 @@ class ModelDatabaseInitializationError(ModelDatabaseError):
 
 class ModelFileDatabaseInitializationError(ModelDatabaseError):
     pass
+
+
+class UnboundFileCollectionError(Exception):
+    pass
+
+
+class UnboundFileDatabaseError(Exception):
+    pass
+
+
+class FileCollectionNotFoundError(Exception):
+    pass
+
+
+class FileCollectionItemNotFoundError(Exception):
+    pass
+
+
+class FileDatabaseNotFoundError(Exception):
+    pass
+
+
+class FileCollectionItemAlreadyExistsError(Exception):
+    pass
+
+
+class InvalidSpatialResourceExtentTypeError(Exception):
+    pass

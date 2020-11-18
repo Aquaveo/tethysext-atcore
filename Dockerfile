@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:latest
+FROM tethysplatform/tethys-core:3.1.1
 
 #####################
 # Default Variables #
@@ -27,6 +27,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
 ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
+ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
   ; cd ${TETHYSEXT_DIR}/tethysext-atcore \

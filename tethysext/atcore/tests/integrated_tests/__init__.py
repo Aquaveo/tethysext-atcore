@@ -38,6 +38,10 @@ from .forms.widgets.param_widgets_tests import ParamWidgetsTests  # noqa: F401
 from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401
 from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
+from .models.files_database.file_collection_tests import FileCollectionTests  # noqa: F401
+from .models.files_database.file_database_tests import FileDatabaseTests  # noqa: F401
+from .models.files_database.file_collection_client_tests import FileCollectionClientTests  # noqa: F401
+from .models.files_database.file_database_client_tests import FileDatabaseClientTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
 from .models.app_users.resource_workflow_result_tests import ResourceWorkflowResultTests  # noqa: F401
@@ -45,6 +49,7 @@ from .models.app_users.resource_workflow_step_tests import ResourceWorkflowStepT
 from .models.app_users.organization_resource_tests import OrganizationResourceTests  # noqa: F401
 from .models.app_users.organization_tests import OrganizationTests  # noqa: F401
 from .models.app_users.resource_tests import ResourceTests  # noqa: F401
+from .models.app_users.spatial_resource_tests import SpatialResourceTests  # noqa: F401
 from .models.app_users.resource_workflow_tests import ResourceWorkflowBaseMethodsTests  # noqa: F401
 from .models.initializer import AppUserInitializerTests  # noqa: F401
 from .models.resource_workflow_results.dataset_workflow_result_tests import DatasetWorkflowResultTests  # noqa: F401
