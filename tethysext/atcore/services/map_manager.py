@@ -186,7 +186,7 @@ class MapManagerBase(object):
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
-                        popup_title=None, color_ramp_division_kwargs=''):
+                        popup_title=None, color_ramp_division_kwargs=dict):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -237,16 +237,13 @@ class MapManagerBase(object):
         }
 
         if color_ramp_division_kwargs:
-            # Add color ramp options
-            options['minimum'] = color_ramp_division_kwargs['min_value']
-            options['maximum'] = color_ramp_division_kwargs['max_value']
-            if 'color_ramp' in color_ramp_division_kwargs.keys():
-                options['color_ramp'] = color_ramp_division_kwargs['color_ramp']
-
             # Create color ramp and add them to ENV
             color_ramp_divisions = self.generate_custom_color_ramp_divisions(**color_ramp_division_kwargs)
             if 'ENV' in params.keys():
-                params['ENV'] += self.build_param_string(**color_ramp_divisions)
+                if params['ENV']:
+                    params['ENV'] += ";" + self.build_param_string(**color_ramp_divisions)
+                else:
+                    params['ENV'] = self.build_param_string(**color_ramp_divisions)
             else:
                 params['ENV'] = self.build_param_string(**color_ramp_divisions)
 

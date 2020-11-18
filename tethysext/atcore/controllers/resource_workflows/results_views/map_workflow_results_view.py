@@ -252,6 +252,16 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         result = self.get_result(request, kwargs['result_id'], session)
         layer_id = json.loads(request.POST.get('layer_id'))
         color_ramp = json.loads(request.POST.get('color_ramp'))
+        update_layer = ''
 
-        result.update_layer(layer_id=layer_id, color_ramp=color_ramp)
+        # Find the layer based on layer_id and update its color ramp.
+        for layer in result.layers:
+            if layer['layer_id'] == layer_id or layer['layer_name'] == layer_id:
+                update_layer = layer
+                update_layer['color_ramp_division_kwargs']['color_ramp'] = color_ramp
+                break
+
+        if update_layer:
+            result.update_layer(update_layer=update_layer)
+
         return JsonResponse({'success': True})

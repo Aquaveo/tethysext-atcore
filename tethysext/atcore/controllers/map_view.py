@@ -338,7 +338,7 @@ class MapView(ResourceView):
 
         html = render(
             request,
-            'atcore/resource_workflows/components/map_view_color_ramp_component.html',
+            'atcore/map_view/color_ramp_component.html',
             {'legend': legend}
         )
 

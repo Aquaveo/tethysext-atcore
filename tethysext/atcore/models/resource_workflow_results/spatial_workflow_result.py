@@ -192,25 +192,20 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
         self._add_layer(layer)
 
-    def update_layer(self, layer_id, color_ramp):
+    def update_layer(self, update_layer):
         """
         Update color ramp for layer.
 
         Args:
-            layer_id: layer id.
-            color_ramp(str): Key value from COLOR_RAMPS dict.
+            update_layer: layer to update.
         """  # noqa: E501\
-
-        layer = self.get_layer(layer_id)
-        new_layer = layer
-        new_layer['color_ramp_division_kwargs']['color_ramp'] = color_ramp
         new_data = list()
 
         for layer in self.layers:
-            if_match_layer_id = new_layer['layer_id'] and new_layer['layer_id'] == layer['layer_id']
-            if_match_layer_name = new_layer['layer_name'] and new_layer['layer_name'] == layer['layer_name']
+            if_match_layer_id = update_layer['layer_id'] and update_layer['layer_id'] == layer['layer_id']
+            if_match_layer_name = update_layer['layer_name'] and update_layer['layer_name'] == layer['layer_name']
             if if_match_layer_id or if_match_layer_name:
-                new_data.append(new_layer)
+                new_data.append(update_layer)
             else:
                 new_data.append(layer)
 
