@@ -186,7 +186,7 @@ class MapManagerBase(object):
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
-                        popup_title=None, color_ramp_division_kwargs=dict):
+                        popup_title=None, color_ramp_division_kwargs=None):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -235,7 +235,6 @@ class MapManagerBase(object):
             'serverType': 'geoserver',
             'crossOrigin': 'anonymous',
         }
-
         if color_ramp_division_kwargs:
             # Create color ramp and add them to ENV
             color_ramp_divisions = self.generate_custom_color_ramp_divisions(**color_ramp_division_kwargs)
