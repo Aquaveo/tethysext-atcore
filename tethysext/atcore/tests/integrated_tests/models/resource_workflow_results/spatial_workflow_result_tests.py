@@ -145,9 +145,7 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
 
         mock_add_layer.assert_called_with(kwargs)
 
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.spatial_workflow_result.SpatialWorkflowResult.get_layer')  # noqa: E501
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.spatial_workflow_result.SpatialWorkflowResult._add_layer')  # noqa: E501
-    def test_update_layer(self, mock_add_layer, mock_get_layer):
+    def test_update_layer(self):
         layer_data = {'type': 'wms', 'endpoint': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
                       'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
                       'layer_variable': 'depth', 'viewparams': None, 'env': None,
@@ -157,33 +155,29 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
                       'selectable': False, 'plottable': False, 'has_action': False,
                       'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
                       'excluded_properties': None}
-        mock_get_layer.return_value = layer_data
 
-        self.instance.update_layer('test_layer', "Blue")
+        layers = [{'type': 'wms', 'endpoint': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
+                   'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
+                   'layer_variable': 'depth', 'viewparams': None, 'env': None,
+                   'color_ramp_division_kwargs': {'color_ramp': 'Red', 'min_value': 0.1, 'max_value': 30,
+                                                  'value_precision': 3},
+                   'layer_id': '', 'visible': True, 'tiled': True, 'public': True, 'geometry_attribute': 'geometry',
+                   'selectable': False, 'plottable': False, 'has_action': False,
+                   'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
+                   'excluded_properties': None}, {'layer_name': 'foo'}]
 
-        kwargs = dict(
-            endpoint='https://geoserver.foo.com/geoserver/wms',
-            layer_name='foo',
-            layer_title='Foo',
-            layer_variable='foos',
-            layer_id='1',
-            viewparams='foo:bar,goo:jar',
-            color_ramp_division_kwargs="{'color_ramp': 'Blue', 'min_value':0.1, 'max_value': 10}",
-            env='a:b,c:d',
-            visible=False,
-            public=False,
-            tiled=False,
-            selectable=True,
-            plottable=True,
-            has_action=True,
-            extent=[-1, -1, 1, 1],
-            popup_title='A Foo',
-            excluded_properties=['a', 'b'],
-            geometry_attribute='the_geom'
-        )
+        expected_result = [{'type': 'wms', 'endpoint': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
+                            'layer_name': 'steem:depth_test', 'layer_title': '100yr_flow_depth_10m',
+                            'layer_variable': 'depth', 'viewparams': None, 'env': None,
+                            'color_ramp_division_kwargs': {'color_ramp': 'Blue', 'min_value': 0.1, 'max_value': 30,
+                                                           'value_precision': 3}, 'layer_id': '', 'visible': True,
+                            'tiled': True, 'public': True, 'geometry_attribute': 'geometry', 'selectable': False,
+                            'plottable': False, 'has_action': False,
+                            'extent': [-122.33193, 47.090354, -122.595756, 47.17121], 'popup_title': None,
+                            'excluded_properties': None}, {'layer_name': 'foo'}]
 
-        self.instance.add_wms_layer(**kwargs)
+        self.instance.layers = layers
+        self.instance.update_layer(layer_data)
 
-        kwargs['type'] = 'wms'
-
-        mock_add_layer.assert_called_with(kwargs)
+        ret = self.instance.layers
+        self.assertEqual(ret, expected_result)
