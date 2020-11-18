@@ -46,3 +46,7 @@ class FileDatabaseNotFoundError(Exception):
 
 class FileCollectionItemAlreadyExistsError(Exception):
     pass
+
+
+class InvalidSpatialResourceExtentTypeError(Exception):
+    pass
