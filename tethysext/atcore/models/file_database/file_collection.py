@@ -12,11 +12,11 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 
-from tethysext.atcore.models.file_database.base import FileDatabaseBase
+from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.types import GUID
 
 
-class FileCollection(FileDatabaseBase):
+class FileCollection(AppUsersBase):
     """A model representing a FileCollection"""
     __tablename__ = "file_collections"
 
