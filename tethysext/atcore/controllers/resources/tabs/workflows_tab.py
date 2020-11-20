@@ -7,9 +7,10 @@
 ********************************************************************************
 """
 import logging
+from abc import abstractmethod
 
 from django.http import JsonResponse
-from django.shortcuts import reverse
+from django.shortcuts import reverse, redirect
 from django.contrib import messages
 from tethys_sdk.permissions import has_permission
 
@@ -35,29 +36,57 @@ class ResourceWorkflowsTab(ResourceTab):
         post_load_callback:
         show_all_workflows:
         show_all_workflows_roles:
-        resource_workflows:
+
+    Methods:
+        get_workflow_types
+        get_map_manager
+        get_spatial_manager
+        get_geoserver_setting_name
     """
     template_name = 'atcore/resources/tabs/workflows.html'
+    http_method_names = ['get', 'post', 'delete']
     js_requirements = ResourceTab.js_requirements + [
-        'atcore/js/enable-tooltips.js'
+        'atcore/js/enable-tooltips.js',
+        'atcore/js/delete_row.js',
+        'atcore/resources/workflows_tab.js'
     ]
     css_requirements = ResourceTab.css_requirements + [
         'atcore/css/btn-fab.css',
         'atcore/css/flat-modal.css',
         'atcore/resource_workflows/workflows.css'
     ]
-    post_load_callback = 'enable_tooltips'
     modal_templates = [
         'atcore/resources/tabs/new_workflow_modal.html',
         'atcore/resources/tabs/delete_workflow_modal.html'
     ]
+    post_load_callback = 'workflows_tab_loaded'
     show_all_workflows = True
     show_all_workflows_roles = [Roles.APP_ADMIN, Roles.DEVELOPER, Roles.ORG_ADMIN, Roles.ORG_REVIEWER]
-    resource_workflows = None
+
+    @classmethod
+    @abstractmethod
+    def get_workflow_types(cls):
+        return []
+
+    @abstractmethod
+    def get_map_manager(self):
+        return None
+
+    @abstractmethod
+    def get_spatial_manager(self):
+        return None
+
+    @abstractmethod
+    def get_geoserver_setting_name(self):
+        return None
+
+    @classmethod
+    def get_tabbed_view_context(cls, request, context):
+        return {'workflow_types': cls.get_workflow_types()}
 
     def get_context(self, request, session, resource, context, *args, **kwargs):
         """
-        Build context for Summary Tab template.
+        Build context for Workflows Tab template.
         """
         make_session = self.get_sessionmaker()
         session = make_session()
@@ -86,7 +115,6 @@ class ResourceWorkflowsTab(ResourceTab):
                 app_namespace = self.get_app().namespace
                 url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
                 href = reverse(url_name, args=(resource.id, str(workflow.id)))
-
                 status_style = get_style_for_status(status)
 
                 if status == workflow.STATUS_PENDING or status == '' or status is None:
@@ -136,7 +164,7 @@ class ResourceWorkflowsTab(ResourceTab):
                 workflow_cards.append({
                     'id': str(workflow.id),
                     'name': workflow.name,
-                    'type': self.resource_workflows[workflow.type].DISPLAY_TYPE_SINGULAR,
+                    'type': workflow.DISPLAY_TYPE_SINGULAR,
                     'creator': workflow.creator.username if workflow.creator else 'Unknown',
                     'date_created': workflow.date_created,
                     'resource': workflow.resource,
@@ -155,6 +183,7 @@ class ResourceWorkflowsTab(ResourceTab):
         Handle forms on resource details page.
         """
         params = request.POST
+        all_workflow_types = self.get_workflow_types()
 
         if 'new-workflow' in params:
             # Params
@@ -165,7 +194,7 @@ class ResourceWorkflowsTab(ResourceTab):
                 messages.error(request, 'Unable to create new workflow: no name given.')
                 return self.get(request, resource_id, *args, **kwargs)
 
-            if not workflow_type or workflow_type not in self.resource_workflows:
+            if not workflow_type or workflow_type not in all_workflow_types:
                 messages.error(request, 'Unable to create new workflow: invalid workflow type.')
                 return self.get(request, resource_id, *args, **kwargs)
 
@@ -176,14 +205,13 @@ class ResourceWorkflowsTab(ResourceTab):
             request_app_user = _AppUser.get_app_user_from_request(request, session)
 
             try:
-                WorkflowModel = self.resource_workflows[workflow_type]
-                workflow_app = self._app
+                WorkflowModel = all_workflow_types[workflow_type]
                 workflow = WorkflowModel.new(
-                    app=workflow_app,
+                    app=self._app,
                     name=workflow_name,
                     resource_id=resource_id,
                     creator_id=request_app_user.id,
-                    geoserver_name=workflow_app.GEOSERVER_NAME,
+                    geoserver_name=self.get_geoserver_setting_name(),
                     map_manager=self.get_map_manager(),
                     spatial_manager=self.get_spatial_manager(),
                 )
@@ -194,18 +222,19 @@ class ResourceWorkflowsTab(ResourceTab):
                 message = 'An unexpected error occurred while creating the new workflow.'
                 log.exception(message)
                 messages.error(request, message)
-                return self.get(request, resource_id, *args, **kwargs)
+                return redirect(self.request.path)
             finally:
                 session.close()
 
             messages.success(request, 'Successfully created new {}: {}'.format(
-                self.resource_workflows[workflow_type].DISPLAY_TYPE_SINGULAR, workflow_name)
-                             )
-            return self.get(request, resource_id, *args, **kwargs)
+                all_workflow_types[workflow_type].DISPLAY_TYPE_SINGULAR, workflow_name)
+            )
+
+            return redirect(self.request.path)
 
         # Redirect/render the normal GET page by default with warning message.
         messages.warning(request, 'Unable to perform requested action.')
-        return self.get(request, resource_id, *args, **kwargs)
+        return redirect(self.request.path)
 
     def delete(self, request, resource_id, *args, **kwargs):
         """

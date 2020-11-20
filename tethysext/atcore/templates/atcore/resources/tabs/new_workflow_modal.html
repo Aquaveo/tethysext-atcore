@@ -12,6 +12,7 @@
       <div class="modal-body">
         <form id="new-workflow-form" method="post">
           {% csrf_token %}
+          <input type="hidden" name="tab_action" value="default">
           <div class="form-group">
             <label for="new-workflow-name-input">Name</label>
             <input type="text" class="form-control" id="new-workflow-name-input" name="workflow-name">

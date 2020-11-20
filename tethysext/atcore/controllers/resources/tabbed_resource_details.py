@@ -7,7 +7,7 @@
 ********************************************************************************
 """
 from django.shortcuts import render
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseNotAllowed, HttpResponseBadRequest
 from tethys_sdk.permissions import permission_required
 
 from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
@@ -38,15 +38,54 @@ class TabbedResourceDetails(ResourceDetails):
     js_requirements = [
         'atcore/js/enable-tabs.js',
         'atcore/js/csrf.js',
-        'atcore/resources/lazy_load_tabs.js'
+        'atcore/js/lazy_load_tabs.js'
     ]
     tabs = None
+    http_method_names = ['get', 'post', 'delete']
 
     def get(self, request, *args, **kwargs):
         """
-        Route get requests.
+        Route GET requests.
         """
         return self._handle_get(request, *args, **kwargs)
+
+    @active_user_required()
+    @resource_controller()
+    def post(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
+        """
+        Route POST requests.
+        """
+        # Reroute tab action requests to ResourceTab methods
+        tab_action = request.POST.get('tab_action', None)
+        if tab_action:
+            return self._handle_tab_action_request(
+                request=request,
+                resource=resource,
+                tab_slug=tab_slug,
+                tab_action=tab_action,
+                *args, **kwargs
+            )
+
+        return HttpResponseNotAllowed(['GET'])
+
+    @active_user_required()
+    @resource_controller()
+    def delete(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
+        """
+        Route DELETE requests.
+        """
+        # Reroute tab action requests to ResourceTab methods
+        tab_action = request.GET.get('tab_action', None)
+        if tab_action:
+            return self._handle_tab_action_request(
+                request=request,
+                resource=resource,
+                tab_slug=tab_slug,
+                tab_action=tab_action,
+                *args, **kwargs
+            )
+
+        return HttpResponseNotAllowed(['GET'])
 
     @active_user_required()
     @permission_required('view_resources')
@@ -55,22 +94,14 @@ class TabbedResourceDetails(ResourceDetails):
         """
         Handle GET requests.
         """
-        # Reroute tab load requests to ResourceTabs
-        if request.GET and request.GET.get('load-tab', None):
-            return self._handle_load_tab_request(
-                request=request,
-                resource=resource,
-                tab_slug=request.GET.get('load-tab'),
-                *args, **kwargs
-            )
-
         # Reroute tab action requests to ResourceTab methods
-        if request.GET and request.GET.get('tab-action', None):
+        tab_action = request.GET.get('tab_action', None)
+        if tab_action:
             return self._handle_tab_action_request(
                 request=request,
                 resource=resource,
                 tab_slug=tab_slug,
-                tab_action=request.GET.get('tab-action'),
+                tab_action=tab_action,
                 *args, **kwargs
             )
 
@@ -81,6 +112,7 @@ class TabbedResourceDetails(ResourceDetails):
             *args, **kwargs
         )
 
+        # Build list of unique CSS and JS requirements
         css_requirements, js_requirements = self.build_static_requirements(tabs=tabs)
 
         context = {
@@ -95,54 +127,18 @@ class TabbedResourceDetails(ResourceDetails):
 
         context = self.get_context(request, context)
 
+        # Add additional TabResource-specific context
+        for tab in tabs:
+            context.update(tab.get('view').get_tabbed_view_context(request, context))
+
         return render(request, self.template_name, context)
-
-    def _handle_load_tab_request(self, request, resource, tab_slug, *args, **kwargs):
-        """
-        Route to ResourceTab to render the tab.
-        Args:
-            request (HttpRequest): The request.
-            resource (str): Resource instance.
-            tab_slug (str): Portion of URL that denotes which tab is active.
-
-        Returns:
-            HttpResponse: The tab HTML
-        """
-        TabView = self.get_tab_view(
-            request=request,
-            resource=resource,
-            tab_slug=tab_slug,
-            *args, **kwargs
-        )
-
-        if not TabView:
-            return HttpResponseNotFound(f'"{tab_slug}" is not a valid tab.')
-
-        tab_controller = TabView.as_controller(
-            _app=self._app,
-            _AppUser=self._AppUser,
-            _Organization=self._Organization,
-            _Resource=self._Resource,
-            _PermissionsManager=self._PermissionsManager,
-            _persistent_store_name=self._persistent_store_name,
-            base_template=self.base_template
-        )
-
-        response = tab_controller(
-            request=request,
-            resource_id=resource.id,
-            tab_slug=tab_slug,
-            *args,  **kwargs
-        )
-
-        return response
 
     def _handle_tab_action_request(self, request, resource, tab_slug, tab_action, *args, **kwargs):
         """
         Route to the method on the ResourceTab method matching action value.
         Args:
             request (HttpRequest): The request.
-            resource (str): Resource instance.
+            resource (Resource): Resource instance.
             tab_slug (str): Portion of URL that denotes which tab is active.
             tab_action (str): Name of method to call to handle action (may use hyphens instead of underscores).
 
@@ -159,29 +155,52 @@ class TabbedResourceDetails(ResourceDetails):
         if not TabView:
             return HttpResponseNotFound(f'"{tab_slug}" is not a valid tab.')
 
-        view_instance = TabView(
-            _app=self._app,
-            _AppUser=self._AppUser,
-            _Organization=self._Organization,
-            _Resource=self._Resource,
-            _PermissionsManager=self._PermissionsManager,
-            _persistent_store_name=self._persistent_store_name,
-            base_template=self.base_template
-        )
+        # Route request to be handled by controller's default behavior
+        # (i.e. using get(), post(), delete() of the TabView)
+        if tab_action == 'default':
+            tab_controller = TabView.as_controller(
+                _app=self._app,
+                _AppUser=self._AppUser,
+                _Organization=self._Organization,
+                _Resource=self._Resource,
+                _PermissionsManager=self._PermissionsManager,
+                _persistent_store_name=self._persistent_store_name,
+                base_template=self.base_template
+            )
 
-        # Get method matching action (e.g.: "a-tab-action" => "TabView.a_tab_action")
-        tab_method = tab_action.replace('-', '_')
-        action_handler = getattr(view_instance, tab_method, None)
+            response = tab_controller(
+                request=request,
+                resource_id=resource.id,
+                tab_slug=tab_slug,
+                *args, **kwargs
+            )
 
-        if not action_handler:
-            return HttpResponseNotFound(f'"{tab_action}" is not a valid action for tab "{tab_slug}"')
+        # Map the request to a method on the TabView class matching the tab action
+        # (e.g.: my-action => TabView.my_action)
+        else:
+            view_instance = TabView(
+                _app=self._app,
+                _AppUser=self._AppUser,
+                _Organization=self._Organization,
+                _Resource=self._Resource,
+                _PermissionsManager=self._PermissionsManager,
+                _persistent_store_name=self._persistent_store_name,
+                base_template=self.base_template
+            )
 
-        response = action_handler(
-            request=request,
-            resource=resource,
-            tab_slug=tab_slug,
-            *args,  **kwargs
-        )
+            # Get method matching action (e.g.: "a-tab-action" => "TabView.a_tab_action")
+            tab_method = tab_action.replace('-', '_')
+            action_handler = getattr(view_instance, tab_method, None)
+
+            if not action_handler:
+                return HttpResponseBadRequest(f'"{tab_action}" is not a valid action for tab "{tab_slug}"')
+
+            response = action_handler(
+                request=request,
+                resource=resource,
+                tab_slug=tab_slug,
+                *args,  **kwargs
+            )
 
         return response
 
@@ -192,7 +211,7 @@ class TabbedResourceDetails(ResourceDetails):
         Args:
             request (HttpRequest): The request.
             resource (str): Resource instance.
-            tab_slug (str): Portion of URL that denotes which tab is active.
+            tab_slug (str): The slug of the Tab.
 
         Returns:
             ResourceTabView: The ResourceTabView class or None if not found.
@@ -250,7 +269,7 @@ class TabbedResourceDetails(ResourceDetails):
         Args:
             request (HttpRequest): The request.
             resource (str): Resource instance.
-            tab_slug (str): Portion of URL that denotes which tab is active.
+            tab_slug (str): The slug of the Tab.
 
         Returns:
             iterable<dict<tab_slug, tab_title, tab_view>>: List of dictionaries w

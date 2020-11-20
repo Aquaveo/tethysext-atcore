@@ -3,7 +3,6 @@
  * DATE:    August 8, 2018
  * AUTHOR:  nswain
  * COPYRIGHT: (c) Aquaveo 2018
- * LICENSE:
  *****************************************************************************/
 
 /*****************************************************************************
@@ -53,19 +52,21 @@ let LAZY_LOAD_TABS = (function() {
         let tab_content = get_tab_content_from_tab(this);
         let tab_name = get_tab_name_from_tab(this);
 
-        m_active_tab = tab_name;
         set_url_to_tab(tab_name);
 
         // Skip load if tab is already loaded
         if (tab_is_loaded(tab_name)) { return; }
 
-        let tab_url = m_get_tab_url_template
-            .replace('{tab}', tab_name);
+        let tab_url = '?tab_action=default';
 
         $(tab_content).load(tab_url, function() {
             let callback = $(that).attr('data-callback');
             if (callback) {
-                window[callback]();
+                try {
+                  window[callback]();
+                } catch(err) {
+                  console.log(`Error: Unable to find callback "${callback}".`);
+                }
             }
         });
 
@@ -79,7 +80,8 @@ let LAZY_LOAD_TABS = (function() {
     set_url_to_tab = function (tab, reload) {
         let url = window.location.href;
         let old_path = window.location.pathname;
-        let new_path = m_tab_page_url_template.replace("{tab}", tab);
+        let new_path = old_path.replace(m_active_tab, tab);
+        m_active_tab = tab;
 
         let state = null;
         if (old_path !== new_path) {
@@ -95,15 +97,8 @@ let LAZY_LOAD_TABS = (function() {
     };
 
     restore_tab_from_url = function (e) {
-        let pattern_parts = m_tab_page_url_template.split("{tab}");
-        let tab_name = window.location.pathname;
-        for (var i = 0; i < pattern_parts.length; i++) {
-            tab_name = tab_name.replace(pattern_parts[i], '');
-        }
-        tab_name = tab_name.replace('/', '');
-
-        if (tab_name) {
-            $('a[href="#' + tab_name + '"]').trigger('click');
+        if (m_active_tab) {
+            $('a[href="#' + m_active_tab + '"]').trigger('click');
         } else {
             $('a[href="#' + m_default_tab + '"]').trigger('click');
         }
@@ -128,7 +123,6 @@ let LAZY_LOAD_TABS = (function() {
     // Initialization: jQuery function that gets called when
     // the DOM tree finishes loading
     $(document).ready(function() {
-        console.log("Deprecation Warning: Use of this script is deprecated.");
         // Cache the js scripts that are fetched for tabs
         $.ajaxSetup({
           cache: true
@@ -140,12 +134,7 @@ let LAZY_LOAD_TABS = (function() {
         // Derive default tab from active class or first
         let default_tab = cur_active.length ? cur_active : $(".lazy-load-tab").first();
         m_default_tab = get_tab_name_from_tab(default_tab);
-        // Derive active tab from url pattern or default
         m_active_tab = config.attr('data-active-tab');
-        // e.g.: /apps/foo/resources/346e3988-6fe3-48a3-ab9d-4c67258ea43e/details/{tab}/
-        m_tab_page_url_template = decodeURI(config.attr('data-tab-page-url-template'));
-        // e.g.: /aps/foo/resources/346e3988-6fe3-48a3-ab9d-4c67258ea43e/get-tab/{tab}/
-        m_get_tab_url_template = decodeURI(config.attr('data-get-tab-url-template'));
         m_loaded_tabs = [];
 
         // Bind tab loading
