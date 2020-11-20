@@ -11,7 +11,6 @@ from .controllers.app_users.modify_resource_tests import ModifyResourceTests  # 
 from .controllers.app_users.modify_organization_tests import ModifyOrganizationsTests  # noqa: F401
 from .controllers.app_users.modify_user import ModifyUserTests  # noqa: F401
 from .controllers.app_users.resource_details_tests import ResourceDetailsTests  # noqa: F401
-from .controllers.app_users.resource_details_tab_content_tests import ResourceDetailsTabContentTests  # noqa: F401
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from .controllers.app_users.user_account import UserAccountTest  # noqa: F401
 from .controllers.map_view_tests import MapViewTests  # noqa: F401

@@ -6,5 +6,5 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
-from .tabs import *
-from .tabbed_resource_details import TabbedResourceDetails
+from .tabs import ResourceTab, ResourceWorkflowsTab, ResourceSummaryTab  # noqa: F401
+from .tabbed_resource_details import TabbedResourceDetails  # noqa: F401
