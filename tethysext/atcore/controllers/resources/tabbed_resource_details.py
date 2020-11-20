@@ -17,17 +17,20 @@ from tethysext.atcore.controllers.resources.tabs import ResourceTab
 
 class TabbedResourceDetails(ResourceDetails):
     """
-    Class-based view that builds a tabbed details view for a Resource.
+    Class-based view/controller that builds a tabbed details view for a Resource.
 
     Required URL Parameters:
         resource_id (str): the ID of the Resource.
         tab_slug (str): Portion of URL that denotes which tab is active.
 
     Properties:
-        template_name:
-        css_requirements:
-        js_requirements:
-        tabs:
+        template_name (str): The template that is used to render this view.
+        base_template (str): The base template from which the default template extends.
+        back_url (str): The URL that will be used for the back button on the view.
+        http_method_names (list): List of allowed HTTP methods. Defaults to ['get', 'post', 'delete'].
+        css_requirements (list<str>): A list of CSS files to load with the view.
+        js_requirements (list<str>): A list of JavaScript files to load with the view.
+        tabs (iterable<dict<tab_slug, tab_title, tab_view>>): List of dictionaries defining the tabs for this view.
     """
     template_name = 'atcore/resources/tabbed_resource_details.html'
     css_requirements = [
@@ -43,54 +46,10 @@ class TabbedResourceDetails(ResourceDetails):
     tabs = None
     http_method_names = ['get', 'post', 'delete']
 
-    def get(self, request, *args, **kwargs):
-        """
-        Route GET requests.
-        """
-        return self._handle_get(request, *args, **kwargs)
-
-    @active_user_required()
-    @resource_controller()
-    def post(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
-        """
-        Route POST requests.
-        """
-        # Reroute tab action requests to ResourceTab methods
-        tab_action = request.POST.get('tab_action', None)
-        if tab_action:
-            return self._handle_tab_action_request(
-                request=request,
-                resource=resource,
-                tab_slug=tab_slug,
-                tab_action=tab_action,
-                *args, **kwargs
-            )
-
-        return HttpResponseNotAllowed(['GET'])
-
-    @active_user_required()
-    @resource_controller()
-    def delete(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
-        """
-        Route DELETE requests.
-        """
-        # Reroute tab action requests to ResourceTab methods
-        tab_action = request.GET.get('tab_action', None)
-        if tab_action:
-            return self._handle_tab_action_request(
-                request=request,
-                resource=resource,
-                tab_slug=tab_slug,
-                tab_action=tab_action,
-                *args, **kwargs
-            )
-
-        return HttpResponseNotAllowed(['GET'])
-
     @active_user_required()
     @permission_required('view_resources')
     @resource_controller()
-    def _handle_get(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
+    def get(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
         """
         Handle GET requests.
         """
@@ -133,9 +92,48 @@ class TabbedResourceDetails(ResourceDetails):
 
         return render(request, self.template_name, context)
 
+    @active_user_required()
+    @resource_controller()
+    def post(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
+        """
+        Route POST requests.
+        """
+        # Reroute tab action requests to ResourceTab methods
+        tab_action = request.POST.get('tab_action', None)
+        if tab_action:
+            return self._handle_tab_action_request(
+                request=request,
+                resource=resource,
+                tab_slug=tab_slug,
+                tab_action=tab_action,
+                *args, **kwargs
+            )
+
+        return HttpResponseNotAllowed(['GET'])
+
+    @active_user_required()
+    @resource_controller()
+    def delete(self, request, session, resource, back_url, *args, tab_slug='', **kwargs):
+        """
+        Route DELETE requests.
+        """
+        # Reroute tab action requests to ResourceTab methods
+        tab_action = request.GET.get('tab_action', None)
+        if tab_action:
+            return self._handle_tab_action_request(
+                request=request,
+                resource=resource,
+                tab_slug=tab_slug,
+                tab_action=tab_action,
+                *args, **kwargs
+            )
+
+        return HttpResponseNotAllowed(['GET'])
+
     def _handle_tab_action_request(self, request, resource, tab_slug, tab_action, *args, **kwargs):
         """
         Route to the method on the ResourceTab method matching action value.
+
         Args:
             request (HttpRequest): The request.
             resource (Resource): Resource instance.
@@ -232,6 +230,7 @@ class TabbedResourceDetails(ResourceDetails):
     def build_static_requirements(self, tabs):
         """
         Build the static (css and js) requirement lists.
+
         Args:
             tabs (iterable): List of ResourceTabViews.
 
@@ -263,24 +262,6 @@ class TabbedResourceDetails(ResourceDetails):
 
         return css_requirements, js_requirements
 
-    def get_tabs(self, request, resource, tab_slug, *args, **kwargs):
-        """
-        Hook to allow for more complex Tab definitions.
-        Args:
-            request (HttpRequest): The request.
-            resource (str): Resource instance.
-            tab_slug (str): The slug of the Tab.
-
-        Returns:
-            iterable<dict<tab_slug, tab_title, tab_view>>: List of dictionaries w
-        """
-        if self.tabs is not None:
-            return self. tabs
-
-        tabs = ({'slug': 'tab1', 'title': 'Tab 1', 'view': ResourceTab},
-                {'slug': 'tab2', 'title': 'Tab 2', 'view': ResourceTab})
-        return tabs
-
     def get_context(self, request, context, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
@@ -292,3 +273,22 @@ class TabbedResourceDetails(ResourceDetails):
             dict: modified context dictionary.
         """  # noqa: E501
         return context
+
+    def get_tabs(self, request, resource, tab_slug, *args, **kwargs):
+        """
+        Hook to allow for more complex Tab definitions. Returns self.tabs if defined.
+
+        Args:
+            request (HttpRequest): The request.
+            resource (str): Resource instance.
+            tab_slug (str): The slug of the Tab.
+
+        Returns:
+            iterable<dict<tab_slug, tab_title, tab_view>>: List of dictionaries defining the tabs for this view.
+        """
+        if self.tabs is not None:
+            return self.tabs
+
+        tabs = ({'slug': 'tab1', 'title': 'Tab 1', 'view': ResourceTab},
+                {'slug': 'tab2', 'title': 'Tab 2', 'view': ResourceTab})
+        return tabs

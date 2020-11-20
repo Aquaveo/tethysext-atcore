@@ -17,6 +17,8 @@ from tethys_sdk.permissions import has_permission
 from tethysext.atcore.models.app_users import ResourceWorkflow
 from tethysext.atcore.controllers.utilities import get_style_for_status
 from tethysext.atcore.services.app_users.roles import Roles
+from tethysext.atcore.services.map_manager import MapManagerBase
+from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 from tethysext.atcore.controllers.resources.tabs.resource_tab import ResourceTab
 
 
@@ -25,24 +27,24 @@ log = logging.getLogger('tethys.' + __name__)
 
 class ResourceWorkflowsTab(ResourceTab):
     """
-    Description.
+    A tab for the TabbedResourceDetails view that lists any ResourceWorkflows associated with the Resource. Users can add and delete ResourceWorkflows and launch them from this view as well.
+
+    Required URL Variables:
+        resource_id (str): the ID of the Resource.
+        tab_slug (str): Portion of URL that denotes which tab is active.
 
     Properties:
-        template_name:
-        base_template:
-        css_requirements:
-        js_requirements:
-        modal_templates:
-        post_load_callback:
-        show_all_workflows:
-        show_all_workflows_roles:
+        show_all_workflows (bool): List all workflows, not just those created by the current user. Defaults to True.
+        show_all_workflows_roles list<Roles>: List of user Roles that are allowed to see all workflows when show_all_workflows is False. Defaults to: [Roles.APP_ADMIN, Roles.DEVELOPER, Roles.ORG_ADMIN, Roles.ORG_REVIEWER].
 
+    Class Methods:
+        get_workflow_types (required): Return a dictionary mapping of ResourceWorkflow.TYPE to ResourceWorkflow classes (e.g. {MyResourceWorkflow.TYPE: MyResourceWorkflow} ). The list of available workflows in the New Workflow dialog is derived from this object.
+    
     Methods:
-        get_workflow_types
-        get_map_manager
-        get_spatial_manager
-        get_geoserver_setting_name
-    """
+        get_map_manager (optional): Return your app-specific MapManager. Required if your workflows use spatial steps.
+        get_spatial_manager (optional): Return your app-specific SpatialManager. Required if your workflows use spatial steps.
+        get_sds_setting_name (optional): Return the name of the SpatialDatasetService setting. Required if your workflows use spatial steps.
+    """  # noqa: E501
     template_name = 'atcore/resources/tabs/workflows.html'
     http_method_names = ['get', 'post', 'delete']
     js_requirements = ResourceTab.js_requirements + [
@@ -66,27 +68,51 @@ class ResourceWorkflowsTab(ResourceTab):
     @classmethod
     @abstractmethod
     def get_workflow_types(cls):
-        return []
+        """
+        A hook that must be used to define a the ResourceWorkflows supported by this tab view. The list of available workflows in the New Workflow dialog is derived from this object.
+        
+        Returns:
+            dict: mapping of ResourceWorkflow.TYPE to ResourceWorkflow classes (e.g. {MyResourceWorkflow.TYPE: MyResourceWorkflow} ).
+        """  # noqa: E501
+        return {}
 
-    @abstractmethod
     def get_map_manager(self):
-        return None
+        """
+        A hook that can be used to define your app-specific MapManager. Required if your workflows use spatial steps.
+        
+        Returns:
+            MapManagerBase: an app-specific MapMangerBase class.
+        """  # noqa: E501
+        return MapManagerBase
 
-    @abstractmethod
     def get_spatial_manager(self):
-        return None
+        """
+        A hook that can be used to define your app-specific SpatialManager. Required if your workflows use spatial steps.
+        
+        Returns:
+            BaseSpatialManager: an app-specific BaseSpatialManager class.
+        """  # noqa: E501
+        return BaseSpatialManager
 
-    @abstractmethod
-    def get_geoserver_setting_name(self):
+    def get_sds_setting_name(self):
+        """
+        Return the name of the SpatialDatasetService setting. Required if your workflows use spatial steps.
+        
+        Returns:
+            str: the name of the SpatialDatasetService setting for your app.
+        """  # noqa: E501
         return None
 
     @classmethod
     def get_tabbed_view_context(cls, request, context):
+        """
+        Add context specific to the ResourceWorkflowsTab to the TabbedResource Details view.
+        """
         return {'workflow_types': cls.get_workflow_types()}
 
     def get_context(self, request, session, resource, context, *args, **kwargs):
         """
-        Build context for Workflows Tab template.
+        Build context for the ResourceWorkflowsTab template that is used to generate the tab content.
         """
         make_session = self.get_sessionmaker()
         session = make_session()
@@ -180,7 +206,7 @@ class ResourceWorkflowsTab(ResourceTab):
 
     def post(self, request, resource_id, *args, **kwargs):
         """
-        Handle forms on resource details page.
+        Handle the New Workflow form submissions for this tab.
         """
         params = request.POST
         all_workflow_types = self.get_workflow_types()
@@ -211,7 +237,7 @@ class ResourceWorkflowsTab(ResourceTab):
                     name=workflow_name,
                     resource_id=resource_id,
                     creator_id=request_app_user.id,
-                    geoserver_name=self.get_geoserver_setting_name(),
+                    geoserver_name=self.get_sds_setting_name(),
                     map_manager=self.get_map_manager(),
                     spatial_manager=self.get_spatial_manager(),
                 )
@@ -238,7 +264,7 @@ class ResourceWorkflowsTab(ResourceTab):
 
     def delete(self, request, resource_id, *args, **kwargs):
         """
-        Handle delete requests.
+        Handle DELETE requests for this tab.
         """
         session = None
         try:

@@ -13,18 +13,20 @@ from .resource_tab import ResourceTab
 
 class ResourceSummaryTab(ResourceTab):
     """
-    Description.
+    A tab for the TabbedResourceDetails view that lists key-value pair attributes of the Resource. The attributes can be grouped into multiple sections with titles.
+
+    Required URL Variables:
+        resource_id (str): the ID of the Resource.
+        tab_slug (str): Portion of URL that denotes which tab is active.
 
     Properties:
-        template_name:
-        base_template:
-        css_requirements:
-        js_requirements:
-        modal_templates:
-        post_load_callback:
-        has_preview_image:
-        preview_image_title:
-    """
+        has_preview_image (bool): Whether to load a preview image or not. Defaults to False.
+        preview_image_title (str): Title to display above the preview image. Defaults to "Preview".
+    
+    Methods:
+        get_summary_tab_info (required): Override this method to define the attributes that are shown in this tab.
+        get_preview_image_url (optional): Override this method to define the URL for the preview image to use.
+    """  # noqa: E501
     template_name = 'atcore/resources/tabs/summary_tab.html'
     post_load_callback = "summary_tab_loaded"
     js_requirements = ResourceTab.js_requirements + [
@@ -61,7 +63,7 @@ class ResourceSummaryTab(ResourceTab):
 
     def get_context(self, request, session, resource, context, *args, **kwargs):
         """
-        Build context for Summary Tab template.
+        Build context for the ResourceSummaryTab template that is used to generate the tab content.
         """
         if self.has_preview_image:
             context['has_preview_image'] = self.has_preview_image
