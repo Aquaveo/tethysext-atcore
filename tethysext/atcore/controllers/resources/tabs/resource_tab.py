@@ -12,7 +12,7 @@ from tethysext.atcore.controllers.resource_view import ResourceView
 class ResourceTab(ResourceView):
     """
     A View that handles the lazily loaded contents of tabs on the TabbedResourceDetails view and AJAX calls specific to the tab.
-    
+
     Properties:
       template_name:
       base_template:

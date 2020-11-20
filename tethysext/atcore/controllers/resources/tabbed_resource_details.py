@@ -284,7 +284,7 @@ class TabbedResourceDetails(ResourceDetails):
     def get_context(self, request, context, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
-        
+
         Args:
             request (HttpRequest): The request.
             context (dict): The context dictionary.
