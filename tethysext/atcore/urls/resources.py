@@ -92,11 +92,11 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
 
     # Url Patterns
-    manage_resources_url =              slugify(resource_model.DISPLAY_TYPE_PLURAL.lower())  # noqa: E222
-    new_resource_url =                  slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/new'  # noqa: E222
-    edit_resource_url =                 slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/edit'  # noqa: E222, E501
-    resource_details_url =              slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/details'  # noqa: E222, E501
-    resource_status_url =               slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/status'  # noqa: E222
+    manage_resources_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower())  # noqa: E222
+    new_resource_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/new'  # noqa: E222
+    edit_resource_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/edit'  # noqa: E222, E501
+    resource_details_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/details'  # noqa: E222, E501
+    resource_status_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/status'  # noqa: E222
 
     url_maps = (
         url_map_maker(
