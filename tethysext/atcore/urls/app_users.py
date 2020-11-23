@@ -7,13 +7,12 @@
 ********************************************************************************
 """
 import inspect
-from django.utils.text import slugify
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
-    ManageOrganizationMembers, ModifyOrganization, UserAccount, ManageResources, ModifyResource, ResourceDetails, \
-    ResourceStatus
+    ManageOrganizationMembers, ModifyOrganization, UserAccount
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
+from tethysext.atcore.urls import resources
 
 
 def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html',
@@ -46,11 +45,6 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         app_users_manage_organization_members <organization_id>
         app_users_new_organization
         app_users_edit_organization <organization_id>
-        app_users_manage_resources
-        app_users_new_resource
-        app_users_edit_resource <resource_id>
-        app_users_resource_details <resource_id>
-        app_users_resource_status ?[r=<resource_id>]
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
@@ -70,10 +64,6 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     _ManageOrganizationMembers = ManageOrganizationMembers
     _ModifyOrganization = ModifyOrganization
     _UserAccount = UserAccount
-    _ManageResources = ManageResources
-    _ModifyResource = ModifyResource
-    _ResourceDetails = ResourceDetails
-    _ResourceStatus = ResourceStatus
 
     # Default model classes
     _AppUser = AppUser
@@ -101,14 +91,6 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             _ModifyOrganization = custom_controller
         elif issubclass(custom_controller, UserAccount):
             _UserAccount = custom_controller
-        elif issubclass(custom_controller, ManageResources):
-            _ManageResources = custom_controller
-        elif issubclass(custom_controller, ModifyResource):
-            _ModifyResource = custom_controller
-        elif issubclass(custom_controller, ResourceDetails):
-            _ResourceDetails = custom_controller
-        elif issubclass(custom_controller, ResourceStatus):
-            _ResourceStatus = custom_controller
 
     # Handle custom model classes
     for custom_model in custom_models:
@@ -139,13 +121,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     new_organization_url =              'organizations/new'  # noqa: E222
     edit_organization_url =             'organizations/{organization_id}/edit'  # noqa: E222
     manage_organization_members_url =   'organizations/{organization_id}/members'  # noqa: E222
-    manage_resources_url =              slugify(_Resource.DISPLAY_TYPE_PLURAL.lower())  # noqa: E222
-    new_resource_url =                  slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/new'  # noqa: E222
-    edit_resource_url =                 slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/edit'  # noqa: E222, E501
-    resource_details_url =              slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/details'  # noqa: E222, E501
-    resource_status_url =               slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()) + '/status'  # noqa: E222
 
-    url_maps = (
+    url_maps = [
         url_map_maker(
             name='app_users_manage_users',
             url='/'.join([base_url_path, users_url]) if base_url_path else users_url,
@@ -262,72 +239,26 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
-        ),
-        url_map_maker(
-            name='app_users_manage_resources',
-            url='/'.join([base_url_path, manage_resources_url]) if base_url_path else manage_resources_url,
-            controller=_ManageResources.as_controller(
-                _app=app,
-                _persistent_store_name=persistent_store_name,
-                _AppUser=_AppUser,
-                _Organization=_Organization,
-                _Resource=_Resource,
-                _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
-        ),
-        url_map_maker(
-            name='app_users_new_resource',
-            url='/'.join([base_url_path, new_resource_url]) if base_url_path else new_resource_url,
-            controller=_ModifyResource.as_controller(
-                _app=app,
-                _persistent_store_name=persistent_store_name,
-                _AppUser=_AppUser,
-                _Organization=_Organization,
-                _Resource=_Resource,
-                _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
-        ),
-        url_map_maker(
-            name='app_users_edit_resource',
-            url='/'.join([base_url_path, edit_resource_url]) if base_url_path else edit_resource_url,
-            controller=_ModifyResource.as_controller(
-                _app=app,
-                _persistent_store_name=persistent_store_name,
-                _AppUser=_AppUser,
-                _Organization=_Organization,
-                _Resource=_Resource,
-                _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
-        ),
-        url_map_maker(
-            name='app_users_resource_details',
-            url='/'.join([base_url_path, resource_details_url]) if base_url_path else resource_details_url,
-            controller=_ResourceDetails.as_controller(
-                _app=app,
-                _persistent_store_name=persistent_store_name,
-                _AppUser=_AppUser,
-                _Organization=_Organization,
-                _Resource=_Resource,
-                _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
-        ),
-        url_map_maker(
-            name='app_users_resource_status',
-            url='/'.join([base_url_path, resource_status_url]) if base_url_path else resource_status_url,
-            controller=_ResourceStatus.as_controller(
-                _app=app,
-                _persistent_store_name=persistent_store_name,
-                _AppUser=_AppUser,
-                _Organization=_Organization,
-                _Resource=_Resource,
-                _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
         )
+    ]
+
+    resources_custom_models = []
+    for custom_model in custom_models:
+        if inspect.isclass(custom_model) and issubclass(custom_model, Resource):
+            resources_custom_models.append(custom_model)
+
+    resources_urls = resources.urls(
+        url_map_maker,
+        app,
+        persistent_store_name,
+        base_url_path,
+        base_template,
+        custom_controllers,
+        resources_custom_models,
+        custom_permissions_manager,
+        resource_model=_Resource
     )
+
+    url_maps.extend(resources_urls)
 
     return url_maps
