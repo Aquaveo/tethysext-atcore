@@ -115,7 +115,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         # test the results
         self.assertEqual('test1', ret)
         ss = mock_reverse.call_args_list
-        self.assertEqual('test_namespace:app_users_manage_resources', ss[0][0][0])
+        self.assertEqual('test_namespace:resources_manage_resources', ss[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.get_active_app')
@@ -135,5 +135,5 @@ class ResourceStatusControllerTests(TethysTestCase):
         # test the results
         self.assertEqual('test1', ret)
         ss = mock_reverse.call_args_list
-        self.assertEqual('test_namespace:app_users_resource_details', ss[0][0][0])
+        self.assertEqual('test_namespace:resources_resource_details', ss[0][0][0])
         self.assertEqual(resource_id, ss[0][1]['args'][0])

@@ -73,6 +73,7 @@ from .services.decorators_tests import DecoratorsTests  # noqa: F401
 from .services.resource_workflows.helpers_tests import HelpersTests  # noqa: F401
 from .services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401
 from .urls.app_users_tests import AppUserUrlsTests  # noqa: F401
+from .urls.resources_tests import ResourceUrlsTests  # noqa: F401
 from .urls.resource_workflows_tests import ResourceWorkflowsTests  # noqa: F401
 from .urls.spatial_reference import SpatialReferenceUrlsTests  # noqa: F401
 from .utilities_tests import UtilitiesTests  # noqa: F401

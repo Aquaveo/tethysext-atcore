@@ -84,7 +84,7 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
 
         back = self.rd.default_back_url(self.request)
 
-        self.assertEqual('app_namespace:app_users_manage_resources', back._mock_new_parent.call_args[0][0])
+        self.assertEqual('app_namespace:resources_manage_resources', back._mock_new_parent.call_args[0][0])
 
     def test_get_context(self):
         context = {'success': True}

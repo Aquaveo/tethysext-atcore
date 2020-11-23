@@ -111,7 +111,7 @@ class ResourceViewMixinTests(TethysTestCase):
         # test results
         mock_aa.assert_called_with(mock_request)
         call_args = mock_reverse.call_args_list
-        self.assertEqual('test1:app_users_resource_details', call_args[0][0][0])
+        self.assertEqual('test1:resources_resource_details', call_args[0][0][0])
         self.assertEqual('abc123', call_args[0][1]['args'][0])
 
     def test_get_resource_has_permission(self):

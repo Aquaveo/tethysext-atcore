@@ -87,7 +87,7 @@ class ResourceViewMixin(AppUsersViewMixin):
         resource_id = kwargs.get('resource_id', '') or args[0]
         active_app = get_active_app(request)
         app_namespace = active_app.namespace
-        back_controller = '{}:app_users_resource_details'.format(app_namespace)
+        back_controller = f'{app_namespace}:{self._Resource.SLUG}_resource_details'
         return reverse(back_controller, args=(str(resource_id),))
 
     def get_resource(self, request, resource_id, session=None):

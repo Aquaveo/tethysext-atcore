@@ -100,7 +100,7 @@ class ModifyResource(AppUsersViewMixin):
         if next_arg == 'manage-organizations':
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)
         else:
-            next_controller = '{}:app_users_manage_resources'.format(app_namespace)
+            next_controller = f'{app_namespace}:{_Resource.SLUG}_manage_resources'
 
         # If ID is provided, then we are editing, otherwise we are creating a new resource
         editing = resource_id is not None
