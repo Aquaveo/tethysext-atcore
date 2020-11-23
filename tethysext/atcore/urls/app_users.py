@@ -242,6 +242,11 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         )
     ]
 
+    resources_custom_models = []
+    for custom_model in custom_models:
+        if inspect.isclass(custom_model) and issubclass(custom_model, Resource):
+            resources_custom_models.append(custom_model)
+
     resources_urls = resources.urls(
         url_map_maker,
         app,
@@ -249,7 +254,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         base_url_path,
         base_template,
         custom_controllers,
-        custom_models,
+        resources_custom_models,
         custom_permissions_manager,
         resource_model=_Resource
     )

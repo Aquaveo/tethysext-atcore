@@ -17,7 +17,7 @@ from tethysext.atcore.services.app_users.permissions_manager import AppPermissio
 def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html',
          custom_controllers=(), custom_models=(), custom_permissions_manager=None, resource_model=Resource):
     """
-    Generate UrlMap objects for resources extension. To link to pages provided by the resources extension use the name of the url with your app namespace:
+    Generate UrlMap objects for Resource Views. To link to pages provided by the Resource Views use the name of the url with your app namespace:
 
     ::
 
@@ -31,7 +31,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
         base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
         custom_controllers(list<TethysController>): Any number of TethysController subclasses to override default controller classes.
-        custom_models(list<cls>): custom subclasses of AppUser, Organization, or Resource models.
+        custom_models(list<cls>): custom Resource models.
         custom_permissions_manager(cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
         resource_model(cls): Resource model class. Defaults to Resource.
 
@@ -43,7 +43,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         app_users_resource_status ?[r=<resource_id>]
 
     Returns:
-        tuple: UrlMap objects for the resources extension.
+        tuple: UrlMap objects for the Resource Views.
     """  # noqa: F401, E501
     # Validate kwargs
     if base_url_path:
@@ -82,6 +82,8 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     for custom_model in custom_models:
         if inspect.isclass(custom_model) and issubclass(custom_model, Resource):
             resource_model = custom_model
+        else:
+            raise ValueError('custom_models must contain only subclass of Resources.')
 
     # Handle custom permissions manager
     if custom_permissions_manager is not None:

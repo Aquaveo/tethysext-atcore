@@ -2,8 +2,7 @@ from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.models.app_users import AppUser, Resource, Organization
 from tethysext.atcore.urls import app_users
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, UserAccount, \
-    ModifyOrganization, ManageOrganizationMembers, ManageOrganizations, ManageResources, ModifyResource, \
-    ResourceDetails, ResourceStatus
+    ModifyOrganization, ManageOrganizationMembers, ManageOrganizations
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
 
@@ -41,22 +40,6 @@ class CustomModifyOrganization(ModifyOrganization):
 
 
 class CustomManageOrganizationMembers(ManageOrganizationMembers):
-    pass
-
-
-class CustomManageResources(ManageResources):
-    pass
-
-
-class CustomModifyResource(ModifyResource):
-    pass
-
-
-class CustomResourceDetails(ResourceDetails):
-    pass
-
-
-class CustomResourceStatus(ResourceStatus):
     pass
 
 
@@ -184,27 +167,11 @@ class AppUserUrlsTests(TethysTestCase):
     def test_custom_manage_organization_members_controller(self):
         url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomManageOrganizationMembers])
         self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_manage_organization_members'], ManageOrganizationMembers, CustomManageOrganizationMembers)  # noqa: E501
-
-    def test_custom_manage_resources_controller(self):
-        url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomManageResources])
-        self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_manage_resources'], ManageResources, CustomManageResources)
-
-    def test_custom_modify_resource_controller(self):
-        url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomModifyResource])
-        self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_new_resource', 'app_users_edit_resource'], ModifyResource, CustomModifyResource)  # noqa: E501
-
-    def test_custom_resource_details_controller(self):
-        url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceDetails])
-        self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_resource_details'], ResourceDetails, CustomResourceDetails)
-
-    def test_custom_resource_status_controller(self):
-        url_maps = app_users.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceStatus])
-        self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_resource_status'], ResourceStatus, CustomResourceStatus)
+        self.controller_asserts(
+            url_maps,
+            ['app_users_manage_organization_members'],
+            ManageOrganizationMembers, CustomManageOrganizationMembers
+        )
 
     def test_invalid_controller_arg_class(self):
         mockapp = object()
