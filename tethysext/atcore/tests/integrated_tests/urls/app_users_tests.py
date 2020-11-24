@@ -67,8 +67,8 @@ class AppUserUrlsTests(TethysTestCase):
                       'app_users_add_existing_user', 'app_users_manage_organizations',
                       'app_users_manage_organization_members', 'app_users_new_organization',
                       'app_users_edit_organization', 'app_users_user_account',
-                      'app_users_manage_resources', 'app_users_new_resource', 'app_users_edit_resource',
-                      'app_users_resource_details', 'app_users_resource_status']
+                      'resources_manage_resources', 'resources_new_resource', 'resources_edit_resource',
+                      'resources_resource_details', 'resources_resource_status']
         self.urls = ['users', 'users/new', 'users/{user_id}/edit', 'users/add-existing', 'organizations',
                      'organizations/{organization_id}/members', 'organizations/new',
                      'organizations/{organization_id}/edit', 'users/me',

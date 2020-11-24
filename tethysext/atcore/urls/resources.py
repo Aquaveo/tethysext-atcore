@@ -36,7 +36,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         resource_model(cls): Resource model class. Defaults to Resource.
 
     Url Map Names:
-        app_users_manage_resources
+        <resource_type_plural>_manage_resources
         app_users_new_resource
         app_users_edit_resource <resource_id>
         app_users_resource_details <resource_id>
@@ -94,15 +94,15 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
 
     # Url Patterns
-    manage_resources_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower())  # noqa: E222
-    new_resource_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/new'  # noqa: E222
-    edit_resource_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/edit'  # noqa: E222, E501
-    resource_details_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/{resource_id}/details'  # noqa: E222, E501
-    resource_status_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower()) + '/status'  # noqa: E222
+    manage_resources_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower())
+    new_resource_url = manage_resources_url + '/new'
+    edit_resource_url = manage_resources_url + '/{resource_id}/edit'
+    resource_details_url = manage_resources_url + '/{resource_id}/details'
+    resource_status_url = manage_resources_url + '/status'
 
     url_maps = (
         url_map_maker(
-            name='app_users_manage_resources',
+            name=f'{manage_resources_url.replace("-", "_")}_manage_resources',
             url='/'.join([base_url_path, manage_resources_url]) if base_url_path else manage_resources_url,
             controller=_ManageResources.as_controller(
                 _app=app,
@@ -115,7 +115,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name='app_users_new_resource',
+            name=f'{manage_resources_url.replace("-", "_")}_new_resource',
             url='/'.join([base_url_path, new_resource_url]) if base_url_path else new_resource_url,
             controller=_ModifyResource.as_controller(
                 _app=app,
@@ -128,7 +128,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name='app_users_edit_resource',
+            name=f'{manage_resources_url.replace("-", "_")}_edit_resource',
             url='/'.join([base_url_path, edit_resource_url]) if base_url_path else edit_resource_url,
             controller=_ModifyResource.as_controller(
                 _app=app,
@@ -141,7 +141,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name='app_users_resource_details',
+            name=f'{manage_resources_url.replace("-", "_")}_resource_details',
             url='/'.join([base_url_path, resource_details_url]) if base_url_path else resource_details_url,
             controller=_ResourceDetails.as_controller(
                 _app=app,
@@ -154,7 +154,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name='app_users_resource_status',
+            name=f'{manage_resources_url.replace("-", "_")}_resource_status',
             url='/'.join([base_url_path, resource_status_url]) if base_url_path else resource_status_url,
             controller=_ResourceStatus.as_controller(
                 _app=app,

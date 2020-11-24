@@ -13,6 +13,7 @@ import logging
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.text import slugify
 # Tethys core
 from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
@@ -100,7 +101,8 @@ class ModifyResource(AppUsersViewMixin):
         if next_arg == 'manage-organizations':
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)
         else:
-            next_controller = '{}:app_users_manage_resources'.format(app_namespace)
+            resource_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
+            next_controller = f'{app_namespace}:{resource_name}_manage_resources'
 
         # If ID is provided, then we are editing, otherwise we are creating a new resource
         editing = resource_id is not None
