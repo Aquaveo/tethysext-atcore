@@ -336,7 +336,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_error(self, mock_reverse):
         mock_resource = mock.MagicMock()
-        mock_resource.DISPLAY_TYPE_PLURAL = "resources"
+        mock_resource.SLUG = "resources"
         mock_resource.ERROR_STATUSES = StatusMixin.ERROR_STATUSES
         mock_resource.get_status.return_value = 'Error'
 
@@ -345,7 +345,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.namespace}:{mock_resource.DISPLAY_TYPE_PLURAL}_resource_details',
+            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_details',
             args=[mock_resource.id]
         )
         self.assertDictEqual(
@@ -358,7 +358,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_working_status(self, mock_reverse):
         mock_resource = mock.MagicMock()
-        mock_resource.DISPLAY_TYPE_PLURAL = "resources"
+        mock_resource.SLUG = "resources"
         mock_resource.WORKING_STATUSES = StatusMixin.WORKING_STATUSES
         mock_resource.get_status.return_value = 'Processing'
 
@@ -370,7 +370,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.namespace}:{mock_resource.DISPLAY_TYPE_PLURAL}_resource_status'
+            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_status'
         )
         self.assertDictEqual(
             {
@@ -382,7 +382,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_launch(self, mock_reverse):
         mock_resource = mock.MagicMock()
-        mock_resource.DISPLAY_TYPE_PLURAL = "resources"
+        mock_resource.SLUG = "resources"
         mock_resource.OK_STATUSES = StatusMixin.OK_STATUSES
         mock_resource.get_status.return_value = 'Available'
 
@@ -392,7 +392,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.namespace}:{mock_resource.DISPLAY_TYPE_PLURAL}_resource_details',
+            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_details',
             args=[mock_resource.id]
         )
         self.assertDictEqual(

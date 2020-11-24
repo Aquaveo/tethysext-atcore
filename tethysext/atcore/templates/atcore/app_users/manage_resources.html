@@ -3,7 +3,7 @@
 {% load static tethys_gizmos %}
 
 {% block app_content %}
-  {% with tethys_app.namespace|add:':'|add:type_plural as base_resource_href %}
+  {% with tethys_app.namespace|add:':'|add:resource_slug as base_resource_href %}
     {% if show_new_button and resources %}
     <div class="top-action-btns pull-right">
       <a class="btn btn-default manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>

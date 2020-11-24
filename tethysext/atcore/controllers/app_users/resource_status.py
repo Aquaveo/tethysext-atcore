@@ -10,7 +10,6 @@
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponse
-from django.utils.text import slugify
 # Tethys core
 from tethys_sdk.gizmos import JobsTable
 from tethys_sdk.permissions import permission_required
@@ -115,11 +114,10 @@ class ResourceStatus(ResourceViewMixin):
         active_app = get_active_app(request)
         app_namespace = active_app.namespace
         _Resource = self.get_resource_model()
-        resource_type_plural = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
         if back_arg == 'resource-details' and resource_id:
-            back_controller = reverse(f'{app_namespace}:{resource_type_plural}_resource_details', args=[resource_id])
+            back_controller = reverse(f'{app_namespace}:{_Resource.SLUG}_resource_details', args=[resource_id])
         else:
-            back_controller = reverse(f'{app_namespace}:{resource_type_plural}_manage_resources')
+            back_controller = reverse(f'{app_namespace}:{_Resource.SLUG}_manage_resources')
         return back_controller
 
     def get_context(self, request, context):

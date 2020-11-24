@@ -104,7 +104,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         workflow_step_result_name = '{}_workflow_step_result'.format(_ResourceWorkflow.TYPE)
 
         # Url Patterns
-        slugged_plural_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower())
+        slugged_plural_name = _Resource.SLUG.replace('_', '-')
         workflow_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}'  # noqa: E222, E501
         workflow_step_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}/step/{step_id}'  # noqa: E222, E501
         workflow_step_result_url = slugged_plural_name + '/{resource_id}/' + slugged_name + '/{workflow_id}/step/{step_id}/result/{result_id}'  # noqa: E222, E501
