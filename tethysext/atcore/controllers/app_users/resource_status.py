@@ -114,12 +114,12 @@ class ResourceStatus(ResourceViewMixin):
         back_arg = request.GET.get('back', '')
         active_app = get_active_app(request)
         app_namespace = active_app.namespace
+        _Resource = self.get_resource_model()
+        resource_type_plural = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
         if back_arg == 'resource-details' and resource_id:
-            back_controller = reverse('{}:app_users_resource_details'.format(app_namespace), args=[resource_id])
+            back_controller = reverse(f'{app_namespace}:{resource_type_plural}_resource_details', args=[resource_id])
         else:
-            _Resource = self.get_resource_model()
-            resource_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
-            back_controller = reverse(f'{app_namespace}:{resource_name}_manage_resources')
+            back_controller = reverse(f'{app_namespace}:{resource_type_plural}_manage_resources')
         return back_controller
 
     def get_context(self, request, context):

@@ -3,165 +3,163 @@
 {% load static tethys_gizmos %}
 
 {% block app_content %}
-  {% if show_new_button and resources %}
-  <div class="top-action-btns pull-right">
-    {% with tethys_app.namespace|add:':'|add:type_plural|add:'_new_resource' as new_resource_href %}
-      <a class="btn btn-default manage-action-btn btn-new" href="{% url new_resource_href %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
-    {% endwith %}
-  </div>
-  {% endif %}
-  <h1>{{ page_title }}</h1>
-
-  {% if resources %}
-    {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header"  %}
-    <div class="module-content">
-      <div id="resources-table" class="table-responsive table-sortable">
-        <table class="table table-hover table-bottom-border" id="resource_table">
-          <thead>
-            {# NAME HEADER #}
-            <th>
-              <span class="sortable" data-sort-field="name">Name</span>
-              {% if 'name' in pagination_info.sort_by %}
-              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
-              {% endif %}
-            </th>
-
-            {# DESCRIPTION HEADER #}
-            <th>
-              <span class="sortable" data-sort-field="description">Description</span>
-              {% if 'description' in pagination_info.sort_by %}
-              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
-              {% endif %}
-            </th>
-
-            {# ORGANIZATION HEADER #}
-            <th>
-              <span>Organizations</span>
-            </th>
-
-            {# CREATED BY HEADER #}
-            <th>
-            <span class="sortable" data-sort-field="created_by">Created By</span>
-            {% if 'created_by' in pagination_info.sort_by %}
-            <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
-            {% endif %}
-            </th>
-
-            {# DATE CREATED HEADER #}
-            <th>
-              <span class="sortable" data-sort-field="date_created">Date Created</span>
-              {% if 'date_created' in pagination_info.sort_by %}
-              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
-              {% endif %}
-            </th>
-
-            {# DEBUGGING FIELDS #}
-            {% if show_debugging_info %}
-            <th>
-              <span class="sortable" data-sort-field="location">Debugging</span>
-              {% if 'location' in pagination_info.sort_by %}
-              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
-              {% endif %}
-            </th>
-            {% endif %}
-
-            {# BUTTONS HEADER #}
-            <th></th>
-          </thead>
-          <tbody>
-            {% for resource in resources %}
-              <tr>
-                {# NAME VALUE #}
-                <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}';" style="cursor: pointer;">
-                  <a href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}">{{ resource.name }}</a>
-                </td>
-
-                {# DESCRIPTION VALUE #}
-                {% if not resource.description %}
-                <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}';" style="cursor: pointer;">
-                  <i><font color="#A8A8A8">No Description</font></i>
-                </td>
-                {% else %}
-                <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}';" style="cursor: pointer;">
-                  {{ resource.description }}
-                </td>
-                {% endif %}
-
-                {# ORGANIZATIONS VALUE #}
-                 <td>
-                   {% for organization in resource.organizations %}
-                     {% if show_links_to_organizations %}
-                       <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
-                     {% else %}
-                       <span class="manage-tag organization-tag">{{ organization.name }}</span>
-                     {% endif %}
-                   {% endfor %}
-                </td>
-
-                {# CREATED BY VALUE #}
-                {% if resource.created_by %}
-                <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}';" style="cursor: pointer;">
-                  {{ resource.created_by }}
-                </td>
-                {% else %}
-                <td class="created_by" data-id="Unknown" onclick="window.document.location='{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}';" style="cursor: pointer;">
-                  <i><font color="#A8A8A8">Unknown</font></i>
-                </td>
-                {% endif %}
-
-                {# DATE CREATED VALUE #}
-                <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}';" style="cursor: pointer;">
-                  {{ resource.date_created }} UTC
-                </td>
-
-                {# DEBUGGING FIELDS #}
-                {% if show_debugging_info %}
-                <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
-                  {{ resource.debugging }}
-                </td>
-                {% endif %}
-
-                {# BUTTONS #}
-                <td class="btn-td">
-                  <div class="btn-toolbar pull-right">
-                    {% if resource.editable %}
-                      <a class="btn btn-default btn-edit btn-flat" href="{% url tethys_app.namespace|add:':app_users_edit_resource' resource.id %}" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
-                    {% endif %}
-                    {% if resource.deletable %}
-                      <a class="btn btn-default btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
-                    {% endif %}
-                    {% if resource.action == 'processing' %}
-                      <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-refresh"></span></a>
-                    {% elif resource.action == 'error' %}
-                      <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-remove"></span></a>
-                    {% else %}
-                      <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-chevron-right"></span></a>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
-  {% else %}
-    {% if show_new_button %}
-    <div class="new-resource center-parent">
-      <div class="centered">
-        <h4>No {{ page_title }} Found</h4>
-        {% with tethys_app.namespace|add:':'|add:type_plural|add:'_new_resource' as new_resource_href %}
-          <a class="btn btn-primary btn-huge" href="{% url new_resource_href %}">Upload New {{ type_singular }}</a>
-        {% endwith %}
-      </div>
-    </div>
-    {% else %}
-    <div class="new-resource center-parent">
-      <h4 class="centered">No {{ page_title }} Available</h4>
+  {% with tethys_app.namespace|add:':'|add:type_plural as base_resource_href %}
+    {% if show_new_button and resources %}
+    <div class="top-action-btns pull-right">
+      <a class="btn btn-default manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
     </div>
     {% endif %}
-  {% endif %}
+    <h1>{{ page_title }}</h1>
+
+    {% if resources %}
+      {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header"  %}
+      <div class="module-content">
+        <div id="resources-table" class="table-responsive table-sortable">
+          <table class="table table-hover table-bottom-border" id="resource_table">
+            <thead>
+              {# NAME HEADER #}
+              <th>
+                <span class="sortable" data-sort-field="name">Name</span>
+                {% if 'name' in pagination_info.sort_by %}
+                <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                {% endif %}
+              </th>
+
+              {# DESCRIPTION HEADER #}
+              <th>
+                <span class="sortable" data-sort-field="description">Description</span>
+                {% if 'description' in pagination_info.sort_by %}
+                <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                {% endif %}
+              </th>
+
+              {# ORGANIZATION HEADER #}
+              <th>
+                <span>Organizations</span>
+              </th>
+
+              {# CREATED BY HEADER #}
+              <th>
+              <span class="sortable" data-sort-field="created_by">Created By</span>
+              {% if 'created_by' in pagination_info.sort_by %}
+              <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              {% endif %}
+              </th>
+
+              {# DATE CREATED HEADER #}
+              <th>
+                <span class="sortable" data-sort-field="date_created">Date Created</span>
+                {% if 'date_created' in pagination_info.sort_by %}
+                <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                {% endif %}
+              </th>
+
+              {# DEBUGGING FIELDS #}
+              {% if show_debugging_info %}
+              <th>
+                <span class="sortable" data-sort-field="location">Debugging</span>
+                {% if 'location' in pagination_info.sort_by %}
+                <span class="glyphicon glyphicon-sort-by-attributes{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                {% endif %}
+              </th>
+              {% endif %}
+
+              {# BUTTONS HEADER #}
+              <th></th>
+            </thead>
+            <tbody>
+              {% for resource in resources %}
+                <tr>
+                  {# NAME VALUE #}
+                  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                    <a href="{% url base_resource_href|add:'_resource_details' resource.id %}">{{ resource.name }}</a>
+                  </td>
+
+                  {# DESCRIPTION VALUE #}
+                  {% if not resource.description %}
+                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                    <i><font color="#A8A8A8">No Description</font></i>
+                  </td>
+                  {% else %}
+                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                    {{ resource.description }}
+                  </td>
+                  {% endif %}
+
+                  {# ORGANIZATIONS VALUE #}
+                   <td>
+                     {% for organization in resource.organizations %}
+                       {% if show_links_to_organizations %}
+                         <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
+                       {% else %}
+                         <span class="manage-tag organization-tag">{{ organization.name }}</span>
+                       {% endif %}
+                     {% endfor %}
+                  </td>
+
+                  {# CREATED BY VALUE #}
+                  {% if resource.created_by %}
+                  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                    {{ resource.created_by }}
+                  </td>
+                  {% else %}
+                  <td class="created_by" data-id="Unknown" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                    <i><font color="#A8A8A8">Unknown</font></i>
+                  </td>
+                  {% endif %}
+
+                  {# DATE CREATED VALUE #}
+                  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                    {{ resource.date_created }} UTC
+                  </td>
+
+                  {# DEBUGGING FIELDS #}
+                  {% if show_debugging_info %}
+                  <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
+                    {{ resource.debugging }}
+                  </td>
+                  {% endif %}
+
+                  {# BUTTONS #}
+                  <td class="btn-td">
+                    <div class="btn-toolbar pull-right">
+                      {% if resource.editable %}
+                        <a class="btn btn-default btn-edit btn-flat" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-toggle="tooltip" data-placement="top" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+                      {% endif %}
+                      {% if resource.deletable %}
+                        <a class="btn btn-default btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-toggle="tooltip" data-placement="top" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+                      {% endif %}
+                      {% if resource.action == 'processing' %}
+                        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-refresh"></span></a>
+                      {% elif resource.action == 'error' %}
+                        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-remove"></span></a>
+                      {% else %}
+                        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-chevron-right"></span></a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
+    {% else %}
+      {% if show_new_button %}
+      <div class="new-resource center-parent">
+        <div class="centered">
+          <h4>No {{ page_title }} Found</h4>
+          <a class="btn btn-primary btn-huge" href="{% url base_resource_href|add:'_new_resource' %}">Upload New {{ type_singular }}</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="new-resource center-parent">
+        <h4 class="centered">No {{ page_title }} Available</h4>
+      </div>
+      {% endif %}
+    {% endif %}
+  {% endwith %}
 {% endblock %}
 
 {% block after_app_content %}

@@ -10,6 +10,7 @@ import logging
 # Django
 from django.http import JsonResponse
 from django.shortcuts import render, reverse
+from django.utils.text import slugify
 
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
@@ -178,7 +179,7 @@ class ManageResources(AppUsersViewMixin):
         context = self.get_base_context(request)
         context.update({
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
-            'type_plural': _Resource.DISPLAY_TYPE_PLURAL.lower().replace(' ', '_'),
+            'type_plural': slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_'),
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
             'base_template': self.base_template,
             'resources': paginated_resources,
@@ -235,16 +236,17 @@ class ManageResources(AppUsersViewMixin):
             dict<action, title, href>: action attributes.
         """
         status = resource.get_status(resource.ROOT_STATUS_KEY, resource.STATUS_EMPTY)
+        resource_type_plural = slugify(resource.DISPLAY_TYPE_PLURAL.lower()).replace("-", "_")
 
         if status in resource.ERROR_STATUSES:
             return {
                 'action': self.ACTION_ERROR,
                 'title': 'Error',
-                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+                'href': reverse(f'{self._app.namespace}:{resource_type_plural}_resource_details', args=[resource.id])
             }
 
         elif status in resource.WORKING_STATUSES:
-            processing_url = reverse('{}:app_users_resource_status'.format(self._app.namespace))
+            processing_url = reverse(f'{self._app.namespace}:{resource_type_plural}_resource_status')
             return {
                 'action': self.ACTION_PROCESSING,
                 'title': 'Processing',
@@ -255,7 +257,7 @@ class ManageResources(AppUsersViewMixin):
             return {
                 'action': self.ACTION_LAUNCH,
                 'title': self.default_action_title,
-                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+                'href': reverse(f'{self._app.namespace}:{resource_type_plural}_resource_details', args=[resource.id])
             }
 
     def get_resources(self, session, request, request_app_user):
