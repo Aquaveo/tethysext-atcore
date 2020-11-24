@@ -9,6 +9,7 @@
 # Django
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
+from django.utils.text import slugify
 
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
@@ -97,8 +98,9 @@ class ManageOrganizations(AppUsersViewMixin):
             for resource in organization.resources:
                 if resource.DISPLAY_TYPE_PLURAL not in resources:
                     resources[resource.DISPLAY_TYPE_PLURAL] = []
-
-                resources[resource.DISPLAY_TYPE_PLURAL].append(resource.__dict__)
+                resource_content = {'type_plural': slugify(resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')}
+                resource_content.update(resource.__dict__)
+                resources[resource.DISPLAY_TYPE_PLURAL].append(resource_content)
 
             # Get custom_permissions
             can_edit = has_permission(request, organization.get_edit_permission())
@@ -145,7 +147,6 @@ class ManageOrganizations(AppUsersViewMixin):
             'show_resources_link': has_permission(request, 'view_resources'),
             'show_organizations_link': has_permission(request, 'view_organizations')
         })
-
         return render(request, self.template_name, context)
 
     def _handle_delete(self, request, organization_id):

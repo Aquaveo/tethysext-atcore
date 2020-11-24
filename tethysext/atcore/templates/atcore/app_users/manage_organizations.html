@@ -129,7 +129,9 @@
                 <li class="list-group-item">
                   <p class="manage-section-title">{{ resource_display_type|upper }}</p>
                   {% for resource in resources %}
-                  <a href="{% url tethys_app.namespace|add:':app_users_resource_details' resource.id %}?back=manage-organizations"><span class="manage-tag project-tag manage-tag-hover">{{ resource.name }}</span></a>
+                    {% with tethys_app.namespace|add:':'|add:resource.type_plural|add:'_resource_details' as resource_details_href %}
+                      <a href="{% url resource_details_href resource.id %}?back=manage-organizations"><span class="manage-tag project-tag manage-tag-hover">{{ resource.name }}</span></a>
+                    {% endwith %}
                   {% endfor %}
                 </li>
                 {% endfor %}

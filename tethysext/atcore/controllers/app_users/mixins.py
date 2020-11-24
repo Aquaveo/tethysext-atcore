@@ -8,6 +8,7 @@
 """
 from django.shortcuts import reverse
 from django.conf import settings
+from django.utils.text import slugify
 from tethys_apps.utilities import get_active_app
 from tethys_sdk.base import TethysController
 from tethys_sdk.permissions import has_permission
@@ -87,7 +88,8 @@ class ResourceViewMixin(AppUsersViewMixin):
         resource_id = kwargs.get('resource_id', '') or args[0]
         active_app = get_active_app(request)
         app_namespace = active_app.namespace
-        back_controller = '{}:app_users_resource_details'.format(app_namespace)
+        resource_type_plural = slugify(self._Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
+        back_controller = f'{app_namespace}:{resource_type_plural}_resource_details'
         return reverse(back_controller, args=(str(resource_id),))
 
     def get_resource(self, request, resource_id, session=None):
