@@ -254,7 +254,7 @@ class ResourceWorkflowsTab(ResourceTab):
 
             messages.success(request, 'Successfully created new {}: {}'.format(
                 all_workflow_types[workflow_type].DISPLAY_TYPE_SINGULAR, workflow_name)
-                             )
+            )
 
             return redirect(self.request.path)
 
