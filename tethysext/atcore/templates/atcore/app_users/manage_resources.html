@@ -5,7 +5,9 @@
 {% block app_content %}
   {% if show_new_button and resources %}
   <div class="top-action-btns pull-right">
-    <a class="btn btn-default manage-action-btn btn-new" href="{% url tethys_app.namespace|add:':app_users_new_resource' %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
+    {% with tethys_app.namespace|add:':'|add:type_plural|add:'_new_resource' as new_resource_href %}
+      <a class="btn btn-default manage-action-btn btn-new" href="{% url new_resource_href %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
+    {% endwith %}
   </div>
   {% endif %}
   <h1>{{ page_title }}</h1>
@@ -145,18 +147,20 @@
     </div>
     {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
   {% else %}
-      {% if show_new_button %}
-      <div class="new-resource center-parent">
-        <div class="centered">
-          <h4>No {{ type_plural }} Found</h4>
-          <a class="btn btn-primary btn-huge" href="{% url tethys_app.namespace|add:':app_users_new_resource' %}">Upload New {{ type_singular }}</a>
-        </div>
+    {% if show_new_button %}
+    <div class="new-resource center-parent">
+      <div class="centered">
+        <h4>No {{ page_title }} Found</h4>
+        {% with tethys_app.namespace|add:':'|add:type_plural|add:'_new_resource' as new_resource_href %}
+          <a class="btn btn-primary btn-huge" href="{% url new_resource_href %}">Upload New {{ type_singular }}</a>
+        {% endwith %}
       </div>
-      {% else %}
-      <div class="new-resource center-parent">
-        <h4 class="centered">No {{ type_plural }} Available</h4>
-      </div>
-      {% endif %}
+    </div>
+    {% else %}
+    <div class="new-resource center-parent">
+      <h4 class="centered">No {{ page_title }} Available</h4>
+    </div>
+    {% endif %}
   {% endif %}
 {% endblock %}
 

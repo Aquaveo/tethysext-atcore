@@ -37,10 +37,10 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
 
     Url Map Names:
         <resource_type_plural>_manage_resources
-        app_users_new_resource
-        app_users_edit_resource <resource_id>
-        app_users_resource_details <resource_id>
-        app_users_resource_status ?[r=<resource_id>]
+        <resource_type_plural>_new_resource
+        <resource_type_plural>_edit_resource <resource_id>
+        <resource_type_plural>_resource_details <resource_id>
+        <resource_type_plural>_resource_status ?[r=<resource_id>]
 
     Returns:
         tuple: UrlMap objects for the Resource Views.
