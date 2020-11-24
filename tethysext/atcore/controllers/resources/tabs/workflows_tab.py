@@ -39,7 +39,7 @@ class ResourceWorkflowsTab(ResourceTab):
 
     Class Methods:
         get_workflow_types (required): Return a dictionary mapping of ResourceWorkflow.TYPE to ResourceWorkflow classes (e.g. {MyResourceWorkflow.TYPE: MyResourceWorkflow} ). The list of available workflows in the New Workflow dialog is derived from this object.
-    
+
     Methods:
         get_map_manager (optional): Return your app-specific MapManager. Required if your workflows use spatial steps.
         get_spatial_manager (optional): Return your app-specific SpatialManager. Required if your workflows use spatial steps.
@@ -70,7 +70,7 @@ class ResourceWorkflowsTab(ResourceTab):
     def get_workflow_types(cls):
         """
         A hook that must be used to define a the ResourceWorkflows supported by this tab view. The list of available workflows in the New Workflow dialog is derived from this object.
-        
+
         Returns:
             dict: mapping of ResourceWorkflow.TYPE to ResourceWorkflow classes (e.g. {MyResourceWorkflow.TYPE: MyResourceWorkflow} ).
         """  # noqa: E501
@@ -79,7 +79,7 @@ class ResourceWorkflowsTab(ResourceTab):
     def get_map_manager(self):
         """
         A hook that can be used to define your app-specific MapManager. Required if your workflows use spatial steps.
-        
+
         Returns:
             MapManagerBase: an app-specific MapMangerBase class.
         """  # noqa: E501
@@ -88,7 +88,7 @@ class ResourceWorkflowsTab(ResourceTab):
     def get_spatial_manager(self):
         """
         A hook that can be used to define your app-specific SpatialManager. Required if your workflows use spatial steps.
-        
+
         Returns:
             BaseSpatialManager: an app-specific BaseSpatialManager class.
         """  # noqa: E501
@@ -97,7 +97,7 @@ class ResourceWorkflowsTab(ResourceTab):
     def get_sds_setting_name(self):
         """
         Return the name of the SpatialDatasetService setting. Required if your workflows use spatial steps.
-        
+
         Returns:
             str: the name of the SpatialDatasetService setting for your app.
         """  # noqa: E501
@@ -254,7 +254,7 @@ class ResourceWorkflowsTab(ResourceTab):
 
             messages.success(request, 'Successfully created new {}: {}'.format(
                 all_workflow_types[workflow_type].DISPLAY_TYPE_SINGULAR, workflow_name)
-            )
+                             )
 
             return redirect(self.request.path)
 

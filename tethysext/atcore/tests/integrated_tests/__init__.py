@@ -14,9 +14,14 @@ from .controllers.app_users.resource_details_tests import ResourceDetailsTests  
 from .controllers.app_users.resource_status import ResourceStatusControllerTests  # noqa: F401
 from .controllers.app_users.user_account import UserAccountTest  # noqa: F401
 from .controllers.map_view_tests import MapViewTests  # noqa: F401
+from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
+from .controllers.resources.tabbed_resource_details_tests import TabbedResourceDetailsTests  # noqa: F401
+from .controllers.resources.tabs.resource_tab_tests import ResourceTabTests  # noqa: F401
+from .controllers.resources.tabs.summary_tab_tests import ResourceSummaryTabTests  # noqa: F401
+from .controllers.resources.tabs.workflows_tab_tests import ResourceWorkflowsTabTests  # noqa: F401
+from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_mixins_tests import WorkflowViewMixinTests  # noqa: F401
 from .controllers.resource_workflows.result_view_mixins_tests import ResultViewMixinTests  # noqa: F401
-from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerTests  # noqa: F401
 from .controllers.resource_workflows.workflow_views.form_input_wv_tests import FormInputWVTests  # noqa: F401
 from .controllers.resource_workflows.map_workflows.map_workflow_view_tests import MapWorkflowViewTests  # noqa: F401
 from .controllers.resource_workflows.map_workflows.spatial_condor_job_mwv_tests import SpatialCondorJobMwvTests  # noqa: F401, E501
@@ -30,7 +35,6 @@ from .controllers.resource_workflows.results_views.plot_workflow_results_view_te
 from .controllers.resource_workflows.results_views.map_workflow_results_view_tests import MapWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.results_views.report_workflow_results_view_tests import ReportWorkflowResultViewTests  # noqa: F401, E501
 from .controllers.resource_workflows.workflow_results_view_tests import WorkflowResultsViewTests  # noqa: F401
-from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBaseMethodsTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewLockMethodsTests  # noqa: F401
 from .forms.widgets.param_widgets_tests import ParamWidgetsTests  # noqa: F401

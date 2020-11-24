@@ -22,7 +22,7 @@ class ResourceSummaryTab(ResourceTab):
     Properties:
         has_preview_image (bool): Whether to load a preview image or not. Defaults to False.
         preview_image_title (str): Title to display above the preview image. Defaults to "Preview".
-    
+
     Methods:
         get_summary_tab_info (required): Override this method to define the attributes that are shown in this tab.
         get_preview_image_url (optional): Override this method to define the URL for the preview image to use.

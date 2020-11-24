@@ -38,7 +38,7 @@ class ResourceTab(ResourceView):
     def get_tabbed_view_context(cls, request, context):
         """
         Hook for ResourceTab specific context that needs to be added to the TabbedResourceDetails view. This is usually used for adding variables that need to be used to build modals, which are loaded when the tabbed view loads.
-        
+
         Args:
             request(HttpRequest): Django HttpRequest.
             context(dict): context object.
