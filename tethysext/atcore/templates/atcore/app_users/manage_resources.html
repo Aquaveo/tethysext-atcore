@@ -149,13 +149,13 @@
       {% if show_new_button %}
       <div class="new-resource center-parent">
         <div class="centered">
-          <h4>No {{ page_title }} Found</h4>
+          <h4>No {{ type_plural }} Found</h4>
           <a class="btn btn-primary btn-huge" href="{% url base_resource_href|add:'_new_resource' %}">Upload New {{ type_singular }}</a>
         </div>
       </div>
       {% else %}
       <div class="new-resource center-parent">
-        <h4 class="centered">No {{ page_title }} Available</h4>
+        <h4 class="centered">No {{ type_plural }} Available</h4>
       </div>
       {% endif %}
     {% endif %}
