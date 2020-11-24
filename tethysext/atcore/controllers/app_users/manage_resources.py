@@ -178,7 +178,7 @@ class ManageResources(AppUsersViewMixin):
         context = self.get_base_context(request)
         context.update({
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
-            'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
+            'type_plural': _Resource.DISPLAY_TYPE_PLURAL.lower().replace(' ', '_'),
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
             'base_template': self.base_template,
             'resources': paginated_resources,
