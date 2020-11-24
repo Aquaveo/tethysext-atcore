@@ -9,7 +9,6 @@
 # Django
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
-from django.utils.text import slugify
 
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
@@ -98,7 +97,7 @@ class ManageOrganizations(AppUsersViewMixin):
             for resource in organization.resources:
                 if resource.DISPLAY_TYPE_PLURAL not in resources:
                     resources[resource.DISPLAY_TYPE_PLURAL] = []
-                resource_content = {'type_plural': slugify(resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')}
+                resource_content = {'slug': resource.SLUG}
                 resource_content.update(resource.__dict__)
                 resources[resource.DISPLAY_TYPE_PLURAL].append(resource_content)
 

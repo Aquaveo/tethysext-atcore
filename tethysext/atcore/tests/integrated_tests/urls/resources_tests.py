@@ -44,10 +44,10 @@ class ResourceUrlsTests(TethysTestCase):
         self.base_url_path = 'foo/bar'
         self.names = ['resources_manage_resources', 'resources_new_resource', 'resources_edit_resource',
                       'resources_resource_details', 'resources_resource_status']
-        self.urls = [Resource.DISPLAY_TYPE_PLURAL.lower(), Resource.DISPLAY_TYPE_PLURAL.lower() + '/new',
-                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/edit',
-                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/details',
-                     Resource.DISPLAY_TYPE_PLURAL.lower() + '/status']
+        self.urls = [Resource.SLUG.replace("_", "-"), Resource.SLUG.replace("_", "-") + '/new',
+                     Resource.SLUG.replace("_", "-") + '/{resource_id}/edit',
+                     Resource.SLUG.replace("_", "-") + '/{resource_id}/details',
+                     Resource.SLUG.replace("_", "-") + '/status']
         self.num_urls = 5
 
     def tearDown(self):

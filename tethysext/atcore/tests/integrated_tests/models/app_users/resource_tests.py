@@ -59,3 +59,21 @@ class ResourceTests(SqlAlchemyTestCase):
         ret = resource.__repr__()
 
         self.assertEqual(f'<Resource name="A Resource" id="{resource.id}" locked=False>', ret)
+
+    def test_resource_SLUG(self):
+        class TestSlug(Resource):
+            DISPLAY_TYPE_PLURAL = 'Test Resources'
+
+        resource = TestSlug(
+            name=self.name,
+            description=self.description,
+            status=self.status,
+            date_created=self.creation_date,
+        )
+
+        self.session.add(resource)
+        self.session.commit()
+
+        ret = resource.SLUG
+
+        self.assertEqual(ret, 'test_resources')

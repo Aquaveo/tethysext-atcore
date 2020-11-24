@@ -1,6 +1,8 @@
 import datetime
 import uuid
 
+from django.utils.text import slugify
+from django.utils.decorators import classproperty
 from sqlalchemy import Column, Boolean, DateTime, String
 from sqlalchemy.orm import relationship
 from tethysext.atcore.models.types.guid import GUID
@@ -47,3 +49,7 @@ class Resource(StatusMixin, AttributesMixin, UserLockMixin, AppUsersBase):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} name="{self.name}" id="{self.id}" locked={self.is_user_locked}>'
+
+    @classproperty
+    def SLUG(self):
+        return slugify(self.DISPLAY_TYPE_PLURAL.lower()).replace("-", "_")

@@ -10,7 +10,6 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.text import slugify
 # Tethys core
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
@@ -96,8 +95,7 @@ class ModifyOrganization(AppUsersViewMixin):
         if next_arg == 'manage-users':
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
         elif next_arg == 'manage-resources':
-            resource_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
-            next_controller = f'{app_namespace}:{resource_name}_manage_resources'
+            next_controller = f'{app_namespace}:{_Resource.SLUG}_manage_resources'
         else:
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)
 

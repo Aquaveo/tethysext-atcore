@@ -7,7 +7,6 @@
 ********************************************************************************
 """
 import inspect
-from django.utils.text import slugify
 from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageResources, ModifyResource, ResourceDetails, ResourceStatus
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
@@ -36,11 +35,11 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         resource_model(cls): Resource model class. Defaults to Resource.
 
     Url Map Names:
-        <resource_type_plural>_manage_resources
-        <resource_type_plural>_new_resource
-        <resource_type_plural>_edit_resource <resource_id>
-        <resource_type_plural>_resource_details <resource_id>
-        <resource_type_plural>_resource_status ?[r=<resource_id>]
+        <resource_slug>_manage_resources
+        <resource_slug>_new_resource
+        <resource_slug>_edit_resource <resource_id>
+        <resource_slug>_resource_details <resource_id>
+        <resource_slug>_resource_status ?[r=<resource_id>]
 
     Returns:
         tuple: UrlMap objects for the Resource Views.
@@ -94,7 +93,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
 
     # Url Patterns
-    manage_resources_url = slugify(resource_model.DISPLAY_TYPE_PLURAL.lower())
+    manage_resources_url = resource_model.SLUG.replace("_", "-")
     new_resource_url = manage_resources_url + '/new'
     edit_resource_url = manage_resources_url + '/{resource_id}/edit'
     resource_details_url = manage_resources_url + '/{resource_id}/details'
@@ -102,7 +101,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
 
     url_maps = (
         url_map_maker(
-            name=f'{manage_resources_url.replace("-", "_")}_manage_resources',
+            name=f'{resource_model.SLUG}_manage_resources',
             url='/'.join([base_url_path, manage_resources_url]) if base_url_path else manage_resources_url,
             controller=_ManageResources.as_controller(
                 _app=app,
@@ -115,7 +114,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name=f'{manage_resources_url.replace("-", "_")}_new_resource',
+            name=f'{resource_model.SLUG}_new_resource',
             url='/'.join([base_url_path, new_resource_url]) if base_url_path else new_resource_url,
             controller=_ModifyResource.as_controller(
                 _app=app,
@@ -128,7 +127,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name=f'{manage_resources_url.replace("-", "_")}_edit_resource',
+            name=f'{resource_model.SLUG}_edit_resource',
             url='/'.join([base_url_path, edit_resource_url]) if base_url_path else edit_resource_url,
             controller=_ModifyResource.as_controller(
                 _app=app,
@@ -141,7 +140,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name=f'{manage_resources_url.replace("-", "_")}_resource_details',
+            name=f'{resource_model.SLUG}_resource_details',
             url='/'.join([base_url_path, resource_details_url]) if base_url_path else resource_details_url,
             controller=_ResourceDetails.as_controller(
                 _app=app,
@@ -154,7 +153,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         ),
         url_map_maker(
-            name=f'{manage_resources_url.replace("-", "_")}_resource_status',
+            name=f'{resource_model.SLUG}_resource_status',
             url='/'.join([base_url_path, resource_status_url]) if base_url_path else resource_status_url,
             controller=_ResourceStatus.as_controller(
                 _app=app,
