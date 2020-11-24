@@ -42,8 +42,8 @@ class ResourceUrlsTests(TethysTestCase):
 
     def setUp(self):
         self.base_url_path = 'foo/bar'
-        self.names = ['app_users_manage_resources', 'app_users_new_resource', 'app_users_edit_resource',
-                      'app_users_resource_details', 'app_users_resource_status']
+        self.names = ['resources_manage_resources', 'resources_new_resource', 'resources_edit_resource',
+                      'resources_resource_details', 'resources_resource_status']
         self.urls = [Resource.DISPLAY_TYPE_PLURAL.lower(), Resource.DISPLAY_TYPE_PLURAL.lower() + '/new',
                      Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/edit',
                      Resource.DISPLAY_TYPE_PLURAL.lower() + '/{resource_id}/details',
@@ -109,14 +109,14 @@ class ResourceUrlsTests(TethysTestCase):
     def test_custom_manage_resources_controller(self):
         url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomManageResources])
         self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_manage_resources'], ManageResources, CustomManageResources)
+        self.controller_asserts(url_maps, ['resources_manage_resources'], ManageResources, CustomManageResources)
 
     def test_custom_modify_resource_controller(self):
         url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomModifyResource])
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(
             url_maps,
-            ['app_users_new_resource', 'app_users_edit_resource'],
+            ['resources_new_resource', 'resources_edit_resource'],
             ModifyResource,
             CustomModifyResource
         )
@@ -124,12 +124,12 @@ class ResourceUrlsTests(TethysTestCase):
     def test_custom_resource_details_controller(self):
         url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceDetails])
         self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_resource_details'], ResourceDetails, CustomResourceDetails)
+        self.controller_asserts(url_maps, ['resources_resource_details'], ResourceDetails, CustomResourceDetails)
 
     def test_custom_resource_status_controller(self):
         url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceStatus])
         self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['app_users_resource_status'], ResourceStatus, CustomResourceStatus)
+        self.controller_asserts(url_maps, ['resources_resource_status'], ResourceStatus, CustomResourceStatus)
 
     def test_invalid_controller_arg_class(self):
         mockapp = object()
@@ -173,12 +173,12 @@ class ResourceUrlsTests(TethysTestCase):
         )
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
-        self.controller_asserts(url_maps, ['app_users_manage_resources'], ManageResources, CustomManageResources)
+        self.controller_asserts(url_maps, ['resources_manage_resources'], ManageResources, CustomManageResources)
         self.controller_asserts(
-            url_maps, ['app_users_new_resource', 'app_users_edit_resource'], ModifyResource, CustomModifyResource
+            url_maps, ['resources_new_resource', 'resources_edit_resource'], ModifyResource, CustomModifyResource
         )
-        self.controller_asserts(url_maps, ['app_users_resource_details'], ResourceDetails, CustomResourceDetails)
-        self.controller_asserts(url_maps, ['app_users_resource_status'], ResourceStatus, CustomResourceStatus)
+        self.controller_asserts(url_maps, ['resources_resource_details'], ResourceDetails, CustomResourceDetails)
+        self.controller_asserts(url_maps, ['resources_resource_status'], ResourceStatus, CustomResourceStatus)
 
     def test_custom_models(self):
         # NOTE: Don't know how to validate this... for not just test that it doesn't throw an error.

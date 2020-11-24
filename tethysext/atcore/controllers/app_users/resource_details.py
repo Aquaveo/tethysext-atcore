@@ -14,6 +14,7 @@ import logging
 from django.contrib import messages
 from django.shortcuts import render, reverse
 from django.http import JsonResponse
+from django.utils.text import slugify
 # Tethys core
 from tethys_sdk.permissions import permission_required
 from tethys_apps.utilities import get_active_app
@@ -90,7 +91,9 @@ class ResourceDetails(ResourceViewMixin):
         if back_arg == 'manage-organizations':
             back_controller = '{}:app_users_manage_organizations'.format(app_namespace)
         else:
-            back_controller = '{}:app_users_manage_resources'.format(app_namespace)
+            _Resource = self.get_resource_model()
+            resource_name = slugify(_Resource.DISPLAY_TYPE_PLURAL.lower()).replace('-', '_')
+            back_controller = f'{app_namespace}:{resource_name}_manage_resources'
         return reverse(back_controller)
 
     def get_context(self, request, context):
