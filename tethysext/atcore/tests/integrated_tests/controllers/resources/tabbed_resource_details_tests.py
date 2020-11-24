@@ -45,7 +45,6 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
             is_active=True,
         )
         self.session.add(self.app_user)
-        self.request_factory = RequestFactory()
 
         self.resource = Resource(
             name="test_organization"
