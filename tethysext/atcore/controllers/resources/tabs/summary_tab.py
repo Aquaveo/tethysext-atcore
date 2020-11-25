@@ -28,12 +28,12 @@ class ResourceSummaryTab(ResourceTab):
         get_preview_image_url (optional): Override this method to define the URL for the preview image to use.
     """  # noqa: E501
     template_name = 'atcore/resources/tabs/summary_tab.html'
-    post_load_callback = "summary_tab_loaded"
+    post_load_callback = 'summary_tab_loaded'
     js_requirements = ResourceTab.js_requirements + [
         'atcore/resources/summary_tab.js'
     ]
     has_preview_image = False
-    preview_image_title = "Preview"
+    preview_image_title = 'Preview'
 
     def get_preview_image_url(self, request, resource, *args, **kwargs):
         """
