@@ -106,7 +106,7 @@ class ResourceWorkflowsTab(ResourceTab):
     @classmethod
     def get_tabbed_view_context(cls, request, context):
         """
-        Add context specific to the ResourceWorkflowsTab to the TabbedResource Details view.
+        Add context specific to the ResourceWorkflowsTab to the TabbedResourceDetails view.
         """
         return {'workflow_types': cls.get_workflow_types()}
 
@@ -218,11 +218,11 @@ class ResourceWorkflowsTab(ResourceTab):
 
             if not workflow_name:
                 messages.error(request, 'Unable to create new workflow: no name given.')
-                return self.get(request, resource_id, *args, **kwargs)
+                return redirect(self.request.path)
 
             if not workflow_type or workflow_type not in all_workflow_types:
                 messages.error(request, 'Unable to create new workflow: invalid workflow type.')
-                return self.get(request, resource_id, *args, **kwargs)
+                return redirect(self.request.path)
 
             # Create new workflow
             _AppUser = self.get_app_user_model()

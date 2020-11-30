@@ -10,9 +10,7 @@ from unittest import mock
 
 from django.test import RequestFactory
 
-from tethysext.atcore.models.app_users import AppUser, Resource
-from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.tests.factories.django_user import UserFactory
+from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -71,23 +69,6 @@ class ResourceSummaryTabTests(SqlAlchemyTestCase):
 
     def tearDown(self):
         super().tearDown()
-
-    def get_user(self, is_staff=False, return_app_user=False):
-        """Make a Django User and/or associated AppUser instance."""
-        django_user = UserFactory()
-        django_user.is_staff = is_staff
-        django_user.is_superuser = is_staff
-        django_user.save()
-
-        app_user = AppUser(
-            username=django_user.username,
-            role=Roles.DEVELOPER if is_staff else Roles.ORG_USER,
-            is_active=True,
-        )
-        self.session.add(app_user)
-        self.session.commit()
-
-        return app_user if return_app_user else django_user
 
     def verify_general_summary_tab_info(self, context):
         """Asserts to verify the general summary tab info that is included in every summary tab view."""
@@ -193,7 +174,7 @@ class ResourceSummaryTabTests(SqlAlchemyTestCase):
         )
         self.assertEqual(mock_render(), ret)
 
-    def test_default_get_context(self):
+    def test_get_context_default(self):
         """Test get_context() with default implementation: no preview image, no summary tab info, user not staff."""
         instance = ResourceSummaryTab()
         request = self.request_factory.get('/foo/12345/bar/summary/')
