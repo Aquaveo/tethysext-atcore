@@ -114,95 +114,88 @@ class ResourceWorkflowsTab(ResourceTab):
         """
         Build context for the ResourceWorkflowsTab template that is used to generate the tab content.
         """
-        make_session = self.get_sessionmaker()
-        session = make_session()
         _AppUser = self.get_app_user_model()
+        app_user = _AppUser.get_app_user_from_request(request, session)
+        app_user_role = app_user.role
+        if self.show_all_workflows or app_user_role in self.show_all_workflows_roles:
+            workflows = session.query(ResourceWorkflow). \
+                filter(ResourceWorkflow.resource_id == resource.id). \
+                order_by(ResourceWorkflow.date_created.desc()). \
+                all()
+        else:
+            workflows = session.query(ResourceWorkflow). \
+                filter(ResourceWorkflow.resource_id == resource.id). \
+                filter(ResourceWorkflow.creator_id == app_user.id). \
+                order_by(ResourceWorkflow.date_created.desc()). \
+                all()
 
-        try:
-            app_user = _AppUser.get_app_user_from_request(request, session)
-            app_user_role = app_user.role
-            if self.show_all_workflows or app_user_role in self.show_all_workflows_roles:
-                workflows = session.query(ResourceWorkflow). \
-                    filter(ResourceWorkflow.resource_id == resource.id). \
-                    order_by(ResourceWorkflow.date_created.desc()). \
-                    all()
+        # Build up workflow cards for workflows table
+        workflow_cards = []
+
+        for workflow in workflows:
+            status = workflow.get_status()
+            app_namespace = self.get_app().namespace
+            url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
+            href = reverse(url_name, args=(resource.id, str(workflow.id)))
+            status_style = get_style_for_status(status)
+
+            if status == workflow.STATUS_PENDING or status == '' or status is None:
+                statusdict = {
+                    'title': 'Begin',
+                    'style': 'primary',
+                    'href': href
+                }
+
+            elif status == workflow.STATUS_WORKING:
+                statusdict = {
+                    'title': 'Running',
+                    'style': status_style,
+                    'href': href
+                }
+
+            elif status == workflow.STATUS_COMPLETE:
+                statusdict = {
+                    'title': 'View Results',
+                    'style': status_style,
+                    'href': href
+                }
+
+            elif status == workflow.STATUS_ERROR:
+                statusdict = {
+                    'title': 'Continue',
+                    'style': 'primary',
+                    'href': href
+                }
+
+            elif status == workflow.STATUS_FAILED:
+                statusdict = {
+                    'title': 'Failed',
+                    'style': status_style,
+                    'href': href  # TODO: MAKE IT POSSIBLE TO RESTART WORKFLOW?
+                }
+
             else:
-                workflows = session.query(ResourceWorkflow). \
-                    filter(ResourceWorkflow.resource_id == resource.id). \
-                    filter(ResourceWorkflow.creator_id == app_user.id). \
-                    order_by(ResourceWorkflow.date_created.desc()). \
-                    all()
+                statusdict = {
+                    'title': status,
+                    'style': status_style,
+                    'href': href
+                }
 
-            # Build up workflow cards for workflows table
-            workflow_cards = []
+            is_creator = request.user.username == workflow.creator.username if workflow.creator else True
 
-            for workflow in workflows:
-                status = workflow.get_status()
-                app_namespace = self.get_app().namespace
-                url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
-                href = reverse(url_name, args=(resource.id, str(workflow.id)))
-                status_style = get_style_for_status(status)
+            workflow_cards.append({
+                'id': str(workflow.id),
+                'name': workflow.name,
+                'type': workflow.DISPLAY_TYPE_SINGULAR,
+                'creator': workflow.creator.username if workflow.creator else 'Unknown',
+                'date_created': workflow.date_created,
+                'resource': workflow.resource,
+                'status': statusdict,
+                'can_delete': has_permission(request, 'delete_any_workflow') or is_creator
+            })
 
-                if status == workflow.STATUS_PENDING or status == '' or status is None:
-                    statusdict = {
-                        'title': 'Begin',
-                        'style': 'primary',
-                        'href': href
-                    }
-
-                elif status == workflow.STATUS_WORKING:
-                    statusdict = {
-                        'title': 'Running',
-                        'style': status_style,
-                        'href': href
-                    }
-
-                elif status == workflow.STATUS_COMPLETE:
-                    statusdict = {
-                        'title': 'View Results',
-                        'style': status_style,
-                        'href': href
-                    }
-
-                elif status == workflow.STATUS_ERROR:
-                    statusdict = {
-                        'title': 'Continue',
-                        'style': 'primary',
-                        'href': href
-                    }
-
-                elif status == workflow.STATUS_FAILED:
-                    statusdict = {
-                        'title': 'Failed',
-                        'style': status_style,
-                        'href': href  # TODO: MAKE IT POSSIBLE TO RESTART WORKFLOW?
-                    }
-
-                else:
-                    statusdict = {
-                        'title': status,
-                        'style': status_style,
-                        'href': href
-                    }
-
-                is_creator = request.user.username == workflow.creator.username if workflow.creator else True
-
-                workflow_cards.append({
-                    'id': str(workflow.id),
-                    'name': workflow.name,
-                    'type': workflow.DISPLAY_TYPE_SINGULAR,
-                    'creator': workflow.creator.username if workflow.creator else 'Unknown',
-                    'date_created': workflow.date_created,
-                    'resource': workflow.resource,
-                    'status': statusdict,
-                    'can_delete': has_permission(request, 'delete_any_workflow') or is_creator
-                })
-
-            context.update({'workflow_cards': workflow_cards})
-            return context
-
-        finally:
-            session.close()
+        context.update({'workflow_cards': workflow_cards})
+        return context
 
     def post(self, request, resource_id, *args, **kwargs):
         """
@@ -218,11 +211,11 @@ class ResourceWorkflowsTab(ResourceTab):
 
             if not workflow_name:
                 messages.error(request, 'Unable to create new workflow: no name given.')
-                return redirect(self.request.path)
+                return redirect(request.path)
 
             if not workflow_type or workflow_type not in all_workflow_types:
                 messages.error(request, 'Unable to create new workflow: invalid workflow type.')
-                return redirect(self.request.path)
+                return redirect(request.path)
 
             # Create new workflow
             _AppUser = self.get_app_user_model()
@@ -248,19 +241,20 @@ class ResourceWorkflowsTab(ResourceTab):
                 message = 'An unexpected error occurred while creating the new workflow.'
                 log.exception(message)
                 messages.error(request, message)
-                return redirect(self.request.path)
+                return redirect(request.path)
             finally:
                 session.close()
 
-            messages.success(request, 'Successfully created new {}: {}'.format(
-                all_workflow_types[workflow_type].DISPLAY_TYPE_SINGULAR, workflow_name)
+            messages.success(
+                request,
+                f'Successfully created new {all_workflow_types[workflow_type].DISPLAY_TYPE_SINGULAR}: {workflow_name}'
             )
 
-            return redirect(self.request.path)
+            return redirect(request.path)
 
         # Redirect/render the normal GET page by default with warning message.
         messages.warning(request, 'Unable to perform requested action.')
-        return redirect(self.request.path)
+        return redirect(request.path)
 
     def delete(self, request, resource_id, *args, **kwargs):
         """
