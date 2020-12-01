@@ -232,7 +232,7 @@ class TabbedResourceDetails(ResourceDetails):
         Build the static (css and js) requirement lists.
 
         Args:
-            tabs (iterable): List of ResourceTabViews.
+            tabs (iterable): List of ResourceTabs.
 
         Returns:
             2-tuple: List of combined CSS requirements, List of combined JS requirements.
@@ -241,24 +241,24 @@ class TabbedResourceDetails(ResourceDetails):
         js_requirements = []
 
         # Add unique requirements from self
-        for css_requirement in self.css_requirements:
-            if css_requirement not in css_requirements:
-                css_requirements.append(css_requirement)
+        for css in self.css_requirements:
+            if css not in css_requirements:
+                css_requirements.append(css)
 
-        for js_requirement in self.js_requirements:
-            if js_requirement not in js_requirements:
-                js_requirements.append(js_requirement)
+        for js in self.js_requirements:
+            if js not in js_requirements:
+                js_requirements.append(js)
 
         # Add unique requirements from tabs
         for tab in tabs:
             tab_view = tab.get('view')
-            for css_requirement in tab_view.css_requirements:
-                if css_requirements not in css_requirements:
-                    css_requirements.append(css_requirement)
+            for css in tab_view.css_requirements:
+                if css not in css_requirements:
+                    css_requirements.append(css)
 
-            for js_requirement in tab_view.js_requirements:
-                if js_requirement not in js_requirements:
-                    js_requirements.append(js_requirement)
+            for js in tab_view.js_requirements:
+                if js not in js_requirements:
+                    js_requirements.append(js)
 
         return css_requirements, js_requirements
 
