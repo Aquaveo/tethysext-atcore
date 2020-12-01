@@ -85,5 +85,86 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
-    def test_foo(self):
-        self.assertTrue(True)
+    def test_properties_default(self):
+        """Verify the default value of any properties of TabbedResourceDetails."""
+        pass
+
+    def test_get_with_tab_action(self):
+        """Test for GET requests that include the tab_action parameter. Should route to ResourceTab for handling."""
+        pass
+
+    def test_get_without_tab_action(self):
+        """Test for GET requests without the tab_action parameter. Should render the TabbedResourceDetails page."""
+        pass
+
+    def test_post_with_tab_action(self):
+        """Test for POST requests that include the tab_action parameter. Should route to ResourceTab for handling."""
+        pass
+
+    def test_post_without_tab_action(self):
+        """Test for POST requests without the tab_action parameter. Should return a Method Not Allowed response."""
+        pass
+
+    def test_delete_with_tab_action(self):
+        """Test for DELETE requests that include the tab_action parameter. Should route to ResourceTab for handling."""
+        pass
+
+    def test_delete_without_tab_action(self):
+        """Test for DELETE requests without the tab_action parameter. Should return a Method Not Allowed response."""
+        pass
+
+    def test_handle_tab_action_request_no_tab(self):
+        """Test case when given tab_slug doesn't match any ResourceTab. Should return a Not Found response."""
+        pass
+
+    def test_handle_tab_action_request_tab_action_default(self):
+        """Test case when the tab_action is 'default'. Should call the ResourceTab view as a controller."""
+        pass
+
+    def test_handle_tab_action_request_tab_action_method_name(self):
+        """Test case when tab_action is the name of a method on the ResourceTab view."""
+        pass
+
+    def test_handle_tab_action_request_tab_action_invalid_method_name(self):
+        """Test case when tab_action is not 'default' and does not match any method on the Tab view."""
+        pass
+
+    def test_get_tab_view_tab_found(self):
+        """Test case when a TabResource is found for the given tab_slug."""
+        pass
+
+    def test_get_tab_view_tab_not_found(self):
+        """Test case when a TabResource cannot be found for the given tab_slug."""
+        pass
+
+    def test_build_static_requirements(self):
+        """Test the base case build_static_requirement method."""
+        pass
+
+    def test_build_static_requirements_duplicate_css_from_self(self):
+        """Test case when duplicate CSS requirement is provided by the TabbedResourceDetail view."""
+        pass
+
+    def test_build_static_requirements_duplicate_css_from_tab(self):
+        """Test case when duplicate CSS requirement is provided by a ResourceTab view."""
+        pass
+
+    def test_build_static_requirements_duplicate_js_from_self(self):
+        """Test case when duplicate JS requirement is provided by the TabbedResourceDetail view."""
+        pass
+
+    def test_build_static_requirements_duplicate_js_from_tab(self):
+        """Test case when duplicate JS requirement is provided by a ResourceTab view."""
+        pass
+
+    def test_get_context_default(self):
+        """Test default implementation of get_context."""
+        pass
+
+    def test_get_tabs_self_tabs_not_none(self):
+        """Test case when self.tabs is defined."""
+        pass
+
+    def test_get_tabs_self_tabs_none(self):
+        """Test case when self.tabs is not defined."""
+        pass
