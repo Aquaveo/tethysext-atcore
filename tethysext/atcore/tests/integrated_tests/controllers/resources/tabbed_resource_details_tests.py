@@ -445,7 +445,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         """Test case when self.tabs is defined."""
 
         expected_tabs = ({'slug': 'a-tab', 'title': 'A Tab', 'view': TestTab1},
-                {'slug': 'another-tab', 'title': 'Another Tab', 'view': TestTab2})
+                         {'slug': 'another-tab', 'title': 'Another Tab', 'view': TestTab2})
 
         tab_slug = 'a-tab'
         request = self.get_request_with_user(f'/foo/{self.resource.id}/bar/{tab_slug}/', 'get',
