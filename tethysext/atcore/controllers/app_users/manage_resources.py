@@ -222,6 +222,24 @@ class ManageResources(AppUsersViewMixin):
         session.close()
         return JsonResponse(json_response)
 
+    def get_working_url(self, request, resource):
+        """
+        Get the URL for the Resource Working button.
+        """
+        return reverse(f'{self._app.namespace}:app_users_resource_status') + f'?r={resource.id}'
+
+    def get_launch_url(self, request, resource):
+        """
+        Get the URL for the Resource Launch button.
+        """
+        return reverse(f'{self._app.namespace}:app_users_resource_details', args=[resource.id])
+
+    def get_error_url(self, request, resource):
+        """
+        Get the URL for the Resource Error button.
+        """
+        return reverse(f'{self._app.namespace}:app_users_resource_details', args=[resource.id])
+
     def get_resource_action(self, session, request, request_app_user, resource):
         """
         Get the parameters that define the action button (i.e.: Launch button).
@@ -240,22 +258,21 @@ class ManageResources(AppUsersViewMixin):
             return {
                 'action': self.ACTION_ERROR,
                 'title': 'Error',
-                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+                'href': self.get_error_url(request, resource)
             }
 
         elif status in resource.WORKING_STATUSES:
-            processing_url = reverse('{}:app_users_resource_status'.format(self._app.namespace))
             return {
                 'action': self.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': processing_url + '?r={}'.format(resource.id)
+                'href': self.get_working_url(request, resource)
             }
 
         else:
             return {
                 'action': self.ACTION_LAUNCH,
                 'title': self.default_action_title,
-                'href': reverse('{}:app_users_resource_details'.format(self._app.namespace), args=[resource.id])
+                'href': self.get_launch_url(request, resource)
             }
 
     def get_resources(self, session, request, request_app_user):

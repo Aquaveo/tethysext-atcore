@@ -17,67 +17,67 @@ from taggit.forms import TagField
 widget_map = {
     param.Foldername:
         lambda po, p, name: forms.FilePathField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
             path=p.search_paths,
         ),
     param.Boolean:
         lambda po, p, name: forms.BooleanField(
-            initial=po.inspect_value(name) or p.default, required=False
+            initial=po.param.inspect_value(name) or p.default, required=False
         ),
     # param.Array: ,
     # param.Dynamic: ,
     param.Filename:
         lambda po, p, name: forms.FileField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Dict:
         lambda po, p, name: forms.CharField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.XYCoordinates:
         lambda po, p, name: forms.MultiValueField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Selector:
         lambda po, p, name: forms.ChoiceField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     # param.HookList,
     # param.Action: ,
     param.parameterized.String:
         lambda po, p, name: forms.CharField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Magnitude:
         lambda po, p, name: forms.FloatField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     # param.Composite,
     param.Color:
         lambda po, p, name: forms.CharField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.ObjectSelector:
         lambda po, p, name: forms.ChoiceField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
             widget=Select2Widget,
             choices=p.get_range().items(),
         ),
     param.Number:
         lambda po, p, name: forms.FloatField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Range:
         lambda po, p, name: forms.MultiValueField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.NumericTuple:
         lambda po, p, name: forms.MultiValueField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Date:
         lambda po, p, name: forms.DateTimeField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
             widget=DateWidget(
                 options={
                     'startDate': p.bounds[0].strftime(
@@ -102,42 +102,42 @@ widget_map = {
         ),
     param.List:
         lambda po, p, name: TagField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Path:
         lambda po, p, name: forms.FilePathField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
             path=p.search_paths,
         ),
     param.MultiFileSelector:
         lambda po, p, name: forms.MultipleChoiceField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.ClassSelector:
         lambda po, p, name: forms.ChoiceField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.FileSelector:
         lambda po, p, name: forms.ChoiceField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.ListSelector:
         lambda po, p, name: forms.MultipleChoiceField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     # param.Callable,
     param.Tuple:
         lambda po, p, name: forms.MultiValueField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     param.Integer:
         lambda po, p, name: forms.IntegerField(
-            initial=po.inspect_value(name) or p.default,
+            initial=po.param.inspect_value(name) or p.default,
         ),
     # TODO: Implement DataFrameField someday...
     # param.DataFrame:
     #     lambda po, p, name: DataFrameField(
-    #         initial=po.inspect_value(name) is not None or p.default is not None
+    #         initial=po.param.inspect_value(name) is not None or p.default is not None
     #     )
 }
 
@@ -162,7 +162,7 @@ def generate_django_form(parameterized_obj, set_options=None, form_field_prefix=
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
     params = list(filter(lambda x: (x.precedence is None or x.precedence >= 0) and not x.constant,
-                         parameterized_obj.params().values()))
+                         parameterized_obj.param.params().values()))
 
     for p in sorted(params, key=lambda p: p.precedence or 9999):
         # TODO: Pass p.__dict__ as second argument instead of arbitrary

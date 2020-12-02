@@ -1,0 +1,37 @@
+{# New Workflow Modal #}
+{# NOTE: The modal open button for this modal is loaded in workflows.html #}
+<div class="modal fade" id="new-workflow-modal" tabindex="-1" role="dialog" aria-labelledby="new-workflow-modal-label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="new-workflow-modal-label">New Workflow</h4>
+      </div>
+      <div class="modal-body">
+        <form id="new-workflow-form" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="tab_action" value="default">
+          <div class="form-group">
+            <label for="new-workflow-name-input">Name</label>
+            <input type="text" class="form-control" id="new-workflow-name-input" name="workflow-name">
+          </div>
+          <div class="form-group">
+            <label for="new-workflow-type-select">Workflow</label>
+            <select class="form-control" id="new-workflow-type-select" name="workflow-type">
+              <option value="" disabled selected>Select a workflow...</option>
+              {% for type, attrs in workflow_types.items %}
+              <option value="{{ type }}">{{ attrs.DISPLAY_TYPE_SINGULAR }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary" form="new-workflow-form" name="new-workflow">Create</button>
+      </div>
+    </div>
+  </div>
+</div>

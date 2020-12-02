@@ -110,8 +110,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
             hover=True,
             striped=True,
             condensed=False,
+            show_status=True,
             show_detailed_status=True,
-            delete_btn=False,
         )
 
         # Build step cards
