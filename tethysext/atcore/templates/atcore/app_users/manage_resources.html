@@ -71,17 +71,17 @@
               {% for resource in resources %}
                 <tr>
                   {# NAME VALUE #}
-                  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
-                    <a href="{% url base_resource_href|add:'_resource_details' resource.id %}">{{ resource.name }}</a>
+                  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+                    <a href="{{ resource.action_href }}">{{ resource.name }}</a>
                   </td>
 
                   {# DESCRIPTION VALUE #}
                   {% if not resource.description %}
-                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
                     <i><font color="#A8A8A8">No Description</font></i>
                   </td>
                   {% else %}
-                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
                     {{ resource.description }}
                   </td>
                   {% endif %}
@@ -99,17 +99,17 @@
 
                   {# CREATED BY VALUE #}
                   {% if resource.created_by %}
-                  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
                     {{ resource.created_by }}
                   </td>
                   {% else %}
-                  <td class="created_by" data-id="Unknown" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                  <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
                     <i><font color="#A8A8A8">Unknown</font></i>
                   </td>
                   {% endif %}
 
                   {# DATE CREATED VALUE #}
-                  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{% url base_resource_href|add:'_resource_details' resource.id %}';" style="cursor: pointer;">
+                  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
                     {{ resource.date_created }} UTC
                   </td>
 
