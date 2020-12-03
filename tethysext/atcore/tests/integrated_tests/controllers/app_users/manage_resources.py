@@ -376,7 +376,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
             {
                 'action': ManageResources.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': 'processing_url' + '?r={}'.format(mock_resource.id)
+                'href': mock_reverse()
             }, ret)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
