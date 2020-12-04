@@ -34,7 +34,7 @@ function files_tab_loaded() {
                 viewport_items = document.getElementsByClassName("viewport_item");
                 for (var i = 0; i < viewport_items.length; i++) {
                     viewport_item = viewport_items.item(i);
-                    viewport_item.style.display = viewport_item.dataset.parentslug == elem_slug ? "block":"none";
+                    viewport_item.style.visibility = viewport_item.dataset.parentslug == elem_slug ? "visible":"collapse";
                 }
 
                 toggleelems.forEach(function(element){

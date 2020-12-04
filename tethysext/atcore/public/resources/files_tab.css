@@ -54,5 +54,5 @@
 }
 
 .viewport_item {
-    display: none;
+    visibility: collapse;
 }

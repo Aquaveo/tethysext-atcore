@@ -8,6 +8,7 @@
 """
 import errno
 import os
+import time
 
 from django.shortcuts import render
 
@@ -66,11 +67,23 @@ class ResourceFilesTab(ResourceTab):
                     path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
                     for contents in os.listdir(path)
                 ]
+                hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))
 
             except OSError as e:
                 if e.errno != errno.ENOTDIR:
                     raise
                 hierarchy['type'] = 'file'
+                hierarchy['date_modified'] = time.ctime(os.path.getmtime(path))
+
+                power = 2 ** 10
+                n = 0
+                power_labels = {0: 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+                size = os.path.getsize(path)
+                while size > power:
+                    size /= power
+                    n += 1
+                size_str = f'{size:.1f}' if size > 0 else '0'
+                hierarchy['size'] = f'{size_str} {power_labels[n]}'
 
             return hierarchy
 
