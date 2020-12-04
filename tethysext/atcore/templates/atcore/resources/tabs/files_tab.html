@@ -1,8 +1,9 @@
 {% load static %}
 {% widthratio 12 columns|length 1 as column_width %}
 
+<!-- Tree View of Folders -->
 <div class="row", id="file_browser">
-    <div class="col-md-4 tree-col">
+    <div class="col-md-3 tree-col">
         <div id="hierarchy">
             {% for collection_id, collection_contents in collections.items %}
             <div class="foldercontainer">
@@ -21,7 +22,7 @@
     </div>
 
     <!-- File List View -->
-    <div class="col-md-8 preview-col">
+    <div class="col-md-9 preview-col">
         <!-- Current Path -->
         <div class="row">
             <div class="input-group">
@@ -47,22 +48,5 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- File Viewport Headers -->
-<!--        <div class="row" id="files_viewport_header">-->
-<!--            <div id="name_header" class="col-md-7"><h6 class="list-group-heading">Name</h6></div>-->
-<!--            <div id="modified_header" class="col-md-3"><h6 class="list-group-heading">Date Modified</h6></div>-->
-<!--            <div id="size_header" class="col-md-2"><h6 class="list-group-heading">Size</h6></div>-->
-<!--        </div>-->
-        <!-- File Viewport Files -->
-<!--        <div id="files_viewport">-->
-<!--            <div class="file_viewport_row row">-->
-<!--            {% for collection_id, collection_contents in collections.items %}-->
-<!--                {%for node in collection_contents.children %}-->
-<!--                    {%include "atcore/resources/tabs/files_viewport_template.html" %}-->
-<!--                {%endfor%}-->
-<!--            {% endfor %}-->
-<!--            </div>-->
-<!--        </div>-->
     </div>
 </div>

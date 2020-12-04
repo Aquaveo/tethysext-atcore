@@ -1,4 +1,5 @@
 {% if node.type == 'folder' %}
+<!-- Add directories to the viewport -->
 <tr class="viewport_item" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}">
     <td>
         <span class="glyphicon glyphicon-folder-open"
@@ -9,12 +10,14 @@
     <td>{{ node.date_modified }}</td>
     <td>-</td>
 </tr>
+    <!-- Loop through all the directory children -->
     {%for ch in node.children %}
         {%with node=ch template_name="atcore/resources/tabs/files_viewport_template.html" %}
             {%include template_name%}
         {%endwith%}
     {%endfor%}
 {% else %}
+<!-- Add Files to the Viewport -->
 <tr class="viewport_item" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}">
     <td>
         <span class="glyphicon glyphicon-file"

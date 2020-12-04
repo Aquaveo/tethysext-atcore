@@ -5,10 +5,6 @@ function files_tab_loaded() {
         if(elem.tagName.toLowerCase() == "span" && elem !== event.currentTarget)
         {
             var type = elem.classList.contains("folder") ? "folder" : "file";
-            if(type=="file")
-            {
-                alert("File accessed");
-            }
             if(type=="folder")
             {
                 var isexpanded = elem.dataset.isexpanded=="true";
