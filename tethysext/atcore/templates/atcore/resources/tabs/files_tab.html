@@ -1,0 +1,52 @@
+{% load static %}
+{% widthratio 12 columns|length 1 as column_width %}
+
+<div class="row", id="file_browser">
+    <div class="col-md-4 tree-col">
+        <div id="hierarchy">
+            {% for collection_id, collection_contents in collections.items %}
+            <div class="foldercontainer">
+                <span class="folder glyphicon glyphicon-folder-open" data-isexpanded="true"
+                      data-isselected="false" data-parentslug="{{ collection_contents.parent_slug }}"
+                      data-slug="{{ collection_contents.slug }}"
+                      data-filepath="{{ collection_contents.path }}">
+                    {{ collection_id }}
+                </span>
+                {%for node in collection_contents.children %}
+                    {%include "atcore/resources/tabs/tree_view_template.html" %}
+                {%endfor%}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-8 preview-col">
+        <div class="row">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-default glyphicon glyphicon-arrow-up"
+                      id="basic-addon2"></span>
+                </span>
+                <input id="filepath_input" type="text" class="form-control" placeholder=""
+                       readonly>
+            </div>
+        </div>
+        <div class="row" id="files_viewport_header">
+            <div id="name_header" class="col-md-7"><h6 class="list-group-heading">Name</h6></div>
+            <div id="modified_header" class="col-md-3"><h6 class="list-group-heading">Date Modified</h6></div>
+            <div id="size_header" class="col-md-2"><h6 class="list-group-heading">Size</h6></div>
+        </div>
+        <div id="files_viewport" class="row">
+            {% for collection_id, collection_contents in collections.items %}
+                <p><span class="viewport_item glyphicon glyphicon-folder-open"
+                      data-isselected="false" data-parentslug="{{ collection_contents.parent_slug }}"
+                      data-slug="{{ collection_contents.slug }}"
+                      data-filepath="{{ collection_contents.path }}">
+                    {{ collection_id }}
+                </span></p>
+                {%for node in collection_contents.children %}
+                    {%include "atcore/resources/tabs/files_viewport_template.html" %}
+                {%endfor%}
+            {% endfor %}
+        </div>
+    </div>
+</div>

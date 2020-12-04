@@ -1,0 +1,17 @@
+<li>
+    {% if node.type == 'folder' %}
+        <span class="glyphicon glyphicon-folder-close" aria-hidden="true"></span>
+    {% else %}
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    {% endif %}
+    {{node.name}}
+    {%if node.children %}
+        <ul>
+         {%for ch in node.children %}
+              {%with node=ch template_name="atcore/resources/tabs/tree_view_template_old.html" %}
+                   {%include template_name%}
+              {%endwith%}
+         {%endfor%}
+         </ul>
+    {%endif%}
+</li>

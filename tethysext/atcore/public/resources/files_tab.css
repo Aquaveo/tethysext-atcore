@@ -1,0 +1,58 @@
+#hierarchy
+{
+    font-family: FontAwesome;
+}
+.foldercontainer, .file, .noitems
+{
+    display: block;
+    padding: 5px 5px 5px 50px;
+}
+.folder
+{
+
+}
+.file
+{
+    color: green;
+}
+.folder, .file
+{
+    cursor: pointer;
+}
+.noitems
+{
+    display: none;
+    pointer-events: none;
+}
+.folder:hover,.file:hover
+{
+    font-weight: bold;
+}
+.folder:before, .file:before
+{
+    padding-right: 10px;
+}
+
+#file_browser {
+    padding-top: 15px;
+    padding-right: 15px;
+}
+
+#files_viewport_header {
+    border-bottom: 1px solid;
+}
+
+#name_header {
+    border-right: 1px solid;
+}
+
+#modified_header {
+}
+
+#size_header {
+    border-left: 1px solid;
+}
+
+.viewport_item {
+    display: none;
+}

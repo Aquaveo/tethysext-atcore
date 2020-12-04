@@ -1,0 +1,142 @@
+"""
+********************************************************************************
+* Name: files_tab.py
+* Author: gagelarsen
+* Created On: December 03, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+"""
+import errno
+import os
+
+from django.shortcuts import render
+
+from .resource_tab import ResourceTab
+
+
+class ResourceFilesTab(ResourceTab):
+    """
+    A tab for the TabbedResourceDetails view that lists key-value pair attributes of the Resource. The attributes can be grouped into multiple sections with titles.
+
+    Required URL Variables:
+        resource_id (str): the ID of the Resource.
+        tab_slug (str): Portion of URL that denotes which tab is active.
+
+    Methods:
+        get_file_collections (required): Override this method to define a list of FileCollections that are shown in this tab.
+    """  # noqa: E501
+    template_name = 'atcore/resources/tabs/files_tab.html'
+    post_load_callback = 'files_tab_loaded'
+
+    js_requirements = ResourceTab.js_requirements + [
+        'atcore/resources/files_tab.js'
+    ]
+    css_requirements = ResourceTab.css_requirements + [
+        'atcore/resources/files_tab.css'
+    ]
+
+    def get_file_collections(self, request, resource, *args, **kwargs):
+        """
+        Get the summary tab info
+
+        Return Format
+        [FileCollection, FileCollection, FileCollection]
+        """
+        return []
+
+    def get_context(self, request, session, resource, context, *args, **kwargs):
+        """
+        Build context for the ResourceFilesTab template that is used to generate the tab content.
+        """
+
+        def path_hierarchy(path, root_dir=None, parent_slug=None):
+            if root_dir is None:
+                root_dir = os.path.abspath(os.path.join(path, os.pardir))
+            hierarchy_path = path.replace(root_dir, '')
+            hierarchy = {
+                'type': 'folder',
+                'name': os.path.basename(path),
+                'path': hierarchy_path,
+                'parent_slug': parent_slug,
+                'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
+            }
+
+            try:
+                hierarchy['children'] = [
+                    path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
+                    for contents in os.listdir(path)
+                ]
+
+            except OSError as e:
+                if e.errno != errno.ENOTDIR:
+                    raise
+                hierarchy['type'] = 'file'
+
+            return hierarchy
+
+        collections = self.get_file_collections(request, resource)
+        files_from_collection = {}
+        for collection in collections:
+            instance_id = collection.instance.id
+            files_from_collection[instance_id] = path_hierarchy(collection.path)
+
+        context['collections'] = files_from_collection
+        return context
+
+
+temp = {
+    '24c14ba9-28c0-4887-aa12-71a87c012eac': {
+        'type': 'folder',
+        'name': '24c14ba9-28c0-4887-aa12-71a87c012eac',
+        'path': '',
+        'children': [
+            {'type': 'file', 'name': 'file5.txt', 'path': '/file5.txt'},
+            {'type': 'file', 'name': 'file1.txt', 'path': '/file1.txt'},
+            {'type': 'file', 'name': '__meta__.json', 'path': '/__meta__.json'},
+            {
+                'type': 'folder',
+                'name': 'dir1',
+                'path': '/dir1',
+                'children': [
+                    {'type': 'file', 'name': 'file2.txt', 'path': '/dir1/file2.txt'},
+                    {
+                        'type': 'folder',
+                        'name': 'dir2',
+                        'path': '/dir1/dir2',
+                        'children': [
+                            {'type': 'file', 'name': 'file4.txt', 'path': '/dir1/dir2/file4.txt'}
+                        ]
+                    },
+                    {'type': 'file', 'name': 'file3.txt', 'path': '/dir1/file3.txt'}
+                ]
+             }
+        ]
+    },
+    '92372174-411b-4a4f-bad6-8cb3fdb6a20a': {
+        'type': 'folder',
+        'name': '92372174-411b-4a4f-bad6-8cb3fdb6a20a',
+        'path': '',
+        'children': [
+                {'type': 'file', 'name': 'file5.txt', 'path': '/file5.txt'},
+                {'type': 'file', 'name': 'file1.txt', 'path': '/file1.txt'},
+                {'type': 'file', 'name': '__meta__.json', 'path': '/__meta__.json'},
+                {
+                    'type': 'folder',
+                    'name': 'dir1',
+                    'path': '/dir1',
+                    'children': [
+                        {'type': 'file', 'name': 'file2.txt', 'path': '/dir1/file2.txt'},
+                        {
+                            'type': 'folder',
+                            'name': 'dir2',
+                            'path': '/dir1/dir2',
+                            'children': [
+                                {'type': 'file', 'name': 'file4.txt', 'path': '/dir1/dir2/file4.txt'}
+                            ]
+                        },
+                        {'type': 'file', 'name': 'file3.txt', 'path': '/dir1/file3.txt'}
+                     ]
+                 }
+        ]
+    }
+}

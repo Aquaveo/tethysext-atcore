@@ -1,0 +1,20 @@
+{% if node.type == 'folder' %}
+    <p><span class="viewport_item glyphicon glyphicon-folder-open"
+          data-parentslug="{{ node.parent_slug }}"
+          data-slug="{{ node.slug }}" data-isselected="false"
+          data-filepath="{{ collection_id }}{{ node.path }}">
+        {{ node.name }}
+    </span></p>
+    {%for ch in node.children %}
+        {%with node=ch template_name="atcore/resources/tabs/files_viewport_template.html" %}
+            {%include template_name%}
+        {%endwith%}
+    {%endfor%}
+{% else %}
+    <p><span class="viewport_item glyphicon glyphicon-folder-open"
+          data-parentslug="{{ node.parent_slug }}"
+          data-slug="{{ node.slug }}" data-isselected="false"
+          data-filepath="{{ collection_id }}{{ node.path }}">
+        {{ node.name }}
+    </span></p>
+{% endif %}
