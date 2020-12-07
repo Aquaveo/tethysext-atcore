@@ -402,17 +402,18 @@ class ManageResourcesTests(SqlAlchemyTestCase):
                 'href': mock_reverse(),
             }, ret)
 
-    def test_get_resources(self):
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    def test_get_resources(self, mock_get_resource_model):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_session = mock.MagicMock()
         mock_request_app_user = mock.MagicMock()
-
+        mock_get_resource_model.return_value = 'resource_type'
         # Call the method
         manage_resources = ManageResources()
         manage_resources.get_resources(mock_session, mock_request, mock_request_app_user)
 
         # Test the results
-        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request)
+        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type')
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
     def test_can_edit_resource(self, mock_has_permission):
