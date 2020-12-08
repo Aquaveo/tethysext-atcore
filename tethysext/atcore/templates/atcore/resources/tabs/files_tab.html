@@ -2,13 +2,14 @@
 {% widthratio 12 columns|length 1 as column_width %}
 
 <!-- Tree View of Folders -->
-<div class="row", id="file_browser">
-    <div class="col-md-3 tree-col">
+<div id="file_browser">
+    <div id="tree-col" class="col-md-3">
         <div id="hierarchy">
             {% for collection_id, collection_contents in collections.items %}
             <div class="foldercontainer">
-                <span class="folder glyphicon glyphicon-folder-open" data-isexpanded="true"
-                      data-isselected="false" data-parentslug="{{ collection_contents.parent_slug }}"
+                <span class="folder glyphicon glyphicon-folder-close collection-container" data-isexpanded="false"
+                      data-isselected="false"
+                      data-parentslug="{{ collection_contents.parent_slug }}"
                       data-slug="{{ collection_contents.slug }}"
                       data-filepath="{{ collection_contents.path }}">
                     {{ collection_id }}
@@ -22,7 +23,7 @@
     </div>
 
     <!-- File List View -->
-    <div class="col-md-9 preview-col">
+    <div id="preview-col" class="col-md-9">
         <!-- Current Path -->
         <div class="row">
             <div class="input-group">
@@ -31,22 +32,22 @@
             </div>
         </div>
         <div class="files_viewport">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Date Modified</th>
-                        <th>Size</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for collection_id, collection_contents in collections.items %}
-                    {%for node in collection_contents.children %}
-                        {%include "atcore/resources/tabs/files_viewport_template.html" %}
-                    {%endfor%}
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date Modified</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for collection_id, collection_contents in collections.items %}
+                {%for node in collection_contents.children %}
+                    {%include "atcore/resources/tabs/files_viewport_template.html" %}
+                {%endfor%}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     </div>
 </div>

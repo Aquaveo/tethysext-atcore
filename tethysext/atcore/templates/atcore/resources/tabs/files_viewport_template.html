@@ -1,10 +1,20 @@
 {% if node.type == 'folder' %}
 <!-- Add directories to the viewport -->
-<tr class="viewport_item" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}">
+<tr class="viewport_item viewport_dir" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}"
+    data-filepath="{{ node.path }}" data-parentpath="{{ node.parent_path }}">
     <td>
-        <span class="glyphicon glyphicon-folder-open"
-              data-isselected="false" data-filepath="{{ collection_id }}{{ node.path }}">
+        <span class="glyphicon glyphicon-folder-close" data-isselected="false">
             {{ node.name }}
+        </span>
+    </td>
+    <td>{{ node.date_modified }}</td>
+    <td>-</td>
+</tr>
+<tr class="viewport_item viewport_dir" data-parentslug="{{ node.slug }}" data-slug="{{ node.parent_slug }}"
+    data-filepath="{{ node.parent_path }}">
+    <td>
+        <span class="glyphicon glyphicon-folder-close" data-isselected="false">
+        ..
         </span>
     </td>
     <td>{{ node.date_modified }}</td>
@@ -18,10 +28,11 @@
     {%endfor%}
 {% else %}
 <!-- Add Files to the Viewport -->
-<tr class="viewport_item" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}">
+<tr class="viewport_item viewport_file" data-parentslug="{{ node.parent_slug }}"
+    data-filepath="{{ node.path }}" data-slug="{{ node.slug }}">
     <td>
         <span class="glyphicon glyphicon-file"
-              data-isselected="false" data-filepath="{{ collection_id }}{{ node.path }}">
+              data-isselected="false" data-filepath="{{ node.path }}">
             {{ node.name }}
         </span>
     </td>

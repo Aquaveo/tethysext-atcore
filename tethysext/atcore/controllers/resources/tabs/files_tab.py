@@ -41,7 +41,7 @@ class ResourceFilesTab(ResourceTab):
         Get the summary tab info
 
         Return Format
-        [FileCollection, FileCollection, FileCollection]
+        [FileCollectionClient, FileCollectionClient, FileCollectionClient]
         """
         return []
 
@@ -58,6 +58,7 @@ class ResourceFilesTab(ResourceTab):
                 'type': 'folder',
                 'name': os.path.basename(path),
                 'path': hierarchy_path,
+                'parent_path': os.path.abspath(os.path.join(hierarchy_path, os.pardir)).replace(root_dir, ''),
                 'parent_slug': parent_slug,
                 'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
             }
@@ -95,61 +96,3 @@ class ResourceFilesTab(ResourceTab):
 
         context['collections'] = files_from_collection
         return context
-
-
-temp = {
-    '24c14ba9-28c0-4887-aa12-71a87c012eac': {
-        'type': 'folder',
-        'name': '24c14ba9-28c0-4887-aa12-71a87c012eac',
-        'path': '',
-        'children': [
-            {'type': 'file', 'name': 'file5.txt', 'path': '/file5.txt'},
-            {'type': 'file', 'name': 'file1.txt', 'path': '/file1.txt'},
-            {'type': 'file', 'name': '__meta__.json', 'path': '/__meta__.json'},
-            {
-                'type': 'folder',
-                'name': 'dir1',
-                'path': '/dir1',
-                'children': [
-                    {'type': 'file', 'name': 'file2.txt', 'path': '/dir1/file2.txt'},
-                    {
-                        'type': 'folder',
-                        'name': 'dir2',
-                        'path': '/dir1/dir2',
-                        'children': [
-                            {'type': 'file', 'name': 'file4.txt', 'path': '/dir1/dir2/file4.txt'}
-                        ]
-                    },
-                    {'type': 'file', 'name': 'file3.txt', 'path': '/dir1/file3.txt'}
-                ]
-             }
-        ]
-    },
-    '92372174-411b-4a4f-bad6-8cb3fdb6a20a': {
-        'type': 'folder',
-        'name': '92372174-411b-4a4f-bad6-8cb3fdb6a20a',
-        'path': '',
-        'children': [
-                {'type': 'file', 'name': 'file5.txt', 'path': '/file5.txt'},
-                {'type': 'file', 'name': 'file1.txt', 'path': '/file1.txt'},
-                {'type': 'file', 'name': '__meta__.json', 'path': '/__meta__.json'},
-                {
-                    'type': 'folder',
-                    'name': 'dir1',
-                    'path': '/dir1',
-                    'children': [
-                        {'type': 'file', 'name': 'file2.txt', 'path': '/dir1/file2.txt'},
-                        {
-                            'type': 'folder',
-                            'name': 'dir2',
-                            'path': '/dir1/dir2',
-                            'children': [
-                                {'type': 'file', 'name': 'file4.txt', 'path': '/dir1/dir2/file4.txt'}
-                            ]
-                        },
-                        {'type': 'file', 'name': 'file3.txt', 'path': '/dir1/file3.txt'}
-                     ]
-                 }
-        ]
-    }
-}
