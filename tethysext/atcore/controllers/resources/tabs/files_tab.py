@@ -43,7 +43,31 @@ class ResourceFilesTab(ResourceTab):
         """
         return []
 
+    def get_context(self, request, session, resource, context, *args, **kwargs):
+        """
+        Build context for the ResourceFilesTab template that is used to generate the tab content.
+        """
+        collections = self.get_file_collections(request, resource)
+        files_from_collection = {}
+        for collection in collections:
+            instance_id = collection.instance.id
+            files_from_collection[instance_id] = self._path_hierarchy(collection.path)
+
+        context['collections'] = files_from_collection
+        return context
+
     def _path_hierarchy(self, path, root_dir=None, parent_slug=None):
+        """
+        A function used to create a dictionary representation of a folder structure.
+
+        Args:
+            path: The path to recursively map to a dictionary.
+            root_dir: The root directory to be trimmed off of the absolute paths.
+            parent_slug: The slug for the parent used for hiding and showing files.
+
+        Returns:
+            A dictionary defining the folder structure of the provided path.
+        """
         if root_dir is None:
             root_dir = os.path.abspath(os.path.join(path, os.pardir))
         hierarchy_path = path.replace(root_dir, '')
@@ -80,16 +104,3 @@ class ResourceFilesTab(ResourceTab):
             hierarchy['size'] = f'{size_str} {power_labels[n]}'
 
         return hierarchy
-
-    def get_context(self, request, session, resource, context, *args, **kwargs):
-        """
-        Build context for the ResourceFilesTab template that is used to generate the tab content.
-        """
-        collections = self.get_file_collections(request, resource)
-        files_from_collection = {}
-        for collection in collections:
-            instance_id = collection.instance.id
-            files_from_collection[instance_id] = self._path_hierarchy(collection.path)
-
-        context['collections'] = files_from_collection
-        return context
