@@ -286,7 +286,8 @@ class ManageResources(AppUsersViewMixin):
         Returns:
             list<Resources>: the list of resources to render on the manage_resources page.
         """
-        return request_app_user.get_resources(session, request)
+        of_type = self.get_resource_model()
+        return request_app_user.get_resources(session, request, of_type=of_type)
 
     def perform_custom_delete_operations(self, request, resource):
         """
