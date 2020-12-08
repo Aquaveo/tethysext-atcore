@@ -70,6 +70,8 @@ class ResourceFilesTab(ResourceTab):
         """
         if root_dir is None:
             root_dir = os.path.abspath(os.path.join(path, os.pardir))
+        # Remove the root directory from the string that will be placed in the structure.
+        # These paths will be relative to the path provided.
         hierarchy_path = path.replace(root_dir, '')
         hierarchy = {
             'type': 'folder',
@@ -80,19 +82,24 @@ class ResourceFilesTab(ResourceTab):
             'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
         }
 
+        # Try and access 'children' here. If we can't than this is a file.
         try:
+            # Recurse through each of the children if it is a directory.
             hierarchy['children'] = [
                 self._path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
                 for contents in os.listdir(path)
             ]
+            # If it is a directory we need to calculate the most recent modified date of a contained file
             hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))
 
+        # Catch the errors and assume we are dealing with a file instead of a directory
         except OSError as e:
             if e.errno != errno.ENOTDIR:
                 raise
             hierarchy['type'] = 'file'
             hierarchy['date_modified'] = time.ctime(os.path.getmtime(path))
 
+            # Calculate the file size and convert to the appropriate measurement.
             power = 2 ** 10
             n = 0
             power_labels = {0: 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
