@@ -123,70 +123,14 @@ class ResourceFilesTabTests(SqlAlchemyTestCase):
         )
         instance = ResourceFilesTab()
         hierarchy = instance._path_hierarchy(test_files_path)
-        expected_hierarchy = {
-            'type': 'folder',
-            'name': 'test_path_hierarchy',
-            'path': '/test_path_hierarchy',
-            'parent_path': '/',
-            'parent_slug': None,
-            'slug': '__test_path_hierarchy',
-            'children': [{
-                             'type': 'file',
-                             'name': 'file2.txt',
-                             'path': '/test_path_hierarchy/file2.txt',
-                             'parent_path': '/test_path_hierarchy',
-                             'parent_slug': '__test_path_hierarchy',
-                             'slug': '__test_path_hierarchy_file2_txt',
-                             'date_modified': 'Tue Dec  8 06:04:58 2020',
-                             'size': '0 Bytes'}, {
-                             'type': 'file',
-                             'name': 'file1.txt',
-                             'path': '/test_path_hierarchy/file1.txt',
-                             'parent_path': '/test_path_hierarchy',
-                             'parent_slug': '__test_path_hierarchy',
-                             'slug': '__test_path_hierarchy_file1_txt',
-                             'date_modified': 'Tue Dec  8 06:04:49 2020',
-                             'size': '0 Bytes'}, {
-                             'type': 'folder',
-                             'name': 'dir1',
-                             'path': '/test_path_hierarchy/dir1',
-                             'parent_path': '/test_path_hierarchy',
-                             'parent_slug': '__test_path_hierarchy',
-                             'slug': '__test_path_hierarchy_dir1',
-                             'children': [{
-                                              'type': 'file',
-                                              'name': 'file4.txt',
-                                              'path': '/test_path_hierarchy/dir1/file4.txt',
-                                              'parent_path': '/test_path_hierarchy/dir1',
-                                              'parent_slug': '__test_path_hierarchy_dir1',
-                                              'slug': '__test_path_hierarchy_dir1_file4_txt',
-                                              'date_modified': 'Tue Dec  8 06:05:32 2020',
-                                              'size': '0 Bytes'}, {
-                                              'type': 'folder',
-                                              'name': 'dir2',
-                                              'path': '/test_path_hierarchy/dir1/dir2',
-                                              'parent_path': '/test_path_hierarchy/dir1',
-                                              'parent_slug': '__test_path_hierarchy_dir1',
-                                              'slug': '__test_path_hierarchy_dir1_dir2',
-                                              'children': [{
-                                                               'type': 'file',
-                                                               'name': 'file5.txt',
-                                                               'path': '/test_path_hierarchy/dir1/dir2/file5.txt',
-                                                               'parent_path': '/test_path_hierarchy/dir1/dir2',
-                                                               'parent_slug': '__test_path_hierarchy_dir1_dir2',
-                                                               'slug': '__test_path_hierarchy_dir1_dir2_file5_txt',
-                                                               'date_modified': 'Tue Dec  8 06:05:47 2020',
-                                                               'size': '0 Bytes'}],
-                                              'date_modified': 'Tue Dec  8 06:05:47 2020'}, {
-                                              'type': 'file',
-                                              'name': 'file3.txt',
-                                              'path': '/test_path_hierarchy/dir1/file3.txt',
-                                              'parent_path': '/test_path_hierarchy/dir1',
-                                              'parent_slug': '__test_path_hierarchy_dir1',
-                                              'slug': '__test_path_hierarchy_dir1_file3_txt',
-                                              'date_modified': 'Tue Dec  8 06:05:22 2020',
-                                              'size': '0 Bytes'}],
-                             'date_modified': 'Tue Dec  8 06:05:47 2020'}],
-            'date_modified': 'Tue Dec  8 06:05:47 2020'
-        }
-        self.assertDictEqual(hierarchy, expected_hierarchy)
+        self.maxDiff = None
+
+        # Decided to test like this because doing a dict comparison always failed because the
+        # 'date_modified` was changing to when it was checked out.
+        self.assertEqual(len(hierarchy), 8)
+        for k in ['type', 'name', 'path', 'parent_path', 'parent_slug', 'slug', 'children', 'date_modified']:
+            self.assertIn(k, hierarchy.keys())
+        self.assertEqual(len(hierarchy['children']), 3)
+        self.assertEqual(hierarchy['name'], 'test_path_hierarchy')
+        self.assertEqual(hierarchy['path'], '/test_path_hierarchy')
+        self.assertEqual(hierarchy['slug'], '__test_path_hierarchy')
