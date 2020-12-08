@@ -10,8 +10,6 @@ import errno
 import os
 import time
 
-from django.shortcuts import render
-
 from .resource_tab import ResourceTab
 
 
@@ -45,54 +43,53 @@ class ResourceFilesTab(ResourceTab):
         """
         return []
 
+    def _path_hierarchy(self, path, root_dir=None, parent_slug=None):
+        if root_dir is None:
+            root_dir = os.path.abspath(os.path.join(path, os.pardir))
+        hierarchy_path = path.replace(root_dir, '')
+        hierarchy = {
+            'type': 'folder',
+            'name': os.path.basename(path),
+            'path': hierarchy_path,
+            'parent_path': os.path.abspath(os.path.join(hierarchy_path, os.pardir)).replace(root_dir, ''),
+            'parent_slug': parent_slug,
+            'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
+        }
+
+        try:
+            hierarchy['children'] = [
+                self._path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
+                for contents in os.listdir(path)
+            ]
+            hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))
+
+        except OSError as e:
+            if e.errno != errno.ENOTDIR:
+                raise
+            hierarchy['type'] = 'file'
+            hierarchy['date_modified'] = time.ctime(os.path.getmtime(path))
+
+            power = 2 ** 10
+            n = 0
+            power_labels = {0: 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+            size = os.path.getsize(path)
+            while size > power:
+                size /= power
+                n += 1
+            size_str = f'{size:.1f}' if size > 0 else '0'
+            hierarchy['size'] = f'{size_str} {power_labels[n]}'
+
+        return hierarchy
+
     def get_context(self, request, session, resource, context, *args, **kwargs):
         """
         Build context for the ResourceFilesTab template that is used to generate the tab content.
         """
-
-        def path_hierarchy(path, root_dir=None, parent_slug=None):
-            if root_dir is None:
-                root_dir = os.path.abspath(os.path.join(path, os.pardir))
-            hierarchy_path = path.replace(root_dir, '')
-            hierarchy = {
-                'type': 'folder',
-                'name': os.path.basename(path),
-                'path': hierarchy_path,
-                'parent_path': os.path.abspath(os.path.join(hierarchy_path, os.pardir)).replace(root_dir, ''),
-                'parent_slug': parent_slug,
-                'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
-            }
-
-            try:
-                hierarchy['children'] = [
-                    path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
-                    for contents in os.listdir(path)
-                ]
-                hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))
-
-            except OSError as e:
-                if e.errno != errno.ENOTDIR:
-                    raise
-                hierarchy['type'] = 'file'
-                hierarchy['date_modified'] = time.ctime(os.path.getmtime(path))
-
-                power = 2 ** 10
-                n = 0
-                power_labels = {0: 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
-                size = os.path.getsize(path)
-                while size > power:
-                    size /= power
-                    n += 1
-                size_str = f'{size:.1f}' if size > 0 else '0'
-                hierarchy['size'] = f'{size_str} {power_labels[n]}'
-
-            return hierarchy
-
         collections = self.get_file_collections(request, resource)
         files_from_collection = {}
         for collection in collections:
             instance_id = collection.instance.id
-            files_from_collection[instance_id] = path_hierarchy(collection.path)
+            files_from_collection[instance_id] = self._path_hierarchy(collection.path)
 
         context['collections'] = files_from_collection
         return context
