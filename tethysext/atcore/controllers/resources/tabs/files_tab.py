@@ -56,7 +56,7 @@ class ResourceFilesTab(ResourceTab):
         context['collections'] = files_from_collection
         return context
 
-    def _path_hierarchy(self, path, root_dir=None, parent_slug=None):
+    def _path_hierarchy(self, path: str, root_dir: str = None, parent_slug: str = None) -> dict:
         """
         A function used to create a dictionary representation of a folder structure.
 
