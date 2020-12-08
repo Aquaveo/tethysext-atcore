@@ -5,6 +5,7 @@
 <div id="file_browser">
     <div id="tree-col" class="col-md-3">
         <div id="hierarchy">
+            {# Start by putting the collections in the tree structure and looping through their children #}
             {% for collection_id, collection_contents in collections.items %}
             <div class="foldercontainer">
                 <span class="folder glyphicon glyphicon-folder-close collection-container" data-isexpanded="false"
@@ -14,6 +15,7 @@
                       data-filepath="{{ collection_contents.path }}">
                     {{ collection_id }}
                 </span>
+                {# Loop through each child of the collection #}
                 {%for node in collection_contents.children %}
                     {%include "atcore/resources/tabs/tree_view_template.html" %}
                 {%endfor%}
@@ -22,7 +24,7 @@
         </div>
     </div>
 
-    <!-- File List View -->
+    <!-- File Viewport -->
     <div id="preview-col" class="col-md-9">
         <!-- Current Path -->
         <div class="row">
@@ -41,6 +43,8 @@
                 </tr>
             </thead>
             <tbody>
+            {# Loop through and add a table row for each item in the collection, we will handle
+               hiding and how the items in the javascript. #}
             {% for collection_id, collection_contents in collections.items %}
                 {%for node in collection_contents.children %}
                     {%include "atcore/resources/tabs/files_viewport_template.html" %}

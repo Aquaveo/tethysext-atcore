@@ -1,5 +1,6 @@
 {% if node.type == 'folder' %}
-<!-- Add directories to the viewport -->
+
+{# Add directories to the viewport #}
 <tr class="viewport_item viewport_dir" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}"
     data-filepath="{{ node.path }}" data-parentpath="{{ node.parent_path }}">
     <td>
@@ -10,6 +11,8 @@
     <td>{{ node.date_modified }}</td>
     <td>-</td>
 </tr>
+
+{# The parent directory placeholder #}
 <tr class="viewport_item viewport_dir" data-parentslug="{{ node.slug }}" data-slug="{{ node.parent_slug }}"
     data-filepath="{{ node.parent_path }}">
     <td>
@@ -20,14 +23,17 @@
     <td>{{ node.date_modified }}</td>
     <td>-</td>
 </tr>
-    <!-- Loop through all the directory children -->
-    {%for ch in node.children %}
-        {%with node=ch template_name="atcore/resources/tabs/files_viewport_template.html" %}
-            {%include template_name%}
-        {%endwith%}
-    {%endfor%}
+
+{# Loop through all the directory children #}
+{%for ch in node.children %}
+    {%with node=ch template_name="atcore/resources/tabs/files_viewport_template.html" %}
+        {%include template_name%}
+    {%endwith%}
+{%endfor%}
+
 {% else %}
-<!-- Add Files to the Viewport -->
+
+{# Add Files to the Viewport $}
 <tr class="viewport_item viewport_file" data-parentslug="{{ node.parent_slug }}"
     data-filepath="{{ node.path }}" data-slug="{{ node.slug }}">
     <td>
@@ -39,4 +45,5 @@
     <td>{{ node.date_modified }}</td>
     <td>{{ node.size }}</td>
 </tr>
+
 {% endif %}
