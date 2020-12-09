@@ -31,7 +31,7 @@ class SpatialResource(Resource):
         'polymorphic_identity': TYPE,
     }
 
-    def set_extent(self, obj: Union[dict, str], object_format: str = 'dict', srid=4236):
+    def set_extent(self, obj: Union[dict, str], object_format: str = 'dict', srid=4326):
         """
         Set the extent for the SpatialResource.
 
