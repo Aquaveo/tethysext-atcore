@@ -14,7 +14,6 @@ import uuid
 from django.http import HttpResponse, Http404
 import tethys_gizmos.gizmo_options.datatable_view as gizmo_datatable_view
 from .resource_tab import ResourceTab
-from tethysapp.steem.app import Steem as app
 
 
 class ResourceFilesTab(ResourceTab):
@@ -74,7 +73,7 @@ class ResourceFilesTab(ResourceTab):
             parent_slug: The slug for the parent used for hiding and showing files.
 
         Returns:
-            A dictionary defining the folder structure of the provided path.
+            dict: A dictionary defining the folder structure of the provided path.
         """
         if root_dir is None:
             root_dir = os.path.abspath(os.path.join(path, os.pardir))
@@ -93,10 +92,11 @@ class ResourceFilesTab(ResourceTab):
         # Try and access 'children' here. If we can't than this is a file.
         try:
             # Recurse through each of the children if it is a directory.
-            hierarchy['children'] = [
-                self._path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
-                for contents in os.listdir(path)
-            ]
+            hierarchy['children'] = []
+            for contents in os.listdir(path):
+                child = self._path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
+                hierarchy['children'].append(child)
+
             # If it is a directory we need to calculate the most recent modified date of a contained file
             hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))
 
@@ -118,14 +118,12 @@ class ResourceFilesTab(ResourceTab):
 
         return hierarchy
 
-    def download_file(self, request, resource, *args, **kwargs):
+    def download_file(self, request, resource, session, *args, **kwargs):
         """
         A function to download a file from a request.
         """
         collection_id = request.GET.get('collection-id', None)
         file_path = request.GET.get('file-path', None)
-        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
-        session = Session()
         collections = self.get_file_collections(request, resource, session)
         for collection in collections:
             if uuid.UUID('{' + collection_id + '}') == collection.instance.id:
