@@ -96,13 +96,42 @@ function files_tab_loaded() {
         });
     });
 
+    // Collapse all items in the tree.
+    document.getElementById('tree-collapse').addEventListener("click", function() {
+        document.querySelectorAll('.folder').forEach(function(folder) {
+                folder.dataset.isexpanded = false;
+                folder.classList.remove("glyphicon-folder-open");
+                folder.classList.add("glyphicon-folder-close");
+                collapse_tree_elements(folder);
+        });
+    });
+    // Expand all items in the tree.
+    document.getElementById('tree-expand').addEventListener("click", function() {
+        document.querySelectorAll('.folder').forEach(function(folder) {
+                folder.dataset.isexpanded = true;
+                folder.classList.remove("glyphicon-folder-close");
+                folder.classList.add("glyphicon-folder-open");
+                collapse_tree_elements(folder);
+        });
+    });
+
     document.querySelectorAll('.viewport_file').forEach(function(row) {
         $(row).bind("dblclick", function(){
-            alert("Download file: " + row.dataset.filepath);
+            var download_url = window.location + '?tab_action=download_file&file-path='
+                + row.dataset.filepath + '&collection-id=' + row.dataset.collectionid
+            var redirectWindow = window.open(download_url,  '_blank');
+            redirectWindow.location;
+
         });
     });
 
     document.querySelectorAll('.folder').forEach(function(elem){
         collapse_tree_elements(elem);
+    });
+
+    $('#viewport-table').DataTable({
+        "paging":   false,
+        "searching":   false,
+        "info":     false,
     });
 }

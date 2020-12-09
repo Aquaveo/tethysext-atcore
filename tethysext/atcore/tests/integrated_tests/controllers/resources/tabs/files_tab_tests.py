@@ -7,9 +7,13 @@
 ********************************************************************************
 """
 import os
+from unittest import mock
+import uuid
 
+from django.http import HttpResponse, Http404
 from django.test import RequestFactory
 
+from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -42,11 +46,50 @@ class ResourceFilesTabTests(SqlAlchemyTestCase):
             name="Test Resource"
         )
 
+        self.test_files_base = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..',
+                         '..', 'files', 'files_tab_tests')
+        )
+
         self.session.add(self.resource)
         self.session.commit()
 
     def tearDown(self):
         super().tearDown()
+
+    def get_database_and_collection(self, database_id, root_directory, collection_id,
+                                    database_meta=None, collection_meta=None):
+        """
+        A helper function to generate a FileDatabase and a FileCollection in the database.
+
+        Args:
+            database_id (uuid.UUID): a UUID to assign the id for the FileDatabase object
+            root_directory (str): root directory for a FileDatabase
+            collection_id (uuid.UUID): a UUID to assign the id for the FileCollection object
+            database_meta (dict): A dictionary of meta for the FileDatabase object
+            collection_meta (dict): A dictionary of meta for the FileCollection object
+        """
+        database_meta = database_meta or {}
+        collection_meta = collection_meta or {}
+        database_instance = FileDatabase(
+            id=database_id,  # We need to set the id here for the test path.
+            root_directory=root_directory,
+            meta=database_meta,
+        )
+
+        self.session.add(database_instance)
+        self.session.commit()
+
+        collection_instance = FileCollection(
+            id=collection_id,
+            file_database_id=database_id,
+            meta=collection_meta,
+        )
+
+        self.session.add(collection_instance)
+        self.session.commit()
+
+        return database_instance, collection_instance
 
     def test_properties_default(self):
         """Verify the default values for the properties of the view."""
@@ -66,71 +109,69 @@ class ResourceFilesTabTests(SqlAlchemyTestCase):
         """Test default implementation of get_summary_tab_info."""
         instance = ResourceFilesTab()
         request = self.request_factory.get('/foo/12345/bar/files/')
-        ret = instance.get_file_collections(request, self.resource)
+        ret = instance.get_file_collections(request, self.resource, self.session)
         self.assertListEqual([], ret)
 
     def test_get_context_default(self):
-        """Test get_context() with default implementation: no preview image, no summary tab info, user not staff."""
-        instance = ResourceFilesTab()
-        request = self.request_factory.get('/foo/12345/bar/summary/')
-        request.user = self.get_user()
+        """Test get_context()"""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
 
-        context = instance.get_context(request, self.session, self.resource, {})
+            instance = ResourceFilesTab()
+            request = self.request_factory.get('/foo/12345/bar/summary/')
+            request.user = self.get_user()
 
-        self.assertIn('collections', context)
+            test_path = os.path.join(self.test_files_base, 'test_get_context_default')
+            _, collection = self.get_database_and_collection(
+                uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
+                uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+            )
+            file_collection_client = FileCollectionClient(self.session, collection.id)
+            mock_get_file_collection.return_value = [file_collection_client]
+            context = instance.get_context(request, self.session, self.resource, {})
 
-    def test_get_context_staff_user(self):
-        """Test that debug information is generated for staff users."""
-        instance = ResourceFilesTab()
-        request = self.request_factory.get('/foo/12345/bar/summary/')
-        request.user = self.get_user(is_staff=True)
+            self.assertIn('collections', context)
+            self.assertEqual(len(context['collections']), 1)
 
-        context = instance.get_context(request, self.session, self.resource, {})
+    def test_download_file(self):
+        """Test default implementation of get_summary_tab_info."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
 
-        self.assertIn('collections', context)
+            test_path = os.path.join(self.test_files_base, 'test_get_context_default')
+            _, collection = self.get_database_and_collection(
+                uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
+                uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+            )
+            file_collection_client = FileCollectionClient(self.session, collection.id)
+            mock_get_file_collection.return_value = [file_collection_client]
 
-    def test_get_context_staff_user_resource_locked_for_specific_user(self):
-        """
-        Test that username with user lock is displayed in debug information
-        when resource is locked by a specific user.
-        """
-        instance = ResourceFilesTab()
-        request = self.request_factory.get('/foo/12345/bar/summary/')
-        user = self.get_user(is_staff=True)
-        request.user = user
-        self.resource.acquire_user_lock(request)
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_file'
+                                               '&file-path=d6fa7e10-d8aa-4b3d-b08a-62384d3daca2/dir1/file1.txt'
+                                               '&collection-id=d6fa7e10-d8aa-4b3d-b08a-62384d3daca2')
 
-        context = instance.get_context(request, self.session, self.resource, {})
+            ret = instance.download_file(request, self.resource, self.session)
+            self.assertTrue(isinstance(ret, HttpResponse))
+            self.assertEqual(ret.content, b'Text for test to check.')
+            self.assertEqual(ret['Content-Disposition'], 'filename=file1.txt')
 
-        self.assertIn('collections', context)
+    def test_download_file_fail(self):
+        """Test default implementation of get_summary_tab_info."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
 
-    def test_get_context_staff_user_resource_locked_for_all_users(self):
-        """Test that "All Users" is displayed in debug information when resource is locked for all users."""
-        instance = ResourceFilesTab()
-        request = self.request_factory.get('/foo/12345/bar/summary/')
-        user = self.get_user(is_staff=True)
-        request.user = user
-        self.resource.acquire_user_lock()
+            test_path = os.path.join(self.test_files_base, 'test_get_context_default')
+            _, collection = self.get_database_and_collection(
+                uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
+                uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+            )
+            file_collection_client = FileCollectionClient(self.session, collection.id)
+            mock_get_file_collection.return_value = [file_collection_client]
 
-        context = instance.get_context(request, self.session, self.resource, {})
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_file'
+                                               '&file-path=d6fa7e10-d8aa-4b3d-b08a-62384d3daca2/dir1/file9.txt'
+                                               '&collection-id=d6fa7e10-d8aa-4b3d-b08a-62384d3daca2')
 
-        self.assertIn('collections', context)
+            with self.assertRaises(Http404) as exc:
+                _ = instance.download_file(request, self.resource, self.session)
 
-    def test_path_hierarchy(self):
-        test_files_path = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', '..',
-                         'files', 'files_tab_tests', 'test_path_hierarchy')
-        )
-        instance = ResourceFilesTab()
-        hierarchy = instance._path_hierarchy(test_files_path)
-        self.maxDiff = None
-
-        # Decided to test like this because doing a dict comparison always failed because the
-        # 'date_modified` was changing to when it was checked out.
-        self.assertEqual(len(hierarchy), 8)
-        for k in ['type', 'name', 'path', 'parent_path', 'parent_slug', 'slug', 'children', 'date_modified']:
-            self.assertIn(k, hierarchy.keys())
-        self.assertEqual(len(hierarchy['children']), 3)
-        self.assertEqual(hierarchy['name'], 'test_path_hierarchy')
-        self.assertEqual(hierarchy['path'], '/test_path_hierarchy')
-        self.assertEqual(hierarchy['slug'], '__test_path_hierarchy')
+            self.assertTrue('Unable to download file.' in str(exc.exception))

@@ -74,7 +74,9 @@ div#preview-col {
     border-left: 1px solid;
     border-right: 1px solid;
     border-bottom: 1px solid;
-    border-color: lightgrey
+    border-color: lightgrey;
+    height: 600px;
+    overflow-y: auto;
 }
 
 #files {

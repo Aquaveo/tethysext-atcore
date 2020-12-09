@@ -6,16 +6,19 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
-import errno
+import mimetypes
 import os
 import time
+import uuid
 
+from django.http import HttpResponse, Http404
+import tethys_gizmos.gizmo_options.datatable_view as gizmo_datatable_view
 from .resource_tab import ResourceTab
 
 
 class ResourceFilesTab(ResourceTab):
     """
-    A tab for the TabbedResourceDetails view that lists key-value pair attributes of the Resource. The attributes can be grouped into multiple sections with titles.
+    A tab for the TabbedResourceDetails view that lists collections and files that are contained in those collections.
 
     Required URL Variables:
         resource_id (str): the ID of the Resource.
@@ -28,18 +31,22 @@ class ResourceFilesTab(ResourceTab):
     post_load_callback = 'files_tab_loaded'
 
     js_requirements = ResourceTab.js_requirements + [
-        'atcore/resources/files_tab.js'
+        x for x in gizmo_datatable_view.DataTableView.get_vendor_js()
+    ] + [
+        'atcore/resources/files_tab.js',
     ]
     css_requirements = ResourceTab.css_requirements + [
+        x for x in gizmo_datatable_view.DataTableView.get_vendor_js()
+    ] + [
         'atcore/resources/files_tab.css'
     ]
 
-    def get_file_collections(self, request, resource, *args, **kwargs):
+    def get_file_collections(self, request, resource, session, *args, **kwargs):
         """
-        Get the summary tab info
+        Get the file_collections
 
-        Return Format
-        [FileCollectionClient, FileCollectionClient, FileCollectionClient]
+        Returns:
+            A list of FileCollection clients.
         """
         return []
 
@@ -47,7 +54,7 @@ class ResourceFilesTab(ResourceTab):
         """
         Build context for the ResourceFilesTab template that is used to generate the tab content.
         """
-        collections = self.get_file_collections(request, resource)
+        collections = self.get_file_collections(request, resource, session)
         files_from_collection = {}
         for collection in collections:
             instance_id = collection.instance.id
@@ -93,9 +100,7 @@ class ResourceFilesTab(ResourceTab):
             hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))
 
         # Catch the errors and assume we are dealing with a file instead of a directory
-        except OSError as e:
-            if e.errno != errno.ENOTDIR:
-                raise
+        except OSError:
             hierarchy['type'] = 'file'
             hierarchy['date_modified'] = time.ctime(os.path.getmtime(path))
 
@@ -111,3 +116,23 @@ class ResourceFilesTab(ResourceTab):
             hierarchy['size'] = f'{size_str} {power_labels[n]}'
 
         return hierarchy
+
+    def download_file(self, request, resource, session, *args, **kwargs):
+        """
+        A function to download a file from a request.
+        """
+        collection_id = request.GET.get('collection-id', None)
+        file_path = request.GET.get('file-path', None)
+        collections = self.get_file_collections(request, resource, session)
+        for collection in collections:
+            if uuid.UUID('{' + collection_id + '}') == collection.instance.id:
+                base_file_path = collection.path.replace(collection_id, '')
+                full_file_path = base_file_path + file_path
+                file_ext = os.path.splitext(full_file_path)[1]
+                mimetype = mimetypes.types_map[file_ext] if file_ext in mimetypes.types_map.keys() else 'text/plain'
+                if os.path.exists(full_file_path):
+                    with open(full_file_path, 'rb') as fh:
+                        response = HttpResponse(fh.read(), content_type=mimetype)
+                        response['Content-Disposition'] = 'filename=' + os.path.basename(file_path)
+                        return response
+        raise Http404('Unable to download file.')

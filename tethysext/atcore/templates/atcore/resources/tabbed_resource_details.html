@@ -61,13 +61,21 @@
 {% block styles %}
   {{ block.super }}
   {% for css_requirement in css_requirements %}
-  <link href="{% static css_requirement %}" rel="stylesheet">
+      {% if 'http' in css_requirement %}
+        <link href="{{ css_requirement }}" rel="stylesheet">
+      {% else %}
+        <link href="{% static css_requirement %}" rel="stylesheet">
+      {% endif %}
   {% endfor %}
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
   {% for js_requirement in js_requirements %}
-  <script src="{% static js_requirement %}" type="text/javascript"></script>
+      {% if 'http' in js_requirement %}
+        <script src="{{ js_requirement }}" type="text/javascript"></script>
+      {% else %}
+        <script src="{% static js_requirement %}" type="text/javascript"></script>
+      {% endif %}
   {% endfor %}
 {% endblock %}

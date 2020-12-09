@@ -2,7 +2,7 @@
 
 {# Add directories to the viewport #}
 <tr class="viewport_item viewport_dir" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}"
-    data-filepath="{{ node.path }}" data-parentpath="{{ node.parent_path }}">
+    data-filepath="{{ node.path }}" data-parentpath="{{ node.parent_path }}" data-collectionid="{{ collection_id }}">
     <td>
         <span class="glyphicon glyphicon-folder-close" data-isselected="false">
             {{ node.name }}
@@ -35,7 +35,7 @@
 
 {# Add Files to the Viewport #}
 <tr class="viewport_item viewport_file" data-parentslug="{{ node.parent_slug }}"
-    data-filepath="{{ node.path }}" data-slug="{{ node.slug }}">
+    data-filepath="{{ node.path }}" data-slug="{{ node.slug }}" data-collectionid="{{ collection_id }}">
     <td>
         <span class="glyphicon glyphicon-file"
               data-isselected="false" data-filepath="{{ node.path }}">
