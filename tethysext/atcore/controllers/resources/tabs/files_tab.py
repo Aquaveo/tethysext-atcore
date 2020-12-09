@@ -14,6 +14,7 @@ import uuid
 from django.http import HttpResponse, Http404
 import tethys_gizmos.gizmo_options.datatable_view as gizmo_datatable_view
 from .resource_tab import ResourceTab
+from tethysapp.steem.app import Steem as app
 
 
 class ResourceFilesTab(ResourceTab):
@@ -117,12 +118,14 @@ class ResourceFilesTab(ResourceTab):
 
         return hierarchy
 
-    def download_file(self, request, resource, session, *args, **kwargs):
+    def download_file(self, request, resource, *args, **kwargs):
         """
         A function to download a file from a request.
         """
         collection_id = request.GET.get('collection-id', None)
         file_path = request.GET.get('file-path', None)
+        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+        session = Session()
         collections = self.get_file_collections(request, resource, session)
         for collection in collections:
             if uuid.UUID('{' + collection_id + '}') == collection.instance.id:
