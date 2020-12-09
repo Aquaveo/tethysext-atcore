@@ -3,15 +3,15 @@ entries:
   tethysext-atcore:
   - apiVersion: v1
     appVersion: latest
-    created: "2020-09-23T22:14:26.547963734Z"
+    created: "2020-12-09T17:31:13.987173368Z"
     dependencies:
     - name: tethysapp
       repository: https://aquaveo.github.io/tethysapp_helm_template/
       version: '*'
     description: 'Tethys Ext: Atcore'
-    digest: 898dbfa8cc1959e68a154ea9d399284e0d8547b029ebabdc7701a4292d112f72
+    digest: 51a6649a5026ee4103c64d8ced337ac94b8c1c3eb27f9339b7e369aa2bb90b91
     name: tethysext-atcore
     urls:
     - https://aquaveo.github.io/tethysext-atcore/tethysext-atcore-0.1.1.tgz
     version: 0.1.1
-generated: "2020-09-23T22:14:26.546182921Z"
+generated: "2020-12-09T17:31:13.985279353Z"
