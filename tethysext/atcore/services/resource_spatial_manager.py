@@ -175,7 +175,7 @@ class ResourceSpatialManager(BaseSpatialManager):
             reload_config(bool): Reload the GeoServer node configuration and catalog before returning if True
         """
         # Get Default Style Name
-        default_style = os.path.join(self.SLD_PATH, self.VL_EXTENT_TEMPLATE + '.sld')
+        default_style = f'atcore:{self.VL_EXTENT_TEMPLATE}'
 
         # feature name
         feature_name = 'resource_extent'
