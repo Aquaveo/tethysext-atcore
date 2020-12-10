@@ -7,9 +7,9 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import os
 from abc import abstractmethod
 
-from django.utils.text import slugify
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 
