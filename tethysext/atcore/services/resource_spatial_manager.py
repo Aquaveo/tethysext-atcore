@@ -24,7 +24,8 @@ class ResourceSpatialManager(BaseSpatialManager):
     SLD_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sld_templates')
 
     # Vector Layer Types
-    VL_EXTENT = 'resource_extent_layer_style'
+    VL_EXTENT_VIEW = 'resource_extent_layer_view'
+    VL_EXTENT_TEMPLATE = 'resource_extent_layer_style'
 
     @abstractmethod
     def get_extent_for_project(self, model_db):
@@ -165,25 +166,22 @@ class ResourceSpatialManager(BaseSpatialManager):
         return response
 
     @reload_config
-    def create_extent_layer(self, resource, datastore_name, srid=4326, reload_config=True):
+    def create_extent_layer(self, datastore_name, reload_config=True):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
         Args:
-            model_db(ModelDatabase): the object representing the models database.
-            srid(int): EPSG Spatial Reference ID. Defaults to Mercator, 4326.
+            datastore_name(str): name of the app database, for example: app_primary_db
             reload_config(bool): Reload the GeoServer node configuration and catalog before returning if True
         """
         # Get Default Style Name
-        default_style = self.get_unique_item_name(self.VL_EXTENT)
+        default_style = os.path.join(self.SLD_PATH, self.VL_EXTENT_TEMPLATE + '.sld')
 
         # feature name
-        feature_name = f'{resource.id}_{slugify(resource.name)}'
+        feature_name = 'resource_extent'
 
-        # srid
-        srid = resource.get_attribute('srid')
         # Render SQL
-        sql_template_file = os.path.join(self.SQL_PATH, self.VL_EXTENT + '.sql')
+        sql_template_file = os.path.join(self.SQL_PATH, self.VL_EXTENT_VIEW + '.sql')
         with open(sql_template_file, 'r') as sql_template_file:
             text = sql_template_file.read()
             template = Template(text)
@@ -195,7 +193,7 @@ class ResourceSpatialManager(BaseSpatialManager):
             datastore_name=datastore_name,
             feature_name=feature_name,
             geometry_type=self.GT_POLYGON,
-            srid=srid,
+            srid=4326,
             sql=sql,
             default_style=default_style,
             parameters=(
