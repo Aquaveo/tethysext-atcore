@@ -19,9 +19,8 @@ class ResourceCondorWorkflow(object):
     """
     Helper class that prepares and submits the new project upload jobs and workflow.
     """
-    WORKFLOW_ID = 'upload'
-
-    def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource_id, **kwargs):
+    def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource_id,
+                 scheduler, job_manager, status_keys, **kwargs):
         """
         Constructor.
 
@@ -39,7 +38,10 @@ class ResourceCondorWorkflow(object):
         self.resource_db_url = resource_db_url
         self.resource_id = resource_id
         self.workflow = None
-        # TODO: We need to set the `scheduler` here but i'm not sure the best way to do that
+        self.scheduler = scheduler
+        self.job_manager = job_manager
+        self.status_keys = status_keys
+        self.input_archive_path = os.path.join(workspace_path, 'condor_upload.zip')
 
         for kwarg, value in kwargs.items():
             setattr(self, kwarg, value)
@@ -86,6 +88,7 @@ class ResourceCondorWorkflow(object):
                 arguments=(
                     self.resource_db_url,
                     self.resource_id,
+                    ','.join(self.status_keys)
                 )
             ),
         )

@@ -71,6 +71,7 @@ from .permissions.app_users import PermissionsGeneratorTests  # noqa: F401
 from .services.app_users.decorators import ActiveUserRequiredDecoratorTests  # noqa: F401
 from .services.app_users.condor_workflow_manager_tests import CondorWorkflowManagerTests  # noqa: F401
 from .services.decorators_tests import DecoratorsTests  # noqa: F401
+from .services.resource_condor_workflow_tests import ResourceCondorWorkflowTests  # noqa: F401
 from .services.resource_workflows.helpers_tests import HelpersTests  # noqa: F401
 from .services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401
 from .urls.app_users_tests import AppUserUrlsTests  # noqa: F401

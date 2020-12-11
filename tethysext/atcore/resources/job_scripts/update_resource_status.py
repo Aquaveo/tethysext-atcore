@@ -53,4 +53,4 @@ def run(resource_db_url: str, resource_id: str, status_keys: list):
 if __name__ == '__main__':
     args = sys.argv
     args.pop(0)
-    run(*args)
+    run(args[0], args[1], args[2].split(','))
