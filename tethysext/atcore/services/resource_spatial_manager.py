@@ -166,7 +166,7 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
         return response
 
-    def create_extent_layer(self, datastore_name, reload_config=True):
+    def create_extent_layer(self, datastore_name):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
@@ -178,7 +178,7 @@ class ResourceSpatialManager(BaseSpatialManager):
         default_style = f'atcore:{self.VL_EXTENT_TEMPLATE}'
 
         # feature name
-        feature_name = 'resource_extent'
+        feature_name = 'app_users_resources'
 
         # Render SQL
         sql_template_file = os.path.join(self.SQL_PATH, self.VL_EXTENT_VIEW + '.sql')
@@ -195,8 +195,6 @@ class ResourceSpatialManager(BaseSpatialManager):
             geometry_type=self.GT_POLYGON,
             srid=4326,
             sql=sql,
-            default_style=default_style
+            default_style=default_style,
+            parameters=()
         )
-
-        if reload_config:
-            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
