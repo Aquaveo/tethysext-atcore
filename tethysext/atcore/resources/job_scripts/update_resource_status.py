@@ -7,7 +7,15 @@ from sqlalchemy.orm import sessionmaker
 from tethysext.atcore.models.app_users import Resource
 
 
-def run(resource_db_url, resource_id, status_keys):
+def run(resource_db_url: str, resource_id: str, status_keys: list):
+    """
+    Update the status of a Resource
+
+    Args:
+        resource_db_url (str): The url to the resource in the database.
+        resource_id (str): The resource ID.
+        status_keys (list): A list of status keys to check.
+    """
     resource_db_session = None
 
     try:
