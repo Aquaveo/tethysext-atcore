@@ -8,6 +8,7 @@
 ********************************************************************************
 """
 import os
+from jinja2 import Template
 from abc import abstractmethod
 
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
@@ -165,7 +166,6 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
         return response
 
-    @reload_config
     def create_extent_layer(self, datastore_name, reload_config=True):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
@@ -185,7 +185,7 @@ class ResourceSpatialManager(BaseSpatialManager):
         with open(sql_template_file, 'r') as sql_template_file:
             text = sql_template_file.read()
             template = Template(text)
-            sql = ' '.join(template.render(sql_context).split())
+            sql = ' '.join(template.render().split())
 
         # Create SQL View
         self.gs_api.create_layer(
@@ -195,12 +195,8 @@ class ResourceSpatialManager(BaseSpatialManager):
             geometry_type=self.GT_POLYGON,
             srid=4326,
             sql=sql,
-            default_style=default_style,
-            parameters=(
-                {
-                    'name': 'resource_id',
-                    'default_value': '1',
-                    'regex_validator': '^[0-9]+$'
-                },
-            )
+            default_style=default_style
         )
+
+        if reload_config:
+            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)

@@ -23,13 +23,6 @@
           <type>{{ geometry_type }}</type>
           <srid>{{ srid }}</srid>
         </geometry>
-        {%- for parameter in parameters -%}
-        <parameter>
-          <name>{{ parameter.name }}</name>
-          <defaultValue>{{ parameter.default_value }}</defaultValue>
-          <regexpValidator>{{ parameter.regex_validator }}</regexpValidator>
-        </parameter>
-        {% endfor %}
       </virtualTable>
     </entry>
   </metadata>
