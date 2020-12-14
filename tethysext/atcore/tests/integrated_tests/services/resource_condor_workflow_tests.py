@@ -35,7 +35,8 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
             resource_id=self.resource_id,
             scheduler=self.scheduler,
             job_manager=self.job_manager,
-            status_keys=[Resource.STATUS_OK]
+            status_keys=[Resource.STATUS_OK],
+            another_kwarg='something',
         )
 
     def tearDown(self):
@@ -57,3 +58,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         mock_session.close.assert_called()
         self.puw.prepare.assert_called()
         self.puw.workflow.execute.assert_called()
+
+    def test_get_jobs(self):
+        got_jobs = self.puw.get_jobs()
+        self.assertEqual(got_jobs, [])
