@@ -9,10 +9,10 @@ from tethysext.atcore.models.app_users import Resource
 
 def run(resource_db_url: str, resource_id: str, status_keys: list):
     """
-    Update the status of a Resource
+    Update the root status of a resource based ont he status of one or more other statuses of the same resource.
 
     Args:
-        resource_db_url (str): The url to the resource in the database.
+        resource_db_url (str): The SQLAlchemy to the resource database.
         resource_id (str): The resource ID.
         status_keys (list): A list of status keys to check.
     """
