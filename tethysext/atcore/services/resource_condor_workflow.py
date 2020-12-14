@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from tethys_sdk.jobs import CondorWorkflowJobNode
 
 from tethysext.atcore.models.app_users import Resource
-from tethysext.atcore.resources.job_scripts import update_resource_status as update_resource_status_script
+from tethysext.atcore.job_scripts import update_resource_status as update_resource_status_script
 
 
 class ResourceCondorWorkflow(object):
