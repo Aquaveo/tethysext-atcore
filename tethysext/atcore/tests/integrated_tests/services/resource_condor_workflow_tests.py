@@ -62,3 +62,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
     def test_get_jobs(self):
         got_jobs = self.puw.get_jobs()
         self.assertEqual(got_jobs, [])
+
+    def test_get_prepare(self):
+        self.job_manager.create_job = mock.MagicMock()
+        got_jobs = self.puw.prepare()

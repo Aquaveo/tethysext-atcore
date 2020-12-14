@@ -30,6 +30,9 @@ class ResourceCondorWorkflow(object):
             workspace_path(str): Path to workspace to be used by job.
             resource_db_url(str): SQLAlchemy url to Resource database.
             resource_id(str): ID of associated resource.
+            scheduler (Scheduler): The condor scheduler for the application
+            job_manager (JobManger): The condor job manager for the application.
+            status_keys (list): A list of resource status keys to be passed to the update status script.
         """  # noqa: E501
         self.user = user
         self.job_name = workflow_name
