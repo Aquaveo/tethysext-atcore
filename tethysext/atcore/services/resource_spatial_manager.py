@@ -8,6 +8,8 @@
 ********************************************************************************
 """
 import os
+from jinja2 import Template
+
 from abc import abstractmethod
 
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
@@ -165,20 +167,24 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
         return response
 
-    @reload_config
-    def create_extent_layer(self, datastore_name, reload_config=True):
+    def create_extent_layer(self, datastore_name, resource_id, reload_config=True):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
         Args:
-            datastore_name(str): name of the app database, for example: app_primary_db
-            reload_config(bool): Reload the GeoServer node configuration and catalog before returning if True
+            datastore_name(str): name of the app database, for example: app_primary_db.
+            resource_id(uuid): id of the extent record.
+            reload_config(bool): Reload the GeoServer node configuration and catalog before returning if True.
         """
         # Get Default Style Name
         default_style = f'atcore:{self.VL_EXTENT_TEMPLATE}'
 
         # feature name
-        feature_name = 'resource_extent'
+        feature_name = f'app_users_resources_{resource_id}'
+
+        sql_context = {
+            'resource_id': resource_id,
+        }
 
         # Render SQL
         sql_template_file = os.path.join(self.SQL_PATH, self.VL_EXTENT_VIEW + '.sql')
@@ -196,11 +202,7 @@ class ResourceSpatialManager(BaseSpatialManager):
             srid=4326,
             sql=sql,
             default_style=default_style,
-            parameters=(
-                {
-                    'name': 'resource_id',
-                    'default_value': '1',
-                    'regex_validator': '^[0-9]+$'
-                },
-            )
         )
+
+        # if reload_config:
+        #     self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
