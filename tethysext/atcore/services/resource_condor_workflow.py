@@ -25,14 +25,14 @@ class ResourceCondorWorkflow(object):
         Constructor.
 
         Args:
-            user(auth.User): Django user.
-            workflow_name(str): Name of the job.
-            workspace_path(str): Path to workspace to be used by job.
-            resource_db_url(str): SQLAlchemy url to Resource database.
-            resource_id(str): ID of associated resource.
+            user (auth.User): Django user.
+            workflow_name (str): Name of the job.
+            workspace_path (str): Path to workspace to be used by job.
+            resource_db_url (str): SQLAlchemy url to Resource database.
+            resource_id (str): ID of associated resource.
             scheduler (Scheduler): The condor scheduler for the application
             job_manager (JobManger): The condor job manager for the application.
-            status_keys (list): A list of resource status keys to be passed to the update status script.
+            status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
         """  # noqa: E501
         self.user = user
         self.job_name = workflow_name
@@ -44,7 +44,6 @@ class ResourceCondorWorkflow(object):
         self.scheduler = scheduler
         self.job_manager = job_manager
         self.status_keys = status_keys
-        self.input_archive_path = os.path.join(workspace_path, 'condor_upload.zip')
 
         for kwarg, value in kwargs.items():
             setattr(self, kwarg, value)
@@ -75,8 +74,6 @@ class ResourceCondorWorkflow(object):
 
         user_defined_jobs = self.get_jobs()
 
-        input_archive_filename = os.path.basename(self.input_archive_path)
-
         # update_resource_status
         update_resource_status = CondorWorkflowJobNode(
             name='finalize',
@@ -87,7 +84,6 @@ class ResourceCondorWorkflow(object):
             ),
             attributes=dict(
                 executable='update_resource_status.py',
-                transfer_input_files=(f'../{input_archive_filename}',),
                 arguments=(
                     self.resource_db_url,
                     self.resource_id,

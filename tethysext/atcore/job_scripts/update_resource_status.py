@@ -14,8 +14,8 @@ def run(resource_db_url: str, resource_id: str, status_keys: list):
     Args:
         resource_db_url (str): The SQLAlchemy to the resource database.
         resource_id (str): The resource ID.
-        status_keys (list): A list of status keys to check.
-    """
+        status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
+    """  # noqa: E501
     resource_db_session = None
 
     try:

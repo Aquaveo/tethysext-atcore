@@ -24,9 +24,8 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         self.resource_db_url = 'postgresql://admin:pass@localhost:5432/gssha_res.db'
         self.resource_id = '2323'
         self.scenario_id = 1
-        self.scheduler = mock.MagicMock(),
-        self.job_manager = mock.MagicMock(),
-        self.model_db = mock.MagicMock()
+        self.scheduler = mock.MagicMock()
+        self.job_manager = mock.MagicMock()
         self.gs_engine = mock.MagicMock()
         self.puw = ResourceCondorWorkflow(
             user=self.user, workflow_name=self.workflow_name,
@@ -63,6 +62,10 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         got_jobs = self.puw.get_jobs()
         self.assertEqual(got_jobs, [])
 
-    def test_get_prepare(self):
-        self.job_manager.create_job = mock.MagicMock()
-        got_jobs = self.puw.prepare()
+    @mock.patch('tethysext.atcore.services.resource_condor_workflow.CondorWorkflowJobNode')
+    def test_get_prepare(self, mock_job):
+        self.puw.get_jobs = mock.MagicMock()
+        self.puw.get_jobs.return_value = ['1', '2', '3']
+        self.puw.prepare()
+        mock_job().save.assert_called()
+        self.assertEqual(mock_job().add_parent.call_count, 3)
