@@ -173,7 +173,7 @@ class ResourceSpatialManager(BaseSpatialManager):
 
         Args:
             datastore_name(str): name of the app database, for example: app_primary_db.
-            resource_id(uuid): id of the extent record.
+            resource_id(str): id of the extent record.
             reload_config(bool): Reload the GeoServer node configuration and catalog before returning if True.
         """
         # Get Default Style Name
@@ -204,5 +204,20 @@ class ResourceSpatialManager(BaseSpatialManager):
             default_style=default_style,
         )
 
-        # if reload_config:
-        #     self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
+        if reload_config:
+            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
+
+    def delete_extent_layer(self, datastore_name, resource_id, recurse=True, reload_config=True):
+        # feature name
+        feature_name = f'app_users_resources_{resource_id}'
+
+        self.gs_api.delete_layer(
+            workspace=self.WORKSPACE,
+            datastore_nam=datastore_name,
+            name=resource_id,
+            recurse=recurse,
+
+        )
+
+        if reload_config:
+            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
