@@ -15,7 +15,6 @@ from abc import abstractmethod
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 
-from tethysext.atcore.services.base_spatial_manager import reload_config
 
 class ResourceSpatialManager(BaseSpatialManager):
     """
@@ -167,7 +166,7 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
         return response
 
-    def create_extent_layer(self, datastore_name, resource_id):
+    def create_extent_layer(self, datastore_name, resource_id, reload_config=True):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
@@ -203,14 +202,19 @@ class ResourceSpatialManager(BaseSpatialManager):
             default_style=default_style,
         )
 
-    def delete_extent_layer(self, datastore_name, resource_id, recurse=True):
+        if reload_config:
+            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
+
+    def delete_extent_layer(self, datastore_name, resource_id, recurse=True, reload_config=True):
         # feature name
         feature_name = f'app_users_resources_{resource_id}'
 
         self.gs_api.delete_layer(
             workspace=self.WORKSPACE,
             datastore_nam=datastore_name,
-            name=resource_id,
+            name=feature_name,
             recurse=recurse,
-
         )
+
+        if reload_config:
+            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
