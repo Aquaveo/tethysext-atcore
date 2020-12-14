@@ -6,7 +6,6 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tethys_sdk.jobs import CondorWorkflowJobNode
