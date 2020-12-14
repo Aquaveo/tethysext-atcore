@@ -167,14 +167,13 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
         return response
 
-    def create_extent_layer(self, datastore_name, resource_id, reload_config=True):
+    def create_extent_layer(self, datastore_name, resource_id):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
         Args:
             datastore_name(str): name of the app database, for example: app_primary_db.
             resource_id(str): id of the extent record.
-            reload_config(bool): Reload the GeoServer node configuration and catalog before returning if True.
         """
         # Get Default Style Name
         default_style = f'atcore:{self.VL_EXTENT_TEMPLATE}'
@@ -204,10 +203,7 @@ class ResourceSpatialManager(BaseSpatialManager):
             default_style=default_style,
         )
 
-        if reload_config:
-            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
-
-    def delete_extent_layer(self, datastore_name, resource_id, recurse=True, reload_config=True):
+    def delete_extent_layer(self, datastore_name, resource_id, recurse=True):
         # feature name
         feature_name = f'app_users_resources_{resource_id}'
 
@@ -218,6 +214,3 @@ class ResourceSpatialManager(BaseSpatialManager):
             recurse=recurse,
 
         )
-
-        if reload_config:
-            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
