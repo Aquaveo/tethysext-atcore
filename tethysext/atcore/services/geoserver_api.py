@@ -468,7 +468,7 @@ class GeoServerAPI(object):
                 url,
                 headers=headers,
                 auth=(self.gs_engine.username, self.gs_engine.password),
-                data=xml
+                data=xml,
             )
 
             # Raise an exception if status code is not what we expect
