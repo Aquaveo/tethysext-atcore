@@ -9,7 +9,10 @@
       <a class="btn btn-default manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-toggle="tooltip" data-placement="bottom" title="New"><span class="glyphicon glyphicon-plus"></span></a>
     </div>
     {% endif %}
-    <h1>{{ page_title }}</h1>
+
+    {% if page_title %}
+      <h1>{{ page_title }}</h1>
+    {% endif %}
 
     {% if resources %}
       {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header"  %}
