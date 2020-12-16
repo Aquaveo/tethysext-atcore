@@ -36,7 +36,7 @@ class ResourceSpatialManager(BaseSpatialManager):
             str: name of the extent layer.
 
         """
-        return f'app_users_resources_{resource_id}'
+        return f'app_users_resources_extent_{resource_id}'
 
     def get_extent_for_project(self, datastore_name, resource_id):
         """
@@ -44,7 +44,8 @@ class ResourceSpatialManager(BaseSpatialManager):
         The query in resource_extent_layer_view transforms all features to 4326.
 
         Args:
-            datastore_name(str): name of the app database, for example: app_primary_db.
+            datastore_name(str): name of the PostGIS datastore in GeoServer that contains the layer data.
+             For example: app_primary_db.
             resource_id(str): id of the Resources.
         """
         # feature name
@@ -58,18 +59,24 @@ class ResourceSpatialManager(BaseSpatialManager):
 
         return extent
 
-    def create_extent_layer(self, datastore_name, resource_id, geometry_type=None):
+    def create_extent_layer(self, datastore_name, resource_id, geometry_type=None, srid=4326):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
         Args:
-            datastore_name(str): name of the app database, for example: app_primary_db.
+            datastore_name(str): name of the PostGIS datastore in GeoServer that contains the layer data.
+             For example: app_primary_db.
             resource_id(str): id of the Resources.
             geometry_type(str): type of geometry. Pick from: Polygon, LineString, Point.
+            srid(str): Spatial Reference Identifier of the extent. Default to 4326.
         """
         geometry_check_list = [x.lower() for x in [self.GT_POLYGON, self.GT_LINE, self.GT_POINT]]
-        if geometry_type is None or geometry_type.lower() not in geometry_check_list:
+        if geometry_type is None:
             geometry_type = self.GT_POLYGON
+
+        if geometry_type.lower() not in geometry_check_list:
+            raise ValueError(f'{geometry_type} is an invalid geometry type. The type must be from one of the '
+                             f'following: Polygon, LineString or Point')
 
         # Get Default Style Name
         default_style = f'atcore:{self.VL_EXTENT_STYLE}'
@@ -79,6 +86,7 @@ class ResourceSpatialManager(BaseSpatialManager):
 
         sql_context = {
             'resource_id': resource_id,
+            'srid': srid,
         }
 
         # Render SQL
@@ -94,7 +102,7 @@ class ResourceSpatialManager(BaseSpatialManager):
             datastore_name=datastore_name,
             feature_name=feature_name,
             geometry_type=self.GT_POLYGON,
-            srid=4326,
+            srid=srid,
             sql=sql,
             default_style=default_style,
         )
@@ -104,7 +112,8 @@ class ResourceSpatialManager(BaseSpatialManager):
         Delete a given geoserver layer.
 
         Args:
-            datastore_name(str): name of the app database, for example: app_primary_db.
+            datastore_name(str): name of the PostGIS datastore in GeoServer that contains the layer data.
+             For example: app_primary_db.
             resource_id(str): id of the Resources.
             recurse (bool): recursively delete any dependent objects if True.
         """
