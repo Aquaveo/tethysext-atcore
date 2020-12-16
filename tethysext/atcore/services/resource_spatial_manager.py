@@ -1,25 +1,21 @@
 """
 ********************************************************************************
-* Name: model_db_spatial_manager
-* Author: nswain
-* Created On: July 06, 2018
-* Updated on: December 19, 2018
-* Copyright: (c) Aquaveo 2018
+* Name: resource_spatial_manager
+* Author: nswain, msouffront & htran
+* Created On: December 15, 2020
+* Updated on: December 15, 2020
+* Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
 import os
 from jinja2 import Template
 
-from abc import abstractmethod
-
-from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
-from tethysext.atcore.models.app_users import Resource
 
 
 class ResourceSpatialManager(BaseSpatialManager):
     """
-    Class for Spatial Managers using a postgres database.
+    A generic SpatialManger for SpatialResource.
     """
 
     SQL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sql_templates')
@@ -27,7 +23,20 @@ class ResourceSpatialManager(BaseSpatialManager):
 
     # Vector Layer Types
     VL_EXTENT_VIEW = 'resource_extent_layer_view'
-    VL_EXTENT_TEMPLATE = 'resource_extent_layer_style'
+    VL_EXTENT_STYLE = 'resource_extent_layer_style'
+
+    def get_extent_layer_name(self, resource_id):
+        """
+        Get name of the extent layer for a given resource.
+
+        Args:
+            resource_id(str): id of the Resource.
+
+        Returns:
+            str: name of the extent layer.
+
+        """
+        return f'app_users_resources_{resource_id}'
 
     def get_extent_for_project(self, datastore_name, resource_id):
         """
@@ -36,10 +45,10 @@ class ResourceSpatialManager(BaseSpatialManager):
 
         Args:
             datastore_name(str): name of the app database, for example: app_primary_db.
-            resource_id(str): id of the extent record.
+            resource_id(str): id of the Resources.
         """
         # feature name
-        feature_name = f'app_users_resources_{resource_id}'
+        feature_name = self.get_extent_layer_name(resource_id)
 
         extent = self.gs_api.get_layer_extent(
             workspace=self.WORKSPACE,
@@ -49,25 +58,24 @@ class ResourceSpatialManager(BaseSpatialManager):
 
         return extent
 
-    def get_projection_units(self, resource, srid):
-        pass
-
-    def get_projection_string(self, model_db, srid, proj_format=''):
-        pass
-
-    def create_extent_layer(self, datastore_name, resource_id):
+    def create_extent_layer(self, datastore_name, resource_id, geometry_type=None):
         """
         Creates a GeoServer SQLView Layer for the extent from the resource.
 
         Args:
             datastore_name(str): name of the app database, for example: app_primary_db.
-            resource_id(str): id of the extent record.
+            resource_id(str): id of the Resources.
+            geometry_type(str): type of geometry. Pick from: Polygon, LineString, Point.
         """
+        geometry_check_list = [x.lower() for x in [self.GT_POLYGON, self.GT_LINE, self.GT_POINT]]
+        if geometry_type is None or geometry_type.lower() not in geometry_check_list:
+            geometry_type = self.GT_POLYGON
+
         # Get Default Style Name
-        default_style = f'atcore:{self.VL_EXTENT_TEMPLATE}'
+        default_style = f'atcore:{self.VL_EXTENT_STYLE}'
 
         # feature name
-        feature_name = f'app_users_resources_{resource_id}'
+        feature_name = self.get_extent_layer_name(resource_id=resource_id)
 
         sql_context = {
             'resource_id': resource_id,
@@ -92,12 +100,19 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
 
     def delete_extent_layer(self, datastore_name, resource_id, recurse=True):
-        # feature name
-        feature_name = f'app_users_resources_{resource_id}'
+        """
+        Delete a given geoserver layer.
+
+        Args:
+            datastore_name(str): name of the app database, for example: app_primary_db.
+            resource_id(str): id of the Resources.
+            recurse (bool): recursively delete any dependent objects if True.
+        """
+        feature_name = self.get_extent_layer_name(resource_id=resource_id)
 
         self.gs_api.delete_layer(
             workspace=self.WORKSPACE,
-            datastore_nam=datastore_name,
+            datastore_name=datastore_name,
             name=feature_name,
             recurse=recurse,
         )
