@@ -36,7 +36,7 @@ class ResourceSpatialManagerTests(unittest.TestCase):
     @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
     def test_create_extent_layer_value_error(self, _):
         spatial_manager = ResourceSpatialManager(self.geoserver_engine)
-        self.assertRaises(ValueError, spatial_manager.create_extent_layer, 'foo', 'invalid-status', 'test_geotype', 1)
+        self.assertRaises(ValueError, spatial_manager.create_extent_layer, 'dstore', 'rid', 'test_geotype', 1)
 
     @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
     def test_delete_extent_layer(self, _):
