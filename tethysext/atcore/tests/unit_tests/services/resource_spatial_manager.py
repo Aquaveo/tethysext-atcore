@@ -34,6 +34,11 @@ class ResourceSpatialManagerTests(unittest.TestCase):
                                sql=sql, srid=4326, workspace='my-app')
 
     @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
+    def test_create_extent_layer_value_error(self, _):
+        spatial_manager = ResourceSpatialManager(self.geoserver_engine)
+        self.assertRaises(ValueError, spatial_manager.create_extent_layer, 'foo', 'invalid-status', 'test_geotype', 1)
+
+    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
     def test_delete_extent_layer(self, _):
         spatial_manager = ResourceSpatialManager(self.geoserver_engine)
         spatial_manager.delete_extent_layer(datastore_name=self.datastore_name, resource_id=self.resource_id)

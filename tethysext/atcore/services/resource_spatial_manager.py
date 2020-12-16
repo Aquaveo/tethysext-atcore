@@ -77,35 +77,35 @@ class ResourceSpatialManager(BaseSpatialManager):
         if geometry_type.lower() not in geometry_check_list:
             raise ValueError(f'{geometry_type} is an invalid geometry type. The type must be from one of the '
                              f'following: Polygon, LineString or Point')
-        else:
-            # Get Default Style Name
-            default_style = f'atcore:{self.VL_EXTENT_STYLE}'
 
-            # feature name
-            feature_name = self.get_extent_layer_name(resource_id=resource_id)
+        # Get Default Style Name
+        default_style = f'atcore:{self.VL_EXTENT_STYLE}'
 
-            sql_context = {
-                'resource_id': resource_id,
-                'srid': srid,
-            }
+        # feature name
+        feature_name = self.get_extent_layer_name(resource_id=resource_id)
 
-            # Render SQL
-            sql_template_file = os.path.join(self.SQL_PATH, self.VL_EXTENT_VIEW + '.sql')
-            with open(sql_template_file, 'r') as sql_template_file:
-                text = sql_template_file.read()
-                template = Template(text)
-                sql = ' '.join(template.render(sql_context).split())
+        sql_context = {
+            'resource_id': resource_id,
+            'srid': srid,
+        }
 
-            # Create SQL View
-            self.gs_api.create_layer(
-                workspace=self.WORKSPACE,
-                datastore_name=datastore_name,
-                feature_name=feature_name,
-                geometry_type=self.GT_POLYGON,
-                srid=srid,
-                sql=sql,
-                default_style=default_style,
-            )
+        # Render SQL
+        sql_template_file = os.path.join(self.SQL_PATH, self.VL_EXTENT_VIEW + '.sql')
+        with open(sql_template_file, 'r') as sql_template_file:
+            text = sql_template_file.read()
+            template = Template(text)
+            sql = ' '.join(template.render(sql_context).split())
+
+        # Create SQL View
+        self.gs_api.create_layer(
+            workspace=self.WORKSPACE,
+            datastore_name=datastore_name,
+            feature_name=feature_name,
+            geometry_type=self.GT_POLYGON,
+            srid=srid,
+            sql=sql,
+            default_style=default_style,
+        )
 
     def delete_extent_layer(self, datastore_name, resource_id, recurse=True):
         """
