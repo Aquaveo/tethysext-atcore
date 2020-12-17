@@ -7,23 +7,29 @@ from sqlalchemy.orm import sessionmaker
 from tethysext.atcore.models.app_users import Resource
 
 
-def run(resource_db_url: str, resource_id: str, status_keys: list):
+def run(resource_db_url: str, resource_id: str, resource_class_path: str, status_keys: list):
     """
     Update the root status of a resource based ont he status of one or more other statuses of the same resource.
 
     Args:
         resource_db_url (str): The SQLAlchemy to the resource database.
         resource_id (str): The resource ID.
+        resource_class_path (str): Path to the class module.
         status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
     """  # noqa: E501
     resource_db_session = None
+    resource_module = resource_class_path.rsplit('.', 1)[0]
+    resrouce_class = resource_class_path.rsplit('.', 1)[1]
+
+    mod = __import__(resource_module, fromlist=[resrouce_class])
+    klass = getattr(mod, resrouce_class)
 
     try:
         # Get resource
         resource_db_engine = create_engine(resource_db_url)
         make_resource_db_session = sessionmaker(bind=resource_db_engine)
         resource_db_session = make_resource_db_session()
-        resource = resource_db_session.query(Resource).get(resource_id)
+        resource = resource_db_session.query(klass).get(resource_id)
 
         # Check Status List
         if len(status_keys) <= 0:
@@ -53,4 +59,4 @@ def run(resource_db_url: str, resource_id: str, status_keys: list):
 if __name__ == '__main__':
     args = sys.argv
     args.pop(0)
-    run(args[0], args[1], args[2].split(','))
+    run(args[0], args[1], args[2], args[3].split(','))

@@ -18,7 +18,7 @@ class ResourceCondorWorkflow(object):
     """
     Helper class that prepares and submits the new project upload jobs and workflow.
     """
-    def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource_id,
+    def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource,
                  scheduler, job_manager, status_keys=[], **kwargs):
         """
         Constructor.
@@ -28,7 +28,7 @@ class ResourceCondorWorkflow(object):
             workflow_name (str): Name of the job.
             workspace_path (str): Path to workspace to be used by job.
             resource_db_url (str): SQLAlchemy url to Resource database.
-            resource_id (str): ID of associated resource.
+            resource (Resource): Instance of the Resource.
             scheduler (Scheduler): The condor scheduler for the application
             job_manager (JobManger): The condor job manager for the application.
             status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
@@ -38,7 +38,8 @@ class ResourceCondorWorkflow(object):
         self.safe_job_name = ''.join(s if s.isalnum() else '_' for s in self.job_name)  #: Safe name with only A-Z 0-9
         self.workspace_path = workspace_path
         self.resource_db_url = resource_db_url
-        self.resource_id = resource_id
+        self.resource_id = str(resource.id)
+        self.resource_class_path = f'{resource.__module__}.{resource.__class__.__name__}'
         self.workflow = None
         self.scheduler = scheduler
         self.job_manager = job_manager
@@ -90,6 +91,7 @@ class ResourceCondorWorkflow(object):
                 arguments=(
                     self.resource_db_url,
                     self.resource_id,
+                    self.resource_class_path,
                     ','.join(self.status_keys)
                 )
             ),
