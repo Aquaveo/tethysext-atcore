@@ -19,7 +19,7 @@ class ResourceCondorWorkflow(object):
     Helper class that prepares and submits the new project upload jobs and workflow.
     """
     def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource_id,
-                 scheduler, job_manager, status_keys, **kwargs):
+                 scheduler, job_manager, status_keys=[], **kwargs):
         """
         Constructor.
 
@@ -73,6 +73,10 @@ class ResourceCondorWorkflow(object):
 
         user_defined_jobs = self.get_jobs()
 
+        # Aggregate status key.
+        for _, status_key in user_defined_jobs:
+            self.status_keys.append(status_key)
+
         # update_resource_status
         update_resource_status = CondorWorkflowJobNode(
             name='finalize',
@@ -93,8 +97,9 @@ class ResourceCondorWorkflow(object):
         update_resource_status.save()
 
         # Set relationships
-        for job in user_defined_jobs:
+        for job, _ in user_defined_jobs:
             update_resource_status.add_parent(job)
+
 
         # add resource id to extended properties for filtering
         self.workflow.extended_properties['resource_id'] = str(self.resource_id)
