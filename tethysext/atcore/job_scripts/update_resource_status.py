@@ -19,10 +19,10 @@ def run(resource_db_url: str, resource_id: str, resource_class_path: str, status
     """  # noqa: E501
     resource_db_session = None
     resource_module = resource_class_path.rsplit('.', 1)[0]
-    resrouce_class = resource_class_path.rsplit('.', 1)[1]
+    resource_class = resource_class_path.rsplit('.', 1)[1]
 
-    mod = __import__(resource_module, fromlist=[resrouce_class])
-    klass = getattr(mod, resrouce_class)
+    mod = __import__(resource_module, fromlist=[resource_class])
+    klass = getattr(mod, resource_class)
 
     try:
         # Get resource
