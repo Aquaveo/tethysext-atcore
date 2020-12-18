@@ -102,7 +102,6 @@ class ResourceCondorWorkflow(object):
         for job, _ in user_defined_jobs:
             update_resource_status.add_parent(job)
 
-
         # add resource id to extended properties for filtering
         self.workflow.extended_properties['resource_id'] = str(self.resource_id)
         self.workflow.save()
