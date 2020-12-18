@@ -18,18 +18,18 @@ def run(resource_db_url: str, resource_id: str, resource_class_path: str, status
         status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
     """  # noqa: E501
     resource_db_session = None
-    resource_module = resource_class_path.rsplit('.', 1)[0]
-    resource_class = resource_class_path.rsplit('.', 1)[1]
+    resource_module_path = resource_class_path.rsplit('.', 1)[0]
+    resource_class_name = resource_class_path.rsplit('.', 1)[1]
 
-    mod = __import__(resource_module, fromlist=[resource_class])
-    klass = getattr(mod, resource_class)
+    resource_module = __import__(resource_module_path, fromlist=[resource_class_name])
+    resource_class = getattr(resource_module, resource_class_name)
 
     try:
         # Get resource
         resource_db_engine = create_engine(resource_db_url)
         make_resource_db_session = sessionmaker(bind=resource_db_engine)
         resource_db_session = make_resource_db_session()
-        resource = resource_db_session.query(klass).get(resource_id)
+        resource = resource_db_session.query(resource_class).get(resource_id)
 
         # Check Status List
         if len(status_keys) <= 0:
