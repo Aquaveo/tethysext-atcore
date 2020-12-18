@@ -16,13 +16,17 @@ from tethysext.atcore.services.resource_condor_workflow import ResourceCondorWor
 class ResourceCondorWorkflowTests(unittest.TestCase):
 
     def setUp(self):
+        mock_resource = mock.MagicMock()
+        mock_resource.id = '2323'
+        mock_resource.__module__ = 'path_to_module'
+        mock_resource.__class__.__name__ = 'class_name'
         self.user = mock.MagicMock()
         self.workflow_name = 'workflow_name'
         self.workspace_path = '/tmp'
         self.input_archive_path = '/tmp/abc.zip'
         self.srid = 1001
         self.resource_db_url = 'postgresql://admin:pass@localhost:5432/gssha_res.db'
-        self.resource_id = '2323'
+        self.resource = mock_resource
         self.scenario_id = 1
         self.scheduler = mock.MagicMock()
         self.job_manager = mock.MagicMock()
@@ -31,7 +35,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
             user=self.user, workflow_name=self.workflow_name,
             workspace_path=self.workspace_path,
             resource_db_url=self.resource_db_url,
-            resource_id=self.resource_id,
+            resource=self.resource,
             scheduler=self.scheduler,
             job_manager=self.job_manager,
             status_keys=[Resource.STATUS_OK],
@@ -48,7 +52,6 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         mock_resource = mock_session.query().get()
         self.puw.prepare = mock.MagicMock()
         self.puw.workflow = mock.MagicMock()
-
         self.puw.run_job()
 
         mock_resource.set_status.assert_called_with(Resource.ROOT_STATUS_KEY,
@@ -65,7 +68,9 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
     @mock.patch('tethysext.atcore.services.resource_condor_workflow.CondorWorkflowJobNode')
     def test_get_prepare(self, mock_job):
         self.puw.get_jobs = mock.MagicMock()
-        self.puw.get_jobs.return_value = ['1', '2', '3']
+        self.puw.get_jobs.return_value = [('job1', 'run_job1: SUCCESS'),
+                                          ('job2', 'run_job2: SUCCESS'),
+                                          ('job3', 'run_job3: SUCCESS')]
         self.puw.prepare()
         mock_job().save.assert_called()
         self.assertEqual(mock_job().add_parent.call_count, 3)
