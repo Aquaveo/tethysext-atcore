@@ -211,7 +211,7 @@ class ManageResources(AppUsersViewMixin):
         try:
             resource = session.query(_Resource).get(resource_id)
             try:
-                self.perform_custom_delete_operations(request, resource)
+                self.perform_custom_delete_operations(session, request, resource)
             except:  # noqa: E722
                 log.warning(f'Unable to perform custom delete operations on resource {resource}.')
             session.delete(resource)
@@ -289,10 +289,11 @@ class ManageResources(AppUsersViewMixin):
         of_type = self.get_resource_model()
         return request_app_user.get_resources(session, request, of_type=of_type)
 
-    def perform_custom_delete_operations(self, request, resource):
+    def perform_custom_delete_operations(self, session, request, resource):
         """
         Hook to perform custom delete operations prior to the resource being deleted.
         Args:
+            session(sqlalchemy.session): open sqlalchemy session.
             request(django.Request): the DELETE request object.
             resource(Resource): the sqlalchemy Resource instance to be deleted.
 
