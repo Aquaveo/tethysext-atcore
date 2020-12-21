@@ -277,7 +277,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources._handle_delete(mock_request, '001')
 
         # test the results
-        mock_custom_delete.assert_called_with(mock_request, mock_resource)
+        mock_custom_delete.assert_called_with(session, mock_request, mock_resource)
         session.delete.assert_called_with(mock_resource)
         session.commit.assert_called()
         session.close.assert_called()
@@ -459,7 +459,9 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         self.assertEqual('always_delete_resource', call_args[1][0][1])
         self.assertEqual(mock_request, call_args[1][0][0])
 
-    def test_perform_custom_delete_operations(self):
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    def test_perform_custom_delete_operations(self, mock_get_session):
+        session = mock_get_session()()
         mock_request = self.request_factory.get('/foo/bar/')
 
-        ManageResources().perform_custom_delete_operations(mock_request, self.resource)
+        ManageResources().perform_custom_delete_operations(session, mock_request, self.resource)
