@@ -78,3 +78,10 @@ class SpatialResource(Resource):
         if extent_type == 'dict':
             extent = json.loads(extent)
         return extent
+
+    def update_extent_srid(self, srid):
+        session = inspect(self).session
+        qry = session.query(func.ST_SetSRID(self.extent, srid).label('geom'))
+        new_extent = qry.first().geom
+
+        self.extent = new_extent
