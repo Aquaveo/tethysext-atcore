@@ -162,7 +162,13 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         """Test trying to get an extent of an invalid type throws the correct error."""
         resource = self.create_resource_in_session()
         resource.extent = self.expected_geometry
+
+        wkt_extent_query_before = self.session.query(func.ST_AsEWKT(resource.extent)).first()
+        ret_before = wkt_extent_query_before[0]
+        self.assertNotIn('SRID=3857', ret_before)
+
         resource.update_extent_srid(3857)
-        wkt_extent_query = self.session.query(func.ST_AsEWKT(resource.extent)).first()
-        ret = wkt_extent_query[0]
-        self.assertIn('SRID=3857', ret)
+
+        wkt_extent_query_after = self.session.query(func.ST_AsEWKT(resource.extent)).first()
+        ret_after = wkt_extent_query_after[0]
+        self.assertIn('SRID=3857', ret_after)

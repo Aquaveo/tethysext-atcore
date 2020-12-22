@@ -81,8 +81,7 @@ class SpatialResource(Resource):
 
     def update_extent_srid(self, srid):
         session = inspect(self).session
-        object_to_convert = session.query(Resource).filter(Resource.id == self.id).first()
-        qry = session.query(func.ST_SetSRID(object_to_convert.extent, srid).label('geom'))
+        qry = session.query(func.ST_SetSRID(self.extent, srid).label('geom'))
         new_extent = qry.first().geom
 
         self.extent = new_extent
