@@ -49,9 +49,6 @@ class ResourceListTab(ResourceTab):
     @active_user_required()
     def _build_resource_cards(self, request, resources):
         _AppUser = self.get_app_user_model()
-        make_session = self.get_sessionmaker()
-        session = make_session()
-        request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         resource_cards = []
         for resource in resources:
@@ -61,9 +58,10 @@ class ResourceListTab(ResourceTab):
 
             resource_card['action'] = 'launch'
             resource_card['action_title'] = 'View Resource'
-            resource_card['action_href'] = '',
-            # resource_card['action_href'] = reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details',
-            #                                        args=[resource.id])
+            revers_namespace = f'{self._app.namespace}:{resource.SLUG}_resource_details'
+            print(revers_namespace)
+            resource_card['action_href'] = reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details',
+                                                   args=[resource.id])
             print(resource_card['action_href'])
             resource_cards.append(resource_card)
         return resource_cards
