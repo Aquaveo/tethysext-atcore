@@ -44,7 +44,7 @@ class ResourceSummaryTab(ResourceTab):
         """
         return None
 
-    def get_summary_tab_info(self, request, resource, *args, **kwargs):
+    def get_summary_tab_info(self, request, session, resource, *args, **kwargs):
         """
         Get the summary tab info
 
@@ -74,7 +74,7 @@ class ResourceSummaryTab(ResourceTab):
                                                     'Date Created': resource.date_created})
 
         # Add general_summary_tab_info as first item in first columns
-        summary_tab_info = self.get_summary_tab_info(request, resource)
+        summary_tab_info = self.get_summary_tab_info(request, session, resource)
         if len(summary_tab_info) == 0:
             summary_tab_info = [[general_summary_tab_info]]
         else:

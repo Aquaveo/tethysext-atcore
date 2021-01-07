@@ -137,7 +137,7 @@ class ResourceSummaryTabTests(SqlAlchemyTestCase):
         """Test default implementation of get_summary_tab_info."""
         instance = ResourceSummaryTab()
         request = self.request_factory.get('/foo/12345/bar/summary/')
-        ret = instance.get_summary_tab_info(request, self.resource)
+        ret = instance.get_summary_tab_info(request, self.session, self.resource)
         self.assertListEqual([], ret)
 
     @mock.patch('tethysext.atcore.controllers.resources.tabs.summary_tab.render')
