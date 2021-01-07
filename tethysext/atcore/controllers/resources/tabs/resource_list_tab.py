@@ -9,7 +9,6 @@
 from django.shortcuts import reverse
 
 from .resource_tab import ResourceTab
-from tethysext.atcore.services.app_users.decorators import active_user_required
 
 
 class ResourceListTab(ResourceTab):
