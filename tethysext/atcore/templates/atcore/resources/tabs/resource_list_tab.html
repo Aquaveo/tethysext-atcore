@@ -5,6 +5,11 @@
                 <span>Name</span>
               </th>
 
+              {# DESCRIPTION HEADER #}
+              <th>
+                <span>Description</span>
+              </th>
+
               {# CREATED BY HEADER #}
               <th>
                 <span>Created By</span>
@@ -24,6 +29,11 @@
                   {# NAME VALUE #}
                   <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
                     <a href="{{ resource.action_href }}">{{ resource.name }}</a>
+                  </td>
+
+                  {# DESCRIPTION VALUE #}
+                  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+                    {{ resource.description }}
                   </td>
 
                   {# CREATED BY VALUE #}

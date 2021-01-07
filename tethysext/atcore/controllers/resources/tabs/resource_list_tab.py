@@ -61,7 +61,10 @@ class ResourceListTab(ResourceTab):
 
             resource_card['action'] = 'launch'
             resource_card['action_title'] = 'View Resource'
-            resource_card['action_href'] = ''
+            resource_card['action_href'] = '',
+            # resource_card['action_href'] = reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details',
+            #                                        args=[resource.id])
+            print(resource_card['action_href'])
             resource_cards.append(resource_card)
         return resource_cards
 
