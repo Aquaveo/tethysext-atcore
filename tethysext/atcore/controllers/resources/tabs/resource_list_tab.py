@@ -10,7 +10,6 @@ from django.shortcuts import reverse
 
 from .resource_tab import ResourceTab
 from tethysext.atcore.services.app_users.decorators import active_user_required
-from tethysext.atcore.services.paginate import paginate
 
 
 class ResourceListTab(ResourceTab):
@@ -46,10 +45,7 @@ class ResourceListTab(ResourceTab):
         """
         return []
 
-    @active_user_required()
-    def _build_resource_cards(self, request, resources):
-        _AppUser = self.get_app_user_model()
-
+    def _build_resource_cards(self, resources):
         resource_cards = []
         for resource in resources:
             resource_card = resource.__dict__
@@ -73,7 +69,7 @@ class ResourceListTab(ResourceTab):
         all_resources = self.get_resources(request, resource, session)
 
         # Build cards
-        resource_cards = self._build_resource_cards(request, all_resources)
+        resource_cards = self._build_resource_cards(all_resources)
 
         context.update({
             'resource_slug': resource.SLUG,
