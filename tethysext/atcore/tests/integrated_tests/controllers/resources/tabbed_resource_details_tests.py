@@ -181,7 +181,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         ret = instance.post(request, resource_id=str(self.resource.id), back_url='/foo/', tab_slug=tab_slug)
 
         mock_htar.assert_called_with(
-            request=request, resource=self.resource, tab_slug=tab_slug, tab_action='default'
+            request=request, resource=self.resource, session=self.session, tab_slug=tab_slug, tab_action='default'
         )
         self.assertEqual(mock_htar(), ret)
 
@@ -211,7 +211,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         ret = instance.delete(request, resource_id=str(self.resource.id), back_url='/foo/', tab_slug=tab_slug)
 
         mock_htar.assert_called_with(
-            request=request, resource=self.resource, tab_slug=tab_slug, tab_action='default'
+            request=request, resource=self.resource, session=self.session, tab_slug=tab_slug, tab_action='default'
         )
         self.assertEqual(mock_htar(), ret)
 

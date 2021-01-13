@@ -105,6 +105,7 @@ class TabbedResourceDetails(ResourceDetails):
             return self._handle_tab_action_request(
                 request=request,
                 resource=resource,
+                session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
                 *args, **kwargs
@@ -124,6 +125,7 @@ class TabbedResourceDetails(ResourceDetails):
             return self._handle_tab_action_request(
                 request=request,
                 resource=resource,
+                session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
                 *args, **kwargs
