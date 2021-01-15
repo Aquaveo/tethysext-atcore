@@ -7,7 +7,7 @@ rm -f .coverage
 echo "Running Unit Tests..."
 coverage run -a --rcfile=coverage.ini -m unittest tethysext.atcore.tests.unit_tests
 echo "Running Intermediate Tests..."
-coverage run -a --rcfile=coverage.ini $1 test -v 1 tethysext.atcore.tests.integrated_tests
+coverage run -a --rcfile=coverage.ini "$1" test -v 1 tethysext.atcore.tests.integrated_tests
 echo "Combined Coverage Report..."
 coverage report -m --rcfile=coverage.ini
 echo "Linting..."
