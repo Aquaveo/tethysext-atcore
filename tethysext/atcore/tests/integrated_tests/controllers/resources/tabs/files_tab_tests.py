@@ -35,7 +35,7 @@ class FilesTabWithDatabase(ResourceFilesTab):
         return []
 
 
-class ResourceFilesTabTests(SqlAlchemyTestCase):
+class FilesTabTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()

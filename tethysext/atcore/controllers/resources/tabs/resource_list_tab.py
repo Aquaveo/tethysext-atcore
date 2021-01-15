@@ -13,14 +13,14 @@ from .resource_tab import ResourceTab
 
 class ResourceListTab(ResourceTab):
     """
-    # TODO: DESCRIBE
+    # A tab for the TabbedResourceDetails view that lists resources related to this resource.
 
     Required URL Variables:
         resource_id (str): the ID of the Resource.
         tab_slug (str): Portion of URL that denotes which tab is active.
 
     Methods:
-        get_resources (required): # TODO: DESCRIBE
+        get_resources (required): Get a list of resources to be associated with this resource.
     """  # noqa: E501
     template_name = 'atcore/resources/tabs/resource_list_tab.html'
     base_template = None
@@ -53,8 +53,6 @@ class ResourceListTab(ResourceTab):
 
             resource_card['action'] = 'launch'
             resource_card['action_title'] = 'View Resource'
-            revers_namespace = f'{self._app.namespace}:{resource.SLUG}_resource_details'
-            print(revers_namespace)
             resource_card['action_href'] = reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details',
                                                    args=[resource.id])
             print(resource_card['action_href'])

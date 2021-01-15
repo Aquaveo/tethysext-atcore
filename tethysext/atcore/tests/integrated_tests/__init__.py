@@ -18,7 +18,8 @@ from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerT
 from .controllers.resources.tabbed_resource_details_tests import TabbedResourceDetailsTests  # noqa: F401
 from .controllers.resources.tabs.resource_tab_tests import ResourceTabTests  # noqa: F401
 from .controllers.resources.tabs.summary_tab_tests import ResourceSummaryTabTests  # noqa: F401
-from .controllers.resources.tabs.files_tab_tests import ResourceFilesTabTests  # noqa: F401
+from .controllers.resources.tabs.files_tab_tests import FilesTabTests  # noqa: F401
+from .controllers.resources.tabs.resource_list_tab_tests import ResourceListTabTests  # noqa: F401
 from .controllers.resources.tabs.workflows_tab_tests import ResourceWorkflowsTabTests  # noqa: F401
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_mixins_tests import WorkflowViewMixinTests  # noqa: F401
