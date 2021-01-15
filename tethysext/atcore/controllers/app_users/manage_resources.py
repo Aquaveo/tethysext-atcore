@@ -227,7 +227,7 @@ class ManageResources(AppUsersViewMixin):
         """
         Get the URL for the Resource Working button.
         """
-        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_status')
+        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_status') + f'?r={resource.id}'
 
     def get_launch_url(self, request, resource):
         """
