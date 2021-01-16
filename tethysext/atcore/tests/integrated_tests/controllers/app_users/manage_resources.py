@@ -358,6 +358,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_working_status(self, mock_reverse):
         mock_resource = mock.MagicMock()
+        mock_resource.id = 12345
         mock_resource.SLUG = "resources"
         mock_resource.WORKING_STATUSES = StatusMixin.WORKING_STATUSES
         mock_resource.get_status.return_value = 'Processing'
@@ -376,7 +377,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
             {
                 'action': ManageResources.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': mock_reverse()
+                'href': 'processing_url?r=12345'
             }, ret)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')

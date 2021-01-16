@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import json
+import sys
 from unittest import mock
 from django.http import HttpRequest
 from django.contrib.auth.models import User
@@ -204,7 +205,10 @@ class ManageUsersTests(SqlAlchemyTestCase):
 
         response_dict = json.loads(response._container[0].decode('utf-8'))
         self.assertFalse(response_dict['success'])
-        self.assertEqual("Exception('Some exception message')", response_dict['error'])
+        if sys.version_info.minor <= 6:
+            self.assertEqual("Exception('Some exception message',)", response_dict['error'])
+        else:
+            self.assertEqual("Exception('Some exception message')", response_dict['error'])
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     def test_delete_remove(self, _):
@@ -229,7 +233,10 @@ class ManageUsersTests(SqlAlchemyTestCase):
 
         response_dict = json.loads(response._container[0].decode('utf-8'))
         self.assertFalse(response_dict['success'])
-        self.assertEqual("Exception('Some exception message')", response_dict['error'])
+        if sys.version_info.minor <= 6:
+            self.assertEqual("Exception('Some exception message',)", response_dict['error'])
+        else:
+            self.assertEqual("Exception('Some exception message')", response_dict['error'])
 
     def test_delete_unknown_action(self):
         self.request.GET = {'action': 'swim'}
