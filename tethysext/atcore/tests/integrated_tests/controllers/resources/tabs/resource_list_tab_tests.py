@@ -58,7 +58,7 @@ class ResourceListTabTests(SqlAlchemyTestCase):
         self.assertIn('resources', context)
         self.assertEqual(len(context['resources']), 1)
 
-    def test_get_no_resources(self):
+    def test_get_context_no_resources(self):
         """Test get_context()"""
         instance = ResourceListTab()
         request = self.request_factory.get('/foo/12345/bar/summary/')

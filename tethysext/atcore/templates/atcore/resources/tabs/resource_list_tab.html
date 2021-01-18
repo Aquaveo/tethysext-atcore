@@ -19,13 +19,10 @@
     <th>
       <span>Date Created</span>
     </th>
-
-    {# BUTTONS HEADER #}
-    <th></th>
   </thead>
   <tbody>
     {% for resource in resources %}
-      <tr>
+      <tr class="resource-list-row">
         {# NAME VALUE #}
         <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
           <a href="{{ resource.action_href }}">{{ resource.name }}</a>
@@ -50,13 +47,6 @@
         {# DATE CREATED VALUE #}
         <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
           {{ resource.date_created }} UTC
-        </td>
-
-        {# BUTTONS #}
-        <td class="btn-td">
-          <div class="btn-toolbar pull-right">
-              <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-toggle="tooltip" data-placement="top" title="{{ resource.action_title }}"><span class="glyphicon glyphicon-chevron-right"></span></a>
-          </div>
         </td>
       </tr>
     {% endfor %}
