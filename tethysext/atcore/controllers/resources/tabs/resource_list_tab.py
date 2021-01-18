@@ -24,38 +24,34 @@ class ResourceListTab(ResourceTab):
     """  # noqa: E501
     template_name = 'atcore/resources/tabs/resource_list_tab.html'
     base_template = None
-    post_load_callback = 'resource_list_tab_loaded'
-
-    js_requirements = ResourceTab.js_requirements + [
-        'atcore/resources/resource_list_tab.js',
-        # TODO: Remove if we don't use this.
-    ]
-    css_requirements = ResourceTab.css_requirements + [
-        'atcore/resources/resource_list_tab.css'
-        # TODO: Remove if we don't use this.
-    ]
 
     def get_resources(self, request, resource, session, *args, **kwargs):
         """
         Get a list of resources
 
         Returns:
-            A list of FileCollection clients.
+            A list of Resources.
         """
         return []
 
     def _build_resource_cards(self, resources):
+        """
+        Build a list of cards for resources for the view to use.
+
+        Args:
+            resources: A list of resources to convert into cards for the view.
+
+        Returns:
+            A list of Resource cards that can be used by the view.
+        """
         resource_cards = []
         for resource in resources:
             resource_card = resource.__dict__
-            resource_card['debugging'] = resource.attributes
-            resource_card['debugging']['id'] = str(resource.id)
 
             resource_card['action'] = 'launch'
             resource_card['action_title'] = 'View Resource'
             resource_card['action_href'] = reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details',
                                                    args=[resource.id])
-            print(resource_card['action_href'])
             resource_cards.append(resource_card)
         return resource_cards
 

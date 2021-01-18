@@ -25,12 +25,6 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class ResourceListTabWithDatabase(ResourceListTab):
-
-    def get_resources(self, request, resource, *args, **kwargs):
-        return []
-
-
 class ResourceListTabTests(SqlAlchemyTestCase):
 
     def setUp(self):
