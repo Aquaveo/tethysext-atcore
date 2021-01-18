@@ -90,6 +90,4 @@ class ResourceListTabTests(SqlAlchemyTestCase):
         cards = instance._build_resource_cards(resources)
 
         self.assertEqual(len(cards), 1)
-        self.assertEqual(cards[0]['action'], 'launch')
-        self.assertEqual(cards[0]['action_title'], 'View Resource')
         self.assertEqual(cards[0]['action_href'], 'mock_href')
