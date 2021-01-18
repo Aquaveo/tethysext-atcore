@@ -100,7 +100,6 @@ class ResourceFilesTab(ResourceTab):
                         hierarchy['name'] = meta_json['display_name']
             except json.JSONDecodeError:
                 pass
-            print(hierarchy)
 
         # Try and access 'children' here. If we can't than this is a file.
         try:
