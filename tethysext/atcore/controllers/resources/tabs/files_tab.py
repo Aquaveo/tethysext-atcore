@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+import json
 import mimetypes
 import os
 import time
@@ -88,6 +89,18 @@ class ResourceFilesTab(ResourceTab):
             'parent_slug': parent_slug,
             'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
         }
+
+        # Try and get a name from the meta file.
+        meta_file = os.path.join(path, '__meta__.json')
+        if os.path.isfile(meta_file):
+            try:
+                with open(meta_file) as mf:
+                    meta_json = json.load(mf)
+                    if 'display_name' in meta_json:
+                        hierarchy['name'] = meta_json['display_name']
+            except json.JSONDecodeError:
+                pass
+            print(hierarchy)
 
         # Try and access 'children' here. If we can't than this is a file.
         try:
