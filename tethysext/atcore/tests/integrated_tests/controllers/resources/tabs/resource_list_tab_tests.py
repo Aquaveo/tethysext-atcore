@@ -68,3 +68,28 @@ class ResourceListTabTests(SqlAlchemyTestCase):
 
         self.assertIn('resources', context)
         self.assertEqual(len(context['resources']), 0)
+
+    def test_get_resources(self):
+        """Test get_resources()"""
+        instance = ResourceListTab()
+        request = self.request_factory.get('/foo/12345/bar/summary/')
+        resources = instance.get_resources(request, None, None)
+        self.assertEqual(len(resources), 0)
+
+    @mock.patch('tethysext.atcore.controllers.resources.tabs.resource_list_tab.reverse')
+    def test_build_resource_cards(self, reverse_mock):
+        """Test _build_resource_cards()"""
+        instance = ResourceListTab()
+        request = self.request_factory.get('/foo/12345/bar/summary/')
+        request.user = self.get_user()
+
+        model = SpatialResource()
+        resources = [model]
+        reverse_mock.return_value = 'mock_href'
+        instance._app = mock.MagicMock()
+        cards = instance._build_resource_cards(resources)
+
+        self.assertEqual(len(cards), 1)
+        self.assertEqual(cards[0]['action'], 'launch')
+        self.assertEqual(cards[0]['action_title'], 'View Resource')
+        self.assertEqual(cards[0]['action_href'], 'mock_href')
