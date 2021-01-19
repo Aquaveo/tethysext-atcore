@@ -13,17 +13,6 @@
 </tr>
 
 {# The parent directory placeholder #}
-<tr class="viewport_item viewport_dir" data-parentslug="{{ node.slug }}" data-slug="{{ node.parent_slug }}"
-    data-filepath="{{ node.parent_path }}">
-    <td>
-        <span class="glyphicon glyphicon-folder-close" data-isselected="false">
-        ..
-        </span>
-    </td>
-    <td>{{ node.date_modified }}</td>
-    <td>-</td>
-</tr>
-
 {# Loop through all the directory children #}
 {%for ch in node.children %}
     {%with node=ch template_name="atcore/resources/tabs/files_viewport_template.html" %}
@@ -35,7 +24,8 @@
 
 {# Add Files to the Viewport #}
 <tr class="viewport_item viewport_file" data-parentslug="{{ node.parent_slug }}"
-    data-filepath="{{ node.path }}" data-slug="{{ node.slug }}" data-collectionid="{{ collection_id }}">
+    data-filepath="{{ node.path }}" data-slug="{{ node.slug }}" data-collectionid="{{ collection_id }}"
+    data-parentpath="{{ node.parent_path }}">
     <td>
         <span class="glyphicon glyphicon-file"
               data-isselected="false" data-filepath="{{ node.path }}">

@@ -9,6 +9,7 @@
 import json
 import mimetypes
 import os
+import re
 import time
 import uuid
 
@@ -42,6 +43,8 @@ class ResourceFilesTab(ResourceTab):
         'atcore/resources/files_tab.css'
     ]
 
+    file_hide_patterns = [r'__meta__.json']
+
     def get_file_collections(self, request, resource, session, *args, **kwargs):
         """
         Get the file_collections
@@ -64,7 +67,7 @@ class ResourceFilesTab(ResourceTab):
         context['collections'] = files_from_collection
         return context
 
-    def _path_hierarchy(self, path: str, root_dir: str = None, parent_slug: str = None) -> dict:
+    def _path_hierarchy(self, path: str, root_dir: str = None, parent_slug: str = None):
         """
         A function used to create a dictionary representation of a folder structure.
 
@@ -81,9 +84,13 @@ class ResourceFilesTab(ResourceTab):
         # Remove the root directory from the string that will be placed in the structure.
         # These paths will be relative to the path provided.
         hierarchy_path = path.replace(root_dir, '')
+        name = os.path.basename(path)
+        for pattern in self.file_hide_patterns:
+            if re.search(pattern, name) is not None:
+                return None
         hierarchy = {
             'type': 'folder',
-            'name': os.path.basename(path),
+            'name': name,
             'path': hierarchy_path,
             'parent_path': os.path.abspath(os.path.join(hierarchy_path, os.pardir)).replace(root_dir, ''),
             'parent_slug': parent_slug,
@@ -107,7 +114,8 @@ class ResourceFilesTab(ResourceTab):
             hierarchy['children'] = []
             for contents in os.listdir(path):
                 child = self._path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
-                hierarchy['children'].append(child)
+                if child is not None:
+                    hierarchy['children'].append(child)
 
             # If it is a directory we need to calculate the most recent modified date of a contained file
             hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))

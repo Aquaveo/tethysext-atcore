@@ -23,7 +23,8 @@
                       data-isselected="false"
                       data-parentslug="{{ collection_contents.parent_slug }}"
                       data-slug="{{ collection_contents.slug }}"
-                      data-filepath="{{ collection_contents.path }}">
+                      data-filepath="{{ collection_contents.path }}"
+                      data-parentpath="{{ collection_contents.parent_path }}">
                     {{ collection_contents.name }}
                 </span>
                 <!-- Loop through each child of the collection -->
@@ -40,8 +41,8 @@
         <!-- Current Path -->
         <div class="row">
             <div class="input-group">
-                <input id="filepath_input" type="text" class="form-control" placeholder=""
-                       readonly>
+              <span class="input-group-addon" data-slug="" data-filepath="" id="up_button"><span class="glyphicon glyphicon-arrow-up"></span></span>
+              <input type="text" class="form-control" id="filepath_input" placeholder="" readonly>
             </div>
         </div>
         <div class="files_viewport">

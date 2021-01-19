@@ -4,7 +4,8 @@
           data-isselected="false"
           data-parentslug="{{ node.parent_slug }}"
           data-slug="{{ node.slug }}"
-          data-filepath="{{ node.path }}">
+          data-filepath="{{ node.path }}"
+          data-parentpath="{{ node.parent_path }}">
         {{ node.name }}
     </span>
     {%for ch in node.children %}

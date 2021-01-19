@@ -175,3 +175,38 @@ class FilesTabTests(SqlAlchemyTestCase):
                 _ = instance.download_file(request, self.resource, self.session)
 
             self.assertTrue('Unable to download file.' in str(exc.exception))
+
+    def test_path_hierarchy(self):
+        test_path = os.path.join(self.test_files_base, 'test_path_hierarchy')
+        instance = ResourceFilesTab()
+        hierarchy = instance._path_hierarchy(os.path.join(test_path, 'dir1'))
+        self.assertEqual(hierarchy['name'], 'dir1')
+        self.assertEqual(len(hierarchy['children']), 3)
+        expected_names = ['file4.txt', 'dir2', 'file3.txt']
+        for child in hierarchy['children']:
+            self.assertTrue(child['name'] in expected_names)
+            expected_names.remove(child['name'])
+
+    def test_path_hierarchy_ignore_pattern(self):
+        test_path = os.path.join(self.test_files_base, 'test_path_hierarchy_ignore_pattern')
+        instance = ResourceFilesTab()
+        instance.file_hide_patterns = [r'.*\.json']
+        hierarchy = instance._path_hierarchy(os.path.join(test_path, 'dir1'))
+        self.assertEqual(hierarchy['name'], 'dir1')
+        self.assertEqual(len(hierarchy['children']), 2)
+        expected_names = ['file4.txt', 'dir2']
+        for child in hierarchy['children']:
+            self.assertTrue(child['name'] in expected_names)
+            expected_names.remove(child['name'])
+
+    def test_path_hierarchy_display_name(self):
+        test_path = os.path.join(self.test_files_base, 'test_path_hierarchy_display_name')
+        instance = ResourceFilesTab()
+        hierarchy = instance._path_hierarchy(os.path.join(test_path, 'dir1'))
+        self.assertEqual(hierarchy['name'], 'Good Name')
+
+    def test_path_hierarchy_display_name_error(self):
+        test_path = os.path.join(self.test_files_base, 'test_path_hierarchy_display_name_error')
+        instance = ResourceFilesTab()
+        hierarchy = instance._path_hierarchy(os.path.join(test_path, 'dir1'))
+        self.assertEqual(hierarchy['name'], 'dir1')
