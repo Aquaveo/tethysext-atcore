@@ -6,8 +6,10 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+import json
 import mimetypes
 import os
+import re
 import time
 import uuid
 
@@ -23,6 +25,9 @@ class ResourceFilesTab(ResourceTab):
     Required URL Variables:
         resource_id (str): the ID of the Resource.
         tab_slug (str): Portion of URL that denotes which tab is active.
+
+    Properties:
+        file_hide_patterns: A list of regular expression patterns for files that should not be shown in the files tab.fla
 
     Methods:
         get_file_collections (required): Override this method to define a list of FileCollections that are shown in this tab.
@@ -40,6 +45,8 @@ class ResourceFilesTab(ResourceTab):
     ] + [
         'atcore/resources/files_tab.css'
     ]
+
+    file_hide_patterns = [r'__meta__.json']
 
     def get_file_collections(self, request, resource, session, *args, **kwargs):
         """
@@ -63,7 +70,7 @@ class ResourceFilesTab(ResourceTab):
         context['collections'] = files_from_collection
         return context
 
-    def _path_hierarchy(self, path: str, root_dir: str = None, parent_slug: str = None) -> dict:
+    def _path_hierarchy(self, path: str, root_dir: str = None, parent_slug: str = None):
         """
         A function used to create a dictionary representation of a folder structure.
 
@@ -80,14 +87,29 @@ class ResourceFilesTab(ResourceTab):
         # Remove the root directory from the string that will be placed in the structure.
         # These paths will be relative to the path provided.
         hierarchy_path = path.replace(root_dir, '')
+        name = os.path.basename(path)
+        for pattern in self.file_hide_patterns:
+            if re.search(pattern, name) is not None:
+                return None
         hierarchy = {
             'type': 'folder',
-            'name': os.path.basename(path),
+            'name': name,
             'path': hierarchy_path,
             'parent_path': os.path.abspath(os.path.join(hierarchy_path, os.pardir)).replace(root_dir, ''),
             'parent_slug': parent_slug,
             'slug': '_' + hierarchy_path.replace(os.path.sep, '_').replace('.', '_').replace('-', '_'),
         }
+
+        # Try and get a name from the meta file.
+        meta_file = os.path.join(path, '__meta__.json')
+        if os.path.isfile(meta_file):
+            try:
+                with open(meta_file) as mf:
+                    meta_json = json.load(mf)
+                    if 'display_name' in meta_json:
+                        hierarchy['name'] = meta_json['display_name']
+            except json.JSONDecodeError:
+                pass
 
         # Try and access 'children' here. If we can't than this is a file.
         try:
@@ -95,7 +117,8 @@ class ResourceFilesTab(ResourceTab):
             hierarchy['children'] = []
             for contents in os.listdir(path):
                 child = self._path_hierarchy(os.path.join(path, contents), root_dir, hierarchy['slug'])
-                hierarchy['children'].append(child)
+                if child is not None:
+                    hierarchy['children'].append(child)
 
             # If it is a directory we need to calculate the most recent modified date of a contained file
             hierarchy['date_modified'] = time.ctime(max(os.path.getmtime(root) for root, _, _ in os.walk(path)))

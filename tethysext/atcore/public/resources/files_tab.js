@@ -76,6 +76,8 @@ function files_tab_loaded() {
         var elem = event.target;
         change_tree_selection(elem);
         change_view_after_tree_selection(elem, false);
+        document.getElementById('up_button').dataset.slug = elem.dataset.parentslug != "None" ? elem.dataset.parentslug:elem.dataset.slug;
+        document.getElementById('up_button').dataset.filepath = elem.dataset.parentpath;
     });
     // A double click should expand or collapse an item in the tree.
     hierarchy.addEventListener("dblclick", function(event){
@@ -92,7 +94,14 @@ function files_tab_loaded() {
                 if (row.dataset.slug == elem.dataset.slug) {
                     change_tree_selection(elem);
                 }
+                if (row.dataset.parentslug == elem.dataset.slug) {
+                    elem.dataset.isexpanded = true;
+                }
+                collapse_tree_elements(elem);
             });
+
+            document.getElementById('up_button').dataset.slug = row.dataset.parentslug;
+            document.getElementById('up_button').dataset.filepath = row.dataset.parentpath;
         });
     });
 
@@ -125,13 +134,30 @@ function files_tab_loaded() {
         });
     });
 
+    // Up Button Handler
+    $('#up_button').bind('click', function() {
+        button = document.getElementById('up_button');
+        var slug = button.dataset.slug;
+        if (slug != "None") {
+            show_hide_files(button.dataset.slug, button.dataset.filepath);
+            document.querySelectorAll('.folder').forEach(function(elem) {
+                if (slug == elem.dataset.slug) {
+                    change_tree_selection(elem);
+                    button.dataset.slug = elem.dataset.parentslug;
+                    button.dataset.filepath = elem.dataset.parentpath;
+                }
+            });
+        }
+    });
+
     document.querySelectorAll('.folder').forEach(function(elem){
         collapse_tree_elements(elem);
     });
 
-    $('#viewport-table').DataTable({
+    data_table = $('#viewport-table').DataTable({
         "paging":   false,
         "searching":   false,
         "info":     false,
+        "order": [[0, "asc"]]
     });
 }
