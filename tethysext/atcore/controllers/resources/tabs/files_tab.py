@@ -25,9 +25,9 @@ class ResourceFilesTab(ResourceTab):
     Required URL Variables:
         resource_id (str): the ID of the Resource.
         tab_slug (str): Portion of URL that denotes which tab is active.
-        
+
     Properties:
-        file_hide_patterns: A list of regular expression patterns for files that should not be shown in the files tab.
+        file_hide_patterns: A list of regular expression patterns for files that should not be shown in the files tab.fla
 
     Methods:
         get_file_collections (required): Override this method to define a list of FileCollections that are shown in this tab.
