@@ -64,7 +64,7 @@ jobs:
     - name: Push Changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.AQUAVEO_GITHUB_PASSWORD }}
+        github_token: ${{ secrets.AQUAVEO_GITHUB_TOKEN }}
 
 #  build_helm:
 #    # The type of runner that the job will run on
