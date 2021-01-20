@@ -47,7 +47,7 @@ from .models.files_database.file_collection_tests import FileCollectionTests  # 
 from .models.files_database.file_database_tests import FileDatabaseTests  # noqa: F401
 from .models.files_database.file_collection_client_tests import FileCollectionClientTests  # noqa: F401
 from .models.files_database.file_database_client_tests import FileDatabaseClientTests  # noqa: F401
-from .models.files_database.file_collection_mixin import FileCollectionMixinTests  # noqa: F401
+from .models.files_database.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
 from .models.app_users.resource_workflow_result_tests import ResourceWorkflowResultTests  # noqa: F401
