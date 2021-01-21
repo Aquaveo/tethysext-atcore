@@ -1,0 +1,37 @@
+/********************************************************************************
+ * Name: main.css
+ * Author: nswain
+ * Created On: September 4, 2015
+ * Copyright: (c) Aquaveo 2015
+ * License:
+ ********************************************************************************/
+#showBackground{
+  opacity:    0.6;
+  background: #000;
+  width:      100%;
+  height:     100%;
+  z-index:    600;
+  top:        0;
+  left:       0;
+  position:   fixed;
+
+}
+
+#showImage{
+  background: #000;
+  width:      100%;
+  height:     100%;
+  z-index:    600;
+  position:   relative;
+}
+
+#waitLoading{
+
+  width:      100%;
+  height:     100%;
+  z-index:    600;
+  top:        0;
+  left:       0;
+  position:   fixed;
+
+}
