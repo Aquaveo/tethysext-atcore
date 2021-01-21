@@ -102,7 +102,7 @@
   {% if show_file_upload_field %}
   <link href="{% static 'atcore/file_input/css/file_input.css' %}" rel="stylesheet"/>
   {% endif %}
-  <link href="{% static 'atcore/css/processing_div.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/form_processing.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
@@ -111,6 +111,6 @@
   {% if show_file_upload_field %}
   <script src="{% static 'atcore/file_input/js/file_input.js' %}" type="text/javascript"></script>
   {% endif %}
-  <script src="{% static 'atcore/js/processing_div.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/js/form_processing.js' %}" type="text/javascript"></script>
   <script>$(function () { $('#resource-name').focus(); });</script>
 {% endblock %}
