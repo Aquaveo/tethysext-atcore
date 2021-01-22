@@ -100,7 +100,9 @@ class ResourceCondorWorkflow(object):
 
         # Set relationships
         for job, _ in user_defined_jobs:
-            update_resource_status.add_parent(job)
+            has_no_children = job.children_nodes.count() == 0
+            if has_no_children:
+                update_resource_status.add_parent(job)
 
         # add resource id to extended properties for filtering
         self.workflow.extended_properties['resource_id'] = str(self.resource_id)

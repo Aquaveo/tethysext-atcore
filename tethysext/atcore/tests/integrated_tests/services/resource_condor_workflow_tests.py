@@ -67,10 +67,17 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
 
     @mock.patch('tethysext.atcore.services.resource_condor_workflow.CondorWorkflowJobNode')
     def test_get_prepare(self, mock_job):
+        mock_job1 = mock.MagicMock()
+        mock_job1.children_nodes.count.return_value = 0
+        mock_job2 = mock.MagicMock()
+        mock_job2.children_nodes.count.return_value = 1
+        mock_job3 = mock.MagicMock()
+        mock_job3.children_nodes.count.return_value = 0
+
         self.puw.get_jobs = mock.MagicMock()
-        self.puw.get_jobs.return_value = [('job1', 'run_job1: SUCCESS'),
-                                          ('job2', 'run_job2: SUCCESS'),
-                                          ('job3', 'run_job3: SUCCESS')]
+        self.puw.get_jobs.return_value = [(mock_job1, 'run_job1: SUCCESS'),
+                                          (mock_job2, 'run_job2: SUCCESS'),
+                                          (mock_job3, 'run_job3: SUCCESS')]
         self.puw.prepare()
         mock_job().save.assert_called()
-        self.assertEqual(mock_job().add_parent.call_count, 3)
+        self.assertEqual(mock_job().add_parent.call_count, 2)
