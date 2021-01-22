@@ -17,38 +17,47 @@ from sqlalchemy.orm.session import Session
 from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError, \
     FileCollectionItemNotFoundError, FileCollectionItemAlreadyExistsError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
-from tethysext.atcore.models.file_database import FileCollection
+from tethysext.atcore.models.file_database import FileCollection, FileDatabaseClient
 
 
 class FileCollectionClient(MetaMixin):
-    def __init__(self, session: Session, file_collection_id: uuid.UUID):
-        """Init function for the FileCollectionClient"""
+    def __init__(self, session: Session, file_database_client: FileDatabaseClient, file_collection_id: uuid.UUID):
+        """
+        Use this constructor to bind the FileCollectionClient to an existing FileCollection. Use the new() factory method to create a new FileCollection.
+
+        Args:
+            session (sqlalchemy.orm.Session): The session for the SQL database.
+            file_database_client (FileDatabaseClient): A FileDatabaseClient bound to the FileDatabase containing the FileCollection.
+            file_collection_id (uuid.UUID): The id of the FileCollection.
+        """  # noqa: E501
         self._collection_id = file_collection_id
+        self._file_database_client = file_database_client
         self._instance = None
         self._session = session
         self.__deleted = False
 
     @classmethod
-    def new(cls, session: Session, file_database_id: uuid.UUID, meta: dict = None) -> 'FileCollectionClient':
+    def new(cls, session: Session, file_database_client: FileDatabaseClient,
+            meta: dict = None) -> 'FileCollectionClient':
         """
-        Class method for creating a new instance of the FileCollectionClient class.
+        Use this method to create a new FileCollection. Use the constructor to bind to an existing FileCollection.
 
         Args:
-            session: The session for the database.
-            file_database_id (uuid.UUID): The uuid for the FileDatabase connected to this FileCollection
+            session (sqlalchemy.orm.Session): The session for the SQL database.
+            file_database_client (FileDatabaseClient): A FileDatabaseClient bound to the FileDatabase in which you would like the new FileCollection to be created.
             meta (dict): The meta for the FileCollection
 
         Returns:
             A client to a newly generated FileCollection.
-        """
+        """  # noqa: E501
         meta = meta or {}
         new_file_collection = FileCollection(
-            file_database_id=file_database_id,
+            file_database_id=file_database_client.instance.id,
             meta=meta
         )
         session.add(new_file_collection)
         session.commit()
-        client = cls(session, new_file_collection.id)
+        client = cls(session, file_database_client, new_file_collection.id)
 
         client.write_meta()
 
@@ -74,14 +83,14 @@ class FileCollectionClient(MetaMixin):
         return self._instance
 
     @property
-    def path(self) -> str:
-        """
-        The root directory of the file database.
+    def file_database_client(self) -> FileDatabaseClient:
+        """FileDatabaseClient bound to the FileDatabase containing the FileCollection."""
+        return self._file_database_client
 
-        Returns:
-            The path to the FileCollection
-        """
-        return os.path.join(self.instance.database.root_directory, str(self.instance.database.id),
+    @property
+    def path(self) -> str:
+        """Path to the FileCollection directory."""
+        return os.path.join(self.file_database_client.root_directory, str(self.instance.database.id),
                             str(self._collection_id))
 
     @property
@@ -125,7 +134,7 @@ class FileCollectionClient(MetaMixin):
         """
         duplicated_client = FileCollectionClient.new(
             session=self._session,
-            file_database_id=self.instance.file_database_id,
+            file_database_client=self.file_database_client,
             meta=self.instance.meta,
         )
         self.export(duplicated_client.path)

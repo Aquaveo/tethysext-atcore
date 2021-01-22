@@ -13,7 +13,8 @@ import uuid
 
 from sqlalchemy.orm.session import Session
 
-from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabaseNotFoundError, UnboundFileDatabaseError
+from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabaseNotFoundError, \
+    UnboundFileDatabaseError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection, FileDatabase, FileCollectionClient
 
@@ -21,32 +22,42 @@ log = logging.getLogger('tethys.' + __name__)
 
 
 class FileDatabaseClient(MetaMixin):
-    def __init__(self, session: Session, file_database_id: uuid.UUID):
-        """Init function for the FileDatabaseClient"""
+    def __init__(self, session: Session, root_directory: str, file_database_id: uuid.UUID):
+        """
+        Use this constructor to bind the FileDatabaseClient to an existing FileDatabase. Use the new() factory method to create a new FileDatabase.
+
+        Args:
+            session (sqlalchemy.orm.Session): The session for the SQL database.
+            root_directory (str): Path to the directory that contains the FileDatabase.
+            file_database_id (uuid.UUID): The id of the FileDatabase.
+        """
         self._database_id = file_database_id
         self._instance = None
-        self._session = session
         self._path = None
+        self._session = session
+        self._root_directory = root_directory
         self.__deleted = False
 
     @classmethod
     def new(cls, session: Session, root_directory: str, meta: dict = None) -> 'FileDatabaseClient':
         """
-        Class method for creating a new instance of the FileCollectionClient class.
+        Use this method to create a new FileDatabase. Use the constructor to bind to an existing FileDatabase.
 
         Args:
-            session: The session for the database.
-            root_directory (str): Directory for the files for this FileDatabase
-            meta (dict): The meta for the FileCollection
-        """
+            session (sqlalchemy.orm.Session): The session for the SQL database.
+            root_directory (str or Path): Directory in which the new FileDatabase will be created.
+            meta (dict): The meta for the FileCollection.
+
+        Returns:
+            FileDatabaseClient: A FileDatabaseClient bound to the new FileDatabase.
+        """  # noqa: E501
         meta = meta or {}
         new_file_database = FileDatabase(
-            root_directory=root_directory,
             meta=meta,
         )
         session.add(new_file_database)
         session.commit()
-        client = cls(session, new_file_database.id)
+        client = cls(session, root_directory, new_file_database.id)
 
         client.write_meta()
 
@@ -64,20 +75,16 @@ class FileDatabaseClient(MetaMixin):
         return self._instance
 
     @property
+    def root_directory(self) -> str:
+        """The directory that contains the FileDatabase directory."""
+        return self._root_directory
+
+    @property
     def path(self) -> str:
-        """The root directory of the file database."""
+        """Path to the FileDatabase directory."""
         if not getattr(self, '_path', None):
-            self._path = os.path.join(self.instance.root_directory, str(self.instance.id))
+            self._path = os.path.join(self.root_directory, str(self.instance.id))
         return self._path
-
-    @path.setter
-    def path(self, root_dir: str) -> None:
-        """
-        Set the path to the root directory for the file database.
-
-        root_dir (str): the directory to be the root directory of the file database.
-        """
-        self._path = os.path.join(root_dir, str(self.instance.id))
 
     def get_collection(self, collection_id: uuid.UUID) -> FileCollectionClient:
         """

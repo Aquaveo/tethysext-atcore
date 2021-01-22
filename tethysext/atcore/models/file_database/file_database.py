@@ -8,7 +8,7 @@
 """
 import uuid
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 
@@ -21,7 +21,6 @@ class FileDatabase(AppUsersBase):
     __tablename__ = "file_databases"
 
     id = Column('id', GUID, primary_key=True, default=uuid.uuid4)
-    root_directory = Column('root_directory', String)
     meta = Column('metadata', JSON)
 
     collections = relationship("FileCollection", back_populates="database")
