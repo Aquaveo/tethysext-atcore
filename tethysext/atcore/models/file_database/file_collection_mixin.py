@@ -6,7 +6,7 @@ from sqlalchemy import inspect, Column, Table, ForeignKey
 
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users import AppUsersBase, Resource
-from tethysext.atcore.models.file_database import FileCollectionClient, FileDatabaseClient
+from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
 
 
 resource_file_collection_assoc = Table(

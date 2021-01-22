@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: file_database_client.py
+* Name: file_database.py
 * Author: glarsen
 * Created On: November 10, 2020
 * Copyright: (c) Aquaveo 2020
@@ -21,6 +21,8 @@ from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabas
     FileCollectionItemAlreadyExistsError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection, FileDatabase
+
+__all__ = ['FileDatabaseClient', 'FileCollectionClient']
 
 log = logging.getLogger('tethys.' + __name__)
 
