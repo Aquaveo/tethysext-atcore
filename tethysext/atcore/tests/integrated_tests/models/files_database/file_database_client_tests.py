@@ -4,7 +4,8 @@ from unittest import mock
 import uuid
 
 from tethysext.atcore.exceptions import FileDatabaseNotFoundError, FileCollectionNotFoundError, UnboundFileDatabaseError
-from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
+from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
+from tethysext.atcore.models.file_database import FileCollection, FileDatabase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -26,13 +27,12 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
                          'files', 'file_database_client_tests')
         )
 
-    def get_database_instance(self, database_id, root_directory, database_meta=None):
+    def get_database_instance(self, database_id, database_meta=None):
         """
         A helper function to generate a FileDatabase in the database.
 
         Args:
             database_id (uuid.UUID): a UUID to assign the id for the FileDatabase object
-            root_directory (str): root directory for a FileDatabase
             database_meta (dict): A dictionary of meta for the FileDatabase object
         """
         if database_meta is None:
@@ -40,7 +40,6 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
 
         database_instance = FileDatabase(
             id=database_id,  # We need to set the id here for the test path.
-            root_directory=root_directory,
             meta=database_meta,
         )
 
@@ -75,46 +74,39 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         """Test Generating a FileDatabaseClient from and existing FileDatabase."""
         database_id = uuid.UUID('{4b62335d-5b43-4e3b-bba7-07cd88cc2205}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_database_client')
-        database_instance = self.get_database_instance(database_id, root_dir, {'TestKey': 'TestVal'})
-        database_client = FileDatabaseClient(self.session, database_instance.id)
+        database_instance = self.get_database_instance(database_id, {'TestKey': 'TestVal'})
+        database_client = FileDatabaseClient(self.session, root_dir, database_instance.id)
         self.assertEqual(database_client.path, os.path.join(root_dir, str(database_id)))
 
     def test_path_property(self):
-        """Test the path property of the file collection works correctly."""
+        """Test the path property of the file database client works correctly."""
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_path_property')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir, database_meta={},
+            database_id=database_id, database_meta={},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         expected_path = os.path.abspath(os.path.join(root_dir, str(database_id)))
         self.assertEqual(database_client.path, expected_path)
 
-    def test_setting_localized_path(self):
-        """Test the setting a localized root directory."""
+    def test_root_directory_property(self):
+        """Test the root_directory property of the file database client works correctly."""
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_path_property')
-        database_instance = self.get_database_instance(
-            database_id=database_id,  root_directory=root_dir, database_meta={}
-        )
 
-        new_localized_path = os.path.abspath(os.path.join(root_dir, 'new_localized_directory'))
-        expected_path = os.path.abspath(os.path.join(new_localized_path, str(database_instance.id)))
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
 
-        database_client = FileDatabaseClient(self.session, database_id)
-
-        database_client.path = new_localized_path
-        self.assertEqual(database_client.path, expected_path)
+        self.assertEqual(database_client.root_directory, root_dir)
 
     def test_write_meta(self):
         """Test the write_meta function for the FileDatabase."""
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_write_meta')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'DatabaseKey1': 'Value1', 'DatabaseKey2': 2.3},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_file = os.path.join(database_client.path, '__meta__.json')
         if os.path.exists(meta_file):
             os.remove(meta_file)
@@ -127,10 +119,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta')
         database_instance = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
@@ -142,10 +134,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_overwrite')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'ShouldNotSeeKey': 'ShouldNotSeeValue'},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
@@ -157,10 +149,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_empty')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'ShouldNotSeeKey': 'ShouldNotSeeValue'},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
@@ -171,10 +163,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{f0699b82-8ff4-4646-ab2b-cb43f137c3ac}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_no_file')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'ShouldNotSeeKey': 'ShouldNotSeeValue'},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_file = os.path.join(database_client.path, '__meta__.json')
         if os.path.exists(meta_file):
             os.remove(meta_file)
@@ -188,10 +180,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{e5bc841e-eeb7-4211-951f-d7e5a4ad08f2}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_bad_file')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'KeyYouWillNotSee': 'ValueYouWillNotSee'},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_file = os.path.join(database_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         database_client.read_meta()
@@ -202,10 +194,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         meta_value = database_client.get_meta('Key2')
         self.assertEqual(meta_value, 1234)
 
@@ -214,10 +206,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         with self.assertRaises(KeyError) as exc:
             _ = database_client.get_meta('Key2345')
         self.assertTrue('Key2345' in str(exc.exception))
@@ -227,10 +219,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         database_client.set_meta('Key3', 'NewValue')
 
         altered_collection = self.session.query(FileDatabase).get(database_id)
@@ -241,10 +233,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_write_meta_new_value')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         database_client.set_meta('NewKey', 'AddedValue')
 
         altered_collection = self.session.query(FileDatabase).get(database_id)
@@ -259,10 +251,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection()
         new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
@@ -277,14 +269,14 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         collection_files = [
             os.path.join(root_dir, 'files', 'file1.txt'),
             os.path.join(root_dir, 'files', 'dir1'),
         ]
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection(items=collection_files)
         new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
@@ -304,16 +296,16 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection(meta={'Key1': 'Val1', 'Key2': 'Val2'})
         new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
         self.assertDictEqual(collection_client.instance.meta, {'Key1': 'Val1', 'Key2': 'Val2'})
 
-    @mock.patch('tethysext.atcore.models.file_database.file_collection_client.FileCollectionClient.add_item')
+    @mock.patch('tethysext.atcore.services.file_database.FileCollectionClient.add_item')
     def test_new_collection_fail_no_commit(self, mock_new_collection):
         """Test the new_collection function when something fails."""
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
@@ -323,10 +315,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         pre_count = self.session.query(FileCollection).count()
         collection_files = [
             os.path.join(root_dir, 'files', 'file1.txt'),
@@ -344,14 +336,14 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'test_get_collection')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.get_collection(collection_id)
         self.assertEqual(collection_client.instance.meta, {'TestKey1': 'TestVal1'})
 
@@ -361,10 +353,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_collection')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         with self.assertRaises(FileCollectionNotFoundError) as exc:
             _ = database_client.get_collection(collection_id)
         self.assertTrue(f'Collection with id "{str(collection_id)}" could not be found with '
@@ -376,20 +368,19 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         second_database_id = uuid.UUID('{03e7a676-db7c-4cd9-95f0-97e7b97072a4}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_collection')
-        second_root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_collection2')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_database_instance(
-            database_id=second_database_id, root_directory=second_root_dir,
+            database_id=second_database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=second_database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         with self.assertRaises(FileCollectionNotFoundError) as exc:
             _ = database_client.get_collection(collection_id)
         self.assertTrue(f'Collection with id "{str(collection_id)}" could not be found with '
@@ -405,14 +396,14 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         export_directory = os.path.join(self.test_files_base, 'temp', 'exported_files', 'test_export_collection')
         database_client.export_collection(collection_id, export_directory)
         self.assertTrue(os.path.exists(export_directory))
@@ -431,10 +422,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'test_get_export_does_not_exist')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         export_directory = os.path.join(self.test_files_base, 'temp', 'exported_files',
                                         'test_get_export_does_not_exist')
         with self.assertRaises(FileCollectionNotFoundError) as exc:
@@ -448,20 +439,19 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         second_database_id = uuid.UUID('{03e7a676-db7c-4cd9-95f0-97e7b97072a4}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_export_not_owned_by_this_db')
-        second_root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_export_not_owned_by_this_db2')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_database_instance(
-            database_id=second_database_id, root_directory=second_root_dir,
+            database_id=second_database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=second_database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         export_directory = os.path.join(self.test_files_base, 'temp', 'exported_files',
                                         'test_get_export_not_owned_by_this_db')
         with self.assertRaises(FileCollectionNotFoundError) as exc:
@@ -479,15 +469,15 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
-        collection_client = FileCollectionClient(self.session, collection_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         new_file_collection = database_client.duplicate_collection(collection_id)
         self.assertDictEqual(new_file_collection.instance.meta, collection_client.instance.meta)
         self.assertEqual(new_file_collection.instance.file_database_id, collection_client.instance.file_database_id)
@@ -499,20 +489,19 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         second_database_id = uuid.UUID('{03e7a676-db7c-4cd9-95f0-97e7b97072a4}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_duplicate_collection_bad_id')
-        second_root_dir = os.path.join(self.test_files_base, 'temp', 'test_duplicate_collection_bad_id')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_database_instance(
-            database_id=second_database_id, root_directory=second_root_dir,
+            database_id=second_database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=second_database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         with self.assertRaises(FileCollectionNotFoundError) as exc:
             database_client.duplicate_collection(collection_id)
         self.assertTrue(f'Collection with id "{str(collection_id)}" could not be found with '
@@ -528,15 +517,15 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
-        collection_client = FileCollectionClient(self.session, collection_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_path = collection_client.path
         database_client.delete_collection(collection_id)
         self.assertTrue(
@@ -550,20 +539,19 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         second_database_id = uuid.UUID('{03e7a676-db7c-4cd9-95f0-97e7b97072a4}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_delete_does_not_exist')
-        second_root_dir = os.path.join(self.test_files_base, 'temp', 'test_get_delete_does_not_exist')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_database_instance(
-            database_id=second_database_id, root_directory=second_root_dir,
+            database_id=second_database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         _ = self.get_collection_instance(
             collection_id=collection_id, database_id=second_database_id,
             collection_meta={'TestKey1': 'TestVal1'}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         with self.assertRaises(FileCollectionNotFoundError) as exc:
             database_client.delete_collection(collection_id)
         self.assertTrue(f'Collection with id "{str(collection_id)}" could not be found with '
@@ -575,10 +563,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'test_get_delete_not_owned_by_this_db')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir,
+            database_id=database_id,
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         with self.assertRaises(FileCollectionNotFoundError) as exc:
             database_client.delete_collection(collection_id)
         self.assertTrue(f'Collection with id "{str(collection_id)}" could not be found with '
@@ -589,9 +577,9 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{4b62335d-5b43-4e3b-bba7-07cd88cc2205}')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_deleted_database_client')
         _ = self.get_database_instance(
-            database_id=database_id, root_directory=root_dir, database_meta={},
+            database_id=database_id, database_meta={},
         )
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
         database_client._FileDatabaseClient__deleted = True
         with self.assertRaises(UnboundFileDatabaseError) as exc:
             _ = database_client.instance
@@ -600,7 +588,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
     def test_bad_database_client(self):
         """Test Generating a FileDatabaseClient from and existing FileDatabase."""
         database_id = uuid.UUID('{4b62335d-5b43-4e3b-bba7-07cd88cc2205}')
-        database_client = FileDatabaseClient(self.session, database_id)
+        database_client = FileDatabaseClient(self.session, './', database_id)
         with self.assertRaises(FileDatabaseNotFoundError) as exc:
             _ = database_client.instance
         self.assertTrue(f'FileDatabase with id "{str(database_id)}" not found.' in str(exc.exception))

@@ -16,9 +16,8 @@ class FileDatabaseTests(SqlAlchemyTestCase):
 
     def test_database_round_trip(self):
         """Test a round trip through the database for the FileDatabase model"""
-        new_instance = FileDatabase(root_directory='.', meta={"TestKey": "TestValue"})
+        new_instance = FileDatabase(meta={"TestKey": "TestValue"})
         self.session.add(new_instance)
         self.session.commit()
         instance_from_db = self.session.query(FileDatabase).get(new_instance.id)
-        self.assertEqual(new_instance.root_directory, instance_from_db.root_directory)
-        self.assertEqual(new_instance.meta, instance_from_db.meta)
+        self.assertDictEqual(new_instance.meta, instance_from_db.meta)
