@@ -1,22 +1,10 @@
 import os
 from typing import List, Any
-import uuid
 
-from sqlalchemy import inspect, Column, Table, ForeignKey
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
-from tethysext.atcore.models.types import GUID
-from tethysext.atcore.models.app_users import AppUsersBase
 from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
-
-
-resource_file_collection_assoc = Table(
-    'resource_file_collections_assoc',
-    AppUsersBase.metadata,
-    Column('id', GUID, primary_key=True, default=uuid.uuid4),
-    Column('resource_id', GUID, ForeignKey('app_users_resources.id')),
-    Column('file_collection_id', GUID, ForeignKey('file_collections.id'))
-)
 
 
 class FileCollectionMixin:

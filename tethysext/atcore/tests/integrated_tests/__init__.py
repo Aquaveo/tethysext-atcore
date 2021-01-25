@@ -41,11 +41,8 @@ from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBase
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewLockMethodsTests  # noqa: F401
 from .forms.widgets.param_widgets_tests import ParamWidgetsTests  # noqa: F401
 from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
+from .mixins.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401
-from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
-from .models.files_database.file_collection_tests import FileCollectionTests  # noqa: F401
-from .models.files_database.file_database_tests import FileDatabaseTests  # noqa: F401
-from .models.files_database.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
 from .models.app_users.resource_workflow_result_tests import ResourceWorkflowResultTests  # noqa: F401
@@ -55,6 +52,9 @@ from .models.app_users.organization_tests import OrganizationTests  # noqa: F401
 from .models.app_users.resource_tests import ResourceTests  # noqa: F401
 from .models.app_users.spatial_resource_tests import SpatialResourceTests  # noqa: F401
 from .models.app_users.resource_workflow_tests import ResourceWorkflowBaseMethodsTests  # noqa: F401
+from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
+from .models.files_database.file_collection_tests import FileCollectionTests  # noqa: F401
+from .models.files_database.file_database_tests import FileDatabaseTests  # noqa: F401
 from .models.initializer import AppUserInitializerTests  # noqa: F401
 from .models.resource_workflow_results.dataset_workflow_result_tests import DatasetWorkflowResultTests  # noqa: F401
 from .models.resource_workflow_results.plot_workflow_result_tests import PlotWorkflowResultTests  # noqa: F401

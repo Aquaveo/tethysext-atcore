@@ -5,10 +5,10 @@ import uuid
 
 from sqlalchemy.orm import relationship, backref
 
+from tethysext.atcore.mixins import FileCollectionMixin
 from tethysext.atcore.models.app_users import Resource
+from tethysext.atcore.models.file_database import FileCollection, FileDatabase, resource_file_collection_association
 from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
-from tethysext.atcore.models.file_database import FileCollection, FileDatabase, FileCollectionMixin, \
-    resource_file_collection_assoc
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -24,7 +24,7 @@ class TestResourceWithFiles(Resource, FileCollectionMixin):
 
     file_collections = relationship(
         FileCollection,
-        secondary=resource_file_collection_assoc,
+        secondary=resource_file_collection_association,
         backref=backref('test_file_resource', uselist=False)
     )
 
@@ -33,7 +33,7 @@ def setUpModule():
     global test_files_root, test_files_temp, test_files_base
     setup_module_for_sqlalchemy_tests()
     test_files_root = os.path.abspath(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'files')
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), '../models', '..', '..', 'files')
     )
     test_files_base = os.path.join(test_files_root, 'file_collection_mixin_tests')
     test_files_temp = os.path.join(test_files_root, 'temp', 'file_collection_mixin_tests')
