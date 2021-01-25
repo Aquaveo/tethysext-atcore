@@ -45,8 +45,6 @@ from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401
 from .models.controller_metadata_tests import ControllerMetadataTests  # noqa: F401
 from .models.files_database.file_collection_tests import FileCollectionTests  # noqa: F401
 from .models.files_database.file_database_tests import FileDatabaseTests  # noqa: F401
-from .models.files_database.file_collection_client_tests import FileCollectionClientTests  # noqa: F401
-from .models.files_database.file_database_client_tests import FileDatabaseClientTests  # noqa: F401
 from .models.files_database.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
@@ -73,6 +71,8 @@ from .permissions.app_users import PermissionsGeneratorTests  # noqa: F401
 from .services.app_users.decorators import ActiveUserRequiredDecoratorTests  # noqa: F401
 from .services.app_users.condor_workflow_manager_tests import CondorWorkflowManagerTests  # noqa: F401
 from .services.decorators_tests import DecoratorsTests  # noqa: F401
+from .services.file_database.file_collection_client_tests import FileCollectionClientTests  # noqa: F401
+from .services.file_database.file_database_client_tests import FileDatabaseClientTests  # noqa: F401
 from .services.resource_condor_workflow_tests import ResourceCondorWorkflowTests  # noqa: F401
 from .services.resource_workflows.helpers_tests import HelpersTests  # noqa: F401
 from .services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401

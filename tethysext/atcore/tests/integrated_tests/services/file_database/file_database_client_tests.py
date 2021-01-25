@@ -23,7 +23,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
     def setUp(self):
         super().setUp()
         self.test_files_base = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../models', '..', '..',
                          'files', 'file_database_client_tests')
         )
 
