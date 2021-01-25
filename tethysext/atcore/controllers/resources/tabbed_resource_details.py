@@ -59,6 +59,7 @@ class TabbedResourceDetails(ResourceDetails):
             return self._handle_tab_action_request(
                 request=request,
                 resource=resource,
+                session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
                 *args, **kwargs
@@ -104,6 +105,7 @@ class TabbedResourceDetails(ResourceDetails):
             return self._handle_tab_action_request(
                 request=request,
                 resource=resource,
+                session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
                 *args, **kwargs
@@ -123,6 +125,7 @@ class TabbedResourceDetails(ResourceDetails):
             return self._handle_tab_action_request(
                 request=request,
                 resource=resource,
+                session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
                 *args, **kwargs
@@ -130,7 +133,7 @@ class TabbedResourceDetails(ResourceDetails):
 
         return HttpResponseNotAllowed(['GET'])
 
-    def _handle_tab_action_request(self, request, resource, tab_slug, tab_action, *args, **kwargs):
+    def _handle_tab_action_request(self, request, resource, session, tab_slug, tab_action, *args, **kwargs):
         """
         Route to the method on the ResourceTab method matching action value.
 
@@ -196,6 +199,7 @@ class TabbedResourceDetails(ResourceDetails):
             response = action_handler(
                 request=request,
                 resource=resource,
+                session=session,
                 tab_slug=tab_slug,
                 *args,  **kwargs
             )

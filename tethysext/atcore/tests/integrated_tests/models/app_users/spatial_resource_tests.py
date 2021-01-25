@@ -37,9 +37,10 @@ class SpatialResourceTests(SqlAlchemyTestCase):
             ]]
         }
         self.extent_geojson = json.dumps(self.extent_dict)
-        self.extent_wkt = 'POLYGON((-109.557466506958 40.4626541436629,-109.557123184204 40.4481880854746,' \
+        self.extent_wkt = 'SRID=4326;POLYGON((-109.557466506958 40.4626541436629,-109.557123184204 40.4481880854746,' \
                           '-109.528369903564 40.4484166930046,-109.528756141663 40.4629153531036,-109.557466506958 ' \
                           '40.4626541436629))'
+
         qry = self.session.query(func.ST_GeomFromEWKT(self.extent_wkt).label('geom'))
         self.expected_geometry = qry.first().geom
 
@@ -156,3 +157,18 @@ class SpatialResourceTests(SqlAlchemyTestCase):
             resource.get_extent('bad_type')
         self.assertTrue('"bad_type" is not a valid type for a SpatialResource '
                         'extent. Must be one of "wkt", "geojson", or "dict"' in str(exc.exception))
+
+    def test_update_extent_srid(self):
+        """Test trying to get an extent of an invalid type throws the correct error."""
+        resource = self.create_resource_in_session()
+        resource.extent = self.expected_geometry
+
+        wkt_extent_query_before = self.session.query(func.ST_AsEWKT(resource.extent)).first()
+        ret_before = wkt_extent_query_before[0]
+        self.assertNotIn('SRID=3857', ret_before)
+
+        resource.update_extent_srid(3857)
+
+        wkt_extent_query_after = self.session.query(func.ST_AsEWKT(resource.extent)).first()
+        ret_after = wkt_extent_query_after[0]
+        self.assertIn('SRID=3857', ret_after)

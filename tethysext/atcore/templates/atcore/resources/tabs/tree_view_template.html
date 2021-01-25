@@ -1,0 +1,17 @@
+{% if node.type == 'folder' %}
+<div class="foldercontainer">
+    <span class="folder glyphicon glyphicon-folder-close" data-isexpanded="false"
+          data-isselected="false"
+          data-parentslug="{{ node.parent_slug }}"
+          data-slug="{{ node.slug }}"
+          data-filepath="{{ node.path }}"
+          data-parentpath="{{ node.parent_path }}">
+        {{ node.name }}
+    </span>
+    {%for ch in node.children %}
+        {%with node=ch template_name="atcore/resources/tabs/tree_view_template.html" %}
+            {%include template_name%}
+        {%endwith%}
+    {%endfor%}
+</div>
+{% endif %}

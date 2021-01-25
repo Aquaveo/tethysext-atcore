@@ -1,0 +1,69 @@
+{% load static %}
+{% load tethys_gizmos %}
+{% widthratio 12 columns|length 1 as column_width %}
+
+{% import_gizmo_dependency datatable_view %}
+
+<!-- Tree View of Folders -->
+<div id="file_browser">
+    <div id="tree-col" class="col-md-3">
+        <div id="tree-buttons">
+            <div id="tree-collapse" class="btn btn-sm btn-default" title="collapse all">
+                <span class="glyphicon glyphicon-collapse-up" aria-hidden="true"></span>
+            </div>
+            <div id="tree-expand" class="btn btn-sm btn-default" title="expand all">
+                <span class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span>
+            </div>
+        </div>
+        <div id="hierarchy">
+            <!-- Start by putting the collections in the tree structure and looping through their children -->
+            {% for collection_id, collection_contents in collections.items %}
+            <div class="foldercontainer">
+                <span class="folder glyphicon glyphicon-folder-close collection-container" data-isexpanded="false"
+                      data-isselected="false"
+                      data-parentslug="{{ collection_contents.parent_slug }}"
+                      data-slug="{{ collection_contents.slug }}"
+                      data-filepath="{{ collection_contents.path }}"
+                      data-parentpath="{{ collection_contents.parent_path }}">
+                    {{ collection_contents.name }}
+                </span>
+                <!-- Loop through each child of the collection -->
+                {%for node in collection_contents.children %}
+                    {%include "atcore/resources/tabs/tree_view_template.html" %}
+                {%endfor%}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- File Viewport -->
+    <div id="preview-col" class="col-md-9">
+        <!-- Current Path -->
+        <div class="row">
+            <div class="input-group">
+              <span class="input-group-addon" data-slug="" data-filepath="" id="up_button"><span class="glyphicon glyphicon-arrow-up"></span></span>
+              <input type="text" class="form-control" id="filepath_input" placeholder="" readonly>
+            </div>
+        </div>
+        <div class="files_viewport">
+            <table id="viewport-table" class="data_table_gizmo_view table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date Modified</th>
+                        <th>Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {# Loop through and add a table row for each item in the collection, we will handle #}
+                {# hiding and how the items in the javascript. #}
+                {% for collection_id, collection_contents in collections.items %}
+                    {%for node in collection_contents.children %}
+                        {%include "atcore/resources/tabs/files_viewport_template.html" %}
+                    {%endfor%}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

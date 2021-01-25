@@ -31,13 +31,14 @@ class SpatialResource(Resource):
         'polymorphic_identity': TYPE,
     }
 
-    def set_extent(self, obj: Union[dict, str], object_format: str = 'dict'):
+    def set_extent(self, obj: Union[dict, str], object_format: str = 'dict', srid=4326):
         """
         Set the extent for the SpatialResource.
 
         Args:
             obj: A string or a dict representing the extent.
             object_format (str): A string defining the type of obj. One of 'wkt', 'geojson', and 'dict'.
+            srid(str): EPSG code of the extent.
         """
         if object_format not in ['dict', 'wkt', 'geojson']:
             raise InvalidSpatialResourceExtentTypeError(f'"{object_format}" is not a valid type for a SpatialResource '
@@ -47,10 +48,10 @@ class SpatialResource(Resource):
             object_to_convert = json.dumps(obj)
         session = inspect(self).session
         if object_format == 'wkt':
-            qry = session.query(func.ST_GeomFromEWKT(object_to_convert).label('geom'))
+            qry = session.query(func.ST_SetSRID(func.ST_GeomFromEWKT(object_to_convert), srid).label('geom'))
             new_extent = qry.first().geom
         else:
-            qry = session.query(func.ST_GeomFromGeoJSON(object_to_convert).label('geom'))
+            qry = session.query(func.ST_SetSRID(func.ST_GeomFromGeoJSON(object_to_convert), srid).label('geom'))
             new_extent = qry.first().geom
         self.extent = new_extent
 
@@ -77,3 +78,10 @@ class SpatialResource(Resource):
         if extent_type == 'dict':
             extent = json.loads(extent)
         return extent
+
+    def update_extent_srid(self, srid):
+        session = inspect(self).session
+        qry = session.query(func.ST_SetSRID(self.extent, srid).label('geom'))
+        new_extent = qry.first().geom
+
+        self.extent = new_extent

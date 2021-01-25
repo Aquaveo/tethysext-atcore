@@ -277,7 +277,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources._handle_delete(mock_request, '001')
 
         # test the results
-        mock_custom_delete.assert_called_with(mock_request, mock_resource)
+        mock_custom_delete.assert_called_with(session, mock_request, mock_resource)
         session.delete.assert_called_with(mock_resource)
         session.commit.assert_called()
         session.close.assert_called()
@@ -336,6 +336,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_error(self, mock_reverse):
         mock_resource = mock.MagicMock()
+        mock_resource.SLUG = "resources"
         mock_resource.ERROR_STATUSES = StatusMixin.ERROR_STATUSES
         mock_resource.get_status.return_value = 'Error'
 
@@ -343,8 +344,10 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         manage_resources = MockManageResources()
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
-        mock_reverse.assert_called_with('{}:app_users_resource_details'.format(manage_resources._app.namespace),
-                                        args=[mock_resource.id])
+        mock_reverse.assert_called_with(
+            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_details',
+            args=[mock_resource.id]
+        )
         self.assertDictEqual(
             {
                 'action': ManageResources.ACTION_ERROR,
@@ -355,6 +358,8 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_working_status(self, mock_reverse):
         mock_resource = mock.MagicMock()
+        mock_resource.id = 12345
+        mock_resource.SLUG = "resources"
         mock_resource.WORKING_STATUSES = StatusMixin.WORKING_STATUSES
         mock_resource.get_status.return_value = 'Processing'
 
@@ -365,17 +370,20 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         manage_resources.get_app()
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
-        mock_reverse.assert_called_with('{}:app_users_resource_status'.format(manage_resources._app.namespace))
+        mock_reverse.assert_called_with(
+            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_status'
+        )
         self.assertDictEqual(
             {
                 'action': ManageResources.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': 'processing_url' + '?r={}'.format(mock_resource.id)
+                'href': 'processing_url?r=12345'
             }, ret)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_launch(self, mock_reverse):
         mock_resource = mock.MagicMock()
+        mock_resource.SLUG = "resources"
         mock_resource.OK_STATUSES = StatusMixin.OK_STATUSES
         mock_resource.get_status.return_value = 'Available'
 
@@ -384,8 +392,10 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         manage_resources.get_app()
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
-        mock_reverse.assert_called_with('{}:app_users_resource_details'.format(manage_resources._app.namespace),
-                                        args=[mock_resource.id])
+        mock_reverse.assert_called_with(
+            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_details',
+            args=[mock_resource.id]
+        )
         self.assertDictEqual(
             {
                 'action': ManageResources.ACTION_LAUNCH,
@@ -393,17 +403,18 @@ class ManageResourcesTests(SqlAlchemyTestCase):
                 'href': mock_reverse(),
             }, ret)
 
-    def test_get_resources(self):
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    def test_get_resources(self, mock_get_resource_model):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_session = mock.MagicMock()
         mock_request_app_user = mock.MagicMock()
-
+        mock_get_resource_model.return_value = 'resource_type'
         # Call the method
         manage_resources = ManageResources()
         manage_resources.get_resources(mock_session, mock_request, mock_request_app_user)
 
         # Test the results
-        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request)
+        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type')
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
     def test_can_edit_resource(self, mock_has_permission):
@@ -449,7 +460,9 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         self.assertEqual('always_delete_resource', call_args[1][0][1])
         self.assertEqual(mock_request, call_args[1][0][0])
 
-    def test_perform_custom_delete_operations(self):
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    def test_perform_custom_delete_operations(self, mock_get_session):
+        session = mock_get_session()()
         mock_request = self.request_factory.get('/foo/bar/')
 
-        ManageResources().perform_custom_delete_operations(mock_request, self.resource)
+        ManageResources().perform_custom_delete_operations(session, mock_request, self.resource)

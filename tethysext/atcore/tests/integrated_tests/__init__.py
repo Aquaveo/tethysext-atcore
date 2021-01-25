@@ -18,6 +18,8 @@ from .controllers.rest.spatial_reference import QuerySpatialReferenceControllerT
 from .controllers.resources.tabbed_resource_details_tests import TabbedResourceDetailsTests  # noqa: F401
 from .controllers.resources.tabs.resource_tab_tests import ResourceTabTests  # noqa: F401
 from .controllers.resources.tabs.summary_tab_tests import ResourceSummaryTabTests  # noqa: F401
+from .controllers.resources.tabs.files_tab_tests import FilesTabTests  # noqa: F401
+from .controllers.resources.tabs.resource_list_tab_tests import ResourceListTabTests  # noqa: F401
 from .controllers.resources.tabs.workflows_tab_tests import ResourceWorkflowsTabTests  # noqa: F401
 from .controllers.resource_view_tests import ResourceViewTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_mixins_tests import WorkflowViewMixinTests  # noqa: F401
@@ -45,6 +47,7 @@ from .models.files_database.file_collection_tests import FileCollectionTests  # 
 from .models.files_database.file_database_tests import FileDatabaseTests  # noqa: F401
 from .models.files_database.file_collection_client_tests import FileCollectionClientTests  # noqa: F401
 from .models.files_database.file_database_client_tests import FileDatabaseClientTests  # noqa: F401
+from .models.files_database.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
 from .models.app_users.resource_workflow_result_tests import ResourceWorkflowResultTests  # noqa: F401
@@ -70,9 +73,11 @@ from .permissions.app_users import PermissionsGeneratorTests  # noqa: F401
 from .services.app_users.decorators import ActiveUserRequiredDecoratorTests  # noqa: F401
 from .services.app_users.condor_workflow_manager_tests import CondorWorkflowManagerTests  # noqa: F401
 from .services.decorators_tests import DecoratorsTests  # noqa: F401
+from .services.resource_condor_workflow_tests import ResourceCondorWorkflowTests  # noqa: F401
 from .services.resource_workflows.helpers_tests import HelpersTests  # noqa: F401
 from .services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401
 from .urls.app_users_tests import AppUserUrlsTests  # noqa: F401
+from .urls.resources_tests import ResourceUrlsTests  # noqa: F401
 from .urls.resource_workflows_tests import ResourceWorkflowsTests  # noqa: F401
 from .urls.spatial_reference import SpatialReferenceUrlsTests  # noqa: F401
 from .utilities_tests import UtilitiesTests  # noqa: F401

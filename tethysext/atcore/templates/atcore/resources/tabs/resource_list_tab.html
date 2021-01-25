@@ -1,0 +1,54 @@
+<table class="table table-hover table-bottom-border" id="resource_table">
+  <thead>
+    {# NAME HEADER #}
+    <th>
+      <span>Name</span>
+    </th>
+
+    {# DESCRIPTION HEADER #}
+    <th>
+      <span>Description</span>
+    </th>
+
+    {# CREATED BY HEADER #}
+    <th>
+      <span>Created By</span>
+    </th>
+
+    {# DATE CREATED HEADER #}
+    <th>
+      <span>Date Created</span>
+    </th>
+  </thead>
+  <tbody>
+    {% for resource in resources %}
+      <tr class="resource-list-row">
+        {# NAME VALUE #}
+        <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+          <a href="{{ resource.action_href }}">{{ resource.name }}</a>
+        </td>
+
+        {# DESCRIPTION VALUE #}
+        <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+          {{ resource.description }}
+        </td>
+
+        {# CREATED BY VALUE #}
+        {% if resource.created_by %}
+        <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+          {{ resource.created_by }}
+        </td>
+        {% else %}
+        <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+          <i><font color="#A8A8A8">Unknown</font></i>
+        </td>
+        {% endif %}
+
+        {# DATE CREATED VALUE #}
+        <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+          {{ resource.date_created }} UTC
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

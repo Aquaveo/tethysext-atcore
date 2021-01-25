@@ -1,0 +1,39 @@
+{% if node.type == 'folder' %}
+
+{# Add directories to the viewport #}
+<tr class="viewport_item viewport_dir" data-parentslug="{{ node.parent_slug }}" data-slug="{{ node.slug }}"
+    data-filepath="{{ node.path }}" data-parentpath="{{ node.parent_path }}" data-collectionid="{{ collection_id }}">
+    <td>
+        <span class="glyphicon glyphicon-folder-close" data-isselected="false">
+            {{ node.name }}
+        </span>
+    </td>
+    <td>{{ node.date_modified }}</td>
+    <td>-</td>
+</tr>
+
+{# The parent directory placeholder #}
+{# Loop through all the directory children #}
+{%for ch in node.children %}
+    {%with node=ch template_name="atcore/resources/tabs/files_viewport_template.html" %}
+        {%include template_name%}
+    {%endwith%}
+{%endfor%}
+
+{% else %}
+
+{# Add Files to the Viewport #}
+<tr class="viewport_item viewport_file" data-parentslug="{{ node.parent_slug }}"
+    data-filepath="{{ node.path }}" data-slug="{{ node.slug }}" data-collectionid="{{ collection_id }}"
+    data-parentpath="{{ node.parent_path }}">
+    <td>
+        <span class="glyphicon glyphicon-file"
+              data-isselected="false" data-filepath="{{ node.path }}">
+            {{ node.name }}
+        </span>
+    </td>
+    <td>{{ node.date_modified }}</td>
+    <td>{{ node.size }}</td>
+</tr>
+
+{% endif %}

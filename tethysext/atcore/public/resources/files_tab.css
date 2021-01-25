@@ -1,0 +1,84 @@
+#hierarchy
+{
+    font-family: "Courier New"!important;
+}
+.foldercontainer, .file, .noitems
+{
+    display: block;
+    padding-left: 20px;
+}
+
+.folder[data-isselected="true"] {
+    background: #c4c4c4;
+}
+
+.folder
+{
+    height: 40px;
+    width: 100%;
+    padding-top: 10px;
+    padding-left: 10px;
+    font-size: 15px;
+}
+.file
+{
+    color: green;
+}
+.folder, .file
+{
+    cursor: pointer;
+}
+.noitems
+{
+    display: none;
+    pointer-events: none;
+}
+.folder:hover,.file:hover
+{
+    font-weight: bold;
+}
+.folder:before, .file:before
+{
+    padding-right: 10px;
+}
+
+#file_browser {
+    padding-top: 15px;
+    padding-right: 15px;
+}
+
+#files_viewport_header {
+    border-bottom: 1px solid;
+}
+
+#name_header {
+    border-right: 1px solid;
+}
+
+#modified_header {
+}
+
+#size_header {
+    border-left: 1px solid;
+}
+
+.viewport_item {
+    visibility: collapse;
+}
+
+#file-viewport {
+    border-left: 1px;
+}
+
+div#preview-col {
+    border-left: 1px solid;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: lightgrey;
+    height: 600px;
+    overflow-y: auto;
+}
+
+#files {
+    height: 100%;
+}

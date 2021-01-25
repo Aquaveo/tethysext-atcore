@@ -180,6 +180,7 @@ class ManageResources(AppUsersViewMixin):
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
             'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
+            'resource_slug': _Resource.SLUG,
             'base_template': self.base_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
@@ -210,7 +211,7 @@ class ManageResources(AppUsersViewMixin):
         try:
             resource = session.query(_Resource).get(resource_id)
             try:
-                self.perform_custom_delete_operations(request, resource)
+                self.perform_custom_delete_operations(session, request, resource)
             except:  # noqa: E722
                 log.warning(f'Unable to perform custom delete operations on resource {resource}.')
             session.delete(resource)
@@ -226,19 +227,19 @@ class ManageResources(AppUsersViewMixin):
         """
         Get the URL for the Resource Working button.
         """
-        return reverse(f'{self._app.namespace}:app_users_resource_status') + f'?r={resource.id}'
+        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_status') + f'?r={resource.id}'
 
     def get_launch_url(self, request, resource):
         """
         Get the URL for the Resource Launch button.
         """
-        return reverse(f'{self._app.namespace}:app_users_resource_details', args=[resource.id])
+        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details', args=[resource.id])
 
     def get_error_url(self, request, resource):
         """
         Get the URL for the Resource Error button.
         """
-        return reverse(f'{self._app.namespace}:app_users_resource_details', args=[resource.id])
+        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details', args=[resource.id])
 
     def get_resource_action(self, session, request, request_app_user, resource):
         """
@@ -285,12 +286,14 @@ class ManageResources(AppUsersViewMixin):
         Returns:
             list<Resources>: the list of resources to render on the manage_resources page.
         """
-        return request_app_user.get_resources(session, request)
+        of_type = self.get_resource_model()
+        return request_app_user.get_resources(session, request, of_type=of_type)
 
-    def perform_custom_delete_operations(self, request, resource):
+    def perform_custom_delete_operations(self, session, request, resource):
         """
         Hook to perform custom delete operations prior to the resource being deleted.
         Args:
+            session(sqlalchemy.session): open sqlalchemy session.
             request(django.Request): the DELETE request object.
             resource(Resource): the sqlalchemy Resource instance to be deleted.
 

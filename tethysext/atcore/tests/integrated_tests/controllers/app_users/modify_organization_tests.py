@@ -266,7 +266,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         self.mock_redirect.assert_called()
         self.mock_reverse.assert_called()
-        self.assertEqual('app_namespace:app_users_manage_resources', self.mock_reverse.call_args[0][0])
+        self.assertEqual('app_namespace:resources_manage_resources', self.mock_reverse.call_args[0][0])
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
     def test_handle_modify_user_requests_invalid_modify_2(self, _):
@@ -366,7 +366,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['project_select']['disabled'])
         self.assertEqual('', context['project_select']['error'])
 
-        self.assertEqual('app_namespace:app_users_manage_resources', context['next_controller'])
+        self.assertEqual('app_namespace:resources_manage_resources', context['next_controller'])
 
         self.assertIn('license_to_consultant_map', context)
 

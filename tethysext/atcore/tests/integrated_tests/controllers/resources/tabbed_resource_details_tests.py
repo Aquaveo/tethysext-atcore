@@ -131,7 +131,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         ret = instance.get(request, resource_id=str(self.resource.id), back_url='/foo/', tab_slug=tab_slug)
 
         mock_htar.assert_called_with(
-            request=request, resource=self.resource, tab_slug=tab_slug, tab_action='default'
+            request=request, resource=self.resource, session=self.session, tab_slug=tab_slug, tab_action='default'
         )
         self.assertEqual(mock_htar(), ret)
 
@@ -181,7 +181,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         ret = instance.post(request, resource_id=str(self.resource.id), back_url='/foo/', tab_slug=tab_slug)
 
         mock_htar.assert_called_with(
-            request=request, resource=self.resource, tab_slug=tab_slug, tab_action='default'
+            request=request, resource=self.resource, session=self.session, tab_slug=tab_slug, tab_action='default'
         )
         self.assertEqual(mock_htar(), ret)
 
@@ -211,7 +211,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         ret = instance.delete(request, resource_id=str(self.resource.id), back_url='/foo/', tab_slug=tab_slug)
 
         mock_htar.assert_called_with(
-            request=request, resource=self.resource, tab_slug=tab_slug, tab_action='default'
+            request=request, resource=self.resource, session=self.session, tab_slug=tab_slug, tab_action='default'
         )
         self.assertEqual(mock_htar(), ret)
 
@@ -236,7 +236,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         request = self.get_request_with_user(f'/foo/{self.resource.id}/bar/{tab_slug}/', 'get',
                                              {'tab_action': 'default'})  # Include tab_action parameter
 
-        ret = instance._handle_tab_action_request(request, self.resource, tab_slug, tab_action='default')
+        ret = instance._handle_tab_action_request(request, self.resource, self.session, tab_slug, tab_action='default')
 
         self.assertIsInstance(ret, HttpResponseNotFound)
         self.assertEqual(b'"not-a-tab" is not a valid tab.', ret.content)
@@ -254,7 +254,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         request = self.get_request_with_user(f'/foo/{self.resource.id}/bar/{tab_slug}/', 'get',
                                              {'tab_action': tab_action})
 
-        ret = instance._handle_tab_action_request(request, self.resource, tab_slug, tab_action=tab_action)
+        ret = instance._handle_tab_action_request(request, self.resource, self.session, tab_slug, tab_action=tab_action)
 
         MockTab.assert_not_called()  # ResourceTab not instantiated
         MockTab.as_controller.assert_called()  # Controller entry point was retrieved
@@ -269,7 +269,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         request = self.get_request_with_user(f'/foo/{self.resource.id}/bar/{tab_slug}/', 'get',
                                              {'tab_action': tab_action})
 
-        ret = instance._handle_tab_action_request(request, self.resource, tab_slug, tab_action=tab_action)
+        ret = instance._handle_tab_action_request(request, self.resource, self.session, tab_slug, tab_action=tab_action)
 
         self.assertEqual('TestTab1.custom_action returned', ret)
 
@@ -282,7 +282,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         request = self.get_request_with_user(f'/foo/{self.resource.id}/bar/{tab_slug}/', 'get',
                                              {'tab_action': tab_action})
 
-        ret = instance._handle_tab_action_request(request, self.resource, tab_slug, tab_action=tab_action)
+        ret = instance._handle_tab_action_request(request, self.resource, self.session, tab_slug, tab_action=tab_action)
 
         self.assertIsInstance(ret, HttpResponseBadRequest)
         self.assertEqual(b'"not-a-method" is not a valid action for tab "another-tab"', ret.content)

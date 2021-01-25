@@ -72,7 +72,8 @@ class ResourceDetails(ResourceViewMixin):
         if back_arg == 'manage-organizations':
             back_controller = '{}:app_users_manage_organizations'.format(app_namespace)
         else:
-            back_controller = '{}:app_users_manage_resources'.format(app_namespace)
+            _Resource = self.get_resource_model()
+            back_controller = f'{app_namespace}:{_Resource.SLUG}_manage_resources'
         return reverse(back_controller)
 
     def get_context(self, request, context):
