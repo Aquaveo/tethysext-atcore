@@ -5,7 +5,7 @@ import uuid
 
 from sqlalchemy.orm import relationship, backref
 
-from tethysext.atcore.mixins import FileCollectionMixin
+from tethysext.atcore.mixins.file_collection_mixin import FileCollectionMixin
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.models.file_database import FileCollection, FileDatabase, resource_file_collection_association
 from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
