@@ -6,7 +6,7 @@
           data-slug="{{ node.slug }}"
           data-filepath="{{ node.path }}"
           data-parentpath="{{ node.parent_path }}">
-        {{ node.name }}
+        <span class="foldername">{{ node.name }}</span>
     </span>
     {%for ch in node.children %}
         {%with node=ch template_name="atcore/resources/tabs/tree_view_template.html" %}
