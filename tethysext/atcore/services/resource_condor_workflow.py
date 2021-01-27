@@ -19,7 +19,7 @@ class ResourceCondorWorkflow(object):
     Helper class that prepares and submits the new project upload jobs and workflow.
     """
     def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource,
-                 scheduler, job_manager, status_keys=[], **kwargs):
+                 scheduler, job_manager, status_keys=None, **kwargs):
         """
         Constructor.
 
@@ -43,7 +43,7 @@ class ResourceCondorWorkflow(object):
         self.workflow = None
         self.scheduler = scheduler
         self.job_manager = job_manager
-        self.status_keys = status_keys
+        self.status_keys = status_keys if status_keys is not None else []
 
         for kwarg, value in kwargs.items():
             setattr(self, kwarg, value)
