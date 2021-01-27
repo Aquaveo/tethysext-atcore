@@ -69,9 +69,15 @@ class ResourceSummaryTab(ResourceTab):
             context['has_preview_image'] = self.has_preview_image
             context['preview_image_title'] = self.preview_image_title
 
-        general_summary_tab_info = ('Description', {'Name': resource.name, 'Description': resource.description,
-                                                    'Created By': resource.created_by,
-                                                    'Date Created': resource.date_created})
+        general_summary_tab_info = (
+            'Description',
+            {
+                'Name': resource.name,
+                'Description': resource.description,
+                'Created By': 'staff' if resource.created_by == '_staff_user' else resource.created_by,
+                'Date Created': resource.date_created
+            }
+        )
 
         # Add general_summary_tab_info as first item in first columns
         summary_tab_info = self.get_summary_tab_info(request, session, resource)
