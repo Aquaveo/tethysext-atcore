@@ -22,7 +22,6 @@ class FileCollectionTests(SqlAlchemyTestCase):
 
         database_instance = FileDatabase(
             id=database_id,  # We need to set the id here for the test path.
-            root_directory='.',
         )
 
         self.session.add(database_instance)

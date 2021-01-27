@@ -1,10 +1,12 @@
+from unittest import mock
 import os
 import shutil
 import uuid
 
 from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError, \
     FileCollectionItemNotFoundError, FileCollectionItemAlreadyExistsError
-from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase, FileDatabaseClient
+from tethysext.atcore.services.file_database import FileDatabaseClient, FileCollectionClient
+from tethysext.atcore.models.file_database import FileDatabase, FileCollection
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -22,7 +24,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
     def setUp(self):
         super().setUp()
         self.test_files_base = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../models', '..', '..',
                          'files', 'file_collection_client_tests')
         )
 
@@ -52,7 +54,6 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_meta = collection_meta or {}
         database_instance = FileDatabase(
             id=database_id,  # We need to set the id here for the test path.
-            root_directory=root_directory,
             meta=database_meta,
         )
 
@@ -68,7 +69,13 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.session.add(collection_instance)
         self.session.commit()
 
-        return database_instance, collection_instance
+        database_client = FileDatabaseClient(
+            session=self.session,
+            root_directory=root_directory,
+            file_database_id=database_instance.id
+        )
+
+        return database_client, collection_instance
 
     def test_new_file_collection_client(self):
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_collection_client')
@@ -76,7 +83,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             shutil.rmtree(root_dir)
         database_client = FileDatabaseClient.new(self.session, root_dir)
         self.assertTrue(self.session.query(FileCollection).count() == 0)
-        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        collection_client = FileCollectionClient.new(self.session, database_client)
         self.assertTrue(self.session.query(FileCollection).count() == 1)
         self.assertTrue(os.path.exists(collection_client.path))
 
@@ -87,11 +94,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_path_property')
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         expected_path = os.path.abspath(os.path.join(root_dir, str(database_id), str(collection_id)))
         self.assertEqual(collection_client.path, expected_path)
 
@@ -101,11 +108,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
         root_dir = os.path.join(self.test_files_base, 'test_files_generator')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
 
         files = [x for x in collection_client.files]
         expected_files = [
@@ -124,12 +131,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'test_write_meta')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         if os.path.exists(meta_file):
             os.remove(meta_file)
@@ -142,12 +149,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
@@ -159,12 +166,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_overwrite')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'ThisKey': 'ShouldNotExist'}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
@@ -176,12 +183,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{12856d36-cb6d-4a5e-84a6-6ee3696a67f1}')
         collection_id = uuid.UUID('{eab613c8-da79-48e0-9db0-1ac854efd966}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_empty')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={"DatabaseKey1": "Value1", "DatabaseKey2": 2.3}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
@@ -192,12 +199,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_no_file')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         if os.path.exists(meta_file):
             os.remove(meta_file)
@@ -211,12 +218,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_bad_file')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'KeyYouWillNotSee': 'ValueYouWillNotSee'}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_file = os.path.join(collection_client.path, '__meta__.json')
         self.assertTrue(os.path.exists(meta_file))
         collection_client.read_meta()
@@ -229,12 +236,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_write_meta')
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         meta_value = collection_client.get_meta('Key2')
         self.assertEqual(meta_value, 1234)
 
@@ -245,12 +252,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         with self.assertRaises(KeyError) as exc:
             _ = collection_client.get_meta('Key2345')
         self.assertTrue('Key2345' in str(exc.exception))
@@ -262,12 +269,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.set_meta('Key3', 'NewValue')
 
         altered_collection = self.session.query(FileCollection).get(collection_id)
@@ -280,12 +287,12 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'temp',  'test_write_meta')
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={},
             collection_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.set_meta('NewKey', 'AddedValue')
 
         altered_collection = self.session.query(FileCollection).get(collection_id)
@@ -296,7 +303,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         database_client = FileDatabaseClient.new(self.session, root_dir)
-        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        collection_client = FileCollectionClient.new(self.session, database_client)
         collection_path = os.path.join(root_dir, str(database_client.instance.id), str(collection_client.instance.id))
         self.assertTrue(os.path.exists(collection_path))
         collection_client.delete()
@@ -312,7 +319,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         database_client = FileDatabaseClient.new(self.session, root_dir)
-        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        collection_client = FileCollectionClient.new(self.session, database_client)
         collection_path = os.path.join(root_dir, str(database_client.instance.id), str(collection_client.instance.id))
         export_path = os.path.join(self.test_files_base, 'temp', 'exported_files', 'test_collection_export')
         if os.path.exists(export_path):
@@ -326,12 +333,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         root_dir = os.path.join(self.test_files_base, 'test_export_with_files')
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_path = os.path.join(root_dir, str(database_client.instance.id), str(collection_client.instance.id))
         export_path = os.path.join(self.test_files_base, 'temp', 'exported_files', 'test_export_with_files')
         if os.path.exists(export_path):
@@ -348,7 +354,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         database_client = FileDatabaseClient.new(self.session, root_dir)
-        collection_client = FileCollectionClient.new(self.session, database_client.instance.id)
+        collection_client = FileCollectionClient.new(self.session, database_client)
         new_collection_client = collection_client.duplicate()
         new_collection_path = os.path.join(root_dir, database_client.path, str(new_collection_client.instance.id))
         self.assertTrue(new_collection_path == new_collection_client.path)
@@ -362,12 +368,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         shutil.copytree(base_files_root_dir, root_dir)
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-        _ = self.get_database_and_collection(
+        database_client, _ = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        database_client = FileDatabaseClient(self.session, database_id)
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         new_collection_client = collection_client.duplicate()
         new_collection_path = os.path.join(root_dir, database_client.path, str(new_collection_client.instance.id))
         self.assertTrue(new_collection_path == new_collection_client.path)
@@ -386,11 +391,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.add_item(os.path.join(files_dir, 'file1.txt'))
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
         self.assertTrue(os.path.exists(os.path.join(files_dir, 'file1.txt')))
@@ -405,11 +410,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.add_item(os.path.join(files_dir, 'dir1'))
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'file1.txt')))
         self.assertTrue(os.path.exists(os.path.join(files_dir, 'dir1', 'file1.txt')))
@@ -423,11 +428,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         with self.assertRaises(FileExistsError) as exc:
             collection_client.add_item(os.path.join(collection_client.path, 'file1.txt'))
         self.assertTrue('Item to be added must not already be contained in the FileCollection.' in str(exc.exception))
@@ -441,11 +446,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         with self.assertRaises(FileNotFoundError) as exc:
             collection_client.add_item(os.path.join(files_dir, 'dir1', 'file1.txt'))
         self.assertTrue('Item to be added does not exist.' in str(exc.exception))
@@ -460,11 +465,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         shutil.copytree(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=database_id, collection_id=collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.add_item(os.path.join(files_dir, 'file1.txt'), move=True)
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
         self.assertFalse(os.path.exists(os.path.join(files_dir, 'file1.txt')))
@@ -472,9 +477,10 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
     def test_bad_collection_client(self):
         """Test Generating a FileCollectionClient from and existing FileCollection."""
         collection_id = uuid.UUID('{4b62335d-5b43-4e3b-bba7-07cd88cc2205}')
-        database_client = FileCollectionClient(self.session, collection_id)
+        mock_database_client = mock.MagicMock()
+        collection_client = FileCollectionClient(self.session, mock_database_client, collection_id)
         with self.assertRaises(FileCollectionNotFoundError) as exc:
-            _ = database_client.instance
+            _ = collection_client.instance
         self.assertTrue(f'FileCollection with id "{str(collection_id)}" not found.' in str(exc.exception))
 
     def test_export_item_new_name(self):
@@ -483,11 +489,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         exported_file = os.path.join(root_dir, 'exported', 'exported_file.txt')
         collection_client.export_item('file1.txt', exported_file)
         self.assertTrue(os.path.exists(exported_file))
@@ -498,11 +504,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         exported_file = os.path.join(root_dir, 'exported', 'file1.txt')
         with self.assertRaises(FileCollectionItemNotFoundError) as exc:
             collection_client.export_item('file1.txt', exported_file)
@@ -514,11 +520,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         export_dir = os.path.join(root_dir, 'exported')
         collection_client.export_item('file1.txt', export_dir)
         self.assertTrue(os.path.exists(os.path.join(export_dir, 'file1.txt')))
@@ -529,11 +535,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
         collection_client.export_item('dir1', exported_directory)
         self.assertTrue(os.path.exists(exported_directory))
@@ -545,11 +551,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
         os.makedirs(exported_directory)
         with self.assertRaises(IsADirectoryError):
@@ -561,11 +567,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         exported_directory = os.path.join(root_dir, 'exported', 'exported_directory')
         os.makedirs(exported_directory)
         collection_client.export_item('file1.txt', exported_directory)
@@ -577,11 +583,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         collection_client.duplicate_item('file1.txt', 'duplicated_file1.txt')
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'duplicated_file1.txt')))
 
@@ -591,11 +597,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         collection_client.duplicate_item('dir1', 'duplicated_dir')
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'duplicated_dir')))
 
@@ -605,11 +611,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(FileCollectionItemNotFoundError) as exc:
             collection_client.duplicate_item('file2.txt', 'duplicated_file2.txt')
         self.assertTrue('"file2.txt" not found in this collection.' in str(exc.exception))
@@ -621,11 +627,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(FileCollectionItemNotFoundError) as exc:
             collection_client.duplicate_item('dir2', 'duplicated_dir2')
         self.assertTrue('"dir2" not found in this collection.' in str(exc.exception))
@@ -637,11 +643,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(FileCollectionItemAlreadyExistsError) as exc:
             collection_client.duplicate_item('file1.txt', 'duplicated_file1.txt')
         self.assertTrue('Collection duplication target already exists.' in str(exc.exception))
@@ -652,11 +658,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
         collection_client.delete_item('file1.txt')
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
@@ -667,11 +673,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(FileCollectionItemNotFoundError) as exc:
             collection_client.delete_item('file2.txt')
         self.assertTrue('"file2.txt" not found in this collection.' in str(exc.exception))
@@ -682,11 +688,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         collection_client.delete_item('dir1')
         self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1')))
 
@@ -696,11 +702,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(FileCollectionItemNotFoundError) as exc:
             collection_client.delete_item('dir1')
         self.assertTrue('"dir1" not found in this collection.' in str(exc.exception))
@@ -711,11 +717,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with collection_client.open_file('file1.txt', 'r') as f:
             file_text = f.read()
             self.assertEqual('This text should be read from file.', file_text)
@@ -726,13 +732,13 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with collection_client.open_file('file1.txt', 'w') as f:
-            file_text = f.write('This text should be written to file.')
+            f.write('This text should be written to file.')
         with open(os.path.join(collection_client.path, 'file1.txt')) as of:
             file_text = of.read()
             self.assertEqual('This text should be written to file.', file_text)
@@ -743,11 +749,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(FileCollectionItemNotFoundError) as exc:
             with collection_client.open_file('file1.txt', 'w') as _:
                 pass
@@ -759,11 +765,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         with self.assertRaises(IsADirectoryError):
             with collection_client.open_file('dir1', 'r') as _:
                 pass
@@ -774,11 +780,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         walk_output = [x for x in collection_client.walk()]
         expected_walk_output = [
             ('.', ['dir1'], ['file1.txt']),
@@ -802,11 +808,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         for root, dirs, files in collection_client.walk():
             for file in files:
                 with collection_client.open_file(os.path.join(root, file), 'r') as _:
@@ -818,11 +824,11 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         base_files_root_dir = os.path.join(self.test_files_base, test_dir_name)
         root_dir = os.path.join(self.test_files_base, 'temp', test_dir_name)
         self.copy_files_to_temp_directory(base_files_root_dir, root_dir)
-        _, collection_instance = self.get_database_and_collection(
+        database_client, collection_instance = self.get_database_and_collection(
             database_id=self.general_database_id, collection_id=self.general_collection_id,
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
-        collection_client = FileCollectionClient(self.session, self.general_collection_id)
+        collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
         walk_output = [x for x in collection_client.walk()]
         expected_walk_output = [('.', [], [])]
         self.assertListEqual(walk_output, expected_walk_output)

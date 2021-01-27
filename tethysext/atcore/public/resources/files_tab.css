@@ -8,6 +8,10 @@
     padding-left: 20px;
 }
 
+.foldername {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
 .folder[data-isselected="true"] {
     background: #c4c4c4;
 }

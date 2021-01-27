@@ -25,7 +25,7 @@
                       data-slug="{{ collection_contents.slug }}"
                       data-filepath="{{ collection_contents.path }}"
                       data-parentpath="{{ collection_contents.parent_path }}">
-                    {{ collection_contents.name }}
+                    <span class="foldername">{{ collection_contents.name }}</span>
                 </span>
                 <!-- Loop through each child of the collection -->
                 {%for node in collection_contents.children %}

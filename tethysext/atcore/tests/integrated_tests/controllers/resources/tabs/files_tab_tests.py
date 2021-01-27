@@ -13,7 +13,8 @@ import uuid
 from django.http import HttpResponse, Http404
 from django.test import RequestFactory
 
-from tethysext.atcore.models.file_database import FileCollection, FileCollectionClient, FileDatabase
+from tethysext.atcore.models.file_database import FileCollection, FileDatabase
+from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -73,7 +74,6 @@ class FilesTabTests(SqlAlchemyTestCase):
         collection_meta = collection_meta or {}
         database_instance = FileDatabase(
             id=database_id,  # We need to set the id here for the test path.
-            root_directory=root_directory,
             meta=database_meta,
         )
 
@@ -89,7 +89,13 @@ class FilesTabTests(SqlAlchemyTestCase):
         self.session.add(collection_instance)
         self.session.commit()
 
-        return database_instance, collection_instance
+        database_client = FileDatabaseClient(
+            session=self.session,
+            root_directory=root_directory,
+            file_database_id=database_instance.id
+        )
+
+        return database_client, collection_instance
 
     def test_properties_default(self):
         """Verify the default values for the properties of the view."""
@@ -121,11 +127,11 @@ class FilesTabTests(SqlAlchemyTestCase):
             request.user = self.get_user()
 
             test_path = os.path.join(self.test_files_base, 'test_get_context_default')
-            _, collection = self.get_database_and_collection(
+            database_client, collection = self.get_database_and_collection(
                 uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
                 uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
             )
-            file_collection_client = FileCollectionClient(self.session, collection.id)
+            file_collection_client = FileCollectionClient(self.session, database_client, collection.id)
             mock_get_file_collection.return_value = [file_collection_client]
             context = instance.get_context(request, self.session, self.resource, {})
 
@@ -138,11 +144,11 @@ class FilesTabTests(SqlAlchemyTestCase):
             instance = ResourceFilesTab()
 
             test_path = os.path.join(self.test_files_base, 'test_get_context_default')
-            _, collection = self.get_database_and_collection(
+            database_client, collection = self.get_database_and_collection(
                 uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
                 uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
             )
-            file_collection_client = FileCollectionClient(self.session, collection.id)
+            file_collection_client = FileCollectionClient(self.session, database_client, collection.id)
             mock_get_file_collection.return_value = [file_collection_client]
 
             request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_file'
@@ -160,11 +166,11 @@ class FilesTabTests(SqlAlchemyTestCase):
             instance = ResourceFilesTab()
 
             test_path = os.path.join(self.test_files_base, 'test_get_context_default')
-            _, collection = self.get_database_and_collection(
+            database_client, collection = self.get_database_and_collection(
                 uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
                 uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
             )
-            file_collection_client = FileCollectionClient(self.session, collection.id)
+            file_collection_client = FileCollectionClient(self.session, database_client, collection.id)
             mock_get_file_collection.return_value = [file_collection_client]
 
             request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_file'
