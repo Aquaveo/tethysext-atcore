@@ -43,7 +43,7 @@ class ResourceCondorWorkflow(object):
         self.workflow = None
         self.scheduler = scheduler
         self.job_manager = job_manager
-        self.status_keys = status_keys if status_keys is not None else []
+        self.status_keys = status_keys
 
         for kwarg, value in kwargs.items():
             setattr(self, kwarg, value)
@@ -61,6 +61,8 @@ class ResourceCondorWorkflow(object):
         """
         Prepares all workflow jobs for processing upload to database.
         """
+        status_keys = list() if self.status_keys is None else self.status_keys
+
         # Set parameters for HTCondor job
         self.workflow = self.job_manager.create_job(
             name=self.safe_job_name,
@@ -76,7 +78,7 @@ class ResourceCondorWorkflow(object):
 
         # Aggregate status key.
         for _, status_key in user_defined_jobs:
-            self.status_keys.append(status_key)
+            status_keys.append(status_key)
 
         # update_resource_status
         update_resource_status = CondorWorkflowJobNode(
@@ -92,7 +94,7 @@ class ResourceCondorWorkflow(object):
                     self.resource_db_url,
                     self.resource_id,
                     self.resource_class_path,
-                    ','.join(self.status_keys)
+                    ','.join(status_keys)
                 )
             ),
         )
