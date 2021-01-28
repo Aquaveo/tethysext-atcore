@@ -83,7 +83,7 @@
                   </td>
                   {% else %}
                   <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    {{ resource.description }}
+                    <span>{{ resource.description }}</span>
                   </td>
                   {% endif %}
 
@@ -101,7 +101,7 @@
                   {# CREATED BY VALUE #}
                   {% if resource.created_by %}
                   <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    {{ resource.created_by }}
+                    {% if resource.created_by == '_staff_user' %}staff{% else %}{{ resource.created_by }}{% endif %}
                   </td>
                   {% else %}
                   <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">

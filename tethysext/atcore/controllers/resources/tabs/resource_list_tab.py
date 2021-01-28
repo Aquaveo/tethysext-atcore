@@ -38,6 +38,19 @@ class ResourceListTab(ResourceTab):
         """
         return []
 
+    def get_href_for_resource(self, app_namespace, resource):
+        """
+        Hook to allow implementations of ResourceListTab to provide action href.
+        Args:
+            app_namespace (str): the namespace of the app.
+            resource (Resource): the current Resource.
+
+        Returns:
+            str: the href for the given resource.
+        """
+        return reverse(f'{app_namespace}:{resource.SLUG}_resource_details',
+                       args=[resource.id])
+
     def _build_resource_cards(self, resources):
         """
         Build a list of cards for resources for the view to use.
@@ -51,8 +64,7 @@ class ResourceListTab(ResourceTab):
         resource_cards = []
         for resource in resources:
             resource_card = resource.__dict__
-            resource_card['action_href'] = reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details',
-                                                   args=[resource.id])
+            resource_card['action_href'] = self.get_href_for_resource(self._app.namespace, resource)
             resource_cards.append(resource_card)
         return resource_cards
 
