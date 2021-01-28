@@ -119,8 +119,6 @@ var ATCORE_MAP_VIEW = (function() {
         var $map_attributes = $('#atcore-map-attributes');
         m_layer_groups = $map_attributes.data('layer-groups');
         m_extent = $map_attributes.data('map-extent');
-        // Remap extent to order cesium expects
-        m_extent = [m_extent[2], m_extent[3], m_extent[0], m_extent[1]];
         m_workspace = $map_attributes.data('workspace');
         m_enable_properties_popup = $map_attributes.data('enable-properties-popup');
         m_map_type = $map_attributes.data('map-type');

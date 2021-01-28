@@ -29,8 +29,8 @@
         </td>
 
         {# DESCRIPTION VALUE #}
-        <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-          {{ resource.description }}
+        <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+          <span>{{ resource.description }}</span>
         </td>
 
         {# CREATED BY VALUE #}
