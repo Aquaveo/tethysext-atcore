@@ -56,9 +56,14 @@ class MapViewTests(SqlAlchemyTestCase):
     def setUp(self):
         super().setUp()
         self.mock_map_manager = mock.MagicMock(spec=MapManagerBase)
+        mock_map_view = mock.MagicMock()
+        mock_map_view.layers = [{'source': 'ImageWMS', 'layer': 'ImageWMS'},
+                                {'source': 'TileWMS', 'layer': 'TileWMS'},
+                                {'source': 'GeoJSON', 'layer': 'GeoJSON'}]
         self.mock_map_manager().compose_map.return_value = (
-            mock.MagicMock(), mock.MagicMock(), mock.MagicMock()
+            mock_map_view, mock.MagicMock(), mock.MagicMock()
         )
+
         self.controller = MapView.as_controller(
             _app=mock.MagicMock(spec=TethysAppBase),
             _AppUser=mock.MagicMock(spec=AppUser),
@@ -124,6 +129,39 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('plot_slide_sheet', context)
         self.assertIn('layer_tab_name', context)
         self.assertEqual('Layers', context['layer_tab_name'])
+        self.assertEqual(mock_render(), response)
+
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch('tethysext.atcore.controllers.resource_view.render')
+    @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
+    def test_get_cesium(self, mock_has_permission, mock_render, _):
+        resource_id = '12345'
+        mock_request = self.request_factory.get('/foo/bar/map-view/')
+        mock_request.user = self.django_user
+        MapView.map_type = "cesium_map_view"
+        self.mock_mm.layers = 'test'
+        self.mock_map_manager().get_cesium_token.return_value = 'cesium_token'
+        response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
+
+        render_call_args = mock_render.call_args_list
+        context = render_call_args[0][0][2]
+        self.assertIn('resource', context)
+        self.assertIn('map_view', context)
+        self.assertIn('map_extent', context)
+        self.assertIn('layer_groups', context)
+        self.assertIn('is_in_debug', context)
+        self.assertIn('nav_title', context)
+        self.assertIn('nav_subtitle', context)
+        self.assertIn('can_use_geocode', context)
+        self.assertIn('can_use_plot', context)
+        self.assertIn('back_url', context)
+        self.assertIn('plot_slide_sheet', context)
+        self.assertIn('layer_tab_name', context)
+        self.assertEqual('Layers', context['layer_tab_name'])
+        self.assertEqual('cesium_token', context['map_view']['cesium_ion_token'])
+        self.assertEqual([{'source': 'ImageWMS', 'layer': 'ImageWMS'}, {'source': 'TileWMS', 'layer': 'TileWMS'}],
+                         context['map_view']['layers'])
+        self.assertEqual([{'source': 'GeoJSON', 'layer': 'GeoJSON'}], context['map_view']['entities'])
         self.assertEqual(mock_render(), response)
 
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
@@ -451,7 +489,7 @@ class MapViewTests(SqlAlchemyTestCase):
         request = self.request_factory.post('/foo/bar/map-view/',
                                             data={'method': 'find-location-by-query',
                                                   'q': address,
-                                                  'extent': [1, 2, 3, 4]},
+                                                  'extent': [0, 0, 0, 0]},
                                             )
 
         request.user = self.django_user
@@ -965,3 +1003,41 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertNotIn(self.layer_2_dropdown_menu_no_rr, response_dict['response'])
         self.assertNotIn('remove-action', response_dict['response'])
         self.assertNotIn('rename-action', response_dict['response'])
+
+    def test_get_managers_no_db(self):
+        resource = mock.MagicMock()
+        resource.get_attribute.return_value = ''
+        model_db, _ = self.mv.get_managers(self.request_factory, resource)
+
+        self.assertFalse(model_db)
+
+    def test_convert_geojson_to_shapefile(self):
+        json_data = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [125.6, 10.1]
+                    },
+                    "properties": {
+                        "name": "Dinagat Islands"
+                    }
+                }
+            ]
+        }
+        data = {'data': json.dumps(json_data),
+                'id': 'layer_id'}
+
+        mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
+        mock_request.user = self.django_user
+
+        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+
+        mv = MapView()
+        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+
+        # TODO: this method only works with pyshape 1.x, not 2.x
+        # response = mv.convert_geojson_to_shapefile(mock_request, self.session, mock_resource)
