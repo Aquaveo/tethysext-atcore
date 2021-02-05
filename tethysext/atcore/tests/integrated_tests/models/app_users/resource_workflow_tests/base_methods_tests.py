@@ -1,8 +1,10 @@
 from unittest import mock
+import param
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep, ResourceWorkflowResult
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 
 
 def setUpModule():
@@ -13,20 +15,51 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
+class TestParam(param.Parameterized):
+    def __init__(self, *args, **kwargs):
+        if 'request' in kwargs:
+            self.update_param_data(**kwargs)
+        self.param['name'].precedence = -1
+
+    data_source = param.ObjectSelector(default='Historic', objects=['Existing Data', 'Historic'], precedence=1)
+    existing_data = param.ObjectSelector(default='default_string', precedence=-1)
+
+    def update_param_data(self, **kwargs):
+        param_data = dict()
+        data = {'data_name': 'data_value'}
+        for key, value in data.items():
+            param_data[key] = str(value)
+        self.param['existing_data'].names = param_data
+        self.param['existing_data'].objects = list(param_data.values())
+
+
 class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
 
     def setUp(self):
         super().setUp()
         # Custom setup here
         self.workflow = ResourceWorkflow(name='bar')
-
+        self.another_workflow = ResourceWorkflow(name='baz')
         # Build the steps and save in the workflow
         # Status will be set dynamically to allow for easy testing.
-        self.step_1 = ResourceWorkflowStep(name='foo', help='step_1', order=1)
+        self.step_1 = FormInputRWS(
+            name='foo',
+            help='step_1',
+            options={
+                'param_class': 'tethysext.atcore.tests.integrated_tests.models.app_users.resource_workflow_tests.'
+                               'base_methods_tests.TestParam',
+                'form_title': 'Test Param',
+                'renderer': 'bokeh'
+            },
+            order=1,
+        )
+
         self.step_2 = ResourceWorkflowStep(name='bar', help='step_2', order=2)
         self.step_3 = ResourceWorkflowStep(name='baz', help='step_3', order=3)
         self.step_4 = ResourceWorkflowStep(name='invalid_step', help='invalid step 4', order=4)
+        self.step_5 = ResourceWorkflowStep(name='not_in_workflow_step', help='step_5', order=3)
         self.workflow.steps = [self.step_1, self.step_2, self.step_3]
+        self.another_workflow.steps = [self.step_5]
 
         # Build the results and save in the workflow
         self.result_1 = ResourceWorkflowResult(name='foo', description='lorem_1', _data={'baz': 1})
@@ -191,5 +224,59 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
         self.assertEqual(self.step_2.STATUS_PENDING, self.step_2.get_status(self.step_2.ROOT_STATUS_KEY))
         self.assertEqual(self.step_3.STATUS_PENDING, self.step_3.get_status(self.step_3.ROOT_STATUS_KEY))
 
+    def test_reset_next_steps_include_current(self):
+        self.step_1.set_status(self.step_1.ROOT_STATUS_KEY, self.step_1.STATUS_COMPLETE)
+        self.step_2.set_status(self.step_2.ROOT_STATUS_KEY, self.step_2.STATUS_COMPLETE)
+        self.step_3.set_status(self.step_3.ROOT_STATUS_KEY, self.step_3.STATUS_ERROR)
+
+        self.workflow.reset_next_steps(self.step_1, include_current=True)
+
+        self.assertEqual(self.step_1.STATUS_PENDING, self.step_1.get_status(self.step_2.ROOT_STATUS_KEY))
+        self.assertEqual(self.step_2.STATUS_PENDING, self.step_2.get_status(self.step_2.ROOT_STATUS_KEY))
+        self.assertEqual(self.step_3.STATUS_PENDING, self.step_3.get_status(self.step_3.ROOT_STATUS_KEY))
+
     def test_reset_next_steps_invalid_step(self):
         self.assertRaises(ValueError, self.workflow.reset_next_steps, self.step_4)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.form_input_rws.FormInputRWS.get_parameter')
+    def test_get_tabular_data_for_previous_steps(self, mock_get_parameter):
+        request = mock.MagicMock()
+        session = mock.MagicMock()
+        mock_get_parameter.return_value = {'existing_data': 'data_value'}
+        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session)
+
+        expected_result = {'foo': {'Existing Data': 'data_name'}}
+        self.assertEqual(expected_result, ret)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.form_input_rws.FormInputRWS.get_parameter')
+    def test_get_tabular_data_for_previous_steps_no_key(self, mock_get_parameter):
+        request = mock.MagicMock()
+        session = mock.MagicMock()
+        mock_get_parameter.return_value = {'existing_data1': 'data_value'}
+        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session)
+
+        expected_result = {'foo': {'Existing Data1': 'data_value'}}
+        self.assertEqual(expected_result, ret)
+
+    def test_get_tabular_data_for_previous_steps_no_mappable(self):
+        request = mock.MagicMock()
+        session = mock.MagicMock()
+        ret = self.step_3.workflow.get_tabular_data_for_previous_steps(self.step_3, request, session)
+
+        expected_result = {'foo': {}}
+        self.assertEqual(expected_result, ret)
+
+    def test_get_tabular_data_for_previous_steps_no_workflow(self):
+        request = mock.MagicMock()
+        session = mock.MagicMock()
+        self.assertRaises(
+            ValueError,
+            self.step_5.workflow.get_tabular_data_for_previous_steps,
+            self.step_1,
+            request,
+            session
+        )
+
+    def test_get_url_name(self):
+        ret = self.step_1.workflow.get_url_name()
+        self.assertIsNone(ret)
