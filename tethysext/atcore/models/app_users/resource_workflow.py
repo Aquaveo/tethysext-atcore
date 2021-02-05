@@ -7,7 +7,9 @@
 ********************************************************************************
 """
 import uuid
+import param
 import logging
+
 import datetime as dt
 from abc import abstractmethod
 
@@ -167,7 +169,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         previous_steps = self.steps[:step_index]
         return previous_steps
 
-    def get_tabular_data_for_previous_steps(self, step):
+    def get_tabular_data_for_previous_steps(self, step, request, session):
         """
         Get all tabular data for previous steps based on the given step.
 
@@ -189,8 +191,32 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
                 continue
 
+            # Rebuild the param if param_class is in options
+            step_param_class = ''
+            if 'param_class' in step.options:
+                package, p_class = step.options['param_class'].rsplit('.', 1)
+                mod = __import__(package, fromlist=[p_class])
+                ParamClass = getattr(mod, p_class)
+                step_param_class = ParamClass(request=request, session=session)
             step_params = step.get_parameter('form-values')
-            fixed_params = {x.replace('_', ' ').title(): step_params[x] for x in step_params}
+            fixed_params = dict()
+            for key, value in step_params.items():
+                # Return the available options of the object selector.
+                look_up_dictionary = dict()
+                # Check ParamClass is  initialize and if the param is an Object Selector.
+                try:
+                    if step_param_class and isinstance(step_param_class.param[key], param.ObjectSelector):
+                        look_up_dictionary = step_param_class.param[key].names
+                except KeyError:
+                    pass
+                # if the names is defined, it will return all the options as a dictionary for a given param.
+                # We need to look through the dictionary associated with the value and return its corresonding name.
+                if look_up_dictionary:
+                    step_value = self.get_key_from_value(look_up_dictionary, value)
+                else:
+                    step_value = value
+                step_name = key.replace('_', ' ').title()
+                fixed_params[step_name] = step_value
             step_data[step.name] = fixed_params
 
         return step_data
@@ -235,3 +261,13 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
     @abstractmethod
     def get_url_name(self):
         pass
+
+    @staticmethod
+    def get_key_from_value(dict_object, value):
+        """
+        Get the key from a given value
+        dict_object: dictionary object
+        value: value to look up
+        :return: key associated with the value
+        """
+        return list(dict_object.keys())[list(dict_object.values()).index(value)]

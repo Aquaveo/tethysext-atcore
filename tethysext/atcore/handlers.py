@@ -25,7 +25,7 @@ def panel_rws_handler(document):
     mod = __import__(package, fromlist=[p_class])
     ParamClass = getattr(mod, p_class)
 
-    param_class = ParamClass()
+    param_class = ParamClass(request=document.request, session=session)
 
     form_values = current_step.get_parameter('form-values').items()
     for k, v in form_values:
