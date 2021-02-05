@@ -22,8 +22,6 @@ from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 
 log = logging.getLogger(__name__)
-warning_log = logging.captureWarnings(capture=True)
-
 __all__ = ['ResourceWorkflow']
 
 
