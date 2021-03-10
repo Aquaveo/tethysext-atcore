@@ -6,6 +6,12 @@ from tethysext.atcore.services.file_database import FileDatabaseClient
 class FileCollectionsControllerMixin:
     """Provides methods for controllers that manage on Resources with FileCollections."""
 
+    def get_app(self):
+        """
+        Usually implemented by other mixins or the controller.
+        """
+        return None
+
     def delete_file_collections(self, session, resource, log):
         """
         Delete all FileCollections linked to the given resource.
