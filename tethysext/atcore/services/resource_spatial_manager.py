@@ -20,7 +20,7 @@ class ResourceSpatialManager(BaseSpatialManager):
     """
     A generic SpatialManger for SpatialResource.
     """
-
+    DATASTORE = 'my_app_datastore'
     SQL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sql_templates')
     SLD_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sld_templates')
 
