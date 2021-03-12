@@ -67,7 +67,7 @@ class FileCollectionsControllerMixin:
             # Create file collection details tuple
             file_collection_details = ('File Collection Details', {
                 'ID': file_collection.id,
-                'File count': file_count,
+                'File Count': file_count,
                 'Total Size': total_size,
             })
 
