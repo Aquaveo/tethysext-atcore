@@ -8,6 +8,7 @@
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from tethys_sdk.jobs import CondorWorkflowJobNode
 
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.job_scripts import update_resource_status as update_resource_status_script
@@ -62,7 +63,6 @@ class ResourceCondorWorkflow(object):
         """
         Prepares all workflow jobs for processing upload to database.
         """
-        from tethys_sdk.jobs import CondorWorkflowJobNode
         status_keys = list() if self.status_keys is None else self.status_keys
 
         # Set parameters for HTCondor job

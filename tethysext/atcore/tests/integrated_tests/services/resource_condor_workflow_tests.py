@@ -67,7 +67,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         got_jobs = self.puw.get_jobs()
         self.assertEqual(got_jobs, [])
 
-    @mock.patch('tethys_compute.models.condor.condor_workflow_job_node.CondorWorkflowJobNode')
+    @mock.patch('tethysext.atcore.services.resource_condor_workflow.CondorWorkflowJobNode')
     def test_get_prepare(self, mock_job):
         mock_job1 = mock.MagicMock()
         mock_job1.children_nodes.count.return_value = 0
