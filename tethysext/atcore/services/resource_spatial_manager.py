@@ -86,7 +86,7 @@ class ResourceSpatialManager(BaseSpatialManager):
         layer_preview_url = None
         layer_name = f'{self.WORKSPACE}:{self.get_extent_layer_name(resource.id)}'
         try:
-            extent = self.get_extent_for_project(datastore_name=f'{self.WORKSPACE}_primary_db',
+            extent = self.get_extent_for_project(datastore_name=self.DATASTORE,
                                                  resource_id=str(resource.id))
 
             # Calculate preview layer height and width ratios
