@@ -120,7 +120,7 @@ class FileCollectionsControllerMixinTests(SqlAlchemyTestCase):
         expected_result = [
             ('File Collection Details', {
                 'ID': 'test_id',
-                'File count': 1,
+                'File Count': 1,
                 'Total Size': '1.82 TB',  # f'{2e12/(1024.0**4):.2f} TB'
                 'test_key': 'test_value'
             })
