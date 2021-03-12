@@ -13,7 +13,7 @@ from tethysext.atcore.services.app_users.decorators import active_user_required,
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ResourceView(ResourceViewMixin):

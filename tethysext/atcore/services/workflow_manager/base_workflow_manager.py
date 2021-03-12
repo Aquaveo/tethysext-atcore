@@ -4,7 +4,7 @@ import logging
 from tethys_compute.models import CondorWorkflowJobNode
 from tethysext.atcore.utilities import generate_geoserver_urls
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class BaseWorkflowManager(object):

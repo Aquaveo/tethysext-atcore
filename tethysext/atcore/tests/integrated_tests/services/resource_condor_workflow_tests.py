@@ -20,6 +20,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         mock_resource.id = '2323'
         mock_resource.__module__ = 'path_to_module'
         mock_resource.__class__.__name__ = 'class_name'
+        self.app = mock.MagicMock(package='foo')
         self.user = mock.MagicMock()
         self.workflow_name = 'workflow_name'
         self.workspace_path = '/tmp'
@@ -32,6 +33,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         self.job_manager = mock.MagicMock()
         self.gs_engine = mock.MagicMock()
         self.puw = ResourceCondorWorkflow(
+            app=self.app,
             user=self.user, workflow_name=self.workflow_name,
             workspace_path=self.workspace_path,
             resource_db_url=self.resource_db_url,
@@ -78,6 +80,17 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         self.puw.get_jobs.return_value = [(mock_job1, 'run_job1: SUCCESS'),
                                           (mock_job2, 'run_job2: SUCCESS'),
                                           (mock_job3, 'run_job3: SUCCESS')]
+        self.puw.job_manager = mock.MagicMock()
+
         self.puw.prepare()
+
+        self.puw.job_manager.create_job.assert_called_with(
+            name=self.puw.safe_job_name,
+            user=self.user,
+            job_type='CONDORWORKFLOW',
+            max_jobs={'geoserver': 1},
+            workspace=self.workspace_path,
+            scheduler=self.scheduler
+        )
         mock_job().save.assert_called()
         self.assertEqual(mock_job().add_parent.call_count, 2)

@@ -331,7 +331,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         session.close.assert_called()
         self.assertIn('"success": true', ret.content.decode("utf-8"))
         self.assertIn('Unable to perform custom delete operations on resource',
-                      mock_log.warning.call_args_list[0][0][0])
+                      mock_log.exception.call_args_list[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     def test_get_resource_action_error(self, mock_reverse):

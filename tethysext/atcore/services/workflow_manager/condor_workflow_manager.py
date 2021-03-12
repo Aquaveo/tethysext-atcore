@@ -14,7 +14,7 @@ from .base_workflow_manager import BaseWorkflowManager
 from tethysext.atcore.utilities import generate_geoserver_urls
 from tethys_apps.exceptions import TethysAppSettingDoesNotExist
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ResourceWorkflowCondorJobManager(BaseWorkflowManager):

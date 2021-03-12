@@ -18,12 +18,13 @@ class ResourceCondorWorkflow(object):
     """
     Helper class that prepares and submits the new project upload jobs and workflow.
     """
-    def __init__(self, user, workflow_name, workspace_path, resource_db_url, resource,
+    def __init__(self, app, user, workflow_name, workspace_path, resource_db_url, resource,
                  scheduler, job_manager, status_keys=None, **kwargs):
         """
         Constructor.
 
         Args:
+            app (TethysApp): App class for the Tethys app.
             user (auth.User): Django user.
             workflow_name (str): Name of the job.
             workspace_path (str): Path to workspace to be used by job.
@@ -33,6 +34,7 @@ class ResourceCondorWorkflow(object):
             job_manager (JobManger): The condor job manager for the application.
             status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
         """  # noqa: E501
+        self.app = app
         self.user = user
         self.job_name = workflow_name
         self.safe_job_name = ''.join(s if s.isalnum() else '_' for s in self.job_name)  #: Safe name with only A-Z 0-9

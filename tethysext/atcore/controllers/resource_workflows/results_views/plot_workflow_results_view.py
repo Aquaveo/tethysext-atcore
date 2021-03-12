@@ -12,7 +12,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_results_view impor
 from tethys_sdk.gizmos import BokehView
 from tethys_sdk.gizmos import PlotlyView
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class PlotWorkflowResultView(WorkflowResultsView):

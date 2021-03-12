@@ -11,7 +11,7 @@ import logging
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SetStatusRWS
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class SetStatusWV(ResourceWorkflowView):

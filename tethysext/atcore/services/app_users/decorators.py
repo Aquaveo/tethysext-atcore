@@ -19,7 +19,7 @@ from django.conf import settings
 from tethysext.atcore.exceptions import ATCoreException
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 def active_user_required():

@@ -17,7 +17,7 @@ from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class SpatialCondorJobMWV(MapWorkflowView):

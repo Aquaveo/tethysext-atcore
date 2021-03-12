@@ -7,23 +7,40 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+import logging
 import os
 from jinja2 import Template
 
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
+
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ResourceSpatialManager(BaseSpatialManager):
     """
     A generic SpatialManger for SpatialResource.
     """
-
+    DATASTORE = 'my_app_datastore'
     SQL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sql_templates')
     SLD_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'sld_templates')
 
     # Vector Layer Types
     VL_EXTENT_VIEW = 'resource_extent_layer_view'
     VL_EXTENT_STYLE = 'resource_extent_layer_style'
+
+    def get_projection_units(self, *args, **kwargs):
+        """
+        Get units of the given projection.
+
+        """
+        return "<units>"
+
+    def get_projection_string(self, *args, **kwargs):
+        """
+        Get the projection string as either wkt or proj4 format.
+
+        """
+        return "<projection string>"
 
     def get_extent_layer_name(self, resource_id):
         """
@@ -58,6 +75,44 @@ class ResourceSpatialManager(BaseSpatialManager):
         )
 
         return extent
+
+    def get_resource_extent_wms_url(self, resource):
+        """
+        Get url for map preview image.
+        Returns:
+            str: preview image url.
+        """
+        # Default image url
+        layer_preview_url = None
+        layer_name = f'{self.WORKSPACE}:{self.get_extent_layer_name(resource.id)}'
+        try:
+            extent = self.get_extent_for_project(datastore_name=self.DATASTORE,
+                                                 resource_id=str(resource.id))
+
+            # Calculate preview layer height and width ratios
+            if extent:
+                # Calculate image dimensions
+                long_dif = abs(extent[0] - extent[2])
+                lat_dif = abs(extent[1] - extent[3])
+                hw_ratio = float(long_dif) / float(lat_dif)
+                max_dim = 300
+
+                if hw_ratio < 1:
+                    width_resolution = int(hw_ratio * max_dim)
+                    height_resolution = max_dim
+                else:
+                    height_resolution = int(max_dim / hw_ratio)
+                    width_resolution = max_dim
+
+                wms_endpoint = self.get_wms_endpoint()
+
+                layer_preview_url = f'{wms_endpoint}?service=WMS&version=1.1.0&request=GetMap&layers={layer_name}' \
+                                    f'&bbox={extent[0]},{extent[1]},{extent[2]},{extent[3]}&width={width_resolution}' \
+                                    f'&height={height_resolution}&srs=EPSG:4326&format=image%2Fpng'
+        except Exception:
+            log.exception('An error occurred while trying to generate the preview image.')
+
+        return layer_preview_url
 
     def create_extent_layer(self, datastore_name, resource_id, geometry_type=None, srid=4326):
         """
@@ -121,7 +176,7 @@ class ResourceSpatialManager(BaseSpatialManager):
 
         self.gs_api.delete_layer(
             workspace=self.WORKSPACE,
-            datastore_name=datastore_name,
+            datastore=datastore_name,
             name=feature_name,
             recurse=recurse,
         )

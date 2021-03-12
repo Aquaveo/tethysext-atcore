@@ -19,7 +19,7 @@ from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.services.paginate import paginate
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ManageResources(AppUsersViewMixin):
@@ -213,7 +213,7 @@ class ManageResources(AppUsersViewMixin):
             try:
                 self.perform_custom_delete_operations(session, request, resource)
             except:  # noqa: E722
-                log.warning(f'Unable to perform custom delete operations on resource {resource}.')
+                log.exception(f'Unable to perform custom delete operations on resource {resource}.')
             session.delete(resource)
             session.commit()
         except Exception as e:

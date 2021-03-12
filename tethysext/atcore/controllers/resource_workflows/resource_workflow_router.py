@@ -17,7 +17,7 @@ from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewM
 from tethysext.atcore.models.resource_workflow_steps import ResultsResourceWorkflowStep
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ResourceWorkflowRouter(WorkflowViewMixin):

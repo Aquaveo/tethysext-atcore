@@ -16,7 +16,7 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWor
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):

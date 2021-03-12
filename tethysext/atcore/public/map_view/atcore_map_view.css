@@ -20,6 +20,13 @@
     height: 100%;
 }
 
+
+/* Prevent basemap drop down from getting too long */
+#basemap_dropdown_container .dropdown-menu {
+    max-height: 400px !important;
+    overflow-y: auto !important;
+}
+
 /* Layer Selector */
 .layer-group-item:first-child {
     margin-top: 20px;

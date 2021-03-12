@@ -19,7 +19,7 @@ from tethys_sdk.gizmos import PlotlyView
 from collections import OrderedDict
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
