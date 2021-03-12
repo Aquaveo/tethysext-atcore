@@ -21,7 +21,7 @@ from tethysext.atcore.models.resource_workflow_results import *  # noqa: F401, F
 # END DO NOT REMOVE
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 def workflow_step_controller(is_rest_controller=False):

@@ -21,7 +21,7 @@ from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
 
 

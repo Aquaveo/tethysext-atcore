@@ -13,7 +13,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_view import Resour
 from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class MapWorkflowView(MapView, ResourceWorkflowView):

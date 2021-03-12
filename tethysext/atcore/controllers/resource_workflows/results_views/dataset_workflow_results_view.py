@@ -14,7 +14,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_results_view impor
 from tethys_sdk.permissions import has_permission
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class DatasetWorkflowResultView(WorkflowResultsView):

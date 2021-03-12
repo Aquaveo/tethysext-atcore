@@ -24,7 +24,7 @@ from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.gizmos import SpatialReferenceSelect
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ModifyResource(AppUsersViewMixin):

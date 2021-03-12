@@ -22,7 +22,7 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWor
 from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class SpatialInputMWV(MapWorkflowView):
