@@ -29,7 +29,7 @@ jobs:
       run: |
         echo $TAG
     - name: build and push tag
-      uses: aevea/action-kaniko@v0.6.0
+      uses: aevea/action-kaniko@v0.6.1
       with:
         # Docker registry where the image will be pushed
         registry: docker.io
