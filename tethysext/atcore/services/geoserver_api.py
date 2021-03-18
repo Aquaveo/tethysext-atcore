@@ -669,7 +669,7 @@ class GeoServerAPI(object):
         raise_error = False
 
         while True:
-            if self.CT_IMAGE_MOSAIC:
+            if coverage_type == self.CT_IMAGE_MOSAIC:
                 # Image mosaic doesn't need params argument.
                 response = requests.put(
                     url=url,
