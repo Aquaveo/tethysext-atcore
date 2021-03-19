@@ -669,13 +669,22 @@ class GeoServerAPI(object):
         raise_error = False
 
         while True:
-            response = requests.put(
-                url=url,
-                files=files,
-                headers=headers,
-                params=params,
-                auth=(self.gs_engine.username, self.gs_engine.password)
-            )
+            if coverage_type == self.CT_IMAGE_MOSAIC:
+                # Image mosaic doesn't need params argument.
+                response = requests.put(
+                    url=url,
+                    files=files,
+                    headers=headers,
+                    auth=(self.gs_engine.username, self.gs_engine.password)
+                )
+            else:
+                response = requests.put(
+                    url=url,
+                    files=files,
+                    headers=headers,
+                    params=params,
+                    auth=(self.gs_engine.username, self.gs_engine.password)
+                )
 
             # Raise an exception if status code is not what we expect
             if response.status_code == 201:
@@ -1100,4 +1109,44 @@ class GeoServerAPI(object):
                 workspace, name, response.status_code, response.text
             )
             exception = requests.RequestException(msg, response=response)
+            raise exception
+
+    def enable_time_dimension(self, workspace, coverage_name):
+        """
+        Enable time dimension for a given image mosaic layer
+
+        Args:
+            workspace (str): name of the workspace the style belongs to.
+            coverage_name (str): name of the image mosaic layer.
+
+        Raises:
+            requests.RequestException: if enable time dimension operation cannot be executed successfully.
+        """
+        headers = {
+            "Content-type": "text/xml"
+        }
+        url = f"{self.gs_engine.endpoint}workspaces/{workspace}/coveragestores/{coverage_name}" \
+              f"/coverages/{coverage_name}"
+        data_xml = '<coverage>\
+                    <enabled>true</enabled>\
+                    <metadata><entry key="time">\
+                    <dimensionInfo>\
+                    <enabled>true</enabled>\
+                    <presentation>LIST</presentation>\
+                    <units>ISO8601</units><defaultValue/>\
+                    </dimensionInfo>\
+                    </entry></metadata>\
+                    </coverage>'
+        response = requests.put(
+            url,
+            headers=headers,
+            auth=(self.gs_engine.username, self.gs_engine.password),
+            data=data_xml,
+        )
+
+        if response.status_code != 200:
+            msg = f"Enable Time Dimension Layer {coverage_name} with Status Code {response.status_code}:" \
+                  f" {response.text}"
+            exception = requests.RequestException(msg, response=response)
+            log.error(exception)
             raise exception

@@ -1222,6 +1222,30 @@ class GeoServerAPITests(unittest.TestCase):
 
     @mock.patch('tethysext.atcore.services.geoserver_api.log')
     @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_create_coverage_layer_image_mosaic(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=201)
+        mock_put.return_value = mock_response
+        self.gs_api.update_layer_styles = mock.MagicMock()
+        coverage_name = 'foo'
+        coverage_type = GeoServerAPI.CT_IMAGE_MOSAIC
+        coverage_file = os.path.join(self.test_files_path, 'image_mosaic', 'image_mosaic.zip')
+        self.gs_api.create_coverage_layer(workspace=self.workspace, coverage_name=coverage_name,
+                                          coverage_type=coverage_type, coverage_file=coverage_file)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = 'workspaces/{workspace}/coveragestores/{coverage_store_name}/file.{extension}'.format(
+            workspace=self.workspace,
+            coverage_store_name=coverage_name,
+            extension=coverage_type.lower()
+        )
+        self.assertIn(url, put_call_args[0][1]['url'])
+        self.assertNotIn('params', put_call_args[0][1])
+        self.assertIn('files', put_call_args[0][1])
+        self.gs_api.update_layer_styles.assert_called()
+        mock_log.info.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
     def test_create_coverage_layer_already_exists(self, mock_put, mock_log):
         mock_response = mock.MagicMock(status_code=500, text='already exists')
         mock_put.return_value = mock_response
@@ -1468,5 +1492,42 @@ class GeoServerAPITests(unittest.TestCase):
         self.assertIn(url, put_call_args[0][1]['url'])
         self.assertEqual(json, put_call_args[0][1]['params'])
         self.assertEqual({"Content-type": "application/json"}, put_call_args[0][1]['headers'])
+
+        mock_log.error.assert_called()
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_enable_time_dimension(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=200)
+        mock_put.return_value = mock_response
+        coverage_name = 'foo'
+        self.gs_api.enable_time_dimension(workspace=self.workspace, coverage_name=coverage_name)
+        mock_put.assert_called()
+        put_call_args = mock_put.call_args_list
+        url = '{endpoint}workspaces/{workspace}/coveragestores/{coverage_name}/coverages/{coverage_name}'.format(
+            endpoint='http://localhost:8181/geoserver/rest/',
+            workspace=self.workspace,
+            coverage_name=coverage_name,
+        )
+        self.assertEqual(url, put_call_args[0][0][0])
+        self.assertIn('data', put_call_args[0][1])
+
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
+    @mock.patch('tethysext.atcore.services.geoserver_api.requests.put')
+    def test_enable_time_dimension_exception(self, mock_put, mock_log):
+        mock_response = mock.MagicMock(status_code=500)
+        mock_put.return_value = mock_response
+        coverage_name = 'foo'
+        self.assertRaises(requests.RequestException, self.gs_api.enable_time_dimension, self.workspace, coverage_name)
+
+        url = '{endpoint}workspaces/{workspace}/coveragestores/{coverage_name}/coverages/{coverage_name}'.format(
+            endpoint='http://localhost:8181/geoserver/rest/',
+            workspace=self.workspace,
+            coverage_name=coverage_name,
+        )
+
+        put_call_args = mock_put.call_args_list
+        self.assertEqual(url, put_call_args[0][0][0])
+        self.assertIn('data', put_call_args[0][1])
 
         mock_log.error.assert_called()
