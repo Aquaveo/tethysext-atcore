@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import copy
+import json
 from abc import ABCMeta, abstractmethod
 from tethys_gizmos.gizmo_options import MVView, MVLayer
 from tethysext.atcore.services.color_ramps import COLOR_RAMPS
@@ -186,7 +187,7 @@ class MapManagerBase(object):
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
-                        popup_title=None, color_ramp_division_kwargs=None):
+                        popup_title=None, color_ramp_division_kwargs=None, times=None):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -208,7 +209,7 @@ class MapManagerBase(object):
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
             color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
-
+            times (list): only for Cesium. List of start time for geoserver image mosaic layers. (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"])
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501
@@ -227,7 +228,8 @@ class MapManagerBase(object):
 
         if env:
             params['ENV'] = env
-
+        # if times:
+        times = json.dumps(times),
         # Build options
         options = {
             'url': endpoint,
@@ -245,7 +247,6 @@ class MapManagerBase(object):
                     params['ENV'] = self.build_param_string(**color_ramp_divisions)
             else:
                 params['ENV'] = self.build_param_string(**color_ramp_divisions)
-
         layer_source = 'TileWMS' if tiled else 'ImageWMS'
 
         if tiled:
@@ -266,7 +267,8 @@ class MapManagerBase(object):
             has_action=has_action,
             popup_title=popup_title,
             excluded_properties=excluded_properties,
-            geometry_attribute=geometry_attribute
+            geometry_attribute=geometry_attribute,
+            times=times,
         )
 
         return mv_layer
@@ -331,7 +333,7 @@ class MapManagerBase(object):
     def _build_mv_layer(self, layer_source, layer_name, layer_title, layer_variable, options, layer_id=None,
                         extent=None, visible=True, public=True, selectable=False, plottable=False, has_action=False,
                         excluded_properties=None, popup_title=None, geometry_attribute=None, style_map=None,
-                        show_download=False):
+                        show_download=False, times=None):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -350,6 +352,7 @@ class MapManagerBase(object):
             geometry_attribute(str): Name of the geometry attribute. Optional.
             style_map(dict): Style map dictionary. See MVLayer documentation for examples of style maps. Optional.
             show_download(boolean): enable download layer. (only works for geojson layer).
+            times (list): only for Cesium. List of start time for geoserver image mosaic layers. (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"])
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501
@@ -402,7 +405,8 @@ class MapManagerBase(object):
             legend_extent=extent,
             legend_classes=[],
             data=data,
-            feature_selection=selectable
+            feature_selection=selectable,
+            times=times,
         )
 
         if geometry_attribute:
@@ -564,7 +568,7 @@ class MapManagerBase(object):
 
     def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2,
                                              first_division=1, top_offset=0, bottom_offset=0, prefix='val',
-                                             color_ramp="", color_prefix='color'):
+                                             color_ramp="", color_prefix='color', no_data_value=None):
         """
         Generate custom elevation divisions.
 
@@ -579,7 +583,7 @@ class MapManagerBase(object):
             prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
             color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
             color_prefix(str): name of color variable prefix (i.e.: 'color' for pattern 'color1').
-
+            no_data_value (str): set no data value for the color ramp. (defaults to None).
         Returns:
             dict<name, value>: custom divisions
         """  # noqa: E501
@@ -604,6 +608,8 @@ class MapManagerBase(object):
                 # use default color ramp
                 divisions[f'{color_prefix}{i}'] =\
                     f"{self.COLOR_RAMPS['Default'][(i - first_division) % len(self.COLOR_RAMPS['Default'])]}"
+        if no_data_value is not None:
+            divisions['val_no_data'] = no_data_value
         return divisions
 
     def get_plot_for_layer_feature(self, layer_name, feature_id):
