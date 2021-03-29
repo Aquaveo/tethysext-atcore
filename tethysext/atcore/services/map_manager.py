@@ -209,7 +209,7 @@ class MapManagerBase(object):
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
             color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
-            times (list): only for Cesium. List of start time for geoserver image mosaic layers. (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"])
+            times (list): List of time steps if layer is time-enabled. Times should be represented as strings in ISO 8601 format (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"]). Currently only supported in CesiumMapView.
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501
@@ -352,7 +352,7 @@ class MapManagerBase(object):
             geometry_attribute(str): Name of the geometry attribute. Optional.
             style_map(dict): Style map dictionary. See MVLayer documentation for examples of style maps. Optional.
             show_download(boolean): enable download layer. (only works for geojson layer).
-            times (list): only for Cesium. List of start time for geoserver image mosaic layers. (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"])
+            times (list): List of time steps if layer is time-enabled. Times should be represented as strings in ISO 8601 format (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"]). Currently only supported in CesiumMapView.
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501

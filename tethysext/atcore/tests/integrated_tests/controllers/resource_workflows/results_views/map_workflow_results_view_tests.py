@@ -110,7 +110,8 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_wrv_get_context.return_value = {
             'result_workflow_context': 'foo'
         }
-        self.mock_map_view = mock.MagicMock(spec=MapView, layers=[{'layer_name': 'fake-layer'}])
+        self.mock_map_view = mock.MagicMock(spec=MapView, layers=[{'layer_name': 'fake-layer'}],
+                                            entities=[{'entity_name': 'fake-entities'}])
         mock_mwv_get_context.return_value = {
             'map_view': self.mock_map_view,
             'layer_groups': initial_layer_groups
@@ -149,6 +150,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         instance = MapWorkflowResultsView()
+        instance.map_type = 'map_view'
         ret = instance.get_context(
             request=self.mock_request,
             session=self.mock_session,
@@ -175,7 +177,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             layers=[self.mock_map_manager.build_geojson_layer()]
         )
         self.assertEqual(2, len(self.mock_map_view.layers))
-        self.assertEqual(self.mock_map_manager.build_geojson_layer(), self.mock_map_view.layers[0])
+        self.assertEqual({'layer_name': 'fake-layer'}, self.mock_map_view.layers[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
@@ -208,6 +210,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         instance = MapWorkflowResultsView()
+        instance.map_type = 'map_view'
         ret = instance.get_context(
             request=self.mock_request,
             session=self.mock_session,
@@ -235,6 +238,73 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         )
         self.assertEqual(2, len(self.mock_map_view.layers))
         self.assertEqual(self.mock_map_manager.build_wms_layer(), self.mock_map_view.layers[0])
+        self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.translate_layers_to_cesium')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    def test_get_context_cesium(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
+                                mock_mwv_set_feature_selection, mock_get_result, mock_translate_layers_to_cesium):
+        workflow_id = '123'
+        step_id = '456'
+        result_id = '789'
+        result_layers = self.prepare_wms_layers()
+        result_layers.extend(self.perpare_geojson_layers())
+        initial_layer_groups = [{'id': 'fake-layer-group-1'}, {'id': 'fake-layer-group-2'}]
+        opt_lg_title = 'Foo Results'
+        opt_lg_control = 'radio'
+        result_options = {
+            'layer_group_title': opt_lg_title,
+            'layer_group_control': opt_lg_control
+        }
+
+        self.get_context_setup(
+            mock_wrv_get_context,
+            mock_mwv_get_context,
+            mock_mwv_get_managers,
+            mock_get_result,
+            initial_layer_groups,
+            result_options,
+            result_layers
+        )
+
+        mock_translate_layers_to_cesium.return_value = [[{'layer_name': 'fake-layer'}],
+                                                        [{'entity_name': 'fake-entities'}]]
+        instance = MapWorkflowResultsView()
+        instance.map_type = 'cesium_map_view'
+        ret = instance.get_context(
+            request=self.mock_request,
+            session=self.mock_session,
+            resource=self.mock_resource,
+            context={},
+            model_db=self.mock_model_database,
+            workflow_id=workflow_id,
+            step_id=step_id,
+            result_id=result_id
+        )
+
+        self.assertIn('map_view', ret)
+        self.assertIn('layer_groups', ret)
+        self.assertIn('result_workflow_context', ret)
+        mock_mwv_set_feature_selection.assert_called_with(map_view=self.mock_map_view, enabled=False)
+        mock_get_result.assert_called_with(self.mock_request, result_id, self.mock_session)
+        mock_mwv_get_managers.assert_called_with(request=self.mock_request, resource=self.mock_resource)
+
+        self.mock_map_manager.build_wms_layer.assert_called()
+        self.mock_map_manager.build_geojson_layer.assert_called()
+        self.mock_map_manager.build_layer_group.assert_called_with(
+            id='workflow_results',
+            display_name=opt_lg_title,
+            layer_control=opt_lg_control,
+            layers=[self.mock_map_manager.build_wms_layer(), self.mock_map_manager.build_geojson_layer()]
+        )
+        self.assertEqual(2, len(self.mock_map_view.layers))
+        self.assertEqual(2, len(self.mock_map_view.entities))
+        self.assertEqual({'layer_name': 'fake-layer'}, self.mock_map_view.layers[0])
+        self.assertEqual({'entity_name': 'fake-entities'}, self.mock_map_view.entities[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.log')
