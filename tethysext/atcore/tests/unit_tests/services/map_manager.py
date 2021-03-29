@@ -478,7 +478,7 @@ class MapManagerBaseTests(unittest.TestCase):
             popup_title=None,
             excluded_properties=None,
             geometry_attribute='geometry',
-            times=('null',)
+            times=None,
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
@@ -542,7 +542,7 @@ class MapManagerBaseTests(unittest.TestCase):
             layer_id='LAYER_ID_PASS_THROUGH',
             excluded_properties=[1, 2, 3],
             popup_title='POPUP_TITLE_PASS_THROUGH',
-            times=('null',)
+            times=None,
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
