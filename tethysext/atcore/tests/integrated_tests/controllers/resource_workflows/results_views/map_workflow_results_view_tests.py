@@ -177,7 +177,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             layers=[self.mock_map_manager.build_geojson_layer()]
         )
         self.assertEqual(2, len(self.mock_map_view.layers))
-        self.assertEqual({'layer_name': 'fake-layer'}, self.mock_map_view.layers[0])
+        self.assertEqual(self.mock_map_manager.build_geojson_layer(), self.mock_map_view.layers[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
