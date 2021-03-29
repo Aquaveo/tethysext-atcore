@@ -228,8 +228,8 @@ class MapManagerBase(object):
 
         if env:
             params['ENV'] = env
-        # if times:
-        times = json.dumps(times),
+        if times:
+            times = json.dumps(times),
         # Build options
         options = {
             'url': endpoint,
