@@ -148,6 +148,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             result_options,
             result_layers
         )
+        self.mock_map_manager.build_geojson_layer.return_value = {'wms_layer': 'wms_content'}
 
         instance = MapWorkflowResultsView()
         instance.map_type = 'map_view'
@@ -198,7 +199,6 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             'layer_group_title': opt_lg_title,
             'layer_group_control': opt_lg_control
         }
-
         self.get_context_setup(
             mock_wrv_get_context,
             mock_mwv_get_context,
@@ -208,6 +208,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             result_options,
             result_layers
         )
+        self.mock_map_manager.build_wms_layer.return_value = {'wms_layer': 'wms_content'}
 
         instance = MapWorkflowResultsView()
         instance.map_type = 'map_view'
@@ -236,6 +237,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             layer_control=opt_lg_control,
             layers=[self.mock_map_manager.build_wms_layer()]
         )
+
         self.assertEqual(2, len(self.mock_map_view.layers))
         self.assertEqual(self.mock_map_manager.build_wms_layer(), self.mock_map_view.layers[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])

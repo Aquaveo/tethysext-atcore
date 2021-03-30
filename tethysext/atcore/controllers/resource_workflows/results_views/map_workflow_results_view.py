@@ -140,15 +140,11 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         if self.map_type == "cesium_map_view":
             layers, entities = self.translate_layers_to_cesium(results_layers)
             for layer in layers:
-                # Add layer to beginning the map's of layer list
-                map_view.layers.insert(0, layer)
+                map_view.layers = layers + map_view.layers
             for entity in entities:
-                # Add entity to beginning the map's of entity list
-                map_view.entities.insert(0, entity)
+                map_view.entities = entities + map_view.entities
         else:
-            for result_layer in results_layers:
-                # Add layer to beginning the map's of layer list
-                map_view.layers.insert(0, result_layer)
+            map_view.layers = results_layers + map_view.layers
 
         base_context.update({
             'legends': list(zip(legends, legends_select_inputs)),
