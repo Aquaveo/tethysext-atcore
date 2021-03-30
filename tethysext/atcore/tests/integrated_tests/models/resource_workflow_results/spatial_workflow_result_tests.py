@@ -136,7 +136,8 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
             extent=[-1, -1, 1, 1],
             popup_title='A Foo',
             excluded_properties=['a', 'b'],
-            geometry_attribute='the_geom'
+            geometry_attribute='the_geom',
+            times=["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"],
         )
 
         self.instance.add_wms_layer(**kwargs)

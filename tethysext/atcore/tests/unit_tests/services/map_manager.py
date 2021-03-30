@@ -149,6 +149,29 @@ class MapManagerBaseTests(unittest.TestCase):
         }
         self.assertEqual(expected, val)
 
+    def test_generate_custom_color_ramp_divisions_val_no_data(self):
+        min_elevation = 100
+        max_elevation = 1000
+        val = self.map_manager.generate_custom_color_ramp_divisions(
+            min_value=min_elevation,
+            max_value=max_elevation,
+            value_precision=1,
+            no_data_value=0,
+        )
+        expected = {
+            'val1': '100.0', 'color1': '#fff100',
+            'val2': '200.0', 'color2': '#ff8c00',
+            'val3': '300.0', 'color3': '#e81123',
+            'val4': '400.0', 'color4': '#ec008c',
+            'val5': '500.0', 'color5': '#68217a',
+            'val6': '600.0', 'color6': '#00188f',
+            'val7': '700.0', 'color7': '#00bcf2',
+            'val8': '800.0', 'color8': '#00b294',
+            'val9': '900.0', 'color9': '#009e49',
+            'val10': '1000.0', 'color10': '#bad80a',
+            'val_no_data': 0}
+        self.assertEqual(expected, val)
+
     def test_generate_custom_color_ramp_divisions_with_colors(self):
         min_elevation = 100
         max_elevation = 1000
@@ -454,7 +477,8 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title=None,
             excluded_properties=None,
-            geometry_attribute='geometry'
+            geometry_attribute='geometry',
+            times=None,
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
@@ -517,7 +541,8 @@ class MapManagerBaseTests(unittest.TestCase):
             geometry_attribute='GEOM_ATTR_PASS_THROUGH',
             layer_id='LAYER_ID_PASS_THROUGH',
             excluded_properties=[1, 2, 3],
-            popup_title='POPUP_TITLE_PASS_THROUGH'
+            popup_title='POPUP_TITLE_PASS_THROUGH',
+            times=None,
         )
 
         # IMPORTANT: Test this AFTER assert_called_with

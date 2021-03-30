@@ -72,7 +72,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         # Add layers from geometry in data
         map_view = base_context['map_view']
-
         # Turn off feature selection on current layers
         self.set_feature_selection(map_view=map_view, enabled=False)
 
@@ -125,8 +124,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             legends.append(legend)
 
             if result_layer:
-                # Add layer to beginning the map's of layer list
-                map_view.layers.insert(0, result_layer)
                 results_layers.append(result_layer)
 
         # Build the Layer Group for Workflow Layers
@@ -139,6 +136,13 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             )
 
             layer_groups.insert(0, results_layer_group)
+
+        if self.map_type == "cesium_map_view":
+            layers, entities = self.translate_layers_to_cesium(results_layers)
+            map_view.layers = layers + map_view.layers
+            map_view.entities = entities + map_view.entities
+        else:
+            map_view.layers = results_layers + map_view.layers
 
         base_context.update({
             'legends': list(zip(legends, legends_select_inputs)),
