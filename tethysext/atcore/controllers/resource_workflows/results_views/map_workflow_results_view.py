@@ -139,10 +139,8 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         if self.map_type == "cesium_map_view":
             layers, entities = self.translate_layers_to_cesium(results_layers)
-            for layer in layers:
-                map_view.layers = layers + map_view.layers
-            for entity in entities:
-                map_view.entities = entities + map_view.entities
+            map_view.layers = layers + map_view.layers
+            map_view.entities = entities + map_view.entities
         else:
             map_view.layers = results_layers + map_view.layers
 
