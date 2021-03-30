@@ -148,7 +148,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             result_options,
             result_layers
         )
-        self.mock_map_manager.build_geojson_layer.return_value = {'wms_layer': 'wms_content'}
+        self.mock_map_manager.build_geojson_layer.return_value = {'geojson_layer': 'geojson_content'}
 
         instance = MapWorkflowResultsView()
         instance.map_type = 'map_view'
