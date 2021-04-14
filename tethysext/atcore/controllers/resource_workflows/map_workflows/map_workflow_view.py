@@ -184,8 +184,12 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             # Save for building layer group later
             workflow_layers.append(workflow_layer)
 
-            # Add layer to beginning the map's of layer list
-            map_view.layers.insert(0, workflow_layer)
+        if self.map_type == "cesium_map_view":
+            layers, entities = self.translate_layers_to_cesium(workflow_layers)
+            map_view.layers = layers + map_view.layers
+            map_view.entities = entities + map_view.entities
+        else:
+            map_view.layers = workflow_layers + map_view.layers
 
         # Build the Layer Group for Workflow Layers
         if workflow_layers:

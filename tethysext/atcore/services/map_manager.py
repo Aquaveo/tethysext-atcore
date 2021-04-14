@@ -526,7 +526,7 @@ class MapManagerBase(object):
             Legend data associate with the layer.
         """
         legend_info = ""
-        if 'color_ramp_division_kwargs' in layer.keys():
+        if layer.get('color_ramp_division_kwargs') is not None:
             legend_key = layer['layer_variable']
             layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
             if ":" in legend_key:

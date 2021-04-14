@@ -449,7 +449,9 @@ class SpatialInputMWV(MapWorkflowView):
                     'name': 'EPSG:4326'
                 }
             },
-            'features': []
+            'features': [],
+            # This is for cesium. Display point as point instead of billboard.
+            'properties': {'default_point': 'point'},
         }
 
         if not geojson or 'features' not in geojson:
