@@ -114,8 +114,9 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
                         # Build Legend
                         legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))
+                        if 'url' in result_layer.options.keys():
+                            result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
 
-                        result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
                         # Append to final results list.
                         results.append({'map': {'name': result.name, 'description': result.description,
                                                 'legend': legend_info, 'map': result_layer}})
