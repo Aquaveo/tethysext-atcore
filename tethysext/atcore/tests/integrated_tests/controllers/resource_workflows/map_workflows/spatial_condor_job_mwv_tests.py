@@ -94,9 +94,11 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     def test_process_step_options(self, mock_get_managers, _):
-        mock_get_managers.return_value = None, self.map_view
-
-        SpatialCondorJobMWV().process_step_options(self.request, self.session, self.context, self.resource, self.step,
+        map_view = MapView()
+        mock_get_managers.return_value = None, map_view
+        instance = SpatialCondorJobMWV()
+        instance.map_type = 'tethys_map_view'
+        instance.process_step_options(self.request, self.session, self.context, self.resource, self.step,
                                                    None, None)
 
         self.assertIn('map_view', self.context)
@@ -108,9 +110,11 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
                 return_value=True)
     @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
     def test_process_step_options__read_only(self, mock_get_managers, _):
-        mock_get_managers.return_value = None, self.map_view
-
-        SpatialCondorJobMWV().process_step_options(self.request, self.session, self.context, self.resource, self.step,
+        map_view = MapView()
+        mock_get_managers.return_value = None, map_view
+        instance = SpatialCondorJobMWV()
+        instance.map_type = 'tethys_map_view'
+        instance.process_step_options(self.request, self.session, self.context, self.resource, self.step,
                                                    None, None)
 
         self.assertIn('map_view', self.context)

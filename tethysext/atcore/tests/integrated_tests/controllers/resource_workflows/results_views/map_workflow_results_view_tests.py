@@ -122,7 +122,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_geojson(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                                  mock_mwv_set_feature_selection, mock_get_result):
@@ -184,7 +184,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_wms(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                              mock_mwv_set_feature_selection, mock_get_result):
@@ -246,7 +246,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_cesium(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                                 mock_mwv_set_feature_selection, mock_get_result, mock_translate_layers_to_cesium):
@@ -313,7 +313,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
     def test_get_context_invalid_type(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                                       mock_mwv_set_feature_selection, mock_get_result, mock_log):

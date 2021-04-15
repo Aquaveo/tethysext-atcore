@@ -42,8 +42,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
-        base_context = MapWorkflowView.get_context(
-            self,
+        base_context = super(MapWorkflowView, self).get_context(
             request=request,
             session=session,
             resource=resource,
@@ -54,6 +53,18 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             *args, **kwargs
         )
 
+        # TODO: Look at why this approach does not work. The tab underneath the map does not show up.
+        # result_workflow_context = super(WorkflowResultsView, self).get_context(
+        #     request=request,
+        #     session=session,
+        #     resource=resource,
+        #     context=context,
+        #     model_db=model_db,
+        #     workflow_id=workflow_id,
+        #     step_id=step_id,
+        #     result_id=result_id,
+        #     *args, **kwargs
+        # )
         result_workflow_context = WorkflowResultsView.get_context(
             self,
             request=request,
@@ -66,7 +77,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             result_id=result_id,
             *args, **kwargs
         )
-
         # Combine contexts
         base_context.update(result_workflow_context)
 
