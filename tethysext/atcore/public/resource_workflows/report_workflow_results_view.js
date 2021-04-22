@@ -1,6 +1,5 @@
 $(function() {
-    var wmsSources = [], maps = [], extents = [], layers = [];
-    var geojsonSources = [];
+    var wms_sources = [], maps = [], extents = [], layers = [];
     var styles = {
         'Point': new ol.style.Style({
             image: new ol.style.Circle({
@@ -27,7 +26,7 @@ $(function() {
             }),
         }),
     }
-    var styleFunction = function (feature) {
+    var style_function = function (feature) {
         return styles[feature.getGeometry().getType()];
     };
 
@@ -50,16 +49,16 @@ $(function() {
         var map_data = $(obj).data('map-layer-variables')
         map_data.forEach(function(data) {
             if (data['source'] == 'TileWMS') {
-                wmsSources[i] = new ol.source.ImageWMS({url: data.options.url,
+                wms_sources[i] = new ol.source.ImageWMS({url: data.options.url,
                     params: JSON.parse(JSON.stringify(data.options.params).replace(/'/g, '"')),
                     ratio: 1,
                     serverType: 'geoserver',
                 });
-                layers.push(new ol.layer.Image({source: wmsSources[i]}))
+                layers.push(new ol.layer.Image({source: wms_sources[i]}))
             }
             if (data['source'] == 'GeoJSON') {
                 layers.push(new ol.layer.Vector({
-                                    style: styleFunction,
+                                    style: style_function,
                                     source: new ol.source.Vector({
                                         features: new ol.format.GeoJSON({featureProjection: 'EPSG:3857'}).readFeatures(data.options),
                                     })
