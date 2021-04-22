@@ -86,9 +86,9 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 results.append({'plot': {'name': result.name, 'description': result.description, 'plot': plot_view}})
             elif isinstance(result, SpatialWorkflowResult):
                 result_map_layers = list()
+                legend_info = None
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
-                    legend_info = None
                     if not layer_type or layer_type not in ['geojson', 'wms']:
                         log.warning(f'Unsupported layer type will be skipped: {layer_type}')
                         continue
