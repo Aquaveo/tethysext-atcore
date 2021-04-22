@@ -48,7 +48,7 @@ $(function() {
         var layer_extent = ''
         var map_data = $(obj).data('map-layer-variables')
         map_data.forEach(function(data) {
-            if (data['source'] == 'TileWMS') {
+            if (data['source'] == 'TileWMS' || data['source'] == 'ImageWMS') {
                 wms_sources[i] = new ol.source.ImageWMS({url: data.options.url,
                     params: JSON.parse(JSON.stringify(data.options.params).replace(/'/g, '"')),
                     ratio: 1,
