@@ -1,5 +1,5 @@
 $(function() {
-    var wms_sources = [], maps = [], extents = [], layers = [];
+    var layers = [], maps = [], extent;
     var styles = {
         'Point': new ol.style.Style({
             image: new ol.style.Circle({
@@ -42,30 +42,33 @@ $(function() {
                 attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer">ArcGIS</a>',
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
             }),
-        })]
+        })];
     $('.resultType-map').each(function(i, obj) {
-        layers = [...base_layers]
-        var layer_extent = ''
-        var map_data = $(obj).data('map-layer-variables')
+        layers = [...base_layers];
+        var layer_extent = '';
+        var map_data = $(obj).data('map-layer-variables');
         map_data.forEach(function(data) {
             if (data['source'] == 'TileWMS' || data['source'] == 'ImageWMS') {
-                wms_sources[i] = new ol.source.ImageWMS({url: data.options.url,
-                    params: JSON.parse(JSON.stringify(data.options.params).replace(/'/g, '"')),
-                    ratio: 1,
-                    serverType: 'geoserver',
-                });
-                layers.push(new ol.layer.Image({source: wms_sources[i]}))
+                layers.push(new ol.layer.Image({
+                                source: new ol.source.ImageWMS({
+                                    url: data.options.url,
+                                    params: JSON.parse(JSON.stringify(data.options.params).replace(/'/g, '"')),
+                                    ratio: 1,
+                                    serverType: 'geoserver',
+                                })
+                            })
+                );
             }
             if (data['source'] == 'GeoJSON') {
                 layers.push(new ol.layer.Vector({
-                                    style: style_function,
-                                    source: new ol.source.Vector({
-                                        features: new ol.format.GeoJSON({featureProjection: 'EPSG:3857'}).readFeatures(data.options),
-                                    })
+                                style: style_function,
+                                source: new ol.source.Vector({
+                                    features: new ol.format.GeoJSON({featureProjection: 'EPSG:3857'}).readFeatures(data.options),
                                 })
-                            )
+                            })
+                );
             }
-            layer_extent = layer_extent || data.legend_extent
+            layer_extent = layer_extent || data.legend_extent;
         })
 
         maps[i] = new ol.Map({
@@ -90,7 +93,7 @@ $(function() {
         });
 
         // Find wms layer extent and fit the map to it.
-        extents[i] = ol.proj.transformExtent(layer_extent, 'EPSG:4326', 'EPSG:3857');
-        maps[i].getView().fit(extents[i], maps[i].getSize());
+        extent = ol.proj.transformExtent(layer_extent, 'EPSG:4326', 'EPSG:3857');
+        maps[i].getView().fit(extent, maps[i].getSize());
     });
 });
