@@ -85,6 +85,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                 plot_view = BokehView(**plot_view_params) if renderer == 'bokeh' else PlotlyView(**plot_view_params)
                 results.append({'plot': {'name': result.name, 'description': result.description, 'plot': plot_view}})
             elif isinstance(result, SpatialWorkflowResult):
+                result_map_layers = list()
+                legend_info = None
                 for layer in result.layers:
                     layer_type = layer.pop('type', None)
                     if not layer_type or layer_type not in ['geojson', 'wms']:
@@ -116,10 +118,10 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))
                         if 'url' in result_layer.options.keys():
                             result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
-
-                        # Append to final results list.
-                        results.append({'map': {'name': result.name, 'description': result.description,
-                                                'legend': legend_info, 'map': result_layer}})
+                    result_map_layers.append(result_layer)
+                # Append to final results list.
+                results.append({'map': {'name': result.name, 'description': result.description,
+                                        'legend': legend_info, 'map': result_map_layers}})
 
         # Save changes to map view and layer groups
         context.update({

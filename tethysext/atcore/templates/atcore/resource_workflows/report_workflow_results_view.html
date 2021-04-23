@@ -46,7 +46,7 @@
     {% for result in report_results %}
       {% for type, value in result.items %}
         {% if type == 'map' %}
-          <div id="resultType-map-{{ forloop.parentloop.counter }}" class="resultType-map" data-layer-url="{{ value.map.options.url|safe }}" data-layer-params="{{ value.map.options.params|safe }}" data-layer-extent="{{ value.map.legend_extent }}">
+          <div id="resultType-map-{{ forloop.parentloop.counter }}" class="resultType-map" data-map-layer-variables="{{ value.map|jsonify }}">
           <h3>{{ value.name }}</h3>
           {% if value.description %}
             <h4>Description: {{ value.description }}</h4>

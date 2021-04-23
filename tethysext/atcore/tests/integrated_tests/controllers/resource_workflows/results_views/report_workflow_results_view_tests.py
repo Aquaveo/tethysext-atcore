@@ -293,7 +293,8 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context['report_results'][0]['map']['name'], "Test Name")
         self.assertEqual(mock_context['report_results'][0]['map']['description'], "Test description")
         self.assertEqual(mock_context['report_results'][0]['map']['legend'], 'legend_wms')
-        self.assertEqual(mock_context['report_results'][0]['map']['map'], mock_build_wms_layer)
+
+        self.assertEqual(mock_context['report_results'][0]['map']['map'], [mock_build_wms_layer])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.log')   # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
@@ -423,4 +424,4 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context.update.call_args[0][0]['has_tabular_data'], False)
         self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['map'],
                          {'name': 'Depth', 'description': 'Description for result 2', 'legend': 'legend',
-                          'map': mock_build_geojson_layer})
+                          'map': [mock_build_geojson_layer]})
