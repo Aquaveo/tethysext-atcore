@@ -115,7 +115,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
                         result_layer.options['params'] = params
 
                         # Build Legend
-                        legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))
+                        if legend_info is None:
+                            legend_info = map_manager.build_legend(layer, units=result.options.get('units', ''))
                         if 'url' in result_layer.options.keys():
                             result_layer.options['url'] = self.geoserver_url(result_layer.options['url'])
                     result_map_layers.append(result_layer)

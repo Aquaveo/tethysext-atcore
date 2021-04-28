@@ -25,7 +25,7 @@ h4 {
 
 .legend-list-item .flatmark {
     display: inline-block;
-    max-width: 310px;
+    max-width: 290px;
     overflow: hidden;
 }
 
@@ -89,7 +89,7 @@ h4 {
     #app-content {
         overflow: visible;
     }
-    #btnPrint, #app-header, #app-actions,  #app-actions > *, .results-tabs {
+    #btnPDF, #btnPrint, #app-header, #app-actions,  #app-actions > *, .results-tabs {
         display: none;
     }
     #app-content-wrapper.show-nav #app-content {
