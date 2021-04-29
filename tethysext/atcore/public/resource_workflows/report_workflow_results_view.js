@@ -104,6 +104,15 @@ $(function() {
 
     // Generate PDF
     $("#btnPDF").on('click', function () {
+        var classList = $('.add-border');
+        $.each(classList, function(index, item) {
+            if (item.innerText === '') {
+                item.style.display = 'none';
+            }
+            else {
+                item.style.display = '';
+            }
+        });
         var btn_pdf = document.getElementById('btnPDF');
         btn_pdf.disabled = true;
         var element = document.getElementById('report_workflow_data');
@@ -117,8 +126,14 @@ $(function() {
           jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
           pagebreak:    { mode: 'avoid-all'}
         };
-        html2pdf().set(opt).from(element).toPdf().save();
-        btn_pdf.disabled = false;
+
+        html2pdf().set(opt).from(element).toPdf().save().then(function() {
+            $.each(classList, function(index, item) {
+                item.style.display = '';
+            });
+            btn_pdf.disabled = false;
+        });
+
     });
 
     // Print report
