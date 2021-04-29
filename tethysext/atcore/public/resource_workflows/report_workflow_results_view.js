@@ -109,9 +109,6 @@ $(function() {
             if (item.innerText === '') {
                 item.style.display = 'none';
             }
-            else {
-                item.style.display = '';
-            }
         });
         var btn_pdf = document.getElementById('btnPDF');
         btn_pdf.disabled = true;
