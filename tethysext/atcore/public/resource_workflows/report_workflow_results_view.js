@@ -35,14 +35,18 @@ $(function() {
             source: new ol.source.XYZ({
                 attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer">ArcGIS</a>',
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                crossOrigin: "anonymous",
             }),
         }),
         new ol.layer.Tile({
             source: new ol.source.XYZ({
                 attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer">ArcGIS</a>',
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                crossOrigin: "anonymous",
             }),
         })];
+
+
     $('.resultType-map').each(function(i, obj) {
         layers = [...base_layers];
         var layer_extent = '';
@@ -55,6 +59,7 @@ $(function() {
                                     params: JSON.parse(JSON.stringify(data.options.params).replace(/'/g, '"')),
                                     ratio: 1,
                                     serverType: 'geoserver',
+                                    crossOrigin: "anonymous",
                                 })
                             })
                 );
@@ -95,5 +100,44 @@ $(function() {
         // Find wms layer extent and fit the map to it.
         extent = ol.proj.transformExtent(layer_extent, 'EPSG:4326', 'EPSG:3857');
         maps[i].getView().fit(extent, maps[i].getSize());
+    });
+
+    // Generate PDF
+    $("#btnPDF").on('click', function () {
+        var classList = $('.add-border');
+        $.each(classList, function(index, item) {
+            if (item.innerText === '') {
+                item.style.display = 'none';
+            }
+        });
+        var btn_pdf = document.getElementById('btnPDF');
+        btn_pdf.disabled = true;
+        var element = document.getElementById('report_workflow_data');
+        var workflow_name = document.getElementById('workflow_name').value;
+        workflow_name += ".pdf";
+        var opt = {
+          margin:       0.3,
+          filename:     workflow_name,
+          image:        { type: 'jpeg', quality: 1},
+          html2canvas:  { dpi: 192, scale: 4, letterRenderding: true, },
+          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+          pagebreak:    { mode: 'avoid-all'}
+        };
+
+        html2pdf().set(opt).from(element).toPdf().save().then(function() {
+            $.each(classList, function(index, item) {
+                item.style.display = '';
+            });
+            btn_pdf.disabled = false;
+        });
+
+    });
+
+    // Print report
+    $("#btnPrint").on("click", function() {
+        let curURL = window.location.href;
+        history.replaceState(history.state, '', '/report');
+        window.print();
+        history.replaceState(history.state, '', curURL);
     });
 });

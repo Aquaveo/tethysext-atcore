@@ -1,17 +1,16 @@
 {% extends "atcore/resource_workflows/workflow_results_view.html" %}
 {% load tethys_gizmos static %}
 
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'atcore/resource_workflows/report_workflow_results_view.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/js/html2pdf/html2pdf.bundle.js' %}"></script>
+{% endblock %}
+
 {% block app_content_wrapper_override %}
   {{ block.super }}
+  <input type="button" value="Generate PDF" id="btnPDF" class="btn btn-info" style="position:absolute;right:130px;top:70px;"/>
   <input type="button" value="Print Report" id="btnPrint" class="btn btn-info" style="position:absolute;right:20px;top:70px;"/>
-  <script type="text/javascript">
-    $("#btnPrint").on("click", function() {
-      let curURL = window.location.href;
-      history.replaceState(history.state, '', '/report');
-      window.print();
-      history.replaceState(history.state, '', curURL);
-    });
-  </script>
 {% endblock %}
 
 {% block content_dependent_styles %}
@@ -31,6 +30,7 @@
   {{ block.super }}
 
   <form id="report_form">
+  <input type="hidden" id="workflow_name" value="{{ workflow_name }}">
   <div id="report_workflow_data">
     {% if has_tabular_data %}
       <div class="tab-data">
@@ -99,7 +99,6 @@
               <div id="resultPlotDiv{{ forloop.counter }}" style="width:800px;">
                 {% gizmo value.plot %}
               </div>
-            </div>
             <div contentEditable=true class="add-border" data-ph="Plot Note"></div>
           </div>
         {% endif %}
@@ -107,9 +106,4 @@
     {% endfor %}
   </div>
   </form>
-{% endblock %}
-
-{% block scripts %}
-  {{ block.super }}
-  <script src="{% static 'atcore/resource_workflows/report_workflow_results_view.js' %}" type="text/javascript"></script>
 {% endblock %}
