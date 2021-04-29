@@ -104,11 +104,14 @@ $(function() {
 
     // Generate PDF
     $("#btnPDF").on('click', function () {
+        var btn_pdf = document.getElementById('btnPDF');
         btn_pdf.disabled = true;
         var element = document.getElementById('report_workflow_data');
+        var workflow_name = document.getElementById('workflow_name').value;
+        workflow_name += ".pdf";
         var opt = {
           margin:       0.3,
-          filename:     'my_report.pdf',
+          filename:     workflow_name,
           image:        { type: 'png', quality: 1},
           html2canvas:  { scale: 1 },
           jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },

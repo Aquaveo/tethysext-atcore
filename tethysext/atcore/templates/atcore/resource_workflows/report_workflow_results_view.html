@@ -30,6 +30,7 @@
   {{ block.super }}
 
   <form id="report_form">
+  <input type="hidden" id="workflow_name" value="{{ workflow_name }}">
   <div id="report_workflow_data">
     {% if has_tabular_data %}
       <div class="tab-data">

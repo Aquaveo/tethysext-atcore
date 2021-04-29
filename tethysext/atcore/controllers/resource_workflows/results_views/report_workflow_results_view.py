@@ -55,6 +55,8 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session)
         has_tabular_data = len(tabular_data) > 0
 
+        # get workflow name
+        workflow_name = current_step.workflow.name
         # Generate MVLayers for spatial data
         # Get managers
         _, map_manager = self.get_managers(
@@ -130,6 +132,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             'has_tabular_data': has_tabular_data,
             'tabular_data': tabular_data,
             'report_results': results,
+            'workflow_name': workflow_name,
         })
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
         super().process_step_options(
