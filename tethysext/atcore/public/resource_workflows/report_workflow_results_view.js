@@ -112,8 +112,8 @@ $(function() {
         var opt = {
           margin:       0.3,
           filename:     workflow_name,
-          image:        { type: 'png', quality: 1},
-          html2canvas:  { scale: 1 },
+          image:        { type: 'jpeg', quality: 1},
+          html2canvas:  { dpi: 192, scale: 4, letterRenderding: true, },
           jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
           pagebreak:    { mode: 'avoid-all'}
         };
