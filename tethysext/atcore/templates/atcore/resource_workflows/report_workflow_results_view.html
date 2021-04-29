@@ -40,10 +40,9 @@
         <p><b>{{ parameter|title }}:</b> {{ value }}</p>
         {% endfor %}
         {% endfor %}
-
       </div>
     {% endif %}
-    <div type="hidden" contentEditable=true class="add-border" data-ph="General Note"></div>
+    <div contentEditable=true class="add-border" data-ph="General Note"></div>
     {% for result in report_results %}
       {% for type, value in result.items %}
         {% if type == 'map' %}
