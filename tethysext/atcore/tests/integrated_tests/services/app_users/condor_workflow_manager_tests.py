@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-import mock
+from unittest import mock
 import pathlib as pl
 import tethys_apps.base.app_base as tethys_app_base
 from tethysext.atcore.tests.factories.django_user import UserFactory

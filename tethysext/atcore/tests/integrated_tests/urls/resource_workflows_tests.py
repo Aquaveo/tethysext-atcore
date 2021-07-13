@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-import mock
+from unittest import mock
 import unittest
 from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
 from tethysext.atcore.urls.resource_workflows import urls

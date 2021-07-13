@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-import mock
+from unittest import mock
 import unittest
 from tethysext.atcore.services.resource_workflows import helpers
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
