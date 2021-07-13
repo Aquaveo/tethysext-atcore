@@ -98,8 +98,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         mock_get_managers.return_value = None, map_view
         instance = SpatialCondorJobMWV()
         instance.map_type = 'tethys_map_view'
-        instance.process_step_options(self.request, self.session, self.context, self.resource, self.step,
-                                                   None, None)
+        instance.process_step_options(self.request, self.session, self.context, self.resource, self.step, None, None)
 
         self.assertIn('map_view', self.context)
         self.assertIn('layer_groups', self.context)
@@ -114,8 +113,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         mock_get_managers.return_value = None, map_view
         instance = SpatialCondorJobMWV()
         instance.map_type = 'tethys_map_view'
-        instance.process_step_options(self.request, self.session, self.context, self.resource, self.step,
-                                                   None, None)
+        instance.process_step_options(self.request, self.session, self.context, self.resource, self.step, None, None)
 
         self.assertIn('map_view', self.context)
         self.assertIn('layer_groups', self.context)
