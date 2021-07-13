@@ -307,6 +307,25 @@ class MapManagerBaseTests(unittest.TestCase):
         ret = self.map_manager.build_param_string()
         self.assertEqual('', ret)
 
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.get_vector_style_map')
+    def test_build_cesium_layer_invalid(self, _):
+        model = [{'model': {'uri': 'glb_file.glb', 'show': True, 'shadows': 'enabled'},
+                  'name': 'Funwave',
+                  'orientation': {
+                      'Cesium.Transforms.headingPitchRollQuaternion':
+                          [{'Cesium.Cartesian3.fromDegrees': [-95.245, 28.9341, -31]},
+                           {'Cesium.HeadingPitchRoll': [{'Cesium.Math.toRadians': -42}, 0, 0]}]},
+                  'position': {'Cesium.Cartesian3.fromDegrees': [-95.245, 28.9341, -31]},
+                  },
+                 ]
+
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+
+        self.assertRaises(ValueError, self.map_manager.build_cesium_layer, cesium_type='WrongType', cesium_json=model,
+                          layer_name=layer_name, layer_title=layer_title, layer_variable=layer_variable)
+
     @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase._build_mv_layer')
     @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.get_vector_style_map')
     def test_build_cesium_layer_model(self, mock_gvsm, mock_bvl):
@@ -331,7 +350,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         ret = map_manager.build_cesium_layer(
             cesium_type='CesiumModel',
-            json=model,
+            cesium_json=model,
             layer_name=layer_name,
             layer_title=layer_title,
             layer_variable=layer_variable
@@ -377,7 +396,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         ret = map_manager.build_cesium_layer(
             cesium_type='CesiumPrimitive',
-            json=primitive,
+            cesium_json=primitive,
             layer_name=layer_name,
             layer_title=layer_title,
             layer_variable=layer_variable

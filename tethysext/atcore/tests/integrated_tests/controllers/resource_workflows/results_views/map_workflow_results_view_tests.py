@@ -95,6 +95,28 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
 
         return [self.layer]
 
+    def prepare_cesium_model_layers(self):
+        self.cesium_model_layer = {
+            'cesium_type': 'CesiumModel',
+            'cesium_json': {'model': {'uri': 'test.glb'}},
+            'layer_name': 'cesium_model',
+            'layer_variable': 'cesium_lv',
+            'layer_title': 'cesium_title',
+        }
+
+        return [self.cesium_model_layer]
+
+    def prepare_cesium_primitive_layers(self):
+        self.cesium_primitive_layer = {
+            'cesium_type': 'CesiumPrimitive',
+            'cesium_json': {'Cesium.Cesium3DTileset': {'url': {'Cesium.IonResource.fromAssetId': 458785}}},
+            'layer_name': 'cesium_model',
+            'layer_variable': 'cesium_lv',
+            'layer_title': 'cesium_title',
+        }
+
+        return [self.cesium_primitive_layer]
+
     def get_context_setup(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers, mock_get_result,
                           initial_layer_groups, result_options, result_layers):
         self.mock_request = mock.MagicMock()
@@ -255,8 +277,8 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         workflow_id = '123'
         step_id = '456'
         result_id = '789'
-        result_layers = self.prepare_wms_layers()
-        result_layers.extend(self.perpare_geojson_layers())
+        result_layers = self.prepare_cesium_model_layers()
+        result_layers.extend(self.prepare_cesium_primitive_layers())
         initial_layer_groups = [{'id': 'fake-layer-group-1'}, {'id': 'fake-layer-group-2'}]
         opt_lg_title = 'Foo Results'
         opt_lg_control = 'radio'
@@ -300,13 +322,12 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_get_result.assert_called_with(self.mock_request, result_id, self.mock_session)
         mock_mwv_get_managers.assert_called_with(request=self.mock_request, resource=self.mock_resource)
 
-        self.mock_map_manager.build_wms_layer.assert_called()
-        self.mock_map_manager.build_geojson_layer.assert_called()
+        self.mock_map_manager.build_cesium_layer.assert_called()
         self.mock_map_manager.build_layer_group.assert_called_with(
             id='workflow_results',
             display_name=opt_lg_title,
             layer_control=opt_lg_control,
-            layers=[self.mock_map_manager.build_wms_layer(), self.mock_map_manager.build_geojson_layer()]
+            layers=[self.mock_map_manager.build_cesium_layer(), self.mock_map_manager.build_cesium_layer()]
         )
         self.assertEqual(2, len(self.mock_map_view.layers))
         self.assertEqual(2, len(self.mock_map_view.entities))

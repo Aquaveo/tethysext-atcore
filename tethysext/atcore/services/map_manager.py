@@ -184,8 +184,8 @@ class MapManagerBase(object):
 
         return mv_layer
 
-    def build_cesium_layer(self, cesium_type, cesium_json, layer_name, layer_title, layer_variable, layer_id='', visible=True,
-                           public=True, selectable=False, plottable=False, has_action=False, extent=None,
+    def build_cesium_layer(self, cesium_type, cesium_json, layer_name, layer_title, layer_variable, layer_id='',
+                           visible=True, public=True, selectable=False, plottable=False, has_action=False, extent=None,
                            popup_title=None, excluded_properties=None, show_download=False):
         """
         Build an MVLayer object with supplied arguments.
