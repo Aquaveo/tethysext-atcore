@@ -104,14 +104,16 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.mock_result = mock.MagicMock(
             spec=SpatialWorkflowResult,
             options=result_options,
-            layers=result_layers
+            layers=result_layers,
         )
         mock_get_result.return_value = self.mock_result
         mock_wrv_get_context.return_value = {
             'result_workflow_context': 'foo'
         }
         self.mock_map_view = mock.MagicMock(spec=MapView, layers=[{'layer_name': 'fake-layer'}],
-                                            entities=[{'entity_name': 'fake-entities'}])
+                                            entities=[{'entity_name': 'fake-entities'}],
+                                            models=[{'model_name': 'fake-models'}],
+                                            primitives=[{'primitive_name': 'fake-primitives'}])
         mock_mwv_get_context.return_value = {
             'map_view': self.mock_map_view,
             'layer_groups': initial_layer_groups
@@ -274,9 +276,12 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         mock_translate_layers_to_cesium.return_value = [[{'layer_name': 'fake-layer'}],
-                                                        [{'entity_name': 'fake-entities'}]]
+                                                        [{'entity_name': 'fake-entities'}],
+                                                        [{'model_name': 'fake-models'}],
+                                                        [{'primitive_name': 'fake-primitives'}]]
         instance = MapWorkflowResultsView()
         instance.map_type = 'cesium_map_view'
+
         ret = instance.get_context(
             request=self.mock_request,
             session=self.mock_session,
@@ -305,8 +310,12 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         )
         self.assertEqual(2, len(self.mock_map_view.layers))
         self.assertEqual(2, len(self.mock_map_view.entities))
+        self.assertEqual(2, len(self.mock_map_view.models))
+        self.assertEqual(2, len(self.mock_map_view.primitives))
         self.assertEqual({'layer_name': 'fake-layer'}, self.mock_map_view.layers[0])
         self.assertEqual({'entity_name': 'fake-entities'}, self.mock_map_view.entities[0])
+        self.assertEqual({'model_name': 'fake-models'}, self.mock_map_view.models[0])
+        self.assertEqual({'primitive_name': 'fake-primitives'}, self.mock_map_view.primitives[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.log')
