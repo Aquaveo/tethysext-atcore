@@ -37,6 +37,8 @@ var ATCORE_MAP_VIEW = (function() {
  	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
  	    m_entities,                     // Entities for Cesium
+ 	    m_models,                     // Entities for Cesium
+ 	    m_primitives,                   // Primitives for Cesium
  	    m_workspace,                    // Workspace from SpatialManager
  	    m_extent,                       // Home extent for map
  	    m_enable_properties_popup,      // Show properties pop-up
@@ -170,39 +172,56 @@ var ATCORE_MAP_VIEW = (function() {
 
 	    // Get id from tethys_data attribute
 	    var map_layers;
-        map_layers = m_map.imageryLayers._layers;
-        map_layers.forEach(function(layer, index, array) {
-            // Handle normal layers (skip basemap layers)
-            if ('tethys_data' in layer && 'layer_id' in layer.tethys_data) {
-               if (layer.tethys_data.layer_id in m_layers) {
-                   console.log('Warning: layer_name already in layers map: "' + layer.tethys_data.layer_id + '".');
-               }
-               m_layers[layer.tethys_data.layer_id] = layer;
-            }
-            // Handle drawing layer
-            else if ('tethys_legend_title' in layer && layer.tethys_legend_title == 'Drawing Layer') {
-                m_drawing_layer = layer;
-                m_layers['drawing_layer'] = m_drawing_layer;
-            }
-        });
+      map_layers = m_map.imageryLayers._layers;
+      map_layers.forEach(function(layer, index, array) {
+          // Handle normal layers (skip basemap layers)
+          if ('tethys_data' in layer && 'layer_id' in layer.tethys_data) {
+             if (layer.tethys_data.layer_id in m_layers) {
+                 console.log('Warning: layer_name already in layers map: "' + layer.tethys_data.layer_id + '".');
+             }
+             m_layers[layer.tethys_data.layer_id] = layer;
+          }
+          // Handle drawing layer
+          else if ('tethys_legend_title' in layer && layer.tethys_legend_title == 'Drawing Layer') {
+              m_drawing_layer = layer;
+              m_layers['drawing_layer'] = m_drawing_layer;
+          }
+      });
 
-        m_entities = {};
-        var map_data_sources = m_map.dataSources._dataSources;
-        map_data_sources.forEach(function(data_source, index, array) {
-            // Handle normal layers (skip basemap layers)
-            if ('tethys_data' in data_source && 'layer_id' in data_source.tethys_data) {
-               if (data_source.tethys_data.layer_id in m_entities) {
-                   console.log('Warning: layer_name already in layers map: "' + data_source.tethys_data.layer_id + '".');
-               }
-               m_entities[data_source.tethys_data.layer_id] = data_source;
-            }
-            // Handle drawing layer
-            else if ('tethys_legend_title' in data_source && data_source.tethys_legend_title == 'Drawing Layer') {
-                m_drawing_layer = data_source;
-                m_entities['drawing_layer'] = m_drawing_layer;
-            }
-        });
-        // Setup feature selection
+      m_entities = {};
+      var map_data_sources = m_map.dataSources._dataSources;
+      map_data_sources.forEach(function(data_source, index, array) {
+          // Handle normal layers (skip basemap layers)
+          if ('tethys_data' in data_source && 'layer_id' in data_source.tethys_data) {
+             if (data_source.tethys_data.layer_id in m_entities) {
+                 console.log('Warning: layer_name already in layers map: "' + data_source.tethys_data.layer_id + '".');
+             }
+             m_entities[data_source.tethys_data.layer_id] = data_source;
+          }
+          // Handle drawing layer
+          else if ('tethys_legend_title' in data_source && data_source.tethys_legend_title == 'Drawing Layer') {
+              m_drawing_layer = data_source;
+              m_entities['drawing_layer'] = m_drawing_layer;
+          }
+      });
+
+      m_models = {};
+      var map_model_sources = m_map.entities._entities._array;
+      for (let m_model of map_model_sources) {
+          if ('layer_id' in m_model) {
+              m_models[m_model.layer_id] = m_model;
+          }
+      }
+
+      m_primitives = {};
+      var map_primitive_sources = m_map.scene.primitives._primitives;
+      for (let m_primitive of map_primitive_sources) {
+          if ('layer_id' in m_primitive) {
+              m_primitives[m_primitive.layer_id] = m_primitive
+          }
+      }
+//      var map_models = m_map.scene.models
+      // Setup feature selection
 	    //init_feature_selection();
     };
 
@@ -841,6 +860,10 @@ var ATCORE_MAP_VIEW = (function() {
                     m_layers[layer_name].show = (layer_group_checked && layer_checked);
                 } else if (layer_name in m_entities && m_entities[layer_name]) {
                     m_entities[layer_name].show = (layer_group_checked && layer_checked);
+                } else if (layer_name in m_models && m_models[layer_name]) {
+                    m_models[layer_name].show = (layer_group_checked && layer_checked);
+                } else if (layer_name in m_primitives && m_primitives[layer_name]) {
+                    m_primitives[layer_name].show = (layer_group_checked && layer_checked);
                 }
 
                 if (layer_group_checked && layer_checked) {
@@ -883,6 +906,10 @@ var ATCORE_MAP_VIEW = (function() {
             }
             else if (layer_name in m_entities && m_entities[layer_name]) {
                 m_entities[layer_name].show = checked;
+            } else if (layer_name in m_models && m_models[layer_name]) {
+                m_models[layer_name].show = checked;
+            } else if (layer_name in m_primitives && m_primitives[layer_name]) {
+                m_primitives[layer_name].show = checked;
             }
             // Set the visibility of legend
             if (checked) {

@@ -184,6 +184,55 @@ class MapManagerBase(object):
 
         return mv_layer
 
+    def build_cesium_layer(self, cesium_type, json, layer_name, layer_title, layer_variable, layer_id='', visible=True,
+                            public=True, selectable=False, plottable=False, has_action=False, extent=None,
+                            popup_title=None, excluded_properties=None, show_download=False):
+        """
+        Build an MVLayer object with supplied arguments.
+        Args:
+            cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'.
+            json(dict): Cesium dictionary to describe the layer.
+            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+            layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+            layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+            visible(bool): Layer is visible when True. Defaults to True.
+            public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+            selectable(bool): Enable feature selection. Defaults to False.
+            plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+            extent(list): Extent for the layer. Optional.
+            popup_title(str): Title to display on feature popups. Defaults to layer title.
+            excluded_properties(list): List of properties to exclude from feature popups.
+            show_download(boolean): enable download geojson as shapefile. Default is False.
+
+        Returns:
+            MVLayer: the MVLayer object.
+        """  # noqa: E501
+        # Define default styles for layers
+        style_map = self.get_vector_style_map()
+
+        mv_layer = self._build_mv_layer(
+            layer_source=cesium_type,
+            layer_id=layer_id,
+            layer_name=layer_name,
+            layer_title=layer_title,
+            layer_variable=layer_variable,
+            options=json,
+            extent=extent,
+            visible=visible,
+            public=public,
+            selectable=selectable,
+            plottable=plottable,
+            has_action=has_action,
+            popup_title=popup_title,
+            excluded_properties=excluded_properties,
+            style_map=style_map,
+            show_download=show_download,
+        )
+
+        return mv_layer
+
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,

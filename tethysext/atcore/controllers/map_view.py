@@ -132,8 +132,7 @@ class MapView(ResourceView):
             # CesiumMapView.cesium_version = '1.64'
 
             # Get view object from tethys map_view
-            layers, entities = self.translate_layers_to_cesium(map_view.layers)
-
+            layers, entities, models, primitives = self.translate_layers_to_cesium(map_view.layers)
             CesiumMapView.cesium_version = "1.74"
 
             cesium_map_view = CesiumMapView(
@@ -158,9 +157,10 @@ class MapView(ResourceView):
                     }
                 },
                 layers=layers,
-                entities=entities
+                models=models,
+                entities=entities,
+                primitives=primitives,
             )
-
             map_view = cesium_map_view
 
         # Initialize context
@@ -241,13 +241,18 @@ class MapView(ResourceView):
     def translate_layers_to_cesium(self, map_view_layers):
         cesium_layers = []
         cesium_entities = []
+        cesium_models = []
+        cesium_primitives = []
         for layer in map_view_layers:
             if layer['source'] in ['ImageWMS', 'TileWMS']:
                 cesium_layers.append(layer)
             elif layer['source'] in ['GeoJSON']:
                 cesium_entities.append(layer)
-
-        return cesium_layers, cesium_entities
+            elif layer['source'] in ['CesiumModel']:
+                cesium_models.append(layer)
+            elif layer['source'] in ['CesiumPrimitive']:
+                cesium_primitives.append(layer)
+        return cesium_layers, cesium_entities, cesium_models, cesium_primitives
 
     def save_custom_layers(self, request, session, resource, *args, **kwargs):
         """

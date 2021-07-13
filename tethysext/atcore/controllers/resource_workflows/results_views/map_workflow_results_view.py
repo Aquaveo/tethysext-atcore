@@ -148,9 +148,11 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             layer_groups.insert(0, results_layer_group)
 
         if self.map_type == "cesium_map_view":
-            layers, entities = self.translate_layers_to_cesium(results_layers)
+            layers, entities, models, primitives = self.translate_layers_to_cesium(results_layers)
             map_view.layers = layers + map_view.layers
             map_view.entities = entities + map_view.entities
+            map_view.models = models + map_view.models
+            map_view.primitives = primitives + map_view.primitives
         else:
             map_view.layers = results_layers + map_view.layers
 
