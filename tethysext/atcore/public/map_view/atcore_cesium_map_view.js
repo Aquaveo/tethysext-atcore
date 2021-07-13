@@ -37,7 +37,7 @@ var ATCORE_MAP_VIEW = (function() {
  	    m_layers,                       // OpenLayers layer objects mapped to by layer by layer_name
  	    m_layer_groups,                 // Layer and layer group metadata
  	    m_entities,                     // Entities for Cesium
- 	    m_models,                     // Entities for Cesium
+ 	    m_models,                       // Models for Cesium
  	    m_primitives,                   // Primitives for Cesium
  	    m_workspace,                    // Workspace from SpatialManager
  	    m_extent,                       // Home extent for map

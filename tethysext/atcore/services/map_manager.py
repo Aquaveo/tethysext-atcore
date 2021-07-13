@@ -184,14 +184,14 @@ class MapManagerBase(object):
 
         return mv_layer
 
-    def build_cesium_layer(self, cesium_type, json, layer_name, layer_title, layer_variable, layer_id='', visible=True,
+    def build_cesium_layer(self, cesium_type, cesium_json, layer_name, layer_title, layer_variable, layer_id='', visible=True,
                            public=True, selectable=False, plottable=False, has_action=False, extent=None,
                            popup_title=None, excluded_properties=None, show_download=False):
         """
         Build an MVLayer object with supplied arguments.
         Args:
             cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'.
-            json(dict): Cesium dictionary to describe the layer.
+            cesium_json(dict): Cesium dictionary to describe the layer.
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
@@ -212,13 +212,16 @@ class MapManagerBase(object):
         # Define default styles for layers
         style_map = self.get_vector_style_map()
 
+        if cesium_type not in ['CesiumModel', 'CesiumPrimitive']:
+            raise ValueError('Invalid cesium_type. Must be "CesiumModel" or "CesiumPrimitive".')
+
         mv_layer = self._build_mv_layer(
             layer_source=cesium_type,
             layer_id=layer_id,
             layer_name=layer_name,
             layer_title=layer_title,
             layer_variable=layer_variable,
-            options=json,
+            options=cesium_json,
             extent=extent,
             visible=visible,
             public=public,

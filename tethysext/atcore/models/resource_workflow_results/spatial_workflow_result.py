@@ -194,6 +194,48 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
         self._add_layer(layer)
 
+    def add_cesium_layer(self, cesium_type, cesium_json, layer_name, layer_title, layer_variable, layer_id='',
+                         visible=True, public=True, selectable=False, plottable=False, has_action=False, extent=None,
+                         popup_title=None, excluded_properties=None, show_download=False):
+        """
+        Add a geojson layer to display on the map of this result view.
+
+        Args:
+            cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'
+            cesium_json(dict): Cesium object in json.
+            layer_name(str): Name of cesium layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+            layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+            layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+            visible(bool): Layer is visible when True. Defaults to True.
+            public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+            selectable(bool): Enable feature selection. Defaults to False.
+            plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+            has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+            extent(list): Extent for the layer. Optional.
+            popup_title(str): Title to display on feature popups. Defaults to layer title.
+            excluded_properties(list): List of properties to exclude from feature popups.
+            show_download(boolean): enable download layer to shapefile.
+        """  # noqa: E501
+        layer = {
+            'cesium_type': cesium_type,
+            'cesium_json': cesium_json,
+            'layer_name': layer_name,
+            'layer_title': layer_title,
+            'layer_variable': layer_variable,
+            'layer_id': layer_id,
+            'visible': visible,
+            'public': public,
+            'selectable': selectable,
+            'plottable': plottable,
+            'has_action': has_action,
+            'extent': extent,
+            'popup_title': popup_title,
+            'excluded_properties': excluded_properties,
+            'show_download': show_download,
+        }
+        self._add_layer(layer)
+
     def update_layer(self, update_layer):
         """
         Update color ramp for layer.

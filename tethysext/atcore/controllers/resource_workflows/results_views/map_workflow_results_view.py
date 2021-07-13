@@ -102,19 +102,19 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         legends = []
         # Build MVLayers for map
         for layer in result.layers:
-            layer_type = layer.pop('type', None)
+            layer_type = layer.pop('type', None) or layer.get('cesium_type', None)
 
-            if not layer_type or layer_type not in ['geojson', 'wms']:
+            if not layer_type or layer_type not in ['geojson', 'wms', 'CesiumModel', 'CesiumPrimitive']:
                 log.warning('Unsupported layer type will be skipped: {}'.format(layer))
                 continue
 
             result_layer = None
-
             if layer_type == 'geojson':
                 result_layer = map_manager.build_geojson_layer(**layer)
-
             elif layer_type == 'wms':
                 result_layer = map_manager.build_wms_layer(**layer)
+            elif layer_type in ['CesiumModel', 'CesiumPrimitive']:
+                result_layer = map_manager.build_cesium_layer(**layer)
 
             # build legend:
             legend = map_manager.build_legend(layer, units=result.options.get('units', ''))
