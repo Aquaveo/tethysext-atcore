@@ -1,5 +1,5 @@
 import uuid
-from mock import patch
+from unittest.mock import patch
 from tethysext.atcore.models.app_users import Organization, AppUser, Resource
 from tethysext.atcore.tests.mock.permissions import mock_has_permission_false
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase

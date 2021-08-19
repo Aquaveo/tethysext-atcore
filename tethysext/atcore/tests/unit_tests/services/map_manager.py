@@ -307,6 +307,125 @@ class MapManagerBaseTests(unittest.TestCase):
         ret = self.map_manager.build_param_string()
         self.assertEqual('', ret)
 
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.get_vector_style_map')
+    def test_build_cesium_layer_invalid(self, _):
+        model = [{'model': {'uri': 'glb_file.glb', 'show': True, 'shadows': 'enabled'},
+                  'name': 'Funwave',
+                  'orientation': {
+                      'Cesium.Transforms.headingPitchRollQuaternion':
+                          [{'Cesium.Cartesian3.fromDegrees': [-95.245, 28.9341, -31]},
+                           {'Cesium.HeadingPitchRoll': [{'Cesium.Math.toRadians': -42}, 0, 0]}]},
+                  'position': {'Cesium.Cartesian3.fromDegrees': [-95.245, 28.9341, -31]},
+                  },
+                 ]
+
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+
+        self.assertRaises(ValueError, self.map_manager.build_cesium_layer, cesium_type='WrongType', cesium_json=model,
+                          layer_name=layer_name, layer_title=layer_title, layer_variable=layer_variable)
+
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase._build_mv_layer')
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.get_vector_style_map')
+    def test_build_cesium_layer_model(self, mock_gvsm, mock_bvl):
+        model = [{'model': {'uri': 'glb_file.glb', 'show': True, 'shadows': 'enabled'},
+                  'name': 'Funwave',
+                  'orientation': {
+                      'Cesium.Transforms.headingPitchRollQuaternion':
+                          [{'Cesium.Cartesian3.fromDegrees': [-95.245, 28.9341, -31]},
+                           {'Cesium.HeadingPitchRoll': [{'Cesium.Math.toRadians': -42}, 0, 0]}]},
+                  'position': {'Cesium.Cartesian3.fromDegrees': [-95.245, 28.9341, -31]},
+                  },
+                 ]
+
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            model_db=self.model_db
+        )
+
+        ret = map_manager.build_cesium_layer(
+            cesium_type='CesiumModel',
+            cesium_json=model,
+            layer_name=layer_name,
+            layer_title=layer_title,
+            layer_variable=layer_variable
+        )
+
+        mock_bvl.assert_called_once()
+        mock_gvsm.assert_called_once()
+        mock_bvl.assert_called_with(
+            layer_source='CesiumModel',
+            layer_id='',
+            layer_name=layer_name,
+            layer_title=layer_title,
+            layer_variable=layer_variable,
+            options=model,
+            extent=None,
+            visible=True,
+            public=True,
+            selectable=False,
+            show_download=False,
+            plottable=False,
+            has_action=False,
+            popup_title=None,
+            excluded_properties=None,
+            style_map=mock_gvsm()
+        )
+
+        # IMPORTANT: Test this AFTER assert_called_with
+        self.assertEqual(ret, mock_bvl())
+
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase._build_mv_layer')
+    @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.get_vector_style_map')
+    def test_build_cesium_layer_primitive(self, mock_gvsm, mock_bvl):
+        primitive = [{'Cesium.Cesium3DTileset': {'url': {'Cesium.IonResource.fromAssetId': 512295}}}]
+
+        layer_name = 'foo'
+        layer_title = 'Foo'
+        layer_variable = 'Bar'
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            model_db=self.model_db
+        )
+
+        ret = map_manager.build_cesium_layer(
+            cesium_type='CesiumPrimitive',
+            cesium_json=primitive,
+            layer_name=layer_name,
+            layer_title=layer_title,
+            layer_variable=layer_variable
+        )
+
+        mock_bvl.assert_called_once()
+        mock_gvsm.assert_called_once()
+        mock_bvl.assert_called_with(
+            layer_source='CesiumPrimitive',
+            layer_id='',
+            layer_name=layer_name,
+            layer_title=layer_title,
+            layer_variable=layer_variable,
+            options=primitive,
+            extent=None,
+            visible=True,
+            public=True,
+            selectable=False,
+            show_download=False,
+            plottable=False,
+            has_action=False,
+            popup_title=None,
+            excluded_properties=None,
+            style_map=mock_gvsm()
+        )
+
+        # IMPORTANT: Test this AFTER assert_called_with
+        self.assertEqual(ret, mock_bvl())
+
     @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase._build_mv_layer')
     @mock.patch('tethysext.atcore.services.map_manager.MapManagerBase.get_vector_style_map')
     def test_build_geojson_layer(self, mock_gvsm, mock_bvl):

@@ -1,6 +1,6 @@
 import uuid
 from django.contrib.auth.models import User
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from tethys_sdk.base import TethysController
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.models.app_users.user_setting import UserSetting
