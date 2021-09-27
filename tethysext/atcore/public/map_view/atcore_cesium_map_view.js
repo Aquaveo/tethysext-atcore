@@ -377,7 +377,7 @@ var ATCORE_MAP_VIEW = (function() {
       var new_location = Cesium.Cartesian3.fromRadians(
                 vr_cesiumCamera.positionCartographic.longitude,
                 vr_cesiumCamera.positionCartographic.latitude,
-                terrain_elevation + 3.0
+                terrain_elevation + 10.0
               );
       vr_cesiumCamera.setView({
           destination: new_location,
