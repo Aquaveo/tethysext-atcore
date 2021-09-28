@@ -760,10 +760,10 @@ class MapViewTests(SqlAlchemyTestCase):
             '\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
             '<li class=\\"legend-list-item\\">\\n        <p>10.0 </p>\\n        <div class=\\"color-box\\" ' \
             'style=\\"background-color: #022259;\\"></div>\\n      </li>\\n    </div>\\n  \\n</ul>", "div_id": ' \
-            '"legend_div_id", "color_ramp": "Blue", "division_string": "val1:0.10;color1:#f7fbff;val2:1.20;' \
-            'color2:#deebf7;val3:2.30;color3:#c6dbef;val4:3.40;color4:#9ecae1;val5:4.50;color5:#6baed6;val6:5.60;' \
-            'color6:#4292c6;val7:6.70;color7:#2171b5;val8:7.80;color8:#08519c;val9:8.90;color9:#083582;val10:10.00;' \
-            'color10:#022259", "layer_id": "layer_id"}'
+            '"legend_div_id", "color_ramp": "Blue", "division_string": "val1:0.10;color1:#fff100;val2:1.20;' \
+            'color2:#ff8c00;val3:2.30;color3:#e81123;val4:3.40;color4:#ec008c;val5:4.50;color5:#68217a;val6:5.60;' \
+            'color6:#00188f;val7:6.70;color7:#00bcf2;val8:7.80;color8:#00b294;val9:8.90;color9:#009e49;val10:10.00;' \
+            'color10:#bad80a", "layer_id": "layer_id"}'
 
         response = mv.build_legend_item(mock_request, self.session, mock_resource)
         self.assertEqual(json.loads(response.content.decode('utf-8')), json.loads(expected_result))
