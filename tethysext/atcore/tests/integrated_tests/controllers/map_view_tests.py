@@ -739,27 +739,27 @@ class MapViewTests(SqlAlchemyTestCase):
         expected_result = \
             '{"success": true, "response": "<ul class=\\"legend-list\\" data-collapsed=\\"false\\">\\n  \\n    ' \
             '<div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>0.1 </p>\\n        ' \
-            '<div class=\\"color-box\\" style=\\"background-color: #a50026;\\"></div>\\n      </li>\\n    </div>\\n  ' \
+            '<div class=\\"color-box\\" style=\\"background-color: #6baed6;\\"></div>\\n      </li>\\n    </div>\\n  ' \
             '\\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>1.2 </p>\\n' \
-            '        <div class=\\"color-box\\" style=\\"background-color: #d73027;\\"></div>\\n      </li>\\n    ' \
+            '        <div class=\\"color-box\\" style=\\"background-color: #579ccb;\\"></div>\\n      </li>\\n    ' \
             '</div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        ' \
-            '<p>2.3 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #f46d43;\\"></div>\\n      ' \
+            '<p>2.3 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #4389bf;\\"></div>\\n      ' \
             '</li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n' \
-            '        <p>3.4 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #fdae61;\\"></div>' \
+            '        <p>3.4 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #3279b5;\\"></div>' \
             '\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
             '<li class=\\"legend-list-item\\">\\n        <p>4.5 </p>\\n        <div class=\\"color-box\\" ' \
-            'style=\\"background-color: #fee090;\\"></div>\\n      </li>\\n    </div>\\n  \\n    ' \
+            'style=\\"background-color: #256cad;\\"></div>\\n      </li>\\n    </div>\\n  \\n    ' \
             '<div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>5.6 </p>\\n        ' \
-            '<div class=\\"color-box\\" style=\\"background-color: #e0f3f8;\\"></div>\\n      </li>\\n    </div>\\n  ' \
+            '<div class=\\"color-box\\" style=\\"background-color: #155da4;\\"></div>\\n      </li>\\n    </div>\\n  ' \
             '\\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        <p>6.7 </p>\\n' \
-            '        <div class=\\"color-box\\" style=\\"background-color: #abd9e9;\\"></div>\\n      </li>\\n' \
+            '        <div class=\\"color-box\\" style=\\"background-color: #08519c;\\"></div>\\n      </li>\\n' \
             '    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n        ' \
-            '<p>7.8 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #74add1;\\"></div>\\n      ' \
+            '<p>7.8 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #053c7f;\\"></div>\\n      ' \
             '</li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      <li class=\\"legend-list-item\\">\\n' \
-            '        <p>8.9 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #4575b4;\\"></div>' \
+            '        <p>8.9 </p>\\n        <div class=\\"color-box\\" style=\\"background-color: #042f6c;\\"></div>' \
             '\\n      </li>\\n    </div>\\n  \\n    <div class=\\"legend-item\\">\\n      ' \
             '<li class=\\"legend-list-item\\">\\n        <p>10.0 </p>\\n        <div class=\\"color-box\\" ' \
-            'style=\\"background-color: #313695;\\"></div>\\n      </li>\\n    </div>\\n  \\n</ul>", "div_id": ' \
+            'style=\\"background-color: #022259;\\"></div>\\n      </li>\\n    </div>\\n  \\n</ul>", "div_id": ' \
             '"legend_div_id", "color_ramp": "Blue", "division_string": "val1:0.10;color1:#6baed6;val2:1.20;' \
             'color2:#579ccb;val3:2.30;color3:#4389bf;val4:3.40;color4:#3279b5;val5:4.50;color5:#256cad;val6:5.60;' \
             'color6:#155da4;val7:6.70;color7:#08519c;val8:7.80;color8:#053c7f;val9:8.90;color9:#042f6c;val10:10.00;' \
