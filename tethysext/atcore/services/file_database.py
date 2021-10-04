@@ -21,6 +21,7 @@ from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabas
     FileCollectionItemAlreadyExistsError
 from tethysext.atcore.mixins.meta_mixin import MetaMixin
 from tethysext.atcore.models.file_database import FileCollection, FileDatabase
+from tethysext.atcore.utilities import temp_umask
 
 __all__ = ['FileDatabaseClient', 'FileCollectionClient']
 
@@ -28,7 +29,7 @@ log = logging.getLogger('tethys.' + __name__)
 
 
 class FileDatabaseClient(MetaMixin):
-    def __init__(self, session: Session, root_directory: str, file_database_id: uuid.UUID):
+    def __init__(self, session: Session, root_directory: str, file_database_id: uuid.UUID, umask: oct = 0o002):
         """
         Use this constructor to bind the FileDatabaseClient to an existing FileDatabase. Use the new() factory method to create a new FileDatabase.
 
@@ -36,23 +37,26 @@ class FileDatabaseClient(MetaMixin):
             session (sqlalchemy.orm.Session): The session for the SQL database.
             root_directory (str): Path to the directory that contains the FileDatabase.
             file_database_id (uuid.UUID): The id of the FileDatabase.
+            umask (oct): Umask to apply when creating files and directories in the FileDatabase. Defaults to 0o002.
         """  # noqa: E501
         self._database_id = file_database_id
         self._instance = None
         self._path = None
-        self._session = session
         self._root_directory = root_directory
+        self._session = session
+        self._umask = umask
         self.__deleted = False
 
     @classmethod
-    def new(cls, session: Session, root_directory: str, meta: dict = None) -> 'FileDatabaseClient':
+    def new(cls, session: Session, root_directory: str, meta: dict = None, umask: oct = 0o002) -> 'FileDatabaseClient':
         """
         Use this method to create a new FileDatabase. Use the constructor to bind to an existing FileDatabase.
 
         Args:
             session (sqlalchemy.orm.Session): The session for the SQL database.
             root_directory (str or Path): Directory in which the new FileDatabase will be created.
-            meta (dict): The meta for the FileCollection.
+            meta (dict): The meta for the FileDatabase.
+            umask (oct): Umask to apply when creating files and directories in the FileDatabase. Defaults to 0o002.
 
         Returns:
             FileDatabaseClient: A FileDatabaseClient bound to the new FileDatabase.
@@ -63,9 +67,10 @@ class FileDatabaseClient(MetaMixin):
         )
         session.add(new_file_database)
         session.commit()
-        client = cls(session, root_directory, new_file_database.id)
 
-        client.write_meta()
+        client = cls(session, root_directory, new_file_database.id, umask)
+        with temp_umask(umask):
+            client.write_meta()
 
         return client
 
@@ -109,7 +114,7 @@ class FileDatabaseClient(MetaMixin):
             raise FileCollectionNotFoundError(f'Collection with id "{str(collection_id)}" could not '
                                               f'be found with this database.')
         collection_client = FileCollectionClient(
-            self._session, self, collection_id
+            self._session, self, collection_id, self._umask
         )
         return collection_client
 
@@ -126,7 +131,7 @@ class FileDatabaseClient(MetaMixin):
         """
         meta = meta or dict()
         items = items or list()
-        new_collection = FileCollectionClient.new(self._session, self, meta)
+        new_collection = FileCollectionClient.new(self._session, self, meta, umask=self._umask)
         for item in items:
             try:
                 new_collection.add_item(item)
@@ -172,7 +177,8 @@ class FileDatabaseClient(MetaMixin):
 
 
 class FileCollectionClient(MetaMixin):
-    def __init__(self, session: Session, file_database_client: FileDatabaseClient, file_collection_id: uuid.UUID):
+    def __init__(self, session: Session, file_database_client: FileDatabaseClient, file_collection_id: uuid.UUID,
+                 umask: oct = 0o002):
         """
         Use this constructor to bind the FileCollectionClient to an existing FileCollection. Use the new() factory method to create a new FileCollection.
 
@@ -180,15 +186,17 @@ class FileCollectionClient(MetaMixin):
             session (sqlalchemy.orm.Session): The session for the SQL database.
             file_database_client (FileDatabaseClient): A FileDatabaseClient bound to the FileDatabase containing the FileCollection.
             file_collection_id (uuid.UUID): The id of the FileCollection.
+            umask (oct): Umask to apply when creating files and directories in the FileCollection. Defaults to 0o002.
         """  # noqa: E501
         self._collection_id = file_collection_id
         self._file_database_client = file_database_client
         self._instance = None
         self._session = session
+        self._umask = umask
         self.__deleted = False
 
     @classmethod
-    def new(cls, session: Session, file_database_client: FileDatabaseClient, meta: dict = None) \
+    def new(cls, session: Session, file_database_client: FileDatabaseClient, meta: dict = None, umask: oct = 0o002) \
             -> 'FileCollectionClient':
         """
         Use this method to create a new FileCollection. Use the constructor to bind to an existing FileCollection.
@@ -196,7 +204,8 @@ class FileCollectionClient(MetaMixin):
         Args:
             session (sqlalchemy.orm.Session): The session for the SQL database.
             file_database_client (FileDatabaseClient): A FileDatabaseClient bound to the FileDatabase in which you would like the new FileCollection to be created.
-            meta (dict): The meta for the FileCollection
+            meta (dict): The meta for the FileCollection.
+            umask (oct): Umask to apply when creating files and directories in the FileCollection. Defaults to 0o002.
 
         Returns:
             A client to a newly generated FileCollection.
@@ -208,9 +217,10 @@ class FileCollectionClient(MetaMixin):
         )
         session.add(new_file_collection)
         session.commit()
-        client = cls(session, file_database_client, new_file_collection.id)
 
-        client.write_meta()
+        client = cls(session, file_database_client, new_file_collection.id, umask)
+        with temp_umask(umask):
+            client.write_meta()
 
         return client
 
@@ -273,8 +283,9 @@ class FileCollectionClient(MetaMixin):
         for file in self.files:
             src_file = os.path.join(self.path, file)
             dst_file = os.path.join(target, file)
-            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
-            shutil.copyfile(src_file, dst_file)
+            with temp_umask(self._umask):
+                os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+                shutil.copyfile(src_file, dst_file)
 
     def duplicate(self):
         """
@@ -287,6 +298,7 @@ class FileCollectionClient(MetaMixin):
             session=self._session,
             file_database_client=self.file_database_client,
             meta=self.instance.meta,
+            umask=self._umask,
         )
         self.export(duplicated_client.path)
         return duplicated_client
@@ -305,13 +317,14 @@ class FileCollectionClient(MetaMixin):
         if self.path in item:
             raise FileExistsError('Item to be added must not already be contained in the FileCollection.')
 
-        if move:
-            shutil.move(item, self.path)
-        else:
-            if os.path.isdir(item):
-                shutil.copytree(item, os.path.join(self.path, os.path.split(item)[-1]))
+        with temp_umask(self._umask):
+            if move:
+                shutil.move(item, self.path)
             else:
-                shutil.copy(item, self.path)
+                if os.path.isdir(item):
+                    shutil.copytree(item, os.path.join(self.path, os.path.split(item)[-1]))
+                else:
+                    shutil.copy(item, self.path)
 
     def delete_item(self, item: str):
         """
@@ -343,24 +356,25 @@ class FileCollectionClient(MetaMixin):
 
         item_is_dir = os.path.isdir(item_full_path)
 
-        if item_is_dir:
-            if os.path.exists(target):
-                raise IsADirectoryError(f'The directory to you are trying to export to already exists. {target}')
-            shutil.copytree(item_full_path, target)
-        else:
-            if os.path.exists(target):
-                if os.path.isdir(target):
-                    # copy file to directory
-                    shutil.copy(item_full_path, target)
-                else:
-                    raise FileExistsError(f'Target already exists: "{target}"')
+        with temp_umask(self._umask):
+            if item_is_dir:
+                if os.path.exists(target):
+                    raise IsADirectoryError(f'The directory to you are trying to export to already exists. {target}')
+                shutil.copytree(item_full_path, target)
             else:
-                if os.path.splitext(target)[-1] == '':
-                    if not os.path.exists(target):
-                        os.makedirs(target)
+                if os.path.exists(target):
+                    if os.path.isdir(target):
+                        # copy file to directory
+                        shutil.copy(item_full_path, target)
+                    else:
+                        raise FileExistsError(f'Target already exists: "{target}"')
                 else:
-                    os.makedirs(os.path.dirname(target), exist_ok=True)
-                shutil.copy(item_full_path, target)
+                    if os.path.splitext(target)[-1] == '':
+                        if not os.path.exists(target):
+                            os.makedirs(target)
+                    else:
+                        os.makedirs(os.path.dirname(target), exist_ok=True)
+                    shutil.copy(item_full_path, target)
 
     def duplicate_item(self, item, new_item):
         """

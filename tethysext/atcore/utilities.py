@@ -6,9 +6,10 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import os
 import re
 from collections import namedtuple
-
+from contextlib import contextmanager
 
 Url = namedtuple('Url', ['protocol', 'username', 'password', 'host', 'port', 'path', 'endpoint'])
 
@@ -153,3 +154,10 @@ def import_from_string(path):
     # Import the function or class
     obj = getattr(module, obj_name)
     return obj
+
+
+@contextmanager
+def temp_umask(new_umask):
+    curr_umask = os.umask(new_umask)
+    yield
+    os.umask(curr_umask)
