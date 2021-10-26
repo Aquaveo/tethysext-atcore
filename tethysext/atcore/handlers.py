@@ -32,6 +32,11 @@ def panel_rws_handler(document):
         if k != 'name':
             param_class.set_param(k, v)
 
-    panel = pn.Row(param_class.param)
+    if getattr(param_class, 'panel', None) is not None:
+        # Class defines its own panel layout
+        panel = param_class.panel()
+    else:
+        # Default case just put param objects in Row
+        panel = pn.Row(param_class.param)
 
     panel.server_doc(document)
