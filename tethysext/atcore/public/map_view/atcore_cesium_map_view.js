@@ -206,23 +206,23 @@ var ATCORE_MAP_VIEW = (function() {
       });
 
       m_models = {};
-      var map_model_sources = m_map.entities._entities._array;
-      for (let m_model of map_model_sources) {
-          if ('layer_id' in m_model) {
-              m_models[m_model.layer_id] = m_model;
+      var map_model_sources = m_map.entities.values;
+      for (let model of map_model_sources) {
+          if ('tethys_data' in model && 'layer_id' in model.tethys_data) {
+              m_models[model.tethys_data.layer_id] = model;
           }
       }
 
       m_primitives = {};
-      var map_primitive_sources = m_map.scene.primitives._primitives;
-      for (let m_primitive of map_primitive_sources) {
-          if ('layer_id' in m_primitive) {
-              m_primitives[m_primitive.layer_id] = m_primitive
+      for (let i = 0; i < m_map.scene.primitives.length; i++) {
+          let primitive = m_map.scene.primitives.get(i);
+          if ('tethys_data' in primitive && 'layer_id' in primitive.tethys_data) {
+              m_primitives[primitive.tethys_data.layer_id] = primitive;
           }
       }
-//      var map_models = m_map.scene.models
+
       // Setup feature selection
-	    //init_feature_selection();
+	  // init_feature_selection();
     };
 
     // Sync layer visibility
@@ -908,6 +908,7 @@ var ATCORE_MAP_VIEW = (function() {
                 m_entities[layer_name].show = checked;
             } else if (layer_name in m_models && m_models[layer_name]) {
                 m_models[layer_name].show = checked;
+                m_models[layer_name].model.show = checked;
             } else if (layer_name in m_primitives && m_primitives[layer_name]) {
                 m_primitives[layer_name].show = checked;
             }
