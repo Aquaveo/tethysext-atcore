@@ -45,7 +45,7 @@ class FormInputWV(ResourceWorkflowView):
         ParamClass = getattr(mod, p_class)
 
         if current_step.options['renderer'] == 'django':
-            p = ParamClass()
+            p = ParamClass(request=request, session=session)
             if hasattr(p, 'update_precedence'):
                 p.update_precedence()
             for k, v in current_step.get_parameter('form-values').items():

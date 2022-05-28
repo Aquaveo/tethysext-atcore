@@ -16,7 +16,7 @@ requirements:
       - factory_boy
       - filelock
       - geojson
-      - jinja2
+      - jinja2=3.0.*
       - pandas
       - param
       - pyshp
@@ -24,6 +24,7 @@ requirements:
       - sqlalchemy=1.3.*
       - panel
   pip:
+    - django==2.2.*
     - django-datetime-widget
     - django-select2
     - django-taggit

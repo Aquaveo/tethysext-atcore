@@ -170,7 +170,7 @@ def generate_django_form(parameterized_obj, set_options=None, form_field_prefix=
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
         form_class.base_fields[p_name] = widget_map[type(p)](parameterized_obj, p, p.name)
-        form_class.base_fields[p_name].label = p.name.capitalize()
+        form_class.base_fields[p_name].label = p.label or p.name.capitalize()
         form_class.base_fields[p_name].widget.attrs.update({'class': 'form-control',
                                                             'disabled': read_only})
 

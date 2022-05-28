@@ -506,7 +506,7 @@ class GeoServerAPI(object):
 
         retries_remaining = 300
         while retries_remaining > 0:
-            response = requests.put(
+            response = requests.post(
                 url,
                 headers=headers,
                 auth=(self.gs_engine.username, self.gs_engine.password),
