@@ -2,7 +2,7 @@ import datetime
 import uuid
 
 from django.utils.text import slugify
-from django.utils.decorators import classproperty
+from django.utils.functional import classproperty
 from sqlalchemy import Column, Boolean, DateTime, String
 from sqlalchemy.orm import relationship
 from tethysext.atcore.models.types.guid import GUID

@@ -40,7 +40,7 @@ class AppUsersViewMixin(TethysController):
         return self._Resource
 
     def get_permissions_manager(self):
-        return self._PermissionsManager(self._app.namespace)
+        return self._PermissionsManager(self._app.package_namespace)
 
     def get_sessionmaker(self):
         if not self._app:
