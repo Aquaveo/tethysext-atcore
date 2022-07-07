@@ -1180,8 +1180,9 @@ class GeoServerAPITests(unittest.TestCase):
         self.assertIn(GeoServerAPI.CT_ARC_GRID, post_call_args[0][1]['data'])
         self.assertNotIn(GeoServerAPI.CT_GRASS_GRID, post_call_args[0][1]['data'])
 
+    @mock.patch('tethysext.atcore.services.geoserver_api.log')
     @mock.patch('tethysext.atcore.services.geoserver_api.requests.post')
-    def test_create_coverage_store_exception(self, mock_post):
+    def test_create_coverage_store_exception(self, mock_post, _):
         mock_response = mock.MagicMock(status_code=500)
         mock_post.return_value = mock_response
         coverage_name = 'foo'
