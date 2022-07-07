@@ -1,6 +1,6 @@
 function show_message_box(id, level, message) {
     let message_box = '<div id="' + id + '" class="alert alert-' + level + ' alert-dismissible" role="alert">'
-                    +   '<button type="button" class="close" data-dismiss="alert">'
+                    +   '<button type="button" class="close" data-bs-dismiss="alert">'
                     +     '<span aria-hidden="true">&times;</span>'
                     +     '<span class="sr-only">Close</span>'
                     +   '</button>'

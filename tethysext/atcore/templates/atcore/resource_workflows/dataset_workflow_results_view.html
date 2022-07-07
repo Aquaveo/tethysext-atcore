@@ -17,7 +17,7 @@
   <div id="dataset_tabs">
     <ul class="nav nav-tabs" role="tablist">
       {% for dataset in datasets %}
-      <li role="presentation" {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#dataset-{{ forloop.counter }}" aria-controls="home" role="tab" data-toggle="tab">{{ dataset.title }}</a></li>
+      <li role="presentation" {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#dataset-{{ forloop.counter }}" aria-controls="home" role="tab" data-bs-toggle="tab">{{ dataset.title }}</a></li>
       {% endfor %}
     </ul>
 

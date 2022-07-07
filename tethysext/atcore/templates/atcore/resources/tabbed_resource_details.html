@@ -2,13 +2,13 @@
 {% load static tethys_gizmos %}
 
 {% block app_navigation_items %}
-<li><a href="{{ back_url }}"><span class="glyphicon glyphicon-chevron-left"></span> {{ resource.DISPLAY_TYPE_PLURAL }}</a></li>
+<li><a href="{{ back_url }}"><span class="bi bi-chevron-left"></span> {{ resource.DISPLAY_TYPE_PLURAL }}</a></li>
 {% endblock %}
 
 {% block app_content %}
 {% for message in messages %}
   <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert">
+    <button type="button" class="close" data-bs-dismiss="alert">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only">Close</span>
     </button>
@@ -24,7 +24,7 @@
     <a href="#{{ tab.slug }}"
        aria-controls="tab.slug"
        role="tab"
-       data-toggle="tab">{{ tab.title }}</a>
+       data-bs-toggle="tab">{{ tab.title }}</a>
   </li>
   {% endfor %}
 </ul>

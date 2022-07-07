@@ -8,18 +8,18 @@
 <div id="file_browser">
     <div id="tree-col" class="col-md-3">
         <div id="tree-buttons">
-            <div id="tree-collapse" class="btn btn-sm btn-default" title="collapse all">
-                <span class="glyphicon glyphicon-collapse-up" aria-hidden="true"></span>
+            <div id="tree-collapse" class="btn btn-sm btn-outline-secondary" title="collapse all">
+                <span class="bi bi-caret-up-square" aria-hidden="true"></span>
             </div>
-            <div id="tree-expand" class="btn btn-sm btn-default" title="expand all">
-                <span class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span>
+            <div id="tree-expand" class="btn btn-sm btn-outline-secondary" title="expand all">
+                <span class="bi bi-caret-down-square" aria-hidden="true"></span>
             </div>
         </div>
         <div id="hierarchy">
             <!-- Start by putting the collections in the tree structure and looping through their children -->
             {% for collection_id, collection_contents in collections.items %}
             <div class="foldercontainer">
-                <span class="folder glyphicon glyphicon-folder-close collection-container" data-isexpanded="false"
+                <span class="folder bi bi-folder2 collection-container" data-isexpanded="false"
                       data-isselected="false"
                       data-parentslug="{{ collection_contents.parent_slug }}"
                       data-slug="{{ collection_contents.slug }}"
@@ -41,7 +41,7 @@
         <!-- Current Path -->
         <div class="row">
             <div class="input-group">
-              <span class="input-group-addon" data-slug="" data-filepath="" id="up_button"><span class="glyphicon glyphicon-arrow-up"></span></span>
+              <span class="input-group-addon" data-slug="" data-filepath="" id="up_button"><span class="bi bi-arrow-up"></span></span>
               <input type="text" class="form-control" id="filepath_input" placeholder="" readonly>
             </div>
         </div>

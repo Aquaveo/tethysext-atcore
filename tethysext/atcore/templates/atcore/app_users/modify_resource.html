@@ -75,14 +75,14 @@
                        type="file"
                        accept="{{ file_upload_accept }}"
                        {% if file_upload_multiple %}multiple{% endif %}>
-                <label for="input-file-upload" class="btn btn-default btn-file-input">Browse</label>
+                <label for="input-file-upload" class="btn btn-outline-secondary btn-file-input">Browse</label>
               </div>
               <span class="help-block">{{ file_upload_error }}</span>
             </div>
             {% endif %}
             {{ file_upload_error }}
 
-            <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
+            <a class="btn btn-outline-secondary" href="{% url next_controller %}">Cancel</a>
             <input type="submit"
                    class="btn btn-success"
                    name="modify-resource-submit"

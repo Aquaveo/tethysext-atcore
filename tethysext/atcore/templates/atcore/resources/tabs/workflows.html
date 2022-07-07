@@ -1,11 +1,11 @@
 {% load static %}
 <a class="btn btn-fab btn-primary"
    data-tooltip="tooltip"
-   data-placement="left"
+   data-bs-placement="left"
    data-original-title="New Workflow"
-   data-toggle="modal"
-   data-target="#new-workflow-modal">
-  <span class="glyphicon glyphicon-plus"></span>
+   data-bs-toggle="modal"
+   data-bs-target="#new-workflow-modal">
+  <span class="bi bi-plus-lg"></span>
 </a>
 
 {% if workflow_cards %}
@@ -38,12 +38,12 @@
             <td class="btn-td">
               <div class="btn-toolbar pull-right">
                 {% if workflow_card.can_delete %}
-                <a class="btn btn-default btn-delete-manage btn-delete btn-flat"
+                <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat"
                    href="javascript:void(0);"
                    data-id="{{ workflow_card.id }}"
-                   data-toggle="tooltip"
-                   data-placement="top"
-                   title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   title="Delete"><span class="bi bi-trash"></span></a>
                 {% endif %}
                 <a class="btn btn-flat btn-workflow btn-{{ workflow_card.status.style }} btn-workflow-{{ workflow_card.status.style }}"
                    href="{{ workflow_card.status.href }}">{{ workflow_card.status.title }}</a>
