@@ -64,7 +64,7 @@ class ModelFileDatabase(ModelDatabaseBase):
         """
         src_dir = self.directory
 
-        with self.model_db_connection.lock.acquire(timeout=self.model_db_connection.lock_timeout, poll_intervall=0.05):
+        with self.model_db_connection.lock.acquire(timeout=self.model_db_connection.lock_timeout, poll_interval=0.05):
             new_db = ModelFileDatabase(self._app)
             dst_dir = new_db.directory
 
@@ -102,7 +102,7 @@ class ModelFileDatabase(ModelDatabaseBase):
         """
         deletes a models in the model file databases.
         """
-        with self.model_db_connection.lock.acquire(timeout=self.model_db_connection.lock_timeout, poll_intervall=0.05):
+        with self.model_db_connection.lock.acquire(timeout=self.model_db_connection.lock_timeout, poll_interval=0.05):
             shutil.rmtree(self.directory)
 
     def initialize(self, *args, **kwargs):

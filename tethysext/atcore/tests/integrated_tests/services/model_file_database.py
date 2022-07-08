@@ -64,7 +64,7 @@ class ModelFileDatabaseTests(unittest.TestCase):
 
     def test_duplicate_locked(self):
         lock = FileLock(self.md.model_db_connection.lock_path, timeout=1)
-        with lock.acquire(timeout=15, poll_intervall=0.5):
+        with lock.acquire(timeout=15, poll_interval=0.5):
             self.assertRaises(TimeoutError, self.md.duplicate)
 
     def test_initialize_fail(self):
@@ -100,5 +100,5 @@ class ModelFileDatabaseTests(unittest.TestCase):
 
     def test_delete_locked(self):
         lock = FileLock(self.md.model_db_connection.lock_path, timeout=1)
-        with lock.acquire(timeout=15, poll_intervall=0.5):
+        with lock.acquire(timeout=15, poll_interval=0.5):
             self.assertRaises(TimeoutError, self.md.delete)

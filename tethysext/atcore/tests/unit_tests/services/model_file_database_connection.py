@@ -72,7 +72,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
 
     def test_delete_locked(self):
         lock = FileLock(self.mdc.lock_path, timeout=1)
-        with lock.acquire(timeout=15, poll_intervall=0.5):
+        with lock.acquire(timeout=15, poll_interval=0.5):
             self.assertRaises(TimeoutError, self.mdc.delete, 'test.txt')
 
     def test_add_file(self):
@@ -102,7 +102,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         test_add = os.path.join(self.root, "test.txt")
         open(test_add, "w+").close()
         lock = FileLock(self.mdc.lock_path, timeout=1)
-        with lock.acquire(timeout=15, poll_intervall=0.5):
+        with lock.acquire(timeout=15, poll_interval=0.5):
             self.assertRaises(TimeoutError, self.mdc.add, test_add)
 
     def test_add_zip_file(self):
@@ -133,7 +133,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         src = os.path.join(self.db_dir, 'test_dir')
         os.mkdir(src)
         lock = FileLock(self.mdc.lock_path, timeout=1)
-        with lock.acquire(timeout=15, poll_intervall=0.5):
+        with lock.acquire(timeout=15, poll_interval=0.5):
             self.assertRaises(TimeoutError, self.mdc.duplicate, 'test_dir', 'newtest_dir')
 
     def test_move_file(self):
@@ -170,7 +170,7 @@ class ModelFileDatabaseConnectionTests(unittest.TestCase):
         test_src = os.path.join(self.db_dir, "test.txt")
         test_dst = os.path.join(self.root, "test.txt")
         lock = FileLock(self.mdc.lock_path, timeout=1)
-        with lock.acquire(timeout=15, poll_intervall=0.5):
+        with lock.acquire(timeout=15, poll_interval=0.5):
             self.assertRaises(TimeoutError, self.mdc.move, test_src, test_dst)
 
     def test_bulk_delete(self):

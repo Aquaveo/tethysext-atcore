@@ -69,7 +69,7 @@ export ATCORE_TEST_DATABASE="postgresql://<username>:<password>@<ipaddress>:<por
 To run unit tests:
 
 ```bash
-$ coverage run --rcfile=coverage.ini <TETHYS_HOME>/src/manage.py test tethysext.atcore.tests.unit_tests
+$ coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
 $ coverage report
 ```
 

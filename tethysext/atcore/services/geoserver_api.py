@@ -643,73 +643,71 @@ class GeoServerAPI(object):
                 if item != coverage_archive_name:
                     zf.write(os.path.join(working_dir, item), item)
 
-        files = {'file': open(coverage_archive, 'rb')}
-        content_type = 'application/zip'
+        with open(coverage_archive, 'rb') as file_:
+            files = {'file': file_}
+            content_type = 'application/zip'
 
-        # Prepare headers
-        headers = {
-            "Content-type": content_type,
-            "Accept": "application/xml"
-        }
+            # Prepare headers
+            headers = {
+                "Content-type": content_type,
+                "Accept": "application/xml"
+            }
 
-        # Prepare URL
-        extension = coverage_type.lower()
+            # Prepare URL
+            extension = coverage_type.lower()
 
-        if coverage_type == self.CT_GRASS_GRID:
-            extension = self.CT_ARC_GRID.lower()
+            if coverage_type == self.CT_GRASS_GRID:
+                extension = self.CT_ARC_GRID.lower()
 
-        url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/coveragestores/' + \
-            coverage_store_name + '/file.' + extension
+            url = self.gs_engine.endpoint + 'workspaces/' + workspace + '/coveragestores/' + \
+                coverage_store_name + '/file.' + extension
 
-        # Set params
-        params = {'coverageName': coverage_name}
+            # Set params
+            params = {'coverageName': coverage_name}
 
-        retries_remaining = 3
-        zip_error_retries = 5
-        raise_error = False
+            retries_remaining = 3
+            zip_error_retries = 5
+            raise_error = False
 
-        while True:
-            if coverage_type == self.CT_IMAGE_MOSAIC:
-                # Image mosaic doesn't need params argument.
-                response = requests.put(
-                    url=url,
-                    files=files,
-                    headers=headers,
-                    auth=(self.gs_engine.username, self.gs_engine.password)
-                )
-            else:
-                response = requests.put(
-                    url=url,
-                    files=files,
-                    headers=headers,
-                    params=params,
-                    auth=(self.gs_engine.username, self.gs_engine.password)
-                )
+            while True:
+                if coverage_type == self.CT_IMAGE_MOSAIC:
+                    # Image mosaic doesn't need params argument.
+                    response = requests.put(
+                        url=url,
+                        files=files,
+                        headers=headers,
+                        auth=(self.gs_engine.username, self.gs_engine.password)
+                    )
+                else:
+                    response = requests.put(
+                        url=url,
+                        files=files,
+                        headers=headers,
+                        params=params,
+                        auth=(self.gs_engine.username, self.gs_engine.password)
+                    )
 
-            # Raise an exception if status code is not what we expect
-            if response.status_code == 201:
-                log.info('Successfully created coverage {}'.format(coverage_name))
-                break
-            if response.status_code == 500 and 'already exists' in response.text:
-                log.warning('Coverage already exists {}'.format(coverage_name))
-                break
-            if response.status_code == 500 and 'Error occured unzipping file' in response.text:
-                zip_error_retries -= 1
-                if zip_error_retries == 0:
-                    raise_error = True
-            else:
-                retries_remaining -= 1
-                if retries_remaining == 0:
-                    raise_error = True
+                # Raise an exception if status code is not what we expect
+                if response.status_code == 201:
+                    log.info('Successfully created coverage {}'.format(coverage_name))
+                    break
+                if response.status_code == 500 and 'already exists' in response.text:
+                    log.warning('Coverage already exists {}'.format(coverage_name))
+                    break
+                if response.status_code == 500 and 'Error occured unzipping file' in response.text:
+                    zip_error_retries -= 1
+                    if zip_error_retries == 0:
+                        raise_error = True
+                else:
+                    retries_remaining -= 1
+                    if retries_remaining == 0:
+                        raise_error = True
 
-            if raise_error:
-                msg = "Create Coverage Status Code {0}: {1}".format(response.status_code, response.text)
-                exception = requests.RequestException(msg, response=response)
-                log.error(exception)
-                raise exception
-
-        # Clean up
-        files['file'].close()
+                if raise_error:
+                    msg = "Create Coverage Status Code {0}: {1}".format(response.status_code, response.text)
+                    exception = requests.RequestException(msg, response=response)
+                    log.error(exception)
+                    raise exception
 
         if working_dir:
             shutil.rmtree(working_dir)
