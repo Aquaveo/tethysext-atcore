@@ -9,8 +9,8 @@
 // Global setTimeout variables so that it can be cleared
 
 function add_processing_div() {
-    var div_show = document.createElement("show-background");
-    var image_show = document.createElement("show-image");
+    var div_show = document.createElement("div");
+    var image_show = document.createElement("div");
     var elem = document.createElement("img");
 
     if ($('#show-background').length === 0) {

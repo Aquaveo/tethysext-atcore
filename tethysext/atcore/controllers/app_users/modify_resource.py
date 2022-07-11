@@ -94,7 +94,7 @@ class ModifyResource(AppUsersViewMixin):
         # GET params
         next_arg = str(request.GET.get('next', ""))
         active_app = get_active_app(request)
-        app_namespace = active_app.namespace
+        app_namespace = active_app.package
 
         # Set redirect url
         if next_arg == 'manage-organizations':
