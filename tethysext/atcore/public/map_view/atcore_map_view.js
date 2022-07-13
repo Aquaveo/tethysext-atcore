@@ -194,10 +194,10 @@ var ATCORE_MAP_VIEW = (function() {
 
                             let checked = $(layer_content).find(`[data-layer-id='${layer_id}']`)[0].checked;
                             if (checked) {
-                                $("#legend-" + layer_variable).removeClass('hidden');
+                                $("#legend-" + layer_variable).removeClass('d-none');
                             }
                             else {
-                                $("#legend-" + layer_variable).addClass('hidden');
+                                $("#legend-" + layer_variable).addClass('d-none');
                             }
                         })
                     }
@@ -590,9 +590,9 @@ var ATCORE_MAP_VIEW = (function() {
                 }
 
                 if (layer_group_checked && layer_checked) {
-                    $("#legend-" + layer_variable).removeClass('hidden')
+                    $("#legend-" + layer_variable).removeClass('d-none')
                 } else {
-                    $("#legend-" + layer_variable).addClass('hidden')
+                    $("#legend-" + layer_variable).addClass('d-none')
                 }
 
             });
@@ -630,10 +630,10 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Set the visibility of legend
             if (checked) {
-                $("#legend-" + layer_variable).removeClass('hidden');
+                $("#legend-" + layer_variable).removeClass('d-none');
             }
             else {
-                $("#legend-" + layer_variable).addClass('hidden');
+                $("#legend-" + layer_variable).addClass('d-none');
             }
 
             // TODO: Save state to resource - store in attributes?
@@ -652,7 +652,7 @@ var ATCORE_MAP_VIEW = (function() {
             }
 
             // Set the visibility of legend
-            $("#legend-" + layer_variable).addClass('hidden');
+            $("#legend-" + layer_variable).addClass('d-none');
 
             // TODO: Save state to resource - store in attributes?
         });
@@ -1769,7 +1769,7 @@ var ATCORE_MAP_VIEW = (function() {
             // uncheck the layer if we hide it
             $('.layer-visibility-control[data-layer-id="' + layer_ids[i] + '"]')[0].checked = false;
             // Find the correct layer-list-item and add hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden");
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("d-none");
 
         }
     }
@@ -1777,7 +1777,7 @@ var ATCORE_MAP_VIEW = (function() {
     show_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Find the correct layer-list-item and remove hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("hidden")
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("d-none")
 
         }
     }
