@@ -84,7 +84,7 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
 
             # If any of the required ids were not given originally, redirect to the appropriate url with derived ids
             active_app = get_active_app(request)
-            app_namespace = active_app.namespace
+            app_namespace = active_app.package
             url_kwargs = {'resource_id': resource_id, 'workflow_id': workflow_id, 'step_id': step_id}
             if is_result_step and not result_id_given:
                 # Redirect to the result page

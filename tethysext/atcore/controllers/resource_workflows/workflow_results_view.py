@@ -86,7 +86,7 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
             str: name of the url pattern for the given workflow step views.
         """
         active_app = get_active_app(request)
-        url_map_name = '{}:{}_workflow_step_result'.format(active_app.namespace, workflow.type)
+        url_map_name = '{}:{}_workflow_step_result'.format(active_app.package, workflow.type)
         return url_map_name
 
     def build_result_cards(self, step):

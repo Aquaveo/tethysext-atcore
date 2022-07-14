@@ -153,7 +153,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         mock_get_app.return_value = app
 
         active_app = mock.MagicMock()
-        active_app.namespace = 'app_namespace'
+        active_app.package = 'app_namespace'
         mock_get_active_app.return_value = active_app
 
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
@@ -194,7 +194,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         mock_get_app.return_value = app
 
         active_app = mock.MagicMock()
-        active_app.namespace = 'app_namespace'
+        active_app.package = 'app_namespace'
         mock_get_active_app.return_value = active_app
 
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
