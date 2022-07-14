@@ -179,7 +179,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.namespace}:generic_workflow_workflow_step_result'
+        url_name = f'{self.app.package}:generic_workflow_workflow_step_result'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -223,7 +223,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.namespace}:generic_workflow_workflow_step_result'
+        url_name = f'{self.app.package}:generic_workflow_workflow_step_result'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -249,7 +249,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.namespace}:generic_workflow_workflow_step'
+        url_name = f'{self.app.package}:generic_workflow_workflow_step'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,

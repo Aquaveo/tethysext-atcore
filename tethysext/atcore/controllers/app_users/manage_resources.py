@@ -227,19 +227,19 @@ class ManageResources(AppUsersViewMixin):
         """
         Get the URL for the Resource Working button.
         """
-        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_status') + f'?r={resource.id}'
+        return reverse(f'{self._app.package}:{resource.SLUG}_resource_status') + f'?r={resource.id}'
 
     def get_launch_url(self, request, resource):
         """
         Get the URL for the Resource Launch button.
         """
-        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details', args=[resource.id])
+        return reverse(f'{self._app.package}:{resource.SLUG}_resource_details', args=[resource.id])
 
     def get_error_url(self, request, resource):
         """
         Get the URL for the Resource Error button.
         """
-        return reverse(f'{self._app.namespace}:{resource.SLUG}_resource_details', args=[resource.id])
+        return reverse(f'{self._app.package}:{resource.SLUG}_resource_details', args=[resource.id])
 
     def get_resource_action(self, session, request, request_app_user, resource):
         """

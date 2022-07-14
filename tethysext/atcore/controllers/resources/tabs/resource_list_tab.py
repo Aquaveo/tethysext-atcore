@@ -64,7 +64,7 @@ class ResourceListTab(ResourceTab):
         resource_cards = []
         for resource in resources:
             resource_card = resource.__dict__
-            resource_card['action_href'] = self.get_href_for_resource(self._app.namespace, resource)
+            resource_card['action_href'] = self.get_href_for_resource(self._app.package, resource)
             resource_cards.append(resource_card)
         return resource_cards
 

@@ -345,7 +345,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_details',
+            f'{manage_resources._app.package}:{mock_resource.SLUG}_resource_details',
             args=[mock_resource.id]
         )
         self.assertDictEqual(
@@ -371,7 +371,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_status'
+            f'{manage_resources._app.package}:{mock_resource.SLUG}_resource_status'
         )
         self.assertDictEqual(
             {
@@ -393,7 +393,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.namespace}:{mock_resource.SLUG}_resource_details',
+            f'{manage_resources._app.package}:{mock_resource.SLUG}_resource_details',
             args=[mock_resource.id]
         )
         self.assertDictEqual(

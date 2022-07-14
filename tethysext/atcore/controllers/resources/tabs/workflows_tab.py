@@ -134,7 +134,7 @@ class ResourceWorkflowsTab(ResourceTab):
 
         for workflow in workflows:
             status = workflow.get_status()
-            app_namespace = self.get_app().namespace
+            app_namespace = self.get_app().package
             url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
             href = reverse(url_name, args=(resource.id, str(workflow.id)))
             status_style = get_style_for_status(status)

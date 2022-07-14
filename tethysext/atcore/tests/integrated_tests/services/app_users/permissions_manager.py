@@ -55,8 +55,8 @@ class AppPermissionsManagerTests(SqlAlchemyTestCase):
         self.staff_app_user = self.session.query(AppUser).filter(AppUser.username == AppUser.STAFF_USERNAME).one()
 
         # Permissions manager setup
-        self.namespace = 'foo'
-        self.apm = AppPermissionsManager(self.namespace)
+        self.package = 'foo'
+        self.apm = AppPermissionsManager(self.package)
         self.num_permissions_groups = 13
 
         # Create one of the groups for testing
@@ -66,13 +66,13 @@ class AppPermissionsManagerTests(SqlAlchemyTestCase):
         permissions_groups = self.apm.list()
         self.assertEqual(self.num_permissions_groups, len(permissions_groups))
         for pg in permissions_groups:
-            self.assertNotIn(self.namespace, pg)
+            self.assertNotIn(self.package, pg)
 
     def test_list_with_namespace(self):
         permissions_groups = self.apm.list(with_namespace=True)
         self.assertEqual(self.num_permissions_groups, len(permissions_groups))
         for pg in permissions_groups:
-            self.assertIn(self.namespace, pg)
+            self.assertIn(self.package, pg)
 
     def test_get_permission_group_for(self):
         for role in self.roles.list():
