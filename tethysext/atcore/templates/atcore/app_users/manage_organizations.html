@@ -24,12 +24,12 @@
 
     {% for organization_license, organization_cards in organization_cards.items %}
       <h5>{{ organization_license }}</h5>
-      <div class="panel-group manage-panel-group" id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
+      <div id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
       {% for organization_card in organization_cards %}
-        <div class="panel panel-default manage-panel">
+        <div class="card manage-card">
 
-          {# PANEL HEADER #}
-          <div class="panel-heading manage-panel-heading" role="tab" id="heading-{{ organization_card.id }}">
+          {# CARD HEADER #}
+          <div class="card-header manage-card-header" role="tab" id="heading-{{ organization_card.id }}">
 
             {# ORG TITLE #}
             <div class="manage-item-title-wrapper">
@@ -86,12 +86,12 @@
             {% endif %}
           </div>
 
-          {# PANEL BODY #}
+          {# CARD BODY #}
           <div id="collapse-{{ organization_card.id }}"
-               class="panel-collapse collapse {% if forloop.first %}in{% endif %}"
+               class="card-collapse collapse {% if forloop.first %}in{% endif %}"
                role="tabpanel"
                aria-labelledby="heading-{{ organization_card.id }}">
-            <div class="panel-body list-group-panel-body">
+            <div class="card-body list-group-card-body">
               <ul class="list-group">
 
                 {# LICENSE #}

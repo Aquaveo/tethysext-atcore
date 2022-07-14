@@ -112,7 +112,7 @@ td, th {
     border-color: #b85f5d;
 }
 
-.manage-panel-heading {
+.manage-card-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -120,11 +120,7 @@ td, th {
     border-radius: 0;
 }
 
-.panel-group  {
-    border-radius: 0;
-}
-
-.panel {
+.card {
     border-radius: 0!important;
 }
 

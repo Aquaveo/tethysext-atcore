@@ -57,7 +57,7 @@ class ManageOrganizationMembers(AppUsersViewMixin):
         # Process next
         next_arg = request.GET.get('next', "")
         active_app = get_active_app(request)
-        app_namespace = active_app.namespace
+        app_namespace = active_app.package
 
         if next_arg == 'manage-organizations':
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)

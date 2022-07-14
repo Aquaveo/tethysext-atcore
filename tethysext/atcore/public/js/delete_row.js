@@ -18,7 +18,7 @@ function init_delete_row_buttons() {
         $('#modal-delete-button').attr('data-id', id);
 
         // Open the delete modal
-        $('#delete-modal').modal();
+        $('#delete-modal').modal('show');
       });
   });
 
