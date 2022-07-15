@@ -64,7 +64,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         self.session.add(self.resource)
         self.session.commit()
 
-        self.app = mock.MagicMock(spec=TethysApp, namespace='app_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, package='app_namespace')
 
         render_patcher = mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.render')
         self.mock_render = render_patcher.start()

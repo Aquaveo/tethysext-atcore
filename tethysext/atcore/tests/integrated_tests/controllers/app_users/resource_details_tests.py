@@ -67,8 +67,8 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.get_active_app')
     def test_default_back_url_with_back(self, mock_get_active_app, mock_reverse):
-        namespace = 'app_namespace'
-        mock_get_active_app.return_value = mock.MagicMock(namespace=namespace)
+        package = 'app_namespace'
+        mock_get_active_app.return_value = mock.MagicMock(package=package)
         self.request.GET = {'back': 'manage-organizations'}
 
         back = self.rd.default_back_url(self.request)

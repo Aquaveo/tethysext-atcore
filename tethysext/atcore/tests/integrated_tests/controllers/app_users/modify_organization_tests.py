@@ -75,7 +75,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         active_app_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_organization.get_active_app')
         self.mock_get_active_app = active_app_patcher.start()
-        self.mock_get_active_app.return_value = mock.MagicMock(namespace='app_namespace')
+        self.mock_get_active_app.return_value = mock.MagicMock(package='app_namespace')
         self.addCleanup(active_app_patcher.stop)
 
         render_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_organization.render')

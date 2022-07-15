@@ -102,7 +102,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
     def test_get_result_url_name(self, mock_get_active_app):
         mock_request = mock.MagicMock()
         mock_workflow = mock.MagicMock(type='bar')
-        mock_get_active_app.return_value = mock.MagicMock(namespace='foo')
+        mock_get_active_app.return_value = mock.MagicMock(package='foo')
         baseline = 'foo:bar_workflow_step_result'
         ret = WorkflowResultsView.get_result_url_name(mock_request, mock_workflow)
         self.assertEqual(baseline, ret)

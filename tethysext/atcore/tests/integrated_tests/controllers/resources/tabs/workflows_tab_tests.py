@@ -78,7 +78,7 @@ class ResourceWorkflowsTabTests(SqlAlchemyTestCase):
         self.session.add(self.resource)
         self.session.commit()
 
-        self.app = mock.MagicMock(spec=TethysApp, namespace='foo_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, package='foo_namespace')
         ResourceWorkflowsTab._app = self.app
 
         self.reverse_url = '/foo/bar'

@@ -82,7 +82,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.resource = Resource()
         self.session.add(self.resource)
 
-        self.app = mock.MagicMock(spec=TethysApp, namespace='app_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, package='app_namespace')
 
         self.workflow = ResourceWorkflow(name='foo')
 
@@ -450,7 +450,6 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
 
     def test_route_to_result_controller_wrong_step_type(self):
         self.mock_get_step_mixins.return_value = self.step1
-
         try:
             ResourceWorkflowRouter()._route_to_result_controller(self.request, self.resource.id, self.workflow.id,
                                                                  self.step1.id, str(self.result_id))

@@ -83,7 +83,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
 
         get_active_app_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_resource.get_active_app')  # noqa: E501
         self.get_active_app = get_active_app_patcher.start()
-        self.get_active_app.return_value = mock.MagicMock(namespace='app_namespace')
+        self.get_active_app.return_value = mock.MagicMock(package='app_namespace')
         self.addCleanup(get_active_app_patcher.stop)
 
         log_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_resource.log')
