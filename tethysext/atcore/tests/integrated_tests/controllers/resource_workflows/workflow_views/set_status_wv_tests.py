@@ -243,7 +243,6 @@ class SetStatusWVTests(WorkflowViewTestCase):
             next_url=next_url,
             previous_url=previous_url
         )
-        breakpoint()
 
         self.assertEqual(self.mock_psd(), ret)
 
