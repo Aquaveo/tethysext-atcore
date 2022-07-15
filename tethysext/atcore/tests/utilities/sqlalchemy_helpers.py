@@ -39,8 +39,7 @@ class SqlAlchemyTestCase(TethysTestCase):
         self.session = Session(connection)
 
     def tear_down_session_and_transaction(self):
-        self.session.close()
-        self.transaction.rollback()
+        self.session.close()  # Nested transactions seem to be deassociated on commit on 1.4
 
     def get_user(self, is_staff=False, return_app_user=False, user_role=Roles.ORG_USER):
         """Make a Django User and/or associated AppUser instance."""

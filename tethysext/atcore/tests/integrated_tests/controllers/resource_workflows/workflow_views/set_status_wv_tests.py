@@ -12,6 +12,8 @@ from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.work
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.controllers.resource_workflows.workflow_views import SetStatusWV
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
+
 
 
 def setUpModule():
@@ -92,14 +94,13 @@ class SetStatusWVTests(WorkflowViewTestCase):
         self.request_factory = RequestFactory()
 
         # Patch ResourceWorkflowView.user_has_active_role
-        uhar_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.'
-                                  'ResourceWorkflowView.user_has_active_role', return_value=True)
+        uhar_patcher = mock.patch.object(ResourceWorkflowView, 'user_has_active_role')
         self.mock_uhar = uhar_patcher.start()
+        uhar_patcher.return_value = True
         self.addCleanup(uhar_patcher.stop)
 
         # Patch ResourceWorkflowView.process_step_data
-        psd_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.'
-                                 'ResourceWorkflowView.process_step_data')
+        psd_patcher = mock.patch.object(ResourceWorkflowView, 'process_step_data')
         self.mock_psd = psd_patcher.start()
         self.addCleanup(psd_patcher.stop)
 
@@ -242,6 +243,7 @@ class SetStatusWVTests(WorkflowViewTestCase):
             next_url=next_url,
             previous_url=previous_url
         )
+        breakpoint()
 
         self.assertEqual(self.mock_psd(), ret)
 

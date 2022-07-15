@@ -75,7 +75,7 @@ class ResourceViewMixin(AppUsersViewMixin):
                 request=request,
                 *args, **kwargs
             )
-        return super(ResourceViewMixin, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def default_back_url(self, request, *args, **kwargs):
         """
