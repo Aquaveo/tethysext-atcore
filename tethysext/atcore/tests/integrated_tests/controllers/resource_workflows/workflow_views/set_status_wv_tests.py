@@ -44,7 +44,6 @@ class SetStatusWVTests(WorkflowViewTestCase):
             order=1,
         )
         self.ssrws_no_options.set_status(status=self.ssrws_no_options.STATUS_SUBMITTED)
-        self.workflow.steps.append(self.ssrws_no_options)
 
         self.ssrws_three_statuses = SetStatusRWS(
             name='ssrws_three_statuses',
@@ -112,6 +111,8 @@ class SetStatusWVTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
     def test_process_step_options_ssrws_no_options(self, _, __):
+        self.workflow.steps.append(self.ssrws_no_options)
+
         request = self.request_factory.get('/foo/bar/set-status')
         request.user = self.django_user
 
@@ -219,6 +220,8 @@ class SetStatusWVTests(WorkflowViewTestCase):
         self.assertDictEqual(expected_context, mock_context)
 
     def test_process_step_data_ssrws_no_options(self):
+        self.workflow.steps.append(self.ssrws_no_options)
+
         comment = 'This is my comment.'
 
         data = {
