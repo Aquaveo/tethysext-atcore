@@ -311,7 +311,9 @@ class GeoServerAPI(object):
         )
 
         # Return with error if this doesn't work
-        if response.status_code != 201:
+        if response.status_code == 500 and 'already exists' in response.text:
+            return
+        elif response.status_code != 201:
             msg = "Create Postgis Store Status Code {0}: {1}".format(response.status_code, response.text)
             exception = requests.RequestException(msg, response=response)
             log.error(exception)
@@ -506,7 +508,7 @@ class GeoServerAPI(object):
 
         retries_remaining = 300
         while retries_remaining > 0:
-            response = requests.put(
+            response = requests.post(
                 url,
                 headers=headers,
                 auth=(self.gs_engine.username, self.gs_engine.password),
