@@ -1613,7 +1613,7 @@ var ATCORE_MAP_VIEW = (function() {
         });
 
         // Reset tooltips to show on top
-        $('[data-bs-toggle="tooltip"]').tooltip('destroy');
+        $('[data-bs-toggle="tooltip"]').tooltip('dispose');
         $('[data-bs-toggle="tooltip"]').tooltip({'placement': 'top'});
     };
 
