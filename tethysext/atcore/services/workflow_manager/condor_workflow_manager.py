@@ -9,7 +9,6 @@
 import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
-from tethys_sdk.compute import get_scheduler
 from .base_workflow_manager import BaseWorkflowManager
 from tethysext.atcore.utilities import generate_geoserver_urls
 from tethys_apps.exceptions import TethysAppSettingDoesNotExist
@@ -165,7 +164,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             int: the job id.
         """
         # Prep
-        scheduler = get_scheduler(self.scheduler_name)
+        scheduler = self.app.get_scheduler(self.scheduler_name)
         # TODO: Cleanup other jobs associated with this workflow...
         job_manager = self.app.get_job_manager()
 
