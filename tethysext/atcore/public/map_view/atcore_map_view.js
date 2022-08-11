@@ -1001,7 +1001,7 @@ var ATCORE_MAP_VIEW = (function() {
                 html_content += '<input type="checkbox" class="layer-visibility-control" checked id="' + uuid + '"';
                 html_content += 'data-layer-id="' + uuid + '" data-layer-variable="" name="custom_layers">';
                 html_content += '<span class="checkmark checkbox"></span></label>';
-                html_content += '<div class="dropdown layers-context-menu pull-right">'
+                html_content += '<div class="dropdown layers-context-menu float-end">'
                 html_content += '<a id="' + uuid + '--context-menu" class="btn btn-xs dropdown-toggle layers-btn " data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="color: rgb(186, 12, 47);">';
                 html_content += '<span class="bi bi-three-dots-vertical"></span></a>';
                 html_content += '<ul class="dropdown-menu dropdown-menu-right" aria-labeledby="' + uuid + '--context-menu">';

@@ -577,7 +577,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '  </label>'
 
         self.lg_dropdown_menu = \
-            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <div class="dropdown layers-context-menu float-end">\n' \
             '      <a id="123--context-menu"\n' \
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
             '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
@@ -604,7 +604,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '    </div>'  # noqa: E127
 
         self.layer_1_dropdown_menu = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="456--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
             '       data-bs-toggle="dropdown"\n' \
@@ -628,7 +628,7 @@ class MapViewTests(SqlAlchemyTestCase):
                     '</a></li>'  # noqa: E127
 
         self.layer_2_dropdown_menu = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="789--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
             '       data-bs-toggle="dropdown"\n' \
@@ -651,7 +651,7 @@ class MapViewTests(SqlAlchemyTestCase):
                     '</a></li>'  # noqa: E127
 
         self.lg_dropdown_menu_no_remove = \
-            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <div class="dropdown layers-context-menu float-end">\n' \
             '      <a id="123--context-menu"\n' \
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
             '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
@@ -672,7 +672,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '    </div>'
 
         self.lg_dropdown_menu_no_rename = \
-            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <div class="dropdown layers-context-menu float-end">\n' \
             '      <a id="123--context-menu"\n' \
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
             '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
@@ -694,7 +694,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '    </div>'
 
         self.layer_1_dropdown_menu_no_rr = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="456--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
             '       data-bs-toggle="dropdown"\n' \
@@ -705,7 +705,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="456--context-menu">\n'
 
         self.layer_2_dropdown_menu_no_rr = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="789--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
             '       data-bs-toggle="dropdown"\n' \

@@ -4,9 +4,9 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
+        <h4 class="modal-title" id="new-workflow-modal-label">New Workflow</h4>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
         </button>
-        <h4 class="modal-title" id="new-workflow-modal-label">New Workflow</h4>
       </div>
       <div class="modal-body">
         <form id="new-workflow-form" method="post">
@@ -18,7 +18,7 @@
           </div>
           <div class="form-group">
             <label for="new-workflow-type-select">Workflow</label>
-            <select class="form-control" id="new-workflow-type-select" name="workflow-type">
+            <select class="form-select" id="new-workflow-type-select" name="workflow-type">
               <option value="" disabled selected>Select a workflow...</option>
               {% for type, attrs in workflow_types.items %}
               <option value="{{ type }}">{{ attrs.DISPLAY_TYPE_SINGULAR }}</option>

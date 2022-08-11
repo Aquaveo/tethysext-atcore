@@ -74,7 +74,7 @@
 
                 {# LAYER GROUP CONTEXT MENU #}
                 {% if show_public_toggle or show_remove or show_rename %}
-                  <div class="dropdown layers-context-menu pull-right">
+                  <div class="dropdown layers-context-menu float-end">
                     <a id="{{ layer_group.id }}--context-menu"
                        class="btn btn-xs dropdown-toggle layers-btn"
                        data-bs-toggle="dropdown" aria-haspopup="true"
@@ -97,7 +97,7 @@
                 {% endif %}
 
                 <a id="{{ layer_group.id }}--collapse"
-                   class="collapse-action btn btn-xs layers-btn pull-right">
+                   class="collapse-action btn btn-xs layers-btn float-end">
                   <span class="bi bi-chevron-down"></span>
                 </a>
               </li>
@@ -118,7 +118,7 @@
                   </label>
 
                   {# LAYER CONTEXT MENU #}
-                  <div class="dropdown layers-context-menu pull-right">
+                  <div class="dropdown layers-context-menu float-end">
                     <a id="{{ layer.data.layer_id }}--context-menu"
                        class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
                        data-bs-toggle="dropdown"

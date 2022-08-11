@@ -5,7 +5,7 @@
 {% block app_content %}
   {% with tethys_app.namespace|add:':'|add:resource_slug as base_resource_href %}
     {% if show_new_button and resources %}
-    <div class="top-action-btns pull-right">
+    <div class="top-action-btns float-end">
       <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><span class="bi bi-plus-lg"></span></a>
     </div>
     {% endif %}
@@ -123,7 +123,7 @@
 
                   {# BUTTONS #}
                   <td class="btn-td">
-                    <div class="btn-toolbar pull-right">
+                    <div class="btn-toolbar float-end">
                       {% if resource.editable %}
                         <a class="btn btn-outline-secondary btn-edit btn-flat" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><span class="bi bi-pencil-square"></span></a>
                       {% endif %}
