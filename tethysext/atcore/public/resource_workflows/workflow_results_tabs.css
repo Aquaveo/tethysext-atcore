@@ -16,13 +16,14 @@
 }
 
 .results-tabs .nav.nav-tabs>li {
-    margin-top: -1px;
+    margin-top: 2px;
 }
 
 .results-tabs .nav.nav-tabs>li>a {
     color: #1f1f1f;
     border: 1px solid transparent;
     border-radius: 0 0 4px 4px;
+    text-decoration: none;
 }
 
 .results-tabs .nav.nav-tabs>li>a:hover  {
