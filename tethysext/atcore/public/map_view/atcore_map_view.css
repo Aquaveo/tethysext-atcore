@@ -71,6 +71,10 @@
     color: #ffffff;
 }
 
+.layers-context-menu .dropdown-toggle::after {
+    display: none;
+}
+
 .layers-btn {
     color: #666666!important;
     border: none;
