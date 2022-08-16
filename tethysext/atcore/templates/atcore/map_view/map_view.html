@@ -20,8 +20,8 @@
     {% block map_tabs %}
       <ul class="nav nav-tabs atcore-nav-tabs" role="tablist">
         {# LAYERS TAB #}
-        <li class="nav-item" role="presentation" {% block disable_default_tab %}class="active"{% endblock %}>
-          <a class="nav-link"
+        <li class="nav-item" role="presentation">
+          <a class="nav-link {% block disable_default_tab %}active{% endblock %}"
              id="layers-tab-toggle"
              href="#layers-tab-panel"
              aria-controls="layers-tab-panel"
