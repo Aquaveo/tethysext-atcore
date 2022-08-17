@@ -24,8 +24,8 @@ Result Dicts:
   <div class="results-tabs">
     <ul class="nav nav-tabs"  role="tablist">
       {% for result in results %}
-        <li role="presentation" {% if result.id in request.path %}class="active"{% endif %} title="{{ result.description }}">
-          <a href="{% url result_url_name resource_id workflow_id step_id result.id %}">{{ result.name }}</a>
+        <li role="presentation" title="{{ result.description }}">
+          <a {% if result.id in request.path %}class="active"{% endif %} href="{% url result_url_name resource_id workflow_id step_id result.id %}">{{ result.name }}</a>
         </li>
       {% endfor %}
     </ul>

@@ -16,7 +16,7 @@
 }
 
 .results-tabs .nav.nav-tabs>li {
-    margin-top: 2px;
+    margin-top: -1px;
 }
 
 .results-tabs .nav.nav-tabs>li>a {
@@ -31,7 +31,7 @@
     border: 1px solid transparent;
 }
 
-.results-tabs .nav.nav-tabs>li.active>a {
+.results-tabs .nav.nav-tabs>li>a.active {
     border-color: #666666;
     background-color: #FFFFFF;
     border-top-color: #FFFFFF;
