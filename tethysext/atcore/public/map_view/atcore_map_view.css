@@ -109,11 +109,11 @@
 
 .layers-context-menu .dropdown-menu li a {
     color: #666666!important;
+    padding: 3px 20px;
 }
 
 .layers-context-menu .dropdown-menu li .flat-slider-container {
     padding: 3px 20px;
-
 }
 
 .layers-context-menu .dropdown-menu li .flat-slider-container label {
