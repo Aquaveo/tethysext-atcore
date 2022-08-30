@@ -68,7 +68,7 @@ class ResourceDetails(ResourceViewMixin):
         # Process next
         back_arg = request.GET.get('back', "")
         active_app = get_active_app(request)
-        app_namespace = active_app.package
+        app_namespace = active_app.url_namespace
         if back_arg == 'manage-organizations':
             back_controller = '{}:app_users_manage_organizations'.format(app_namespace)
         else:

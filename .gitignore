@@ -8,6 +8,7 @@
 *.sqlite
 *.DS_Store
 *.idea
+*.vscode
 *.coverage
 build
 dist

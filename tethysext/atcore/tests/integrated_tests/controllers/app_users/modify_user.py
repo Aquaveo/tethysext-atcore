@@ -110,7 +110,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1', 'Role2']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -163,7 +163,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1', 'Role2']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -218,7 +218,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1', 'Role2']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         mock_edit_session = mock_get_sessionmaker()()
         mock_edit_session.query().filter().one.side_effect = NoResultFound
@@ -273,7 +273,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['APP_ADMIN']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -345,7 +345,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['APP_ADMIN', 'DEVELOPER']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -400,7 +400,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['DEVELOPER']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -474,7 +474,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['APP_ADMIN']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -553,7 +553,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         # app_user.ROLES.get_no_organization_roles.return_value = [Roles.ORG_ADMIN]
         app_user.ROLES.get_organization_required_roles.return_value = [Roles.ORG_ADMIN]
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -630,7 +630,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['DEVELOPER']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -701,7 +701,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['DEVELOPER']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -784,7 +784,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_organization_required_roles.return_value = [Roles.ORG_ADMIN]
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()

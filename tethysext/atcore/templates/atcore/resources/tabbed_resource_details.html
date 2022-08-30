@@ -8,9 +8,7 @@
 {% block app_content %}
 {% for message in messages %}
   <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible" role="alert">
-    <button type="button" class="btn-close" data-bs-dismiss="alert">
-      <span class="sr-only">Close</span>
-    </button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     {{ message }}
   </div>
 {% endfor %}
@@ -18,7 +16,7 @@
 <!-- Tabs -->
 <ul class="nav nav-tabs" role="tablist">
   {% for tab in tabs %}
-  <li role="presentation" class="lazy-load-tab"
+  <li role="presentation" class="lazy-load-tab nav-item"
       data-callback="{{ tab.view.post_load_callback }}">
     <a href="#{{ tab.slug }}"
        aria-controls="tab.slug"

@@ -33,8 +33,8 @@
         {% if show_legends %}
           {% block legend_tab %}
             {% if legends %}
-            <li class="nav-item" role="presentation" {% block disable_legend_tab %}{% endblock %}>
-              <a class="nav-link"
+            <li class="nav-item" role="presentation">
+              <a class="nav-link {% block disable_legend_tab %}{% endblock %}"
                  id="legend-tab-toggle"
                  href="#legend-tab-panel"
                  aria-controls="legend-tab-panel"

@@ -93,7 +93,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         mock_no_of_orgs = mock.MagicMock()
         mock_get_app_usermodel().ROLES.get_no_organization_roles.return_value = mock_no_of_orgs
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call the method
         add_existing_user = AddExistingUser()
@@ -143,7 +143,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
 
         mock_get_app_usermodel().ROLES.get_no_organization_roles.return_value = ['Role1']
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call the method
         add_existing_user = AddExistingUser()
@@ -192,7 +192,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         mock_no_of_orgs = mock.MagicMock()
         mock_get_app_usermodel().ROLES.get_no_organization_roles.return_value = mock_no_of_orgs
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         mock_get_app_usermodel().ROLES.get_organization_required_roles.return_value = ['role1']
 
@@ -253,7 +253,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         mock_no_of_orgs = mock.MagicMock()
         mock_get_app_usermodel().ROLES.get_no_organization_roles.return_value = [mock_no_of_orgs]
 
-        mock_get_active_app().package = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call the method
         add_existing_user = AddExistingUser()

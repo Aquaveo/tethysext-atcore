@@ -20,7 +20,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
         mock_resource.id = '2323'
         mock_resource.__module__ = 'path_to_module'
         mock_resource.__class__.__name__ = 'class_name'
-        self.app = mock.MagicMock(package='foo')
+        self.app = mock.MagicMock(package='foo', url_namespace='foo')
         self.user = mock.MagicMock()
         self.workflow_name = 'workflow_name'
         self.workspace_path = '/tmp'

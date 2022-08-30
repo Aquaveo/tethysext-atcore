@@ -11,6 +11,7 @@ from unittest import mock
 from django.test import RequestFactory
 from django.http import JsonResponse
 from tethys_apps.models import TethysApp
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.services.map_manager import MapManagerBase
@@ -78,7 +79,7 @@ class ResourceWorkflowsTabTests(SqlAlchemyTestCase):
         self.session.add(self.resource)
         self.session.commit()
 
-        self.app = mock.MagicMock(spec=TethysApp, package='foo_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, url_namespace='foo_namespace')
         ResourceWorkflowsTab._app = self.app
 
         self.reverse_url = '/foo/bar'
@@ -109,8 +110,7 @@ class ResourceWorkflowsTabTests(SqlAlchemyTestCase):
         self.addCleanup(get_style_patcher.stop)
 
         self.mock_make_session = mock.MagicMock(return_value=self.session)
-        get_sessionmaker_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin'
-                                              '.get_sessionmaker')
+        get_sessionmaker_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
         self.mock_get_sessionmaker = get_sessionmaker_patcher.start()
         self.mock_get_sessionmaker.return_value = self.mock_make_session
         self.addCleanup(get_sessionmaker_patcher.stop)

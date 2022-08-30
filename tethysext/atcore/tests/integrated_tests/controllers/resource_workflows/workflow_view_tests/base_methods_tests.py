@@ -84,7 +84,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
                 '.user_has_active_role', return_value=True)
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_context(self, mock_app, _, __):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
         model_db = mock.MagicMock(spec=ResourceWorkflowStep)
@@ -108,7 +108,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_context_error_message(self, mock_app, mock_messages, _, __):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
         model_db = mock.MagicMock(spec=ResourceWorkflowStep)
@@ -135,7 +135,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_context_success_message(self, mock_app, mock_messages, _, __):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
         model_db = mock.MagicMock(spec=ResourceWorkflowStep)
@@ -162,7 +162,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.messages')
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_context_info_message(self, mock_app, mock_messages, _, __):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
         model_db = mock.MagicMock(spec=ResourceWorkflowStep)
@@ -184,7 +184,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
 
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_step_url_name(self, mock_app):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         self.request.path = 'apps/and/such'
 
         ret = ResourceWorkflowView().get_step_url_name(self.request, self.workflow)
@@ -329,7 +329,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
     @mock.patch('tethys_apps.models.TethysApp')
     def test_save_step_data_with_active_role_and_not_locked(self, mock_app, mock_reverse, mock_permission, _):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         mock_reverse.return_value = './mock_url'
         mock_permission.return_value = None
         resource = mock.MagicMock(spec=Resource)
@@ -350,7 +350,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.reverse')
     @mock.patch('tethys_apps.models.TethysApp')
     def test_save_step_data_without_active_role(self, mock_app, mock_reverse, mock_permission, mock_active_role, _):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         mock_reverse.return_value = './mock_url'
         mock_permission.return_value = None
         mock_active_role.return_value = False
@@ -372,7 +372,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethys_apps.models.TethysApp')
     def test_save_step_data_with_active_role_but_locked(self, mock_app, mock_reverse, mock_permission,
                                                         mock_active_role, _):
-        mock_app.objects.get.return_value = mock.MagicMock(package='my_workspace')
+        mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         mock_reverse.return_value = './mock_url'
         mock_permission.return_value = None
         mock_active_role.return_value = False

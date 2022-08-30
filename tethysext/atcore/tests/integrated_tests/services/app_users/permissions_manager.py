@@ -55,8 +55,8 @@ class AppPermissionsManagerTests(SqlAlchemyTestCase):
         self.staff_app_user = self.session.query(AppUser).filter(AppUser.username == AppUser.STAFF_USERNAME).one()
 
         # Permissions manager setup
-        self.package = 'foo'
-        self.apm = AppPermissionsManager(self.package)
+        self.url_namespace = 'foo'
+        self.apm = AppPermissionsManager(self.url_namespace)
         self.num_permissions_groups = 13
 
         # Create one of the groups for testing
