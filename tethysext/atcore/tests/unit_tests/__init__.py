@@ -10,7 +10,6 @@ from .services.model_database_connection_base import ModelDatabaseConnectionBase
 from .services.model_database_connection import ModelDatabaseConnectionTests  # noqa: F401, E501
 from .services.model_file_database_connection import ModelFileDatabaseConnectionTests  # noqa: F401, E501
 from .services.resource_spatial_manager import ResourceSpatialManagerTests  # noqa: F401
-from .services.geoserver_api import GeoServerAPITests  # noqa: F401
 from .services.base_spatial_manager import BaseSpatialManagerTests  # noqa: F401
 from .services.model_db_spatial_manager import ModelDBSpatialManagerTests  # noqa: F401
 from .services.model_file_db_spatial_manager import ModelFileDBSpatialManagerTests  # noqa: F401, E501

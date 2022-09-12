@@ -151,43 +151,38 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         self.assertIn('srtext', execute_calls[0][0][0])
         self.assertIn('proj4text', execute_calls[1][0][0])
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_link_geoserver_to_db(self, _):
+    def test_link_geoserver_to_db(self):
         model_db_spatial_manager = _ModelDBSpatialManager(self.geoserver_engine)
         mock_url = mock.MagicMock(host='localhost', port='5432', database='db1', username='foo', password='pass')
         mock_modeldatabase = mock.MagicMock(db_url_obj=mock_url)
         mock_modeldatabase.get_id.return_value = 'I001'
         model_db_spatial_manager.link_geoserver_to_db(mock_modeldatabase, True)
-        model_db_spatial_manager.gs_api.create_postgis_store.\
-            assert_called_with(workspace=ModelDBSpatialManager.WORKSPACE,
-                               name='I001',
-                               db_host='localhost',
-                               db_port='5432',
-                               db_name='db1',
-                               db_username='foo',
-                               db_password='pass')
-        model_db_spatial_manager.gs_api.reload.assert_called()
+        model_db_spatial_manager.gs_engine.create_postgis_store.\
+            assert_called_with(store_id=f"{ModelDBSpatialManager.WORKSPACE}:I001",
+                               host='localhost',
+                               port='5432',
+                               database='db1',
+                               username='foo',
+                               password='pass')
+        model_db_spatial_manager.gs_engine.reload.assert_called()
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_link_geoserver_to_db_with_out_reload_config(self, _):
+    def test_link_geoserver_to_db_with_out_reload_config(self):
         model_db_spatial_manager = _ModelDBSpatialManager(self.geoserver_engine)
         mock_url = mock.MagicMock(host='localhost', port='5432', database='db1', username='foo', password='pass')
         mock_modeldatabase = mock.MagicMock(db_url_obj=mock_url)
         mock_modeldatabase.get_id.return_value = 'I001'
         model_db_spatial_manager.link_geoserver_to_db(mock_modeldatabase, False)
-        model_db_spatial_manager.gs_api.create_postgis_store.\
-            assert_called_with(workspace=ModelDBSpatialManager.WORKSPACE,
-                               name='I001',
-                               db_host='localhost',
-                               db_port='5432',
-                               db_name='db1',
-                               db_username='foo',
-                               db_password='pass')
-        model_db_spatial_manager.gs_api.reload.assert_not_called()
+        model_db_spatial_manager.gs_engine.create_postgis_store.\
+            assert_called_with(store_id=f"{ModelDBSpatialManager.WORKSPACE}:I001",
+                               host='localhost',
+                               port='5432',
+                               database='db1',
+                               username='foo',
+                               password='pass')
+        model_db_spatial_manager.gs_engine.reload.assert_not_called()
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_unlink_geoserver_from_db(self, _):
+    def test_unlink_geoserver_from_db(self):
         model_db_spatial_manager = _ModelDBSpatialManager(self.geoserver_engine)
         model_db_spatial_manager.get_db_specific_store_id = mock.MagicMock(return_value='Workspace:S001')
         model_db_spatial_manager.unlink_geoserver_from_db(model_db=mock.MagicMock())
-        self.geoserver_engine.delete_store.assert_called_with('Workspace:S001', purge=False, recurse=False)
+        model_db_spatial_manager.gs_engine.delete_store.assert_called_with('Workspace:S001', purge=False, recurse=False)

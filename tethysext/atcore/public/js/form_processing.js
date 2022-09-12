@@ -32,7 +32,6 @@ function show_processing() {
 }
 
 function hide_processing() {
-    console.log()
     $('#show-background').addClass('d-none');
 }
 

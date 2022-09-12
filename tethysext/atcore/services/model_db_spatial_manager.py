@@ -125,18 +125,17 @@ class ModelDBSpatialManager(BaseSpatialManager):
         """
         db_url = model_db.db_url_obj
 
-        self.gs_api.create_postgis_store(
-            workspace=self.WORKSPACE,
-            name=model_db.get_id(),
-            db_host=db_url.host,
-            db_port=db_url.port,
-            db_name=db_url.database,
-            db_username=db_url.username,
-            db_password=db_url.password
+        self.gs_engine.create_postgis_store(
+            store_id=f"{self.WORKSPACE}:{model_db.get_id()}",
+            host=db_url.host,
+            port=db_url.port,
+            database=db_url.database,
+            username=db_url.username,
+            password=db_url.password
         )
 
         if reload_config:
-            self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
+            self.reload(ports=self.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
 
     def unlink_geoserver_from_db(self, model_db, purge=False, recurse=False):
         """
