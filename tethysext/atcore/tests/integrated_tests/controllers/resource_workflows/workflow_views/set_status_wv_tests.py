@@ -15,7 +15,6 @@ from tethysext.atcore.controllers.resource_workflows.workflow_views import SetSt
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 
 
-
 def setUpModule():
     setup_module_for_sqlalchemy_tests()
 

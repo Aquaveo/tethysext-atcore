@@ -122,7 +122,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_mixins_reverse = reverse_mixins_patcher.start()
         self.addCleanup(reverse_mixins_patcher.stop)
 
-        last_result_patcher = mock.patch.object(ResultsMixin, 'get_last_result')  # The method needs to be patched as an object so it is recognized when called from instances of the class
+        last_result_patcher = mock.patch.object(ResultsMixin, 'get_last_result')  # The method needs to be patched as an object so it is recognized when called from instances of the class  # noqa: E501
         self.mock_get_last_result = last_result_patcher.start()
         self.mock_get_last_result.return_value = mock.MagicMock(id=self.result_id)
         self.addCleanup(last_result_patcher.stop)
