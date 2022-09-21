@@ -33,14 +33,14 @@ class ModelFileDatabase(ModelDatabaseBase):
         if not getattr(self, '_directory', None):
             self._directory = os.path.join(
                 self.database_root,
-                '{}_{}'.format(self._app.package, self.database_id)
+                '{}_{}'.format(self._app.url_namespace, self.database_id)
             )
         return self._directory
 
     @property
     def model_db_connection(self):
         if self._model_db_connection is None:
-            self._model_db_connection = ModelFileDatabaseConnection(self.directory, self._app.package)
+            self._model_db_connection = ModelFileDatabaseConnection(self.directory, self._app.url_namespace)
         return self._model_db_connection
 
     def get_name(self):

@@ -8,6 +8,7 @@
 """
 from unittest import mock
 from django.test import RequestFactory
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.tests.factories.django_user import UserFactory
@@ -43,7 +44,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         self.session.add(self.app_user)
         self.session.commit()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.AddExistingUser._handle_modify_user_requests')
+    @mock.patch.object(AddExistingUser, '_handle_modify_user_requests')
     def test_get(self, mock_handle_modify_user):
         mock_request = mock.MagicMock()
         add_existing_user = AddExistingUser()
@@ -52,7 +53,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         # test the results
         mock_handle_modify_user.assert_called_with(mock_request)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.AddExistingUser._handle_modify_user_requests')
+    @mock.patch.object(AddExistingUser, '_handle_modify_user_requests')
     def test_post(self, mock_handle_modify_user):
         mock_request = mock.MagicMock()
 
@@ -64,11 +65,11 @@ class AddExistingUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test__handle_modify_user_requests(self, mock_get_app_usermodel, _,
                                           mock_get_session_maker, mock_get_active_app,
                                           mock_get_permission_manager, __, mock_reverse):
@@ -115,11 +116,11 @@ class AddExistingUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test__handle_modify_user_requests_permission_manager(self, mock_get_app_usermodel, mock_get_organization_model,
                                                              mock_get_session_maker, mock_get_active_app,
                                                              mock_get_permission_manager, _, mock_reverse):
@@ -164,11 +165,11 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         self.assertEqual('NameSpace:app_users_manage_users', mock_reverse.call_args_list[0][0][0])
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test__handle_modify_user_requests_must_assign_user(self, mock_get_app_usermodel, _,
                                                            mock_get_session_maker, mock_get_active_app,
                                                            __, mock_render):
@@ -226,9 +227,9 @@ class AddExistingUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test__handle_modify_user_requests_with_invalid_post_data(self, mock_get_app_usermodel, _,
                                                                  mock_get_session_maker, mock_get_active_app,
                                                                  mock_render):
@@ -273,7 +274,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         self.assertEqual('Must select at least one user.',
                          mock_render.call_args_list[0][0][2]['portal_users_select']['error'])
 
-        self.assertEqual('', mock_render.call_args_list[0][0][2]['role_select']['initial'])
+        self.assertEqual([], mock_render.call_args_list[0][0][2]['role_select']['initial'])
         self.assertEqual(mock_role, mock_render.call_args_list[0][0][2]['role_select']['options'])
         self.assertEqual('A role must be assigned to user.',
                          mock_render.call_args_list[0][0][2]['role_select']['error'])

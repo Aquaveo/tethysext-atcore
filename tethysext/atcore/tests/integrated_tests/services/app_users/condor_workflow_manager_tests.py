@@ -243,6 +243,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertTrue(manager.workspace_initialized)
 
     def test_prepare(self):
+        self.app.get_scheduler = mock.MagicMock(return_value=self.scheduler)
         manager = Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
                           self.scheduler_name, jobs=self.jobs, input_files=[self.key_path])
 
@@ -317,6 +318,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
 
     @mock.patch('tethys_compute.models.tethys_job.TethysJob.execute')
     def test_run_job_prepared(self, _):
+        self.app.get_scheduler = mock.MagicMock(return_value=self.scheduler)
         manager = Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
                           self.scheduler_name, jobs=self.jobs)
         manager.prepared = False

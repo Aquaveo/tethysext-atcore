@@ -28,8 +28,7 @@ class CLICommandTest(unittest.TestCase):
 
         mock_workspace.assert_called_once()
         mock_style.assert_called_with(
-            workspace='atcore',
-            style_name='dynamic_raster_style',
+            style_id="atcore:dynamic_raster_style",
             sld_template='/path/to/dynamic_raster_style.sld',
             sld_context={},
             overwrite=True

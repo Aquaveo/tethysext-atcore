@@ -185,8 +185,6 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
     @mock.patch('tethys_apps.models.TethysApp')
     def test_get_step_url_name(self, mock_app):
         mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
-        self.request.path = 'apps/and/such'
-
         ret = ResourceWorkflowView().get_step_url_name(self.request, self.workflow)
 
         self.assertEqual('my_workspace:generic_workflow_workflow_step', ret)

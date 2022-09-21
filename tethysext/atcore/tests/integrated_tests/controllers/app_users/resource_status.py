@@ -25,7 +25,7 @@ class ResourceStatusControllerTests(TethysTestCase):
     def tearDown(self):
         pass
 
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.ResourceStatus._handle_get')
+    @mock.patch.object(ResourceStatus, '_handle_get')
     def test_get(self, mock_handle_get):
         mock_request = self.request_factory.get('/foo/bar/status/')
         ret = self.controller(mock_request, back_url='/foo/bar')

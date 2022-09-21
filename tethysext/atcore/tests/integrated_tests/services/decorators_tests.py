@@ -8,6 +8,9 @@
 """
 import json
 from unittest import mock
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceViewMixin
+from tethysext.atcore.controllers.resource_view import ResourceView
+from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
@@ -100,22 +103,22 @@ class DecoratorsTests(SqlAlchemyTestCase):
         self.session.add(self.workflow)
         self.session.commit()
 
-        session_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+        session_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
         self.mock_get_session_maker = session_patcher.start()
         self.mock_get_session_maker.return_value = mock.MagicMock
         self.addCleanup(session_patcher.stop)
 
-        get_workflow_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')  # noqa: E501
+        get_workflow_patcher = mock.patch.object(WorkflowViewMixin, 'get_workflow')  # noqa: E501
         self.mock_get_workflow = get_workflow_patcher.start()
         self.mock_get_workflow.return_value = self.workflow
         self.addCleanup(get_workflow_patcher.stop)
 
-        get_step_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')  # noqa: E501
+        get_step_patcher = mock.patch.object(WorkflowViewMixin, 'get_step')  # noqa: E501
         self.mock_get_step = get_step_patcher.start()
         self.mock_get_step.return_value = self.step
         self.addCleanup(get_step_patcher.stop)
 
-        get_resource_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.get_resource')  # noqa: E501
+        get_resource_patcher = mock.patch.object(ResourceViewMixin, 'get_resource')  # noqa: E501
         self.mock_get_resource = get_resource_patcher.start()
         self.mock_get_resource.return_value = self.resource
         self.addCleanup(get_resource_patcher.stop)
@@ -204,14 +207,14 @@ class DecoratorsTests(SqlAlchemyTestCase):
         self.assertFalse(ret_dict['success'])
         self.assertEqual('This is the ATCore exception.', ret_dict['error'])
 
-    @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.get')
+    @mock.patch.object(ResourceView, 'get')
     def test_workflow_step_controller_value_error(self, _):
         WorkflowStepControllerClass().raise_value_error(self.request, self.workflow.id, self.step.id)
 
         self.assertEqual('This is the ValueError', self.step.get_attribute(self.step.ATTR_STATUS_MESSAGE))
         self.assertEqual('Error', self.step.get_status(self.step.ROOT_STATUS_KEY))
 
-    @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.get')
+    @mock.patch.object(ResourceView, 'get')
     def test_workflow_step_controller_value_error_as_rest_controller(self, _):
         ret = WorkflowStepControllerClass().raise_value_error_as_rest_controller(self.request, self.workflow.id,
                                                                                  self.step.id)
@@ -222,7 +225,7 @@ class DecoratorsTests(SqlAlchemyTestCase):
         self.assertFalse(ret_dict['success'])
         self.assertEqual('This is the ValueError', ret_dict['error'])
 
-    @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.get')
+    @mock.patch.object(ResourceView, 'get')
     def test_workflow_step_controller_runtime_error(self, _):
         WorkflowStepControllerClass().raise_runtime_error(self.request, self.workflow.id, self.step.id)
 
@@ -231,7 +234,7 @@ class DecoratorsTests(SqlAlchemyTestCase):
         self.assertEqual("We're sorry, an unexpected error has occurred.", msg_error_args[0][0][1])
         self.assertEqual('This is the Runtime Error', str(self.mock_log.exception.call_args_list[0][0][0]))
 
-    @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.get')
+    @mock.patch.object(ResourceView, 'get')
     def test_workflow_step_controller_runtime_error_as_rest_controller(self, _):
         ret = WorkflowStepControllerClass().raise_runtime_error_as_rest_controller(self.request, self.workflow.id,
                                                                                    self.step.id)

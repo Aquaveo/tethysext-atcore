@@ -60,7 +60,8 @@ class OrganizationTests(SqlAlchemyTestCase):
 
     def tearDown(self):
         self.session.close()
-        self.transaction.rollback()
+        if self.transaction.is_active:
+            self.transaction.rollback()
 
     def test_create_organization(self):
         organization = Organization(

@@ -9,6 +9,7 @@
 from unittest import mock
 from django.http import HttpRequest, QueryDict
 from django.contrib.auth.models import User
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users.organization import Organization
@@ -58,7 +59,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.request.POST = QueryDict('', mutable=True)
         self.request.POST.update({})
 
-        session_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+        session_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
         self.mock_session_maker = session_patcher.start()
         self.mock_session_maker.return_value = mock.MagicMock()
         self.addCleanup(session_patcher.stop)
@@ -75,7 +76,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         active_app_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_organization.get_active_app')
         self.mock_get_active_app = active_app_patcher.start()
-        self.mock_get_active_app.return_value = mock.MagicMock(package='app_namespace')
+        self.mock_get_active_app.return_value = mock.MagicMock(url_namespace='app_namespace')
         self.addCleanup(active_app_patcher.stop)
 
         render_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_organization.render')
@@ -102,7 +103,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_organization.ModifyOrganization._handle_modify_user_requests')  # noqa: E501
+    @mock.patch.object(ModifyOrganization, '_handle_modify_user_requests')  # noqa: E501
     def test_get(self, mock_handle):
         self.request.method = 'get'
         controller = ModifyOrganization.as_controller()
@@ -111,7 +112,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         mock_handle.assert_called()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_organization.ModifyOrganization._handle_modify_user_requests')  # noqa: E501
+    @mock.patch.object(ModifyOrganization, '_handle_modify_user_requests')  # noqa: E501
     def test_post(self, mock_handle):
         self.request.method = 'post'
         controller = ModifyOrganization.as_controller()
@@ -122,7 +123,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.models.app_users.organization.Organization.can_add_client_with_license')
     @mock.patch('tethysext.atcore.services.app_users.licenses.Licenses.must_have_consultant')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
     def test_get_license_to_consultant_map(self, mock_get_sessionmaker, mock_must_have_consultant,
                                            mock_can_add_client_with_license):
         mock_get_sessionmaker.return_value = mock.MagicMock()
@@ -145,7 +146,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         self.assertEqual(['garbage', 'consultant'], licenses)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_handle_modify_user_requests_valid_not_editing(self, mock_mixin_permissions):
         self.request.GET = {'next': 'manage-users'}
         self.request.POST.update({
@@ -191,8 +192,8 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertEqual('', context['organization_type_select']['classes'])
         self.assertEqual('organization-license', context['organization_type_select']['name'])
         self.assertEqual('License', context['organization_type_select']['display_text'])
-        self.assertFalse(context['organization_type_select']['initial_is_iterable'])
-        self.assertEqual('', context['organization_type_select']['initial'])
+        self.assertTrue(context['organization_type_select']['initial_is_iterable'])
+        self.assertEqual([], context['organization_type_select']['initial'])
         self.assertFalse(context['organization_type_select']['multiple'])
         self.assertFalse(context['organization_type_select']['original'])
         self.assertFalse(context['organization_type_select']['placeholder'])
@@ -206,8 +207,8 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertEqual('', context['owner_select']['classes'])
         self.assertEqual('Consultant', context['owner_select']['display_text'])
         self.assertEqual('organization-consultant', context['owner_select']['name'])
-        self.assertFalse(context['owner_select']['initial_is_iterable'])
-        self.assertEqual('', context['owner_select']['initial'])
+        self.assertTrue(context['owner_select']['initial_is_iterable'])
+        self.assertEqual([], context['owner_select']['initial'])
         self.assertFalse(context['owner_select']['multiple'])
         self.assertFalse(context['owner_select']['original'])
         self.assertFalse(context['owner_select']['placeholder'])
@@ -250,7 +251,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['organization_status_toggle']['disabled'])
         self.assertEqual('', context['organization_status_toggle']['error'])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_handle_modify_user_requests_modify_organization(self, _):
         self.request.GET = {'next': 'manage-resources'}
         self.request.POST.update({
@@ -268,7 +269,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.mock_reverse.assert_called()
         self.assertEqual('app_namespace:resources_manage_resources', self.mock_reverse.call_args[0][0])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_handle_modify_user_requests_invalid_modify_2(self, _):
         self.mock_organization_has_permission.return_value = False
         self.request.GET = {'next': 'manage-organizations'}
@@ -283,7 +284,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.services.app_users.licenses.Licenses.must_have_consultant')
     @mock.patch('tethysext.atcore.models.app_users.app_user.AppUser.get_app_user_from_request')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_handle_modify_user_requests_invalid_modify(self, _, mock_get_app_user, mock_have_consultant):
         self.mock_organization_has_permission.return_value = False
         mock_have_consultant.return_value = True
@@ -327,8 +328,8 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertEqual('', context['organization_type_select']['classes'])
         self.assertEqual('organization-license', context['organization_type_select']['name'])
         self.assertEqual('License', context['organization_type_select']['display_text'])
-        self.assertFalse(context['organization_type_select']['initial_is_iterable'])
-        self.assertEqual('', context['organization_type_select']['initial'])
+        self.assertTrue(context['organization_type_select']['initial_is_iterable'])
+        self.assertEqual([], context['organization_type_select']['initial'])
         self.assertFalse(context['organization_type_select']['multiple'])
         self.assertFalse(context['organization_type_select']['original'])
         self.assertFalse(context['organization_type_select']['placeholder'])
@@ -341,8 +342,8 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertEqual('', context['owner_select']['classes'])
         self.assertEqual('Consultant', context['owner_select']['display_text'])
         self.assertEqual('organization-consultant', context['owner_select']['name'])
-        self.assertFalse(context['owner_select']['initial_is_iterable'])
-        self.assertEqual('', context['owner_select']['initial'])
+        self.assertTrue(context['owner_select']['initial_is_iterable'])
+        self.assertEqual([], context['owner_select']['initial'])
         self.assertFalse(context['owner_select']['multiple'])
         self.assertFalse(context['owner_select']['original'])
         self.assertFalse(context['owner_select']['placeholder'])
@@ -385,7 +386,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['organization_status_toggle']['disabled'])
         self.assertEqual('', context['organization_status_toggle']['error'])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
     def test_handle_modify_user_requests_cannot_create_error(self, mock_get_org_model):
         organization = mock.MagicMock()
         organization.LICENSES = mock.MagicMock()

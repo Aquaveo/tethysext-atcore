@@ -86,7 +86,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.resource = Resource()
         self.session.add(self.resource)
 
-        self.app = mock.MagicMock(spec=TethysApp, package='app_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, url_namespace='app_namespace')
 
         self.workflow = ResourceWorkflow(name='foo')
 
@@ -183,7 +183,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.package}:generic_workflow_workflow_step_result'
+        url_name = f'{self.app.url_namespace}:generic_workflow_workflow_step_result'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -227,7 +227,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.package}:generic_workflow_workflow_step_result'
+        url_name = f'{self.app.url_namespace}:generic_workflow_workflow_step_result'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -253,7 +253,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.package}:generic_workflow_workflow_step'
+        url_name = f'{self.app.url_namespace}:generic_workflow_workflow_step'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,

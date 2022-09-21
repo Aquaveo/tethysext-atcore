@@ -64,7 +64,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         self.session.add(self.resource)
         self.session.commit()
 
-        self.app = mock.MagicMock(spec=TethysApp, package='app_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, package='app_namespace', url_namespace='app_namespace')
 
         render_patcher = mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.render')
         self.mock_render = render_patcher.start()
@@ -169,8 +169,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         )
         self.assertEqual(self.mock_render(), ret)
 
-    @mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.TabbedResourceDetails.'
-                '_handle_tab_action_request')
+    @mock.patch.object(TabbedResourceDetails, '_handle_tab_action_request')
     def test_post_with_tab_action(self, mock_htar):
         """Test for POST requests that include the tab_action parameter. Should route to ResourceTab for handling."""
         tab_slug = 'a-tab'

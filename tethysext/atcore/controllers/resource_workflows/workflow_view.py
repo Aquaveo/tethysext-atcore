@@ -298,7 +298,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             str: name of the url pattern for the given workflow step views.
         """
         active_app = get_active_app(request)
-        url_map_name = '{}:{}_workflow_step'.format(active_app.package, workflow.type)
+        url_map_name = '{}:{}_workflow_step'.format(active_app.url_namespace, workflow.type)
         return url_map_name
 
     @staticmethod
@@ -313,7 +313,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             str: name of the url pattern for the given workflow views.
         """
         active_app = get_active_app(request)
-        url_map_name = '{}:{}_workflow'.format(active_app.package, workflow.type)
+        url_map_name = '{}:{}_workflow'.format(active_app.url_namespace, workflow.type)
         return url_map_name
 
     @staticmethod

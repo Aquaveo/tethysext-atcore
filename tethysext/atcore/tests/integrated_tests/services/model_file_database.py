@@ -25,7 +25,8 @@ class ModelFileDatabaseTests(unittest.TestCase):
         self.app_namespace = 'foo'
         self.mock_app = TethysAppBase()
         self.mock_app.package = 'test'
-        self.test_url = os.path.join(self.test_dir, '{}_{}'.format(self.mock_app.package, self.database_id))
+        self.mock_app.root_url = 'test'  # url_namespace is created from root_url
+        self.test_url = os.path.join(self.test_dir, '{}_{}'.format(self.mock_app.url_namespace, self.database_id))
         self.mock_app.get_app_workspace = mock.MagicMock()
         self.mock_app.get_app_workspace.return_value = mock.MagicMock(
             path=self.test_dir
@@ -39,7 +40,7 @@ class ModelFileDatabaseTests(unittest.TestCase):
 
     def test_get_name(self):
         result = self.md.get_name()
-        self.assertEqual('{}_{}'.format(self.mock_app.package, self.database_id), result)
+        self.assertEqual('{}_{}'.format(self.mock_app.url_namespace, self.database_id), result)
 
     def test_get_id(self):
         result = self.md.get_id()
@@ -90,7 +91,7 @@ class ModelFileDatabaseTests(unittest.TestCase):
         self.assertEqual(modellist, result)
 
     def test_list_databases(self):
-        modellist = ['{}_{}'.format(self.mock_app.package, self.database_id)]
+        modellist = ['{}_{}'.format(self.mock_app.url_namespace, self.database_id)]
         result = self.md.list_databases()
         self.assertEqual(modellist, result)
 

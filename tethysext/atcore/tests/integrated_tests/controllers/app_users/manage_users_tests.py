@@ -11,6 +11,7 @@ import sys
 from unittest import mock
 from django.http import HttpRequest
 from django.contrib.auth.models import User
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.controllers.app_users.manage_users import ManageUsers
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -66,12 +67,12 @@ class ManageUsersTests(SqlAlchemyTestCase):
         self.mock_mixins_has_permission.return_value = True
         self.addCleanup(mixins_has_permission_patcher.stop)
 
-        user_get_permission_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')  # noqa: E501
+        user_get_permission_patcher = mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')  # noqa: E501
         self.mock_user_get_permission = user_get_permission_patcher.start()
         self.mock_user_get_permission.return_value = True
         self.addCleanup(user_get_permission_patcher.stop)
 
-        get_session_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')  # noqa: E501
+        get_session_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')  # noqa: E501
         self.mock_get_session = get_session_patcher.start()
         self.addCleanup(get_session_patcher.stop)
 
@@ -210,7 +211,7 @@ class ManageUsersTests(SqlAlchemyTestCase):
         else:
             self.assertEqual("Exception('Some exception message')", response_dict['error'])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_delete_remove(self, _):
         self.request.GET = {'action': 'remove'}
         self.request.method = 'delete'
@@ -221,7 +222,7 @@ class ManageUsersTests(SqlAlchemyTestCase):
         self.assertTrue(response_dict['success'])
         self.assertNotIn('error', response_dict)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_delete_remove_exception(self, mock_manager):
         manager = mock.MagicMock(spec=AppPermissionsManager, name='matt')
         manager.remove_all_permissions_groups.side_effect = Exception('Some exception message')

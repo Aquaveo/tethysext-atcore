@@ -10,6 +10,7 @@ from unittest import mock
 from django.http import HttpRequest
 from django.http import QueryDict
 from django.contrib.auth.models import User
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.controllers.app_users.modify_resource import ModifyResource
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -61,17 +62,17 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.get_organization_model.return_value = mock.MagicMock()
         self.addCleanup(get_organization_model_patcher.stop)
 
-        get_resource_model_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')  # noqa: E501
+        get_resource_model_patcher = mock.patch.object(AppUsersViewMixin, 'get_resource_model')
         self.get_resource_model = get_resource_model_patcher.start()
         self.get_resource_model.return_value = mock.MagicMock()
         self.addCleanup(get_resource_model_patcher.stop)
 
-        get_sessionmaker_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')  # noqa: E501
+        get_sessionmaker_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
         self.get_sessionmaker = get_sessionmaker_patcher.start()
         self.get_sessionmaker.return_value = mock.MagicMock()
         self.addCleanup(get_sessionmaker_patcher.stop)
 
-        has_permission_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_resource.has_permission')  # noqa: E501
+        has_permission_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_resource.has_permission')
         self.has_permission = has_permission_patcher.start()
         self.has_permission.return_value = True
         self.addCleanup(has_permission_patcher.stop)
@@ -83,7 +84,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
 
         get_active_app_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_resource.get_active_app')  # noqa: E501
         self.get_active_app = get_active_app_patcher.start()
-        self.get_active_app.return_value = mock.MagicMock(package='app_namespace')
+        self.get_active_app.return_value = mock.MagicMock(url_namespace='app_namespace')
         self.addCleanup(get_active_app_patcher.stop)
 
         log_patcher = mock.patch('tethysext.atcore.controllers.app_users.modify_resource.log')
@@ -109,7 +110,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource._handle_modify_resource_requests')  # noqa: E501
+    @mock.patch.object(ModifyResource, '_handle_modify_resource_requests')
     def test_get(self, mock_handle):
         mock_handle.return_value = {'success': True}
         controller = ModifyResource.as_controller()
@@ -119,7 +120,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
 
         self.assertTrue(ret['success'])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource._handle_modify_resource_requests')  # noqa: E501
+    @mock.patch.object(ModifyResource, '_handle_modify_resource_requests')
     def test_post(self, mock_handle):
         mock_handle.return_value = {'success': True}
         controller = ModifyResource.as_controller()
@@ -129,7 +130,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
 
         self.assertTrue(ret['success'])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_without_resource_id(self, _):
         self.request.FILES = []
         self.request.GET = {'next': 'manage-organizations'}
@@ -148,7 +149,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertTrue(self.mock_redirect.called)
         self.assertTrue(self.mock_reverse.called)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_editing(self, _):
         self.request.GET = {'next': 'manage-organizations'}
         self.request.POST.pop('resource-name')
@@ -160,8 +161,8 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertTrue(self.mock_render.called)
         self.assertTrue(self.mock_reverse.called)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.can_edit_resource')
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'can_edit_resource')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_cannot_edit_resource(self, _, mock_can_edit_resource):
         mock_can_edit_resource.return_value = False, 'Error message'
         self.request.FILES = []
@@ -174,7 +175,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertEqual('Error message', msg_args[0][0][1])
         self.assertEqual('Error message', self.mock_log.exception.call_args_list[0][0][0])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_include_srid(self, _):
         self.request.GET = {'next': 'manage-organizations'}
         modify_resource = ModifyResource()
@@ -213,7 +214,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertTrue(self.mock_render.called)
         self.assertTrue(self.mock_reverse.called)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_no_resource_name(self, _):
         self.request.GET = {'next': 'manage-organizations'}
         self.request.POST.pop('resource-name')
@@ -226,7 +227,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertTrue(self.mock_reverse.called)
 
     @mock.patch('traceback.print_exc')
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.can_create_resource')
+    @mock.patch.object(ModifyResource, 'can_create_resource')
     def test_handle_modify_resource_requests_non_atcore_exception(self, mock_can_create, mock_print_exe):
         mock_can_create.raiseError.side_effect = mock.MagicMock(side_effect=Exception('Generic Exception error'))
         self.request.GET = {'next': 'manage-organizations'}
@@ -240,7 +241,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertEqual('An unexpected error occurred while uploading your project. Please try again or contact '
                          'support@aquaveo.com for further assistance.', self.mock_log.exception.call_args_list[0][0][0])
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_upload_error(self, _):
         self.request.GET = {'next': 'manage-organizations'}
         modify_resource = ModifyResource()
@@ -252,7 +253,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.assertTrue(self.mock_render.called)
         self.assertTrue(self.mock_reverse.called)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_resource.ModifyResource.handle_file_upload')
+    @mock.patch.object(ModifyResource, 'handle_file_upload')
     def test_handle_modify_resource_requests_resource_srid_error(self, _):
         self.request.GET = {'next': 'manage-organizations'}
         modify_resource = ModifyResource()

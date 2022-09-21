@@ -27,6 +27,9 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
                          'files', 'file_database_client_tests')
         )
 
+    def tearDown(self):
+        return super().tearDown()
+
     def get_database_instance(self, database_id, database_meta=None):
         """
         A helper function to generate a FileDatabase in the database.
@@ -175,7 +178,8 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(meta_file))
         self.assertDictEqual(database_client.instance.meta, {})
 
-    def test_read_meta_bad_file(self):
+    @mock.patch('tethysext.atcore.mixins.meta_mixin.log.warning')
+    def test_read_meta_bad_file(self, _):
         """Test the read_meta function for the FileDatabase."""
         database_id = uuid.UUID('{e5bc841e-eeb7-4211-951f-d7e5a4ad08f2}')
         root_dir = os.path.join(self.test_files_base, 'test_read_meta_bad_file')
