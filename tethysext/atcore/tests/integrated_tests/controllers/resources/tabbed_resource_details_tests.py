@@ -12,6 +12,7 @@ from unittest import mock
 from django.test import RequestFactory
 from django.http import HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseBadRequest
 from tethys_apps.models import TethysApp
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceViewMixin
 
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.services.app_users.roles import Roles
@@ -71,14 +72,12 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         self.addCleanup(render_patcher.stop)
 
         self.mock_make_session = mock.MagicMock(return_value=self.session)
-        get_sessionmaker_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin'
-                                              '.get_sessionmaker')
+        get_sessionmaker_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
         self.mock_get_sessionmaker = get_sessionmaker_patcher.start()
         self.mock_get_sessionmaker.return_value = self.mock_make_session
         self.addCleanup(get_sessionmaker_patcher.stop)
 
-        get_resource_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin'
-                                          '.get_resource')
+        get_resource_patcher = mock.patch.object(ResourceViewMixin, 'get_resource')
         self.mock_get_resource = get_resource_patcher.start()
         self.mock_get_resource.return_value = self.resource
         self.addCleanup(get_resource_patcher.stop)
@@ -119,8 +118,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         self.assertIn('atcore/app_users/css/resource_details.css', TabbedResourceDetails.css_requirements)
         self.assertIsNone(TabbedResourceDetails.tabs)
 
-    @mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.TabbedResourceDetails.'
-                '_handle_tab_action_request')
+    @mock.patch.object(TabbedResourceDetails, '_handle_tab_action_request')
     def test_get_with_tab_action(self, mock_htar):
         """Test for GET requests that include the tab_action parameter. Should route to ResourceTab for handling."""
         tab_slug = 'a-tab'
@@ -135,8 +133,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         )
         self.assertEqual(mock_htar(), ret)
 
-    @mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.TabbedResourceDetails.'
-                '_handle_tab_action_request')
+    @mock.patch.object(TabbedResourceDetails, '_handle_tab_action_request')
     def test_get_without_tab_action(self, mock_htar):
         """Test for GET requests without the tab_action parameter. Should render the TabbedResourceDetails page."""
         tab_slug = 'a-tab'
@@ -184,8 +181,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         )
         self.assertEqual(mock_htar(), ret)
 
-    @mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.TabbedResourceDetails.'
-                '_handle_tab_action_request')
+    @mock.patch.object(TabbedResourceDetails, '_handle_tab_action_request')
     def test_post_without_tab_action(self, mock_htar):
         """Test for POST requests without the tab_action parameter. Should return a Method Not Allowed response."""
         tab_slug = 'a-tab'
@@ -198,8 +194,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         self.assertIsInstance(ret, HttpResponseNotAllowed)
         self.assertEqual('GET', ret['Allow'])
 
-    @mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.TabbedResourceDetails.'
-                '_handle_tab_action_request')
+    @mock.patch.object(TabbedResourceDetails, '_handle_tab_action_request')
     def test_delete_with_tab_action(self, mock_htar):
         """Test for DELETE requests that include the tab_action parameter. Should route to ResourceTab for handling."""
         tab_slug = 'a-tab'
@@ -214,8 +209,7 @@ class TabbedResourceDetailsTests(SqlAlchemyTestCase):
         )
         self.assertEqual(mock_htar(), ret)
 
-    @mock.patch('tethysext.atcore.controllers.resources.tabbed_resource_details.TabbedResourceDetails.'
-                '_handle_tab_action_request')
+    @mock.patch.object(TabbedResourceDetails, '_handle_tab_action_request')
     def test_delete_without_tab_action(self, mock_htar):
         """Test for DELETE requests without the tab_action parameter. Should return a Method Not Allowed response."""
         tab_slug = 'a-tab'

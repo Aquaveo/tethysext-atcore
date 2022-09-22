@@ -1,6 +1,9 @@
 from unittest import mock
 import pandas as pd
-from tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view import ReportWorkflowResultsView  # noqa: E501
+from tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view import MapWorkflowView
+from tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view import ReportWorkflowResultsView
+from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView  # noqa: E501
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -21,9 +24,9 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         super().setUp()
         self.instance = ReportWorkflowResultsView()
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_step')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(ResourceWorkflowView, 'get_step')
+    @mock.patch.object(MapWorkflowView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_get_context(self, mock_sup_get_context, mock_mapWV_get_context, mock_get_current_step_result):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
@@ -63,11 +66,11 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
             result_id=mock_result_id
         )
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.process_step_options')   # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only')
+    @mock.patch.object(MapWorkflowView, 'process_step_options')
+    @mock.patch.object(MapWorkflowView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_dataframe(self, mock_sup_get_context, mock_mapWV_get_context, _,
                                             mock_is_read_only, mock_get_managers):
         mock_resource = mock.MagicMock()
@@ -136,11 +139,11 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['dataset']['data_description'],
                          'test description')
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.process_step_options')   # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only')
+    @mock.patch.object(MapWorkflowView, 'process_step_options')
+    @mock.patch.object(MapWorkflowView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_plot(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
                                        mock_get_managers):
         mock_resource = mock.MagicMock()
@@ -209,11 +212,11 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIn('Distance from left bank (ft)',
                       mock_context.update.call_args[0][0]['report_results'][0]['plot']['plot']['script'])
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.process_step_options')   # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only')
+    @mock.patch.object(MapWorkflowView, 'process_step_options')
+    @mock.patch.object(MapWorkflowView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_map(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
                                       mock_get_managers):
         mock_resource = mock.MagicMock()
@@ -296,12 +299,12 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
 
         self.assertEqual(mock_context['report_results'][0]['map']['map'], [mock_build_wms_layer])
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.log')   # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.process_step_options')   # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.log')
+    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only')
+    @mock.patch.object(MapWorkflowView, 'process_step_options')
+    @mock.patch.object(MapWorkflowView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_map_wrong_type(self, mock_sup_get_context, mock_mapWV_get_context, _,
                                                  mock_is_read_only, mock_get_managers, mock_log):
         mock_resource = mock.MagicMock()
@@ -351,11 +354,11 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         )
         mock_log.warning.assert_called_with('Unsupported layer type will be skipped: test_type')
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.ReportWorkflowResultsView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.is_read_only')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.process_step_options')   # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.MapWorkflowView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only')
+    @mock.patch.object(MapWorkflowView, 'process_step_options')
+    @mock.patch.object(MapWorkflowView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_map_geojson(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
                                               mock_get_managers):
         mock_resource = mock.MagicMock()

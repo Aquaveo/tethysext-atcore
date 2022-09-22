@@ -10,6 +10,7 @@ from unittest import mock
 from django.http import HttpRequest
 from django.contrib.auth.models import User
 from django.test import RequestFactory
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.controllers.app_users.resource_details import ResourceDetails
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -43,9 +44,9 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_details.ResourceDetails.default_back_url')
+    @mock.patch.object(ResourceDetails, 'default_back_url')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.render')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
     @mock.patch('tethys_apps.decorators.has_permission')
     def test_get(self, mock_has_permission, mock_get_sessionmaker, _, mock_back_url):
         mock_has_permission.return_value = True

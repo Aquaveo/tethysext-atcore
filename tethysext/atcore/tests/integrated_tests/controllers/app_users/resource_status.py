@@ -58,7 +58,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         self.assertEqual(mock_render(), ret)
 
     @mock.patch('tethys_apps.decorators.has_permission', return_value=True)
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.ResourceStatus.get_resource',
+    @mock.patch.object(ResourceStatus, 'get_resource',
                 return_value=mock.MagicMock())
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.JobsTable')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.render')
@@ -85,7 +85,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         self.assertEqual(mock_render(), ret)
 
     @mock.patch('tethys_apps.decorators.has_permission', return_value=True)
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.ResourceStatus.get_resource')
+    @mock.patch.object(ResourceStatus, 'get_resource')
     def test_handle_get_resource_is_http(self, mock_get_resource, _):
         mock_request = self.request_factory.get('/foo/bar/status/?r={}'.format(self.resource_id))
         mock_request.user = self.user

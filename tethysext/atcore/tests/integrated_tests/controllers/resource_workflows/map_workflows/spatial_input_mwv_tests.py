@@ -10,6 +10,9 @@ import pathlib as pl
 from unittest import mock
 from django.http import HttpRequest, HttpResponseRedirect
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.models.app_users import AppUser
@@ -111,9 +114,8 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
-                '.user_has_active_role', return_value=True)
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_get_step_specific_context_has_active_role(self, _, __, ___, ____):
         self.step1.active_roles = []
         self.step1.options['allow_shapefile'] = False
@@ -127,9 +129,8 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
-                '.user_has_active_role', return_value=False)
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=False)
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_get_step_specific_context_no_active_role(self, _, __, ___, ____):
         self.step1.options['allow_shapefile'] = True
 
@@ -142,10 +143,9 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
-                '.user_has_active_role', return_value=False)
+    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=False)
     def test_process_step_options_no_attributes_nor_active_role(self, _, mock_params, mock_get_managers, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
         map_view = MapView()
@@ -165,10 +165,9 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.generate_django_form')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
-                '.user_has_active_role', return_value=True)
+    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
     def test_process_step_options_with_attributes_and_active_role(self, _, mock_params, mock_get_managers,
                                                                   mock_form, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
@@ -190,10 +189,9 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView'
-                '.user_has_active_role', return_value=True)
+    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
     def test_process_step_options_unknown_shape(self, _, mock_params, mock_get_managers, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
         mock_get_managers.return_value = None, MapView()
@@ -213,9 +211,9 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             self.assertEqual('Invalid shapes defined: unknown_shape.', str(e))
         self.assertTrue(response is None)
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.set_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_drawn_geometry')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_shapefile')  # noqa: E501
+    @mock.patch.object(ResourceWorkflowStep, 'set_parameter')
+    @mock.patch.object(SpatialInputMWV, 'parse_drawn_geometry')
+    @mock.patch.object(SpatialInputMWV, 'parse_shapefile')
     def test_process_step_data(self, mock_parse_shp, mock_parse_geom, _):
         mock_parse_shp.return_value = {'features': [{'geometry': {'coordinates': [0, 5], 'type': 'some_type'},
                                                      'properties': {}}]}
@@ -231,9 +229,9 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./current', response.url)
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.set_parameter')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_drawn_geometry')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.SpatialInputMWV.parse_shapefile')  # noqa: E501
+    @mock.patch.object(ResourceWorkflowStep, 'set_parameter')
+    @mock.patch.object(SpatialInputMWV, 'parse_drawn_geometry')
+    @mock.patch.object(SpatialInputMWV, 'parse_shapefile')
     def test_process_step_data_no_shapefile(self, mock_parse_shp, mock_parse_geom, _):
         mock_parse_shp.return_value = {'features': [{'geometry': {'coordinates': [0, 5], 'type': 'some_type'},
                                                      'properties': {}}]}
@@ -277,8 +275,8 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             self.assertTrue(self.step1.dirty)
         self.assertTrue(response is None)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
-    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_input_rws.SpatialInputRWS.validate_feature_attributes')  # noqa: E501
+    @mock.patch.object(WorkflowViewMixin, 'get_step')
+    @mock.patch.object(SpatialInputRWS, 'validate_feature_attributes')
     def test_validate_feature_attributes_success(self, _, mock_get_step):
         step = SpatialInputRWS(
             'geo_server',
@@ -295,8 +293,8 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(response, JsonResponse)
         self.assertEqual([b'{"success": true}'], response.__dict__['_container'])
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
-    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_input_rws.SpatialInputRWS.validate_feature_attributes')  # noqa: E501
+    @mock.patch.object(WorkflowViewMixin, 'get_step')
+    @mock.patch.object(SpatialInputRWS, 'validate_feature_attributes')
     def test_validate_feature_attributes_error(self, mock_valid_attrib, mock_get_step):
         mock_valid_attrib.side_effect = ValueError('Error message')
         step = SpatialInputRWS(
@@ -321,12 +319,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
 
         self.assertEqual(None, ret)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     def test_parse_shapefile_bad_projection(self, mock_get_app):
-        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app = TethysAppBase()
         mock_app_path = mock.MagicMock()
         mock_app_path.path = self.shapefile_dir
-        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
         mock_get_app.return_value = mock_app
 
         try:
@@ -348,12 +346,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                              ' Please re-project the shapefile to the WGS 1984 Geographic Projection (EPSG:4326).',
                              str(e))
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     def test_parse_shapefile_missing_shp(self, mock_get_app):
-        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app = TethysAppBase()
         mock_app_path = mock.MagicMock()
         mock_app_path.path = self.shapefile_dir
-        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
         mock_get_app.return_value = mock_app
 
         try:
@@ -373,12 +371,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         except ValueError as e:
             self.assertEqual('Invalid shapefile provided: No shapefile found in given files.', str(e))
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     def test_parse_shapefile_missing_prj(self, mock_get_app):
-        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app = TethysAppBase()
         mock_app_path = mock.MagicMock()
         mock_app_path.path = self.shapefile_dir
-        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
         mock_get_app.return_value = mock_app
 
         try:
@@ -399,12 +397,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             self.assertEqual('Invalid shapefile provided: Unable to determine projection of the given shapefile. '
                              'Please include a .prj file.', str(e))
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     def test_parse_shapefile_valid(self, mock_get_app):
-        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app = TethysAppBase()
         mock_app_path = mock.MagicMock()
         mock_app_path.path = self.shapefile_dir
-        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
         mock_get_app.return_value = mock_app
 
         with open(self.Det1poly4326_zip, 'rb') as f:
@@ -429,12 +427,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertIn('type', geojson['features'][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.geojson')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app')
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     def test_parse_shapefile_invalid_geojson(self, mock_get_app, mock_geojson):
-        mock_app = mock.MagicMock(spec=TethysAppBase)
+        mock_app = TethysAppBase()
         mock_app_path = mock.MagicMock()
         mock_app_path.path = self.shapefile_dir
-        mock_app.get_user_workspace.return_value = mock_app_path
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
         mock_get_app.return_value = mock_app
         geojson_value = mock.MagicMock()
         geojson_value.is_valid = False
