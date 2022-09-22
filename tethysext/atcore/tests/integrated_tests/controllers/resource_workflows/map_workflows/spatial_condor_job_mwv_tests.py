@@ -295,8 +295,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         except RuntimeError as e:
             self.assertEqual('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.', str(e))
 
-    @mock.patch.object(ResourceWorkflowView, 'is_read_only',
-                return_value=False)
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
     def test_run_job_no_jobs(self, _):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True

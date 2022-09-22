@@ -546,7 +546,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
 
     # to mock import in ResourceWofkflow.is_locked_for_request_user method
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
-    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions  # noqa: E501
     def test_is_read_only_active_user_not_locked_permitted(self, _, __):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # Not locked
@@ -557,7 +557,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
 
     # to mock import in ResourceWofkflow.is_locked_for_request_user method
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
-    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions  # noqa: E501
     def test_is_read_only_not_active_user_not_locked_permitted(self, _, __):
         self.request.user = self.django_user
         self.workflow._user_lock = None  # Not locked
@@ -568,7 +568,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
 
     # to mock import in ResourceWofkflow.is_locked_for_request_user method
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
-    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions  # noqa: E501
     def test_is_read_only_active_user_locked_permitted(self, _, __):
         self.request.user = self.django_user
         self.workflow._user_lock = 'otheruser'  # locked
@@ -579,7 +579,7 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
 
     # to mock import in ResourceWofkflow.is_locked_for_request_user method
     @mock.patch('tethys_sdk.permissions.has_permission', return_value=True)  # True b/c user has elevated permissions
-    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)  # True b/c user has elevated permissions  # noqa: E501
     def test_is_read_only_not_active_user_locked_permitted(self, _, __):
         self.request.user = self.django_user
         self.workflow._user_lock = 'otheruser'  # locked

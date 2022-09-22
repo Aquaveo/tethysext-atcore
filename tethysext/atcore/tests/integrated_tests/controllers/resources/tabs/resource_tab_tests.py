@@ -6,6 +6,8 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+import logging
+from os import environ
 from django.test import RequestFactory
 from tethys_sdk.testing import TethysTestCase
 
@@ -15,11 +17,14 @@ from tethysext.atcore.controllers.resources import ResourceTab
 class ResourceTabTests(TethysTestCase):
 
     def setUp(self):
+        environ['TETHYS_TESTING_IN_PROGRESS'] = 'true'
+        logging.disable(logging.WARNING)
         super().setUp()
 
         self.request_factory = RequestFactory()
 
     def tearDown(self):
+        environ['TETHYS_TESTING_IN_PROGRESS'] = ''
         super().tearDown()
 
     def test_default_properties(self):

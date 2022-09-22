@@ -129,7 +129,6 @@ class FilesTabTests(SqlAlchemyTestCase):
     def test_get_context_default(self):
         """Test get_context()"""
         with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
-
             instance = ResourceFilesTab()
             request = self.request_factory.get('/foo/12345/bar/summary/')
             request.user = self.get_user()

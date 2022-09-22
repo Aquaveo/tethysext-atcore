@@ -58,8 +58,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         self.assertEqual(mock_render(), ret)
 
     @mock.patch('tethys_apps.decorators.has_permission', return_value=True)
-    @mock.patch.object(ResourceStatus, 'get_resource',
-                return_value=mock.MagicMock())
+    @mock.patch.object(ResourceStatus, 'get_resource', return_value=mock.MagicMock())
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.JobsTable')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.render')
     def test_handle_get_with_resource_id(self, mock_render, mock_jobs_table, _, __):

@@ -7,7 +7,6 @@
 ********************************************************************************
 """
 import json
-from multiprocessing.dummy import Manager
 from unittest import mock
 from django.test import RequestFactory
 from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin

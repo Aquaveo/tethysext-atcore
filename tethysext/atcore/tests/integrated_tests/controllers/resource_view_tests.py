@@ -10,7 +10,6 @@ from unittest import mock
 from django.http import HttpResponse, HttpResponseNotFound
 from django.test import RequestFactory
 from django.contrib.auth.models import User
-from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.models.app_users import AppUser, Resource

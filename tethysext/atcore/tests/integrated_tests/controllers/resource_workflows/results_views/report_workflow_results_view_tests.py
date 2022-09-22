@@ -1,7 +1,7 @@
 from unittest import mock
 import pandas as pd
 from tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view import MapWorkflowView
-from tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view import ReportWorkflowResultsView
+from tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view import ReportWorkflowResultsView  # noqa: E501
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView  # noqa: E501
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase

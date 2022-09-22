@@ -8,7 +8,6 @@
 """
 from unittest import mock
 from django.test import RequestFactory
-from django.http import HttpRequest
 from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users import AppUser, Resource
