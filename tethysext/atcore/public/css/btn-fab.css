@@ -5,23 +5,27 @@
     right: 20px;
     width: 60px;
     height: 60px;
-    font-size: 20px;
+    font-size: 30px;
     border-radius: 50%;
     -webkit-transition: .2s ease-in-out all;
     -moz-transition: .2s ease-in-out all;
     -o-transition: .2s ease-in-out all;
     -ms-transition: .2s ease-in-out all;
     transition: .2s ease-in-out all;
+    background-color: #337ab7;
+    border-color: #2e6da4;
 }
 
 #app-content-wrapper.show-nav .btn-fab {
     right: 320px;
 }
 
-.btn-fab:hover {
+#app-content-wrapper .btn-fab:hover {
     box-shadow: 0 4px 5px 0 rgba(0,0,0,.14),
     0 1px 10px 0 rgba(0,0,0,.12),
     0 2px 4px -1px rgba(0,0,0,.2);
+    background-color: #286090;
+    border-color: #204d74;
 }
 
 .btn-fab .glyphicon {

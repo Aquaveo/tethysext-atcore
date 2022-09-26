@@ -2,6 +2,8 @@ from unittest import mock
 
 import param
 from django.http import HttpRequest
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
+from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from django.test import RequestFactory
 from tethysext.atcore.services.app_users.roles import Roles
@@ -72,24 +74,20 @@ class FormInputWVTests(WorkflowViewTestCase):
         self.request_factory = RequestFactory()
 
         # Patch ResourceWorkflowView.user_has_active_role
-        uhar_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.'
-                                  'ResourceWorkflowView.user_has_active_role', return_value=True)
+        uhar_patcher = mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
         self.mock_uhar = uhar_patcher.start()
         self.addCleanup(uhar_patcher.stop)
 
         # Patch ResourceWorkflowView.process_step_data
-        psd_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.'
-                                 'ResourceWorkflowView.process_step_data')
+        psd_patcher = mock.patch.object(ResourceWorkflowView, 'process_step_data')
         self.mock_psd = psd_patcher.start()
         self.addCleanup(psd_patcher.stop)
 
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
-                return_value=False)
-    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
-                return_value=False)
+    @mock.patch.object(ResourceWorkflow, 'is_locked_for_request_user', return_value=False)
+    @mock.patch.object(Resource, 'is_locked_for_request_user', return_value=False)
     def test_process_step_options_basic(self, _, __):
         request = self.request_factory.get('/foo/bar/form-input')
         request.user = self.django_user

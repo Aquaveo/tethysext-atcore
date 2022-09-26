@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import event
 from tethys_sdk.testing import TethysTestCase
 
 from tethysext.atcore.models.app_users import AppUser, initialize_app_users_db
@@ -9,21 +10,22 @@ from tethysext.atcore.tests.factories.django_user import UserFactory
 
 
 def setup_module_for_sqlalchemy_tests():
-    global transaction, connection, engine
+    global g_transaction, g_connection, g_engine, Session
+    Session = sessionmaker()
     # Connect to the database and create the schema within a transaction
-    engine = create_engine(TEST_DB_URL)
-    connection = engine.connect()
-    transaction = connection.begin()
+    g_engine = create_engine(TEST_DB_URL)
+    g_connection = g_engine.connect()
+    g_transaction = g_connection.begin()
     # Initialize db with staff user
-    initialize_app_users_db(connection)
-    return engine, connection, transaction
+    initialize_app_users_db(g_connection)
+    return g_engine, g_connection, g_transaction
 
 
 def tear_down_module_for_sqlalchemy_tests():
     # Roll back the top level transaction and disconnect from the database
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
+    g_transaction.rollback()
+    g_connection.close()
+    g_engine.dispose()
 
 
 class SqlAlchemyTestCase(TethysTestCase):
@@ -35,12 +37,20 @@ class SqlAlchemyTestCase(TethysTestCase):
         self.tear_down_session_and_transaction()
 
     def setup_transaction_and_session(self):
-        self.transaction = connection.begin_nested()
-        self.session = Session(connection)
+        self.connection = g_engine.connect()
+        self.transaction = self.connection.begin()
+        self.session = Session(bind=self.connection)
+        self.nested = self.connection.begin_nested()
+
+        @event.listens_for(self.session, "after_transaction_end")
+        def end_savepoint(session, transaction):
+            if not self.nested.is_active:
+                self.nested = self.connection.begin_nested()
 
     def tear_down_session_and_transaction(self):
         self.session.close()
         self.transaction.rollback()
+        self.connection.close()
 
     def get_user(self, is_staff=False, return_app_user=False, user_role=Roles.ORG_USER):
         """Make a Django User and/or associated AppUser instance."""

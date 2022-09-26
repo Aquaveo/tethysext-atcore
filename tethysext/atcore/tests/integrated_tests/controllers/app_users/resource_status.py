@@ -25,7 +25,7 @@ class ResourceStatusControllerTests(TethysTestCase):
     def tearDown(self):
         pass
 
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.ResourceStatus._handle_get')
+    @mock.patch.object(ResourceStatus, '_handle_get')
     def test_get(self, mock_handle_get):
         mock_request = self.request_factory.get('/foo/bar/status/')
         ret = self.controller(mock_request, back_url='/foo/bar')
@@ -58,8 +58,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         self.assertEqual(mock_render(), ret)
 
     @mock.patch('tethys_apps.decorators.has_permission', return_value=True)
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.ResourceStatus.get_resource',
-                return_value=mock.MagicMock())
+    @mock.patch.object(ResourceStatus, 'get_resource', return_value=mock.MagicMock())
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.JobsTable')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.render')
     def test_handle_get_with_resource_id(self, mock_render, mock_jobs_table, _, __):
@@ -85,7 +84,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         self.assertEqual(mock_render(), ret)
 
     @mock.patch('tethys_apps.decorators.has_permission', return_value=True)
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_status.ResourceStatus.get_resource')
+    @mock.patch.object(ResourceStatus, 'get_resource')
     def test_handle_get_resource_is_http(self, mock_get_resource, _):
         mock_request = self.request_factory.get('/foo/bar/status/?r={}'.format(self.resource_id))
         mock_request.user = self.user
@@ -105,7 +104,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         mock_request = self.request_factory.get('/foo/bar/status/?r={}'.format(self.resource_id))
 
         mock_app = mock.MagicMock()
-        mock_ga().namespace = 'test_namespace'
+        mock_ga().url_namespace = 'test_namespace'
         mock_reverse.return_value = 'test1'
         rs = ResourceStatus(_app=mock_app, back_url='/foo/bar')
 
@@ -125,7 +124,7 @@ class ResourceStatusControllerTests(TethysTestCase):
         mock_request.GET.get.return_value = 'resource-details'
 
         mock_app = mock.MagicMock()
-        mock_ga().namespace = 'test_namespace'
+        mock_ga().url_namespace = 'test_namespace'
         mock_reverse.return_value = 'test1'
         rs = ResourceStatus(_app=mock_app, back_url='/foo/bar')
 

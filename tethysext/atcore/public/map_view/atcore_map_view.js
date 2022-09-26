@@ -131,7 +131,7 @@ var ATCORE_MAP_VIEW = (function() {
     setup_map = function() {
         // Change Extent Button from "E" to Extent Symbol
         let $extent_button = $('button[title="Fit to extent"]');
-        $extent_button.html('<span class="glyphicon glyphicon-home"></span>');
+        $extent_button.html('<span class="bi bi-house-door-fill"></span>');
 
         // Get handle on map
 	    m_map = TETHYS_MAP_VIEW.getMap();
@@ -194,10 +194,10 @@ var ATCORE_MAP_VIEW = (function() {
 
                             let checked = $(layer_content).find(`[data-layer-id='${layer_id}']`)[0].checked;
                             if (checked) {
-                                $("#legend-" + layer_variable).removeClass('hidden');
+                                $("#legend-" + layer_variable).removeClass('d-none');
                             }
                             else {
-                                $("#legend-" + layer_variable).addClass('hidden');
+                                $("#legend-" + layer_variable).addClass('d-none');
                             }
                         })
                     }
@@ -590,9 +590,9 @@ var ATCORE_MAP_VIEW = (function() {
                 }
 
                 if (layer_group_checked && layer_checked) {
-                    $("#legend-" + layer_variable).removeClass('hidden')
+                    $("#legend-" + layer_variable).removeClass('d-none')
                 } else {
-                    $("#legend-" + layer_variable).addClass('hidden')
+                    $("#legend-" + layer_variable).addClass('d-none')
                 }
 
             });
@@ -630,10 +630,10 @@ var ATCORE_MAP_VIEW = (function() {
 
             // Set the visibility of legend
             if (checked) {
-                $("#legend-" + layer_variable).removeClass('hidden');
+                $("#legend-" + layer_variable).removeClass('d-none');
             }
             else {
-                $("#legend-" + layer_variable).addClass('hidden');
+                $("#legend-" + layer_variable).addClass('d-none');
             }
 
             // TODO: Save state to resource - store in attributes?
@@ -652,7 +652,7 @@ var ATCORE_MAP_VIEW = (function() {
             }
 
             // Set the visibility of legend
-            $("#legend-" + layer_variable).addClass('hidden');
+            $("#legend-" + layer_variable).addClass('d-none');
 
             // TODO: Save state to resource - store in attributes?
         });
@@ -1001,18 +1001,18 @@ var ATCORE_MAP_VIEW = (function() {
                 html_content += '<input type="checkbox" class="layer-visibility-control" checked id="' + uuid + '"';
                 html_content += 'data-layer-id="' + uuid + '" data-layer-variable="" name="custom_layers">';
                 html_content += '<span class="checkmark checkbox"></span></label>';
-                html_content += '<div class="dropdown layers-context-menu pull-right">'
-                html_content += '<a id="' + uuid + '--context-menu" class="btn btn-xs dropdown-toggle layers-btn " data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="color: rgb(186, 12, 47);">';
-                html_content += '<span class="glyphicon glyphicon-option-vertical"></span></a>';
+                html_content += '<div class="dropdown layers-context-menu float-end">'
+                html_content += '<a id="' + uuid + '--context-menu" class="btn btn-xs dropdown-toggle layers-btn " data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="color: rgb(186, 12, 47);">';
+                html_content += '<span class="bi bi-three-dots-vertical"></span></a>';
                 html_content += '<ul class="dropdown-menu dropdown-menu-right" aria-labeledby="' + uuid + '--context-menu">';
-                html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>';
-                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>';
+                html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>';
+                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>';
                 html_content += '<li role="separator" class="divider"></li>';
-                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
+                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="bi bi-arrows-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
                 html_content += '<li role="separator" class="divider"></li>';
                 html_content += '<li>';
                 html_content += '<div class="flat-slider-container">';
-                html_content += '<label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>';
+                html_content += '<label><span class="bi bi-circle-half"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>';
                 html_content += '<div class="flat-slider-container">';
                 html_content += '<input type="range" class="flat-slider layer-opacity-control" min="0" max="100" value="100" data-layer-id="' + uuid + '" data-layer-variable="">';
                 html_content += '</div>';
@@ -1613,8 +1613,8 @@ var ATCORE_MAP_VIEW = (function() {
         });
 
         // Reset tooltips to show on top
-        $('[data-toggle="tooltip"]').tooltip('destroy');
-        $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
+        $('[data-bs-toggle="tooltip"]').tooltip('dispose');
+        $('[data-bs-toggle="tooltip"]').tooltip({'placement': 'top'});
     };
 
     // Create new layer groups with layers
@@ -1769,7 +1769,7 @@ var ATCORE_MAP_VIEW = (function() {
             // uncheck the layer if we hide it
             $('.layer-visibility-control[data-layer-id="' + layer_ids[i] + '"]')[0].checked = false;
             // Find the correct layer-list-item and add hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("hidden");
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").addClass("d-none");
 
         }
     }
@@ -1777,7 +1777,7 @@ var ATCORE_MAP_VIEW = (function() {
     show_layers = function(layer_ids) {
         for (var i=0; i < layer_ids.length; i++) {
             // Find the correct layer-list-item and remove hidden class
-            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("hidden")
+            $('[data-layer-id="' + layer_ids[i] + '"]').first().closest("li").removeClass("d-none")
 
         }
     }

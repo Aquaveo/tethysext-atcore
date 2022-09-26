@@ -213,7 +213,8 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(meta_file))
         self.assertDictEqual(collection_client.instance.meta, {})
 
-    def test_read_meta_bad_file(self):
+    @mock.patch('tethysext.atcore.mixins.meta_mixin.log.warning')
+    def test_read_meta_bad_file(self, _):
         """Test the the read_meta functionality when the JSON is invalid."""
         database_id = uuid.UUID('{0aeeacc5-9a36-4006-b786-8b5089826bbc}')
         collection_id = uuid.UUID('{120e22d4-32f2-4dac-832c-6995746f0fe7}')

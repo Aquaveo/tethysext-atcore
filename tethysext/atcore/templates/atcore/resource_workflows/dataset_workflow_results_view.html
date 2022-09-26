@@ -17,7 +17,7 @@
   <div id="dataset_tabs">
     <ul class="nav nav-tabs" role="tablist">
       {% for dataset in datasets %}
-      <li role="presentation" {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#dataset-{{ forloop.counter }}" aria-controls="home" role="tab" data-toggle="tab">{{ dataset.title }}</a></li>
+      <li role="presentation"><a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" href="#dataset-{{ forloop.counter }}" aria-controls="home" role="tab" data-bs-toggle="tab">{{ dataset.title }}</a></li>
       {% endfor %}
     </ul>
 
@@ -41,16 +41,15 @@
 {% block scripts %}
   {{ block.super }}
   <script>var TAB_SELECTOR = '#dataset_tabs .nav_tabs a';</script>
-  <script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js" type="text/javascript"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.flash.min.js" type="text/javascript"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js" type="text/javascript"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.flash.min.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js" type="text/javascript"></script>
   <script src="{% static 'atcore/js/enable-tabs.js' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block styles %}
   {{ block.super }}
-  <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet"/>
-  <link href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" rel="stylesheet"/>
+  <link href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css" rel="stylesheet"/>
   <link href="{% static 'atcore/resource_workflows/dataset_workflow_results.css' %}" rel="stylesheet"/>
 {% endblock %}

@@ -103,7 +103,7 @@ class ResourceViewMixinTests(TethysTestCase):
     def test_default_back_url(self, mock_reverse, mock_aa):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
-        mock_aa.return_value = mock.MagicMock(namespace='test1')
+        mock_aa.return_value = mock.MagicMock(url_namespace='test1')
 
         # Execute the method
         self.farc.default_back_url(mock_request, resource_id=mock_resource_id)

@@ -12,6 +12,7 @@ from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.work
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.controllers.resource_workflows.workflow_views import SetStatusWV
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 
 
 def setUpModule():
@@ -42,7 +43,6 @@ class SetStatusWVTests(WorkflowViewTestCase):
             order=1,
         )
         self.ssrws_no_options.set_status(status=self.ssrws_no_options.STATUS_SUBMITTED)
-        self.workflow.steps.append(self.ssrws_no_options)
 
         self.ssrws_three_statuses = SetStatusRWS(
             name='ssrws_three_statuses',
@@ -92,14 +92,13 @@ class SetStatusWVTests(WorkflowViewTestCase):
         self.request_factory = RequestFactory()
 
         # Patch ResourceWorkflowView.user_has_active_role
-        uhar_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.'
-                                  'ResourceWorkflowView.user_has_active_role', return_value=True)
+        uhar_patcher = mock.patch.object(ResourceWorkflowView, 'user_has_active_role')
         self.mock_uhar = uhar_patcher.start()
+        uhar_patcher.return_value = True
         self.addCleanup(uhar_patcher.stop)
 
         # Patch ResourceWorkflowView.process_step_data
-        psd_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.'
-                                 'ResourceWorkflowView.process_step_data')
+        psd_patcher = mock.patch.object(ResourceWorkflowView, 'process_step_data')
         self.mock_psd = psd_patcher.start()
         self.addCleanup(psd_patcher.stop)
 
@@ -111,6 +110,8 @@ class SetStatusWVTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
     def test_process_step_options_ssrws_no_options(self, _, __):
+        self.workflow.steps.append(self.ssrws_no_options)
+
         request = self.request_factory.get('/foo/bar/set-status')
         request.user = self.django_user
 
@@ -218,6 +219,8 @@ class SetStatusWVTests(WorkflowViewTestCase):
         self.assertDictEqual(expected_context, mock_context)
 
     def test_process_step_data_ssrws_no_options(self):
+        self.workflow.steps.append(self.ssrws_no_options)
+
         comment = 'This is my comment.'
 
         data = {

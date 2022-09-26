@@ -52,6 +52,14 @@ class FilesTabTests(SqlAlchemyTestCase):
                          '..', 'files', 'files_tab_tests')
         )
 
+        self.test_path = os.path.join(self.test_files_base, 'test_get_context_default')
+        self.database_client, self.collection = self.get_database_and_collection(
+            uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), self.test_path,
+            uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        )
+
+        self.file_collection_client = FileCollectionClient(self.session, self.database_client, self.collection.id)
+
         self.session.add(self.resource)
         self.session.commit()
 
@@ -121,18 +129,11 @@ class FilesTabTests(SqlAlchemyTestCase):
     def test_get_context_default(self):
         """Test get_context()"""
         with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
-
             instance = ResourceFilesTab()
             request = self.request_factory.get('/foo/12345/bar/summary/')
             request.user = self.get_user()
 
-            test_path = os.path.join(self.test_files_base, 'test_get_context_default')
-            database_client, collection = self.get_database_and_collection(
-                uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
-                uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-            )
-            file_collection_client = FileCollectionClient(self.session, database_client, collection.id)
-            mock_get_file_collection.return_value = [file_collection_client]
+            mock_get_file_collection.return_value = [self.file_collection_client]
             context = instance.get_context(request, self.session, self.resource, {})
 
             self.assertIn('collections', context)
@@ -143,13 +144,7 @@ class FilesTabTests(SqlAlchemyTestCase):
         with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
             instance = ResourceFilesTab()
 
-            test_path = os.path.join(self.test_files_base, 'test_get_context_default')
-            database_client, collection = self.get_database_and_collection(
-                uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
-                uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-            )
-            file_collection_client = FileCollectionClient(self.session, database_client, collection.id)
-            mock_get_file_collection.return_value = [file_collection_client]
+            mock_get_file_collection.return_value = [self.file_collection_client]
 
             request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_file'
                                                '&file-path=d6fa7e10-d8aa-4b3d-b08a-62384d3daca2/dir1/file1.txt'
@@ -165,13 +160,7 @@ class FilesTabTests(SqlAlchemyTestCase):
         with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
             instance = ResourceFilesTab()
 
-            test_path = os.path.join(self.test_files_base, 'test_get_context_default')
-            database_client, collection = self.get_database_and_collection(
-                uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}'), test_path,
-                uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-            )
-            file_collection_client = FileCollectionClient(self.session, database_client, collection.id)
-            mock_get_file_collection.return_value = [file_collection_client]
+            mock_get_file_collection.return_value = [self.file_collection_client]
 
             request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_file'
                                                '&file-path=d6fa7e10-d8aa-4b3d-b08a-62384d3daca2/dir1/file9.txt'

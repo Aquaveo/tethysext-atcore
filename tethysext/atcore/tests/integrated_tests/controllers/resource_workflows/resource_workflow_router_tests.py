@@ -11,10 +11,14 @@ from django.http import HttpRequest
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from tethys_apps.models import TethysApp
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
 from tethysext.atcore.exceptions import ATCoreException
+from tethysext.atcore.mixins.results_mixin import ResultsMixin
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
+from tethysext.atcore.models.controller_metadata import ControllerMetadata
 from tethysext.atcore.models.resource_workflow_steps.results_rws import ResultsResourceWorkflowStep
 from tethysext.atcore.controllers.resource_workflows.resource_workflow_router import ResourceWorkflowRouter
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -82,7 +86,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.resource = Resource()
         self.session.add(self.resource)
 
-        self.app = mock.MagicMock(spec=TethysApp, namespace='app_namespace')
+        self.app = mock.MagicMock(spec=TethysApp, url_namespace='app_namespace')
 
         self.workflow = ResourceWorkflow(name='foo')
 
@@ -118,12 +122,12 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_mixins_reverse = reverse_mixins_patcher.start()
         self.addCleanup(reverse_mixins_patcher.stop)
 
-        last_result_patcher = mock.patch('tethysext.atcore.mixins.results_mixin.ResultsMixin.get_last_result')
+        last_result_patcher = mock.patch.object(ResultsMixin, 'get_last_result')  # The method needs to be patched as an object so it is recognized when called from instances of the class  # noqa: E501
         self.mock_get_last_result = last_result_patcher.start()
         self.mock_get_last_result.return_value = mock.MagicMock(id=self.result_id)
         self.addCleanup(last_result_patcher.stop)
 
-        get_result_patcher = mock.patch('tethysext.atcore.mixins.results_mixin.ResultsMixin.get_result')
+        get_result_patcher = mock.patch.object(ResultsMixin, 'get_result')
         self.mock_get_result = get_result_patcher.start()
         self.mock_get_result.return_value = mock.MagicMock(
             controller=mock.MagicMock(http_methods=['get', 'post', 'delete'])
@@ -140,22 +144,22 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_app.return_value = self.app
         self.addCleanup(get_app_patcher.stop)
 
-        session_patcher = mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+        session_patcher = mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
         self.mock_get_session_maker = session_patcher.start()
         self.mock_get_session_maker.return_value = mock.MagicMock
         self.addCleanup(session_patcher.stop)
 
-        get_step_mixins_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')  # noqa: E501
+        get_step_mixins_patcher = mock.patch.object(WorkflowViewMixin, 'get_step')  # noqa: E501
         self.mock_get_step_mixins = get_step_mixins_patcher.start()
         self.mock_get_step_mixins.return_value = self.result_step
         self.addCleanup(get_step_mixins_patcher.stop)
 
-        initiate_meta_patcher = mock.patch('tethysext.atcore.models.controller_metadata.ControllerMetadata.instantiate')
+        initiate_meta_patcher = mock.patch.object(ControllerMetadata, 'instantiate')
         self.mock_initiate_meta = initiate_meta_patcher.start()
         self.mock_initiate_meta.return_value = FakeController
         self.addCleanup(initiate_meta_patcher.stop)
 
-        get_workflow_patcher = mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')  # noqa: E501
+        get_workflow_patcher = mock.patch.object(WorkflowViewMixin, 'get_workflow')  # noqa: E501
         self.mock_get_workflow = get_workflow_patcher.start()
         self.mock_get_workflow.return_value = self.workflow
         self.addCleanup(get_workflow_patcher.stop)
@@ -179,7 +183,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.namespace}:generic_workflow_workflow_step_result'
+        url_name = f'{self.app.url_namespace}:generic_workflow_workflow_step_result'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -223,7 +227,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.namespace}:generic_workflow_workflow_step_result'
+        url_name = f'{self.app.url_namespace}:generic_workflow_workflow_step_result'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -249,7 +253,7 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         )
 
         self.mock_redirect.assert_called()
-        url_name = f'{self.app.namespace}:generic_workflow_workflow_step'
+        url_name = f'{self.app.url_namespace}:generic_workflow_workflow_step'
         self.assertEqual(url_name, self.mock_reverse.call_args_list[0][0][0])
         url_kwargs = {
             'resource_id': self.resource.id,
@@ -450,7 +454,6 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
 
     def test_route_to_result_controller_wrong_step_type(self):
         self.mock_get_step_mixins.return_value = self.step1
-
         try:
             ResourceWorkflowRouter()._route_to_result_controller(self.request, self.resource.id, self.workflow.id,
                                                                  self.step1.id, str(self.result_id))

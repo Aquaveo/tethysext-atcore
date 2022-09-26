@@ -28,8 +28,7 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for
 
 
 def setUpModule():
-    global connection
-    _, connection, __ = setup_module_for_sqlalchemy_tests()
+    setup_module_for_sqlalchemy_tests()
 
 
 def tearDownModule():
@@ -117,12 +116,12 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         # Setup mock controller
         self.mock_controller = MockController.as_controller(
-            sessionmaker=sessionmaker(bind=connection)
+            sessionmaker=sessionmaker(bind=self.connection)  # global connection (see: tethysext.atcore.tests.utilities.sqlalchemy_helpers.setup_module_for_sqlalchemy_tests)  # noqa: E501
         )
 
         # Setup mock resource controller
         self.mock_resource_controller = MockResourceController.as_controller(
-            sessionmaker=sessionmaker(bind=connection)
+            sessionmaker=sessionmaker(bind=self.connection)  # global connection (see: tethysext.atcore.tests.utilities.sqlalchemy_helpers.setup_module_for_sqlalchemy_tests)  # noqa: E501
         )
 
         messages_patcher = mock.patch('tethysext.atcore.services.app_users.decorators.messages')

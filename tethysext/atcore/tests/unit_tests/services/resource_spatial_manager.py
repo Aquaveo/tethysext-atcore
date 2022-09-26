@@ -25,25 +25,22 @@ class ResourceSpatialManagerTests(unittest.TestCase):
         projection = spatial_manager.get_projection_string()
         self.assertEqual(projection, "<projection string>")
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_get_extent_for_project(self, _):
+    def test_get_extent_for_project(self):
         spatial_manager = ResourceSpatialManager(self.geoserver_engine)
         spatial_manager.get_extent_for_project(datastore_name=self.datastore_name, resource_id=self.resource_id)
-        spatial_manager.gs_api.\
-            get_layer_extent.assert_called_with(datastore_name='test_store',
-                                                feature_name='app_users_resources_extent_test_resource_id',
-                                                workspace='my-app')
+        spatial_manager.gs_engine.\
+            get_layer_extent.assert_called_with(store_id='my-app:test_store',
+                                                feature_name='app_users_resources_extent_test_resource_id')
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_create_extent_layer(self, _):
+    def test_create_extent_layer(self):
         sql = "SELECT id, name, description, ST_Transform(extent, 4326) as geometry FROM app_users_resources" \
               " WHERE id::text = 'test_resource_id'"
         spatial_manager = ResourceSpatialManager(self.geoserver_engine)
         spatial_manager.create_extent_layer(datastore_name=self.datastore_name, resource_id=self.resource_id)
-        spatial_manager.gs_api.create_layer.\
-            assert_called_with(datastore_name='test_store', default_style='atcore:resource_extent_layer_style',
-                               feature_name='app_users_resources_extent_test_resource_id', geometry_type='Polygon',
-                               sql=sql, srid=4326, workspace='my-app')
+        spatial_manager.gs_engine.create_sql_view_layer.\
+            assert_called_with(store_id='my-app:test_store', default_style='atcore:resource_extent_layer_style',
+                               layer_name='app_users_resources_extent_test_resource_id', geometry_type='Polygon',
+                               sql=sql, srid=4326)
 
     @mock.patch('tethysext.atcore.services.resource_spatial_manager.ResourceSpatialManager.get_wms_endpoint')
     @mock.patch('tethysext.atcore.services.resource_spatial_manager.ResourceSpatialManager.get_extent_for_project')
@@ -89,15 +86,13 @@ class ResourceSpatialManagerTests(unittest.TestCase):
 
         mock_log.exception.assert_called_with('An error occurred while trying to generate the preview image.')
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_create_extent_layer_value_error(self, _):
+    def test_create_extent_layer_value_error(self):
         spatial_manager = ResourceSpatialManager(self.geoserver_engine)
         self.assertRaises(ValueError, spatial_manager.create_extent_layer, 'dstore', 'rid', 'test_geotype', 1)
 
-    @mock.patch('tethysext.atcore.services.base_spatial_manager.GeoServerAPI')
-    def test_delete_extent_layer(self, _):
+    def test_delete_extent_layer(self):
         spatial_manager = ResourceSpatialManager(self.geoserver_engine)
         spatial_manager.delete_extent_layer(datastore_name=self.datastore_name, resource_id=self.resource_id)
-        spatial_manager.gs_api.delete_layer.\
-            assert_called_with(workspace='my-app', datastore='test_store',
-                               name='app_users_resources_extent_test_resource_id', recurse=True)
+        spatial_manager.gs_engine.delete_layer.\
+            assert_called_with(layer_id='my-app:app_users_resources_extent_test_resource_id', datastore='test_store',
+                               recurse=True)

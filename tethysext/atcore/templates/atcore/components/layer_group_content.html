@@ -10,19 +10,19 @@
 
   {# LAYER GROUP CONTEXT MENU #}
   {% if show_public_toggle or show_remove or show_rename %}
-    <div class="dropdown layers-context-menu pull-right">
+    <div class="dropdown layers-context-menu float-end">
       <a id="{{ layer_group.id }}--context-menu"
          class="btn btn-xs dropdown-toggle layers-btn"
-         data-toggle="dropdown" aria-haspopup="true"
+         data-bs-toggle="dropdown" aria-haspopup="true"
          aria-expanded="true">
-        <span class="glyphicon glyphicon-option-vertical"></span>
+        <span class="bi bi-three-dots-vertical"></span>
       </a>
       <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
         {% if show_rename %}
-          <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+          <li><a class="rename-action" href="javascript:void(0);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>
         {% endif %}
         {% if show_remove %}
-        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>
         {% endif %}
         {% if show_public_toggle %}
         <div class="form-group">
@@ -33,14 +33,14 @@
         {% endif %}
         {% if layer_group.id == 'custom_layers' %}
           <li role="separator" class="divider"></li>
-          <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
+          <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="bi bi-plus-lg"></span><span class="command-name">Add Layer</span></a></li>
         {% endif %}
       </ul>
     </div>
   {% endif %}
   <a id="{{ layer_group.id }}--collapse"
-     class="collapse-action btn btn-xs layers-btn pull-right" data-collapsed="false">
-    <span class="glyphicon glyphicon-chevron-down"></span>
+     class="collapse-action btn btn-xs layers-btn float-end" data-collapsed="false">
+    <span class="bi bi-chevron-down"></span>
   </a>
 </li>
 

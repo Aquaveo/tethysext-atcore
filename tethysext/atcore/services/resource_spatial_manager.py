@@ -68,9 +68,8 @@ class ResourceSpatialManager(BaseSpatialManager):
         # feature name
         feature_name = self.get_extent_layer_name(resource_id)
 
-        extent = self.gs_api.get_layer_extent(
-            workspace=self.WORKSPACE,
-            datastore_name=datastore_name,
+        extent = self.gs_engine.get_layer_extent(
+            store_id=f"{self.WORKSPACE}:{datastore_name}",
             feature_name=feature_name,
         )
 
@@ -136,8 +135,8 @@ class ResourceSpatialManager(BaseSpatialManager):
         # Get Default Style Name
         default_style = f'atcore:{self.VL_EXTENT_STYLE}'
 
-        # feature name
-        feature_name = self.get_extent_layer_name(resource_id=resource_id)
+        # layer name
+        layer_name = self.get_extent_layer_name(resource_id=resource_id)
 
         sql_context = {
             'resource_id': resource_id,
@@ -152,10 +151,9 @@ class ResourceSpatialManager(BaseSpatialManager):
             sql = ' '.join(template.render(sql_context).split())
 
         # Create SQL View
-        self.gs_api.create_layer(
-            workspace=self.WORKSPACE,
-            datastore_name=datastore_name,
-            feature_name=feature_name,
+        self.gs_engine.create_sql_view_layer(
+            store_id=f"{self.WORKSPACE}:{datastore_name}",
+            layer_name=layer_name,
             geometry_type=self.GT_POLYGON,
             srid=srid,
             sql=sql,
@@ -172,11 +170,10 @@ class ResourceSpatialManager(BaseSpatialManager):
             resource_id(str): id of the Resources.
             recurse (bool): recursively delete any dependent objects if True.
         """
-        feature_name = self.get_extent_layer_name(resource_id=resource_id)
+        layer_name = self.get_extent_layer_name(resource_id=resource_id)
 
-        self.gs_api.delete_layer(
-            workspace=self.WORKSPACE,
+        self.gs_engine.delete_layer(
+            layer_id=f"{self.WORKSPACE}:{layer_name}",
             datastore=datastore_name,
-            name=feature_name,
             recurse=recurse,
         )

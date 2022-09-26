@@ -32,7 +32,7 @@
   background-color: #f7f7f7;
 }
 
-#app-content-wrapper #app-content #app-navigation .nav li.active a {
+#app-content-wrapper #app-content #app-navigation .nav li a.active {
   box-shadow: inset 4px 0 0 #4b72aa;
   background-color: #fcfcfc!important;
   font-weight: 600;

@@ -10,6 +10,7 @@ from unittest import mock
 from django.http import HttpResponse, HttpResponseNotFound
 from django.test import RequestFactory
 from django.contrib.auth.models import User
+from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.models.app_users import AppUser, Resource
 from tethysext.atcore.services.model_database import ModelDatabase
@@ -91,10 +92,7 @@ class ResourceViewTests(SqlAlchemyTestCase):
         self.mock_app = mock.MagicMock()
         self.mock_app.get_persistent_store_database().return_value = self.session
 
-        dbu_patcher = mock.patch(
-            'tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url',
-            return_value='/bar/'
-        )
+        dbu_patcher = mock.patch.object(ResourceViewMixin, 'default_back_url', return_value='/bar/')
         dbu_patcher.start()
         self.addCleanup(dbu_patcher.stop)
 

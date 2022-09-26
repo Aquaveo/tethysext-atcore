@@ -22,7 +22,7 @@ class ManageOrganizations(AppUsersViewMixin):
     Controller for manage_organizations page.
 
     GET: Render list of all organizations.
-    DELETE: Delete and organization.
+    DELETE: Delete an organization.
     """
     template_name = 'atcore/app_users/manage_organizations.html'
     base_template = 'atcore/app_users/base.html'

@@ -8,6 +8,7 @@
 """
 from unittest import mock
 from django.test import RequestFactory
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.app_users.user_account import UserAccount
 from tethysext.atcore.models.app_users import AppUser, Resource
@@ -61,7 +62,7 @@ class UserAccountTest(SqlAlchemyTestCase):
         self.session.add(self.organization)
         self.session.commit()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.user_account.UserAccount._handle_get')
+    @mock.patch.object(UserAccount, '_handle_get')
     def test_get(self, mock_handle):
         user_account = UserAccount()
         mock_request = mock.MagicMock()
@@ -74,10 +75,10 @@ class UserAccountTest(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.user_account.render')
     @mock.patch('tethys_apps.utilities.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test_handle_get(self, mock_app_user_model, mock_get_org, mock_get_session, mock_get_permission, _, mock_render):
         session = mock_get_session()()
 

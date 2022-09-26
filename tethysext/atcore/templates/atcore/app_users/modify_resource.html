@@ -4,15 +4,15 @@
 {% block app_navigation_items %}
   <p style="margin-bottom: 5px;"><b>Name:</b></p>
   <p>The name of the new {{ type_singular|lower }}.</p>
-  <li class="separator"></li>
+  <li class="nav-item separator"></li>
 
   <p style="margin-bottom: 5px;"><b>Description:</b></p>
   <p>A more detailed description of the {{ type_singular|lower }}</p>
-  <li class="separator"></li>
+  <li class="nav-item separator"></li>
 
   <p style="margin-bottom: 5px;"><b>Organizations:</b></p>
   <p>{{ type_plural }} will be accessible to the members of the organizations to which the {{ type_singular|lower }} is assigned.</p>
-  <li class="separator"></li>
+  <li class="nav-item separator"></li>
 
   {% if show_srid_field %}
   <p style="margin-bottom: 5px;"><b>Spatial Reference System:</b></p>
@@ -22,7 +22,7 @@
     blank. You may want to use <a href="http://spatialreference.org/">spatialref.org</a> to help you identify the
     appropriate spatial reference system.
   </p>
-  <li class="separator"></li>
+  <li class="nav-item separator"></li>
   {% endif %}
 
   {% if show_file_upload_field %}
@@ -75,14 +75,14 @@
                        type="file"
                        accept="{{ file_upload_accept }}"
                        {% if file_upload_multiple %}multiple{% endif %}>
-                <label for="input-file-upload" class="btn btn-default btn-file-input">Browse</label>
+                <label for="input-file-upload" class="btn btn-outline-secondary btn-file-input">Browse</label>
               </div>
               <span class="help-block">{{ file_upload_error }}</span>
             </div>
             {% endif %}
             {{ file_upload_error }}
 
-            <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
+            <a class="btn btn-outline-secondary" href="{% url next_controller %}">Cancel</a>
             <input type="submit"
                    class="btn btn-success"
                    name="modify-resource-submit"
@@ -103,6 +103,7 @@
   <link href="{% static 'atcore/file_input/css/file_input.css' %}" rel="stylesheet"/>
   {% endif %}
   <link href="{% static 'atcore/css/form_processing.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/center.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}

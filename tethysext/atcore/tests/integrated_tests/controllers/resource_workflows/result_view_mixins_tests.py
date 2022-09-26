@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 from unittest import mock
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.models.app_users import ResourceWorkflow
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
 from tethysext.atcore.controllers.resource_workflows.mixins import ResultViewMixin
@@ -50,7 +51,7 @@ class ResultViewMixinTests(SqlAlchemyTestCase):
 
         self.assertEqual(ret, ResourceWorkflowResult)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
     def test_get_result_no_session(self, mock_get_session):
         request = mock.MagicMock()
         query = mock.MagicMock()

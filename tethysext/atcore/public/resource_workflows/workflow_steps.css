@@ -16,6 +16,7 @@
     padding: 10px 10px;
     border-top: 1px #dddddd solid;
     border-bottom: 1px #dddddd solid;
+    text-decoration: none;
 }
 
 .workflow-step:focus, .workflow-step:focus-within, .workflow-step:hover {

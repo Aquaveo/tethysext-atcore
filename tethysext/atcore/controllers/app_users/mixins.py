@@ -40,7 +40,7 @@ class AppUsersViewMixin(TethysController):
         return self._Resource
 
     def get_permissions_manager(self):
-        return self._PermissionsManager(self._app.namespace)
+        return self._PermissionsManager(self._app.url_namespace)
 
     def get_sessionmaker(self):
         if not self._app:
@@ -75,7 +75,7 @@ class ResourceViewMixin(AppUsersViewMixin):
                 request=request,
                 *args, **kwargs
             )
-        return super(ResourceViewMixin, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def default_back_url(self, request, *args, **kwargs):
         """
@@ -86,7 +86,7 @@ class ResourceViewMixin(AppUsersViewMixin):
         """
         resource_id = kwargs.get('resource_id', '') or args[0]
         active_app = get_active_app(request)
-        app_namespace = active_app.namespace
+        app_namespace = active_app.url_namespace
         back_controller = f'{app_namespace}:{self._Resource.SLUG}_resource_details'
         return reverse(back_controller, args=(str(resource_id),))
 

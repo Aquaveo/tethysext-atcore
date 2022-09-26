@@ -90,7 +90,7 @@ class ModifyOrganization(AppUsersViewMixin):
         # Process next
         next_arg = request.GET.get('next', "")
         active_app = get_active_app(request)
-        app_namespace = active_app.namespace
+        app_namespace = active_app.url_namespace
 
         if next_arg == 'manage-users':
             next_controller = '{}:app_users_manage_users'.format(app_namespace)

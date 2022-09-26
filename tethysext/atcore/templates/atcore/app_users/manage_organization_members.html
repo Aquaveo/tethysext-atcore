@@ -13,7 +13,7 @@
       <form id="new-user-group-form" method="post" action="">
         {% csrf_token %}
         {% gizmo select_input members_select %}
-        <a class="btn btn-default" href="{% url next_controller %}">Cancel</a>
+        <a class="btn btn-outline-secondary" href="{% url next_controller %}">Cancel</a>
         <input type="submit" class="btn btn-success" name="modify-members-submit" value="Save Changes">
       </form>
     </div>

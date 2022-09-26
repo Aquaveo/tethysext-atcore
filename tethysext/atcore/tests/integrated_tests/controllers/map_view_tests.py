@@ -8,6 +8,8 @@
 """
 import json
 from unittest import mock
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceViewMixin
+from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from django.test import RequestFactory
 from django.http import JsonResponse
@@ -64,8 +66,12 @@ class MapViewTests(SqlAlchemyTestCase):
             mock_map_view, mock.MagicMock(), mock.MagicMock()
         )
 
+        self.mock_app = TethysAppBase()
+        self.mock_app.package = 'test'
+        self.mock_app.root_url = 'test'
+
         self.controller = MapView.as_controller(
-            _app=mock.MagicMock(spec=TethysAppBase),
+            _app=self.mock_app,
             _AppUser=mock.MagicMock(spec=AppUser),
             _Organization=mock.MagicMock(spec=Organization),
             _Resource=mock.MagicMock(spec=Resource),
@@ -76,7 +82,7 @@ class MapViewTests(SqlAlchemyTestCase):
         )
         self.mock_mm = mock.MagicMock()
         self.mv = MapView(
-            _app=mock.MagicMock(spec=TethysAppBase),
+            _app=self.mock_app,
             _AppUser=mock.MagicMock(spec=AppUser),
             _Organization=mock.MagicMock(spec=Organization),
             _Resource=mock.MagicMock(spec=Resource),
@@ -101,10 +107,12 @@ class MapViewTests(SqlAlchemyTestCase):
         self.session.commit()
         self.request_factory = RequestFactory()
 
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    def test_get(self, mock_has_permission, mock_render, _):
+    def test_get(self, mock_has_permission, mock_render, _, __):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
@@ -131,10 +139,12 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertEqual('Layers', context['layer_tab_name'])
         self.assertEqual(mock_render(), response)
 
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_cesium(self, mock_has_permission, mock_render, _):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
+        self.mock_app.get_persistent_store_database = mock.MagicMock()
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
@@ -164,15 +174,16 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertEqual([{'source': 'GeoJSON', 'layer': 'GeoJSON'}], context['map_view']['entities'])
         self.assertEqual(mock_render(), response)
 
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_no_title(self, mock_has_permission, mock_render, _):
+        self.mock_app.get_persistent_store_database = mock.MagicMock()
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
 
         controller = NoTitleView.as_controller(
-            _app=mock.MagicMock(spec=TethysAppBase),
+            _app=self.mock_app,
             _AppUser=mock.MagicMock(spec=AppUser),
             _Organization=mock.MagicMock(spec=Organization),
             _Resource=mock.MagicMock(spec=Resource),
@@ -203,10 +214,12 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('plot_slide_sheet', context)
         self.assertEqual(mock_render(), response)
 
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_id_is_custom_layer(self, mock_has_permission, mock_render, _):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
+        self.mock_app.get_persistent_store_database = mock.MagicMock()
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
@@ -235,10 +248,12 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_render(), response)
 
     @mock.patch('django.conf.settings')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_layer_dropdown_toggle(self, mock_has_permission, mock_render, _, mock_settings):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
+        self.mock_app.get_persistent_store_database = mock.MagicMock()
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
@@ -265,11 +280,13 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertIn('layer_dropdown_toggle', context)
         self.assertEqual(mock_render(), response)
 
-    @mock.patch('tethysext.atcore.controllers.resource_view.ResourceView.request_to_method')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceView, 'request_to_method')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
-    def test_get_with_method(self, mock_has_permission, mock_render, _, mock_mrtm):
+    def test_get_with_method(self, mock_has_permission, mock_render, _, mock_mrtm, __):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/', data={'method': 'foo'})
         mock_request.user = self.django_user
@@ -281,9 +298,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_method.assert_called()
         self.assertEqual(mock_method(), response)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.find_location_by_query')
-    def test_post_location_by_query(self, mock_flaq, _):
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceViewMixin, 'default_back_url')
+    @mock.patch.object(MapView, 'find_location_by_query')
+    def test_post_location_by_query(self, mock_flaq, _, __):
         resource_id = '12345'
         mock_request = self.request_factory.post('/foo/bar/map-view/',
                                                  data={'method': 'find-location-by-query'})
@@ -291,9 +309,10 @@ class MapViewTests(SqlAlchemyTestCase):
         self.controller(mock_request, resource_id=resource_id)
         mock_flaq.called_assert_with(mock_request, resource_id=resource_id)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.find_location_by_advanced_query')
-    def test_post_location_by_advanced_query(self, mock_flaq, _):
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceViewMixin, 'default_back_url')
+    @mock.patch.object(MapView, 'find_location_by_advanced_query')
+    def test_post_location_by_advanced_query(self, mock_flaq, _, __):
         resource_id = '12345'
         mock_request = self.request_factory.post('/foo/bar/map-view/',
                                                  data={'method': 'find-location-by-advanced-query'})
@@ -301,9 +320,10 @@ class MapViewTests(SqlAlchemyTestCase):
         self.controller(mock_request, resource_id=resource_id)
         mock_flaq.called_assert_with(mock_request, resource_id=resource_id)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.default_back_url')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_plot_data')
-    def test_post_get_plot(self, mock_plot, _):
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceViewMixin, 'default_back_url')
+    @mock.patch.object(MapView, 'get_plot_data')
+    def test_post_get_plot(self, mock_plot, _, __):
         resource_id = '12345'
         mock_request = self.request_factory.post('/foo/bar/map-view/', data={'method': 'get-plot-data'})
         mock_request.user = self.django_user
@@ -404,6 +424,7 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertEqual('{"custom_layers": [{"layer_id": "layer1"}]}', resource.__dict__['_attributes'])
 
     def test_get_plot_data(self):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
         mock_request = mock.MagicMock(POST={'layer_name': 'foo', 'feature_id': '123'})
 
         self.mock_mm().get_plot_for_layer_feature.return_value = ('foo', 'bar', 'bazz')
@@ -422,7 +443,7 @@ class MapViewTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.map_view.redirect')
     @mock.patch('tethysext.atcore.controllers.map_view.messages')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.get_resource')
+    @mock.patch.object(ResourceViewMixin, 'get_resource')
     def test_get_plot_data_no_db_id(self, mock_resource, mock_messages, mock_redirect):
         mock_request = mock.MagicMock()
         mock_res_ret = mock.MagicMock()
@@ -577,24 +598,24 @@ class MapViewTests(SqlAlchemyTestCase):
             '  </label>'
 
         self.lg_dropdown_menu = \
-            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <div class="dropdown layers-context-menu float-end">\n' \
             '      <a id="123--context-menu"\n' \
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
-            '         data-toggle="dropdown" aria-haspopup="true"\n' \
+            '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
             '         aria-expanded="true">\n' \
-            '        <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '        <span class="bi bi-three-dots-vertical"></span>\n' \
             '      </a>\n' \
             '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
             '        \n' \
             '          <li><a class="rename-action" href="javascript:void(0);">' \
-                        '<span class="glyphicon glyphicon-pencil"></span>' \
+                        '<span class="bi bi-pencil-fill"></span>' \
                         '<span class="command-name">Rename</span>' \
                         '</a></li>\n' \
             '        \n' \
             '        \n' \
             '        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
                         'data-layer-id="">' \
-                        '<span class="glyphicon glyphicon-remove"></span>' \
+                        '<span class="bi bi-x-lg"></span>' \
                         '<span class="command-name">Remove</span>' \
                         '</a></li>\n' \
             '        \n' \
@@ -604,64 +625,64 @@ class MapViewTests(SqlAlchemyTestCase):
             '    </div>'  # noqa: E127
 
         self.layer_1_dropdown_menu = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="456--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
-            '       data-toggle="dropdown"\n' \
+            '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      <span class="bi bi-three-dots-vertical"></span>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" ' \
             'aria-labeledby="456--context-menu">\n' \
             '      \n' \
             '        <li><a class="rename-action" href="javascript:void(0);">' \
-            '<span class="glyphicon glyphicon-pencil"></span>' \
+            '<span class="bi bi-pencil-fill"></span>' \
             '<span class="command-name">Rename</span>' \
             '</a></li>\n' \
             '      \n' \
             '      \n' \
             '      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
                     'data-layer-id="456">' \
-                    '<span class="glyphicon glyphicon-remove"></span>' \
+                    '<span class="bi bi-x-lg"></span>' \
                     '<span class="command-name">Remove</span>' \
                     '</a></li>'  # noqa: E127
 
         self.layer_2_dropdown_menu = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="789--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
-            '       data-toggle="dropdown"\n' \
+            '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      <span class="bi bi-three-dots-vertical"></span>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="789--context-menu">\n' \
             '      \n' \
             '        <li><a class="rename-action" href="javascript:void(0);">' \
-                    '<span class="glyphicon glyphicon-pencil"></span>' \
+                    '<span class="bi bi-pencil-fill"></span>' \
                     '<span class="command-name">Rename</span>' \
                     '</a></li>\n' \
             '      \n' \
             '      \n' \
             '      <li><a class="remove-action" href="javascript:void(0);" ' \
                     'data-remove-type="layer" data-layer-id="789">' \
-                    '<span class="glyphicon glyphicon-remove"></span>' \
+                    '<span class="bi bi-x-lg"></span>' \
                     '<span class="command-name">Remove</span>' \
                     '</a></li>'  # noqa: E127
 
         self.lg_dropdown_menu_no_remove = \
-            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <div class="dropdown layers-context-menu float-end">\n' \
             '      <a id="123--context-menu"\n' \
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
-            '         data-toggle="dropdown" aria-haspopup="true"\n' \
+            '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
             '         aria-expanded="true">\n' \
-            '        <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '        <span class="bi bi-three-dots-vertical"></span>\n' \
             '      </a>\n' \
             '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
             '        \n' \
             '          <li><a class="rename-action" href="javascript:void(0);">' \
-            '<span class="glyphicon glyphicon-pencil"></span>' \
+            '<span class="bi bi-pencil-fill"></span>' \
             '<span class="command-name">Rename</span>' \
             '</a></li>\n' \
             '        \n' \
@@ -672,19 +693,19 @@ class MapViewTests(SqlAlchemyTestCase):
             '    </div>'
 
         self.lg_dropdown_menu_no_rename = \
-            '    <div class="dropdown layers-context-menu pull-right">\n' \
+            '    <div class="dropdown layers-context-menu float-end">\n' \
             '      <a id="123--context-menu"\n' \
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
-            '         data-toggle="dropdown" aria-haspopup="true"\n' \
+            '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
             '         aria-expanded="true">\n' \
-            '        <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '        <span class="bi bi-three-dots-vertical"></span>\n' \
             '      </a>\n' \
             '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
             '        \n' \
             '        \n' \
             '        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
             'data-layer-id="">' \
-            '<span class="glyphicon glyphicon-remove"></span>' \
+            '<span class="bi bi-x-lg"></span>' \
             '<span class="command-name">Remove</span>' \
             '</a></li>\n' \
             '        \n' \
@@ -694,24 +715,24 @@ class MapViewTests(SqlAlchemyTestCase):
             '    </div>'
 
         self.layer_1_dropdown_menu_no_rr = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="456--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
-            '       data-toggle="dropdown"\n' \
+            '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      <span class="bi bi-three-dots-vertical"></span>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="456--context-menu">\n'
 
         self.layer_2_dropdown_menu_no_rr = \
-            '  <div class="dropdown layers-context-menu pull-right">\n' \
+            '  <div class="dropdown layers-context-menu float-end">\n' \
             '    <a id="789--context-menu"\n' \
             '       class="btn btn-xs dropdown-toggle layers-btn "\n' \
-            '       data-toggle="dropdown"\n' \
+            '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="glyphicon glyphicon-option-vertical"></span>\n' \
+            '      <span class="bi bi-three-dots-vertical"></span>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="789--context-menu">\n'
 
@@ -1004,7 +1025,9 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertNotIn('remove-action', response_dict['response'])
         self.assertNotIn('rename-action', response_dict['response'])
 
-    def test_get_managers_no_db(self):
+    @mock.patch('tethysext.atcore.controllers.map_view.log.warning')
+    def test_get_managers_no_db(self, _):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
         resource = mock.MagicMock()
         resource.get_attribute.return_value = ''
         model_db, _ = self.mv.get_managers(self.request_factory, resource)

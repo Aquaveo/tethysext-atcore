@@ -113,7 +113,7 @@ class ResourceStatus(ResourceViewMixin):
         resource_id = kwargs.get('resource_id', None)
         back_arg = request.GET.get('back', '')
         active_app = get_active_app(request)
-        app_namespace = active_app.namespace
+        app_namespace = active_app.url_namespace
         _Resource = self.get_resource_model()
         if back_arg == 'resource-details' and resource_id:
             back_controller = reverse(f'{app_namespace}:{_Resource.SLUG}_resource_details', args=[resource_id])

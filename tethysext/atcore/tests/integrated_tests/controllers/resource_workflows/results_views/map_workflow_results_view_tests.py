@@ -2,9 +2,13 @@ import copy
 from unittest import mock
 from django.http import JsonResponse
 from tethys_sdk.gizmos import MapView
+from tethysext.atcore.controllers.map_view import MapView as AtcoreMapView
+from tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view import MapWorkflowView
+from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.controllers.resource_workflows.mixins import ResultViewMixin
 from tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view import MapWorkflowResultsView  # noqa: E501
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -143,11 +147,11 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.mock_map_manager = mock.MagicMock(spec=MapManagerBase)
         mock_mwv_get_managers.return_value = (self.mock_model_database, self.mock_map_manager)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(MapWorkflowResultsView, 'get_result')
+    @mock.patch.object(MapWorkflowView, 'set_feature_selection')
+    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(AtcoreMapView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_get_context_geojson(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                                  mock_mwv_set_feature_selection, mock_get_result):
 
@@ -205,11 +209,11 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(self.mock_map_manager.build_geojson_layer(), self.mock_map_view.layers[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(MapWorkflowResultsView, 'get_result')
+    @mock.patch.object(MapWorkflowView, 'set_feature_selection')
+    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(AtcoreMapView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_get_context_wms(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                              mock_mwv_set_feature_selection, mock_get_result):
         workflow_id = '123'
@@ -266,12 +270,12 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(self.mock_map_manager.build_wms_layer(), self.mock_map_view.layers[0])
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.translate_layers_to_cesium')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(MapWorkflowResultsView, 'translate_layers_to_cesium')
+    @mock.patch.object(MapWorkflowResultsView, 'get_result')
+    @mock.patch.object(MapWorkflowView, 'set_feature_selection')
+    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(AtcoreMapView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_get_context_cesium(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                                 mock_mwv_set_feature_selection, mock_get_result, mock_translate_layers_to_cesium):
         workflow_id = '123'
@@ -340,11 +344,11 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(self.mock_map_manager.build_layer_group(), ret['layer_groups'][0])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.log')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.set_feature_selection')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_managers')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_context')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(MapWorkflowResultsView, 'get_result')
+    @mock.patch.object(MapWorkflowView, 'set_feature_selection')
+    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(AtcoreMapView, 'get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_get_context_invalid_type(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
                                       mock_mwv_set_feature_selection, mock_get_result, mock_log):
         workflow_id = '123'
@@ -395,8 +399,8 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(1, len(self.mock_map_view.layers))
         self.assertEqual(2, len(ret['layer_groups']))
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_plot_for_geojson')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
+    @mock.patch.object(MapWorkflowResultsView, 'get_plot_for_geojson')
+    @mock.patch.object(MapWorkflowResultsView, 'get_result')
     def test_get_plot_data_geojson(self, mock_get_result, mock_gpfg):
         self.perpare_geojson_layers()
         mock_post = {
@@ -422,8 +426,8 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(b'{"title": "Mock Title", "data": ["mock", "data"], "layout": {"mock": "layout"}}',
                          ret.content)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowView.get_plot_data')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
+    @mock.patch.object(MapWorkflowView, 'get_plot_data')
+    @mock.patch.object(MapWorkflowResultsView, 'get_result')
     def test_get_plot_data_wms(self, mock_get_result, mock_mwv_get_plot_data):
         self.prepare_wms_layers()
         mock_post = {
@@ -449,8 +453,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(b'{"title": "Mock Title", "data": ["mock", "data"], "layout": {"mock": "layout"}}',
                          ret.content)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.MapWorkflowResultsView.get_result')  # noqa: E501
-    def test_get_plot_data_unsupported(self, mock_get_result):
+    def test_get_plot_data_unsupported(self):
         self.perpare_geojson_layers()
         self.layer['type'] = 'unsupported-type'  # Change type to arbitrary unsupported type
         mock_post = {
@@ -463,10 +466,11 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         result_id = '123'
         mock_result = mock.MagicMock(id=result_id)
         mock_result.get_layer.return_value = self.layer
-        mock_get_result.return_value = mock_result
+        with mock.patch.object(MapWorkflowResultsView, 'get_result') as mock_get_result:
+            mock_get_result.return_value = mock_result
 
-        instance = MapWorkflowResultsView()
-        self.assertRaises(TypeError, instance.get_plot_data, mock_request, mock_session, mock_resource, result_id)
+            instance = MapWorkflowResultsView()
+            self.assertRaises(TypeError, instance.get_plot_data, mock_request, mock_session, mock_resource, result_id)
 
         mock_get_result.assert_called_with(mock_request, result_id, mock_session)
         mock_result.get_layer.assert_called_with(mock_post['layer_name'])
@@ -521,7 +525,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIsNone(data)
         self.assertIsNone(layout)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.ResultViewMixin.get_result')
+    @mock.patch.object(ResultViewMixin, 'get_result')
     def test_update_result_layer(self, mock_get_result):
         mock_request = mock.MagicMock()
         mock_request.POST.get.side_effect = ['"foo"', '"color_ramp"']
@@ -533,9 +537,9 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_result.layers = [update_layer, {'layer_id': 'bar'}]
         mock_get_result.return_value = mock_result
 
-        self.instance.update_result_layer(request=mock_request,
-                                          session=mock_session,
-                                          resource=mock_resource,
-                                          result_id='test_id')
+        with mock.patch.object(ResultViewMixin, 'get_result') as mock_get_result:
+            mock_get_result.return_value = mock_result
+            self.instance.update_result_layer(request=mock_request, session=mock_session, resource=mock_resource,
+                                              result_id='test_id')
 
         mock_result.update_layer.assert_called_with(update_layer=update_layer)

@@ -10,6 +10,7 @@ from unittest import mock
 from django.http import HttpRequest
 from django.contrib.auth.models import User
 from django.test import RequestFactory
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.controllers.app_users.resource_details import ResourceDetails
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -43,9 +44,9 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.resource_details.ResourceDetails.default_back_url')
+    @mock.patch.object(ResourceDetails, 'default_back_url')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.render')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
     @mock.patch('tethys_apps.decorators.has_permission')
     def test_get(self, mock_has_permission, mock_get_sessionmaker, _, mock_back_url):
         mock_has_permission.return_value = True
@@ -67,8 +68,8 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.get_active_app')
     def test_default_back_url_with_back(self, mock_get_active_app, mock_reverse):
-        namespace = 'app_namespace'
-        mock_get_active_app.return_value = mock.MagicMock(namespace=namespace)
+        url_namespace = 'app_namespace'
+        mock_get_active_app.return_value = mock.MagicMock(url_namespace=url_namespace)
         self.request.GET = {'back': 'manage-organizations'}
 
         back = self.rd.default_back_url(self.request)
@@ -78,8 +79,8 @@ class ResourceDetailsTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.resource_details.get_active_app')
     def test_default_back_url_without_back(self, mock_get_active_app, mock_reverse):
-        namespace = 'app_namespace'
-        mock_get_active_app.return_value = mock.MagicMock(namespace=namespace)
+        url_namespace = 'app_namespace'
+        mock_get_active_app.return_value = mock.MagicMock(url_namespace=url_namespace)
         self.request.GET = {}
 
         back = self.rd.default_back_url(self.request)

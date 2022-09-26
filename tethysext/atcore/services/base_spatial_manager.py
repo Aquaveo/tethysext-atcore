@@ -7,7 +7,6 @@
 ********************************************************************************
 """
 from abc import ABCMeta, abstractmethod
-from tethysext.atcore.services.geoserver_api import GeoServerAPI
 
 
 def reload_config(public_endpoint=False, reload_config_default=True):
@@ -35,7 +34,7 @@ def reload_config(public_endpoint=False, reload_config_default=True):
 
             if should_reload:
                 self = args[0]
-                self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
+                self.reload(ports=self.GEOSERVER_CLUSTER_PORTS, public_endpoint=public_endpoint)
             return return_value
 
         return wrapper
@@ -53,6 +52,7 @@ class BaseSpatialManager(object):
     SLD_PATH = ''
     WORKSPACE = 'my-app'
     URI = 'http://app.aquaveo.com/my-app'
+    GEOSERVER_CLUSTER_PORTS = (8082, 8083, 8084)
 
     # Suffixes
     LEGEND_SUFFIX = 'legend'
@@ -79,7 +79,6 @@ class BaseSpatialManager(object):
             geoserver_engine(tethys_dataset_services.GeoServerEngine): Tethys geoserver engine.
         """
         self.gs_engine = geoserver_engine
-        self.gs_api = GeoServerAPI(geoserver_engine)
         self._projection_units = {}
         self._projection_string = {}
 
@@ -114,7 +113,7 @@ class BaseSpatialManager(object):
         self.gs_engine.create_workspace(self.WORKSPACE, self.URI)
 
         # Reload configuration on all slave nodes to perpetuate styles
-        self.reload(ports=self.gs_api.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
+        self.reload(ports=self.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
 
         return True
 
@@ -134,7 +133,7 @@ class BaseSpatialManager(object):
         Args:
             public_endpoint(bool): return with the public endpoint if True.
         """
-        return self.gs_api.get_ows_endpoint(self.WORKSPACE, public_endpoint)
+        return self.gs_engine.get_ows_endpoint(self.WORKSPACE, public_endpoint)
 
     def get_wms_endpoint(self, public=True):
         """
@@ -143,10 +142,10 @@ class BaseSpatialManager(object):
         Args:
             public(bool): return with the public endpoint if True.
         """
-        return self.gs_api.get_wms_endpoint(public)
+        return self.gs_engine.get_wms_endpoint(public)
 
     def reload(self, ports=None, public_endpoint=True):
         """
         Reload the in memory catalog of each member of the geoserver cluster.
         """
-        self.gs_api.reload(ports, public_endpoint)
+        self.gs_engine.reload(ports, public_endpoint)

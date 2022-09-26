@@ -71,6 +71,10 @@
     color: #ffffff;
 }
 
+.layers-context-menu .dropdown-toggle::after {
+    display: none;
+}
+
 .layers-btn {
     color: #666666!important;
     border: none;
@@ -105,11 +109,11 @@
 
 .layers-context-menu .dropdown-menu li a {
     color: #666666!important;
+    padding: 3px 20px;
 }
 
 .layers-context-menu .dropdown-menu li .flat-slider-container {
     padding: 3px 20px;
-
 }
 
 .layers-context-menu .dropdown-menu li .flat-slider-container label {

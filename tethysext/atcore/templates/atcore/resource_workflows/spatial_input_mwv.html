@@ -3,7 +3,7 @@
 
 {% block app_actions %}
   {% if allow_shapefile %}
-  <button type="button" class="btn btn-default btn-shapefile" data-toggle="modal" data-target="#shapefile-upload-modal">
+  <button type="button" class="btn btn-light btn-shapefile" data-bs-toggle="modal" data-bs-target="#shapefile-upload-modal">
     Upload Shapefile
   </button>
   {% endif %}
@@ -31,18 +31,18 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title" id="shapefile-upload-modal-label">Upload Shapefile</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>Select all of the files for the shapefile you'd like to upload and create a zip archive. Then use the <b>Browse</b> button below to select the zip archive.</p>
           <div class="input-file-wrapper">
             <input id="shapefile-upload" name="shapefile" class="file-input" type="file" accept=".zip" form="workflow-form">
-            <label for="shapefile-upload" class="btn btn-default btn-file-input">Browse</label>
+            <label for="shapefile-upload" class="btn btn-outline-secondary btn-file-input">Browse</label>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-success" form="workflow-form">Upload Shapefile</button>
         </div>
       </div>
@@ -60,7 +60,7 @@
       {% csrf_token %}
       {{ attributes_form }}
     </form>
-    <a class="btn btn-default spatial-attributes-ok" href="javscript:void(0)">Save</a>
+    <a class="btn btn-outline-secondary spatial-attributes-ok" href="javscript:void(0)">Save</a>
   </div>
   {% endif %}
 

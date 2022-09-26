@@ -1,7 +1,6 @@
 import os
 from tethys_dataset_services.engines import GeoServerSpatialDatasetEngine
 from tethysext.atcore.utilities import parse_url
-from tethysext.atcore.services.geoserver_api import GeoServerAPI
 from tethysext.atcore.cli.cli_helpers import print_header, print_success, print_info, print_error
 
 WORKSPACE = 'atcore'
@@ -28,8 +27,6 @@ def init_atcore(arguments):
         password=url.password
     )
 
-    gs_api = GeoServerAPI(geoserver_engine)
-
     # Initialize workspace
     print_info('Initializing ATCORE GeoServer Workspace...')
     try:
@@ -44,9 +41,8 @@ def init_atcore(arguments):
     sld_files = [f for f in os.listdir(SLD_PATH) if os.path.isfile(os.path.join(SLD_PATH, f)) and f.endswith('.sld')]
     for f in sld_files:
         try:
-            gs_api.create_style(
-                workspace=WORKSPACE,
-                style_name=f.split('.')[0],
+            geoserver_engine.create_style(
+                style_id=f"{WORKSPACE}:{f.split('.')[0]}",
                 sld_template=os.path.join(SLD_PATH, f),
                 sld_context={},
                 overwrite=True

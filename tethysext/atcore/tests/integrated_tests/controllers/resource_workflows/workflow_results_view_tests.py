@@ -1,4 +1,6 @@
 from unittest import mock
+from tethysext.atcore.controllers.resource_workflows.mixins import ResultViewMixin
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.app_users import ResourceWorkflowResult
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView  # noqa: E501
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -27,11 +29,11 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         super().setUp()
         self.instance = WorkflowResultsView()
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_result_url_name')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.build_result_cards')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.validate_result')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.ResultViewMixin.get_result')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_context')
+    @mock.patch.object(WorkflowResultsView, 'get_result_url_name')
+    @mock.patch.object(WorkflowResultsView, 'build_result_cards')
+    @mock.patch.object(WorkflowResultsView, 'validate_result')
+    @mock.patch.object(ResultViewMixin, 'get_result')
+    @mock.patch.object(ResourceWorkflowView, 'get_context')
     def test_get_context(self, mock_get_context, mock_get_result, mock_validate, mock_build_result_cards, mock_result_url):  # noqa: E501
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -102,7 +104,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
     def test_get_result_url_name(self, mock_get_active_app):
         mock_request = mock.MagicMock()
         mock_workflow = mock.MagicMock(type='bar')
-        mock_get_active_app.return_value = mock.MagicMock(namespace='foo')
+        mock_get_active_app.return_value = mock.MagicMock(url_namespace='foo')
         baseline = 'foo:bar_workflow_step_result'
         ret = WorkflowResultsView.get_result_url_name(mock_request, mock_workflow)
         self.assertEqual(baseline, ret)
@@ -190,7 +192,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         self.assertTrue(error_thrown)
         self.assertEqual(expected_message, error_message)
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.process_step_data')
+    @mock.patch.object(ResourceWorkflowView, 'process_step_data')
     def test_process_step_data(self, mock_process_step_data):
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()

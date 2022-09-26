@@ -72,7 +72,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         """
         path = os.path.join(self.db_dir, filename)
 
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             if os.path.isfile(path):
                 os.remove(path)
             elif os.path.isdir(path):
@@ -92,7 +92,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         """
         dst = os.path.join(self.db_dir, os.path.basename(filepath))
 
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             if os.path.exists(dst):
                 return dst
             elif os.path.isfile(filepath):
@@ -132,7 +132,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         src = os.path.join(self.db_dir, ex_filename)
         dst = os.path.join(self.db_dir, new_filename)
 
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             if os.path.isfile(src):
                 shutil.copy(src, dst)
             elif os.path.isdir(src):
@@ -156,7 +156,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         src = os.path.join(self.db_dir, ex_filename)
         dst = os.path.join(self.db_dir, new_filename)
 
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             if os.path.exists(dst):
                 return dst
             elif os.path.exists(src):
@@ -173,7 +173,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         Args:
             filename_list(list): List of filenames or directories that will be deleted.
         """
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             for filename in filename_list:
                 path = os.path.join(self.db_dir, filename)
                 if os.path.isfile(path):
@@ -190,7 +190,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
         Args:
             filepath_list(list): List of filepath for files that will be deleted to the database.
         """
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             for filepath in filepath_list:
                 dst = os.path.join(self.db_dir, os.path.basename(filepath))
                 if os.path.exists(dst):
@@ -210,7 +210,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
             filename_list(str): List of tuples with existing file and new filename,
                 i.e [(ex_filename1, new_filename1),(ex_filename2, new_filename2)]
         """
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             for ex_filename, new_filename in filename_list:
                 src = os.path.join(self.db_dir, ex_filename)
                 dst = os.path.join(self.db_dir, new_filename)
@@ -229,7 +229,7 @@ class ModelFileDatabaseConnection(ModelDatabaseConnectionBase):
             filename_list(str): List of tuples with existing file and new filename,
                 i.e [(ex_filename1, new_filename1),(ex_filename2, new_filename2)]
         """
-        with self.lock.acquire(timeout=self.lock_timeout, poll_intervall=self.poll_interval):
+        with self.lock.acquire(timeout=self.lock_timeout, poll_interval=self.poll_interval):
             for ex_filename, new_filename in filename_list:
                 src = os.path.join(self.db_dir, ex_filename)
                 dst = os.path.join(self.db_dir, new_filename)

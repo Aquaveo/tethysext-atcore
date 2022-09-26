@@ -1,6 +1,7 @@
 from unittest import mock
 import pandas as pd
 from tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view import DatasetWorkflowResultView  # noqa: E501
+from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -20,8 +21,8 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
         self.instance = DatasetWorkflowResultView()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.has_permission')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.DatasetWorkflowResultView.get_result')  # noqa: E501
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView.get_context')  # noqa: E501
+    @mock.patch.object(DatasetWorkflowResultView, 'get_result')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_get_context(self, mock_sup_get_context, mock_get_result, mock_permission):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
@@ -53,21 +54,7 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
         baseline = {
             'no_dataset_message': 'baz',
             'page_title': 'bar',
-            'datasets': [{
-                'dataset': mock_pandas_data,
-                'show_export_button': True,
-                'data_table': {
-                    'attributes': {},
-                    'classes': '',
-                    'rows': [],
-                    'column_names': ['foo', 'bar', 'baz'],
-                    'footer': False,
-                    'datatable_options': {
-                        'dom': '"Bfrtip"',
-                        'data_table_kwargs': '{"foo": true}'
-                    }
-                }
-            }]
+            'datasets': mock_result.datasets
         }
         mock_options.get.side_effect = ['bar', data_table_options, 'baz']
         mock_sup_get_context.return_value = {}

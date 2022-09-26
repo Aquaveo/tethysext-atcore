@@ -2,16 +2,13 @@
 {% load static tethys_gizmos %}
 
 {% block app_navigation_items %}
-<li><a href="{{ back_url }}"><span class="glyphicon glyphicon-chevron-left"></span> {{ resource.DISPLAY_TYPE_PLURAL }}</a></li>
+<li class="nav-item"><a class="nav-link" href="{{ back_url }}"><span class="bi bi-chevron-left"></span> {{ resource.DISPLAY_TYPE_PLURAL }}</a></li>
 {% endblock %}
 
 {% block app_content %}
 {% for message in messages %}
   <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert">
-      <span aria-hidden="true">&times;</span>
-      <span class="sr-only">Close</span>
-    </button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     {{ message }}
   </div>
 {% endfor %}
@@ -19,12 +16,13 @@
 <!-- Tabs -->
 <ul class="nav nav-tabs" role="tablist">
   {% for tab in tabs %}
-  <li role="presentation" class="lazy-load-tab"
+  <li role="presentation" class="lazy-load-tab nav-item"
       data-callback="{{ tab.view.post_load_callback }}">
     <a href="#{{ tab.slug }}"
        aria-controls="tab.slug"
        role="tab"
-       data-toggle="tab">{{ tab.title }}</a>
+       class="nav-link"
+       data-bs-toggle="tab">{{ tab.title }}</a>
   </li>
   {% endfor %}
 </ul>

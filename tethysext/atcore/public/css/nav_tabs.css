@@ -2,6 +2,7 @@
 #app-content-wrapper #app-content #app-navigation div ul.nav.nav-tabs {
     padding-bottom: 0;
     padding-top: 5px;
+    height: auto;
 }
 
 #app-content-wrapper #app-content #app-navigation div .nav li a {
@@ -15,7 +16,6 @@
 
 .nav-tabs>li {
     float: left;
-    margin-bottom: -1px;
 }
 
 .nav-tabs>li>a {
@@ -24,11 +24,12 @@
     border: 1px solid transparent;
     border-radius: 4px 4px 0 0;
     padding: 5px 10px 5px 10px;
+    text-decoration: none;
 }
 
-.nav-tabs.atcore-nav-tabs>li.active>a,
-.nav-tabs.atcore-nav-tabs>li.active>a:hover,
-.nav-tabs.atcore-nav-tabs>li.active>a:focus {
+.nav-tabs.atcore-nav-tabs>li>a.active,
+.nav-tabs.atcore-nav-tabs>li>a.active:hover,
+.nav-tabs.atcore-nav-tabs>li>a.active:focus {
     margin-right: 2px;
     border: 1px solid #ddd;
     border-radius: 4px 4px 0 0;

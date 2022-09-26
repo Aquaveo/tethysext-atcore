@@ -20,25 +20,27 @@
     {% block map_tabs %}
       <ul class="nav nav-tabs atcore-nav-tabs" role="tablist">
         {# LAYERS TAB #}
-        <li role="presentation" {% block disable_default_tab %}class="active"{% endblock %}>
-          <a id="layers-tab-toggle"
+        <li class="nav-item" role="presentation">
+          <a class="nav-link {% block disable_default_tab %}active{% endblock %}"
+             id="layers-tab-toggle"
              href="#layers-tab-panel"
              aria-controls="layers-tab-panel"
              aria-selected="true"
              role="tab"
-             data-toggle="tab">{{ layer_tab_name }}</a>
+             data-bs-toggle="tab">{{ layer_tab_name }}</a>
         </li>
         {# LEGEND TAB #}
         {% if show_legends %}
           {% block legend_tab %}
             {% if legends %}
-            <li role="presentation" {% block disable_legend_tab %}{% endblock %}>
-              <a id="legend-tab-toggle"
+            <li class="nav-item" role="presentation">
+              <a class="nav-link {% block disable_legend_tab %}{% endblock %}"
+                 id="legend-tab-toggle"
                  href="#legend-tab-panel"
                  aria-controls="legend-tab-panel"
                  aria-selected="false"
                  role="tab"
-                 data-toggle="tab">Legend</a>
+                 data-bs-toggle="tab">Legend</a>
             </li>
             {% endif %}
           {% endblock %}
@@ -72,31 +74,31 @@
 
                 {# LAYER GROUP CONTEXT MENU #}
                 {% if show_public_toggle or show_remove or show_rename %}
-                  <div class="dropdown layers-context-menu pull-right">
+                  <div class="dropdown layers-context-menu float-end">
                     <a id="{{ layer_group.id }}--context-menu"
                        class="btn btn-xs dropdown-toggle layers-btn"
-                       data-toggle="dropdown" aria-haspopup="true"
+                       data-bs-toggle="dropdown" aria-haspopup="true"
                        aria-expanded="true">
-                      <span class="glyphicon glyphicon-option-vertical"></span>
+                      <span class="bi bi-three-dots-vertical"></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
                       {% if show_rename %}
-                        <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                        <li><a class="rename-action" href="javascript:void(0);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>
                       {% endif %}
                       {% if show_remove %}
-                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>
                       {% endif %}
                       {% if layer_group.id == 'custom_layers' %}
                         <li role="separator" class="divider"></li>
-                        <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="glyphicon glyphicon-plus"></span><span class="command-name">Add Layer</span></a></li>
+                        <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="bi bi-plus-lg"></span><span class="command-name">Add Layer</span></a></li>
                       {% endif %}
                     </ul>
                   </div>
                 {% endif %}
 
                 <a id="{{ layer_group.id }}--collapse"
-                   class="collapse-action btn btn-xs layers-btn pull-right">
-                  <span class="glyphicon glyphicon-chevron-down"></span>
+                   class="collapse-action btn btn-xs layers-btn float-end">
+                  <span class="bi bi-chevron-down"></span>
                 </a>
               </li>
 
@@ -116,34 +118,34 @@
                   </label>
 
                   {# LAYER CONTEXT MENU #}
-                  <div class="dropdown layers-context-menu pull-right">
+                  <div class="dropdown layers-context-menu float-end">
                     <a id="{{ layer.data.layer_id }}--context-menu"
                        class="btn btn-xs dropdown-toggle layers-btn {% if not layer_group.visible %}disabled{% endif %}"
-                       data-toggle="dropdown"
+                       data-bs-toggle="dropdown"
                        aria-haspopup="true"
                        aria-expanded="true">
-                      <span class="glyphicon glyphicon-option-vertical"></span>
+                      <span class="bi bi-three-dots-vertical"></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_id }}--context-menu">
                       {% if show_rename %}
-                        <li><a class="rename-action" href="javascript:void(0);"><span class="glyphicon glyphicon-pencil"></span><span class="command-name">Rename</span></a></li>
+                        <li><a class="rename-action" href="javascript:void(0);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>
                       {% endif %}
                       {% if show_remove %}
-                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-remove"></span><span class="command-name">Remove</span></a></li>
+                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>
                       {% endif %}
                       {% if show_public_toggle or show_remove or show_rename %}
                         <li role="separator" class="divider"></li>
                       {% endif %}
-                      <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><span class="glyphicon glyphicon-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                      <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><span class="bi bi-arrows-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
                       {% comment %}
                       {# TODO: Implement download layer action #}
                       <li role="separator" class="divider"></li>
-                      <li><a class="download-layer" href="javascript:void(0);"><span class="glyphicon glyphicon-cloud-download"></span><span class="command-name">Download</span></a></li>
+                      <li><a class="download-layer" href="javascript:void(0);"><span class="bi bi-cloud-download-fill"></span><span class="command-name">Download</span></a></li>
                       {% endcomment %}
                       <li role="separator" class="divider"></li>
                       <li>
                         <div class="flat-slider-container">
-                          <label><span class="glyphicon glyphicon-adjust"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
+                          <label><span class="bi bi-circle-half"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
                           <input type="range"
                                  class="flat-slider layer-opacity-control"
                                  min="0" max="100"
@@ -173,7 +175,7 @@
             <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
               {% block legend_items %}
               {% for legend, legend_select_input in legends %}
-                <div id="legend-{{ legend.legend_id }}" class="hidden">
+                <div id="legend-{{ legend.legend_id }}" class="d-none">
                     <li class="legend-group-item">
                       <label class="flatmark"><span class="display-name">{{ legend.title|title }}{% if legend.units %} ({{ legend.units }}){% endif %}</span></label>
                     </li>
@@ -205,7 +207,7 @@
       <div class="col-sm-12">
         <div class="input-group">
           <select name="geocode_select" id="geocode_select" class="geocode-search" multiple></select>
-          <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+          <span class="input-group-addon"><span class="bi bi-search"></span></span>
         </div>
       </div>
     </div>
@@ -250,14 +252,14 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title" id="action-modal-title">Action</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="action-modal-content">
           Action content
         </div>
         <div class="modal-footer">
-          <button id="cancel-action-button" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button id="cancel-action-button" type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <a id="do-action-button" class="btn" href="javascript:void(0);">Action</a>
         </div>
       </div>

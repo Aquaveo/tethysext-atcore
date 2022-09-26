@@ -19,7 +19,7 @@ function init_remove_row_buttons() {
         $('#modal-remove-button').attr('data-id', id);
 
         // Open the remove modal
-        $('#remove-modal').modal();
+        $('#remove-modal').modal('show');
       });
   });
 

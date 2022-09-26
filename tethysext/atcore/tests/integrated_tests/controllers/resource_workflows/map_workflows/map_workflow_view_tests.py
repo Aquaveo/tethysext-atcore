@@ -10,6 +10,9 @@ from unittest import mock
 from django.http import HttpRequest
 from django.test import RequestFactory
 from tethys_sdk.base import TethysAppBase
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view import MapWorkflowView
 from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
@@ -66,12 +69,16 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         )
         self.workflow.steps.append(self.step3)
 
+        self.mock_app = TethysAppBase()
+        self.mock_app.package = 'test'
+        self.mock_app.root_url = 'test'
+
         self.mock_map_manager = mock.MagicMock(spec=MapManagerBase)
         self.mock_map_manager().compose_map.return_value = (
             mock.MagicMock(), mock.MagicMock(), mock.MagicMock()
         )
         self.controller = MapWorkflowView.as_controller(
-            _app=mock.MagicMock(spec=TethysAppBase),
+            _app=self.mock_app,
             _AppUser=mock.MagicMock(spec=AppUser),
             _Organization=mock.MagicMock(spec=Organization),
             _Resource=mock.MagicMock(spec=Resource),
@@ -82,7 +89,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         )
         self.mock_mm = mock.MagicMock()
         self.mv = MapView(
-            _app=mock.MagicMock(spec=TethysAppBase),
+            _app=self.mock_app,
             _AppUser=mock.MagicMock(spec=AppUser),
             _Organization=mock.MagicMock(spec=Organization),
             _Resource=mock.MagicMock(spec=Resource),
@@ -121,17 +128,18 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
     def tearDown(self):
         super().tearDown()
 
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.'
-                'workflow_locked_for_request_user', return_value=False)
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.get_step_url_name')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_workflow')
-    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.ResourceWorkflowView.on_get')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_resource')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceWorkflowView, 'workflow_locked_for_request_user', return_value=False)
+    @mock.patch.object(ResourceWorkflowView, 'get_step_url_name')
+    @mock.patch.object(WorkflowViewMixin, 'get_step')
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow')
+    @mock.patch.object(ResourceWorkflowView, 'on_get')
+    @mock.patch.object(MapView, 'get_resource')
     @mock.patch('tethysext.atcore.controllers.resource_view.render')
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_context(self, mock_has_permission, mock_render, _, mock_on_get, mock_get_workflow,
-                         mock_get_step, mock_url, __):
+                         mock_get_step, mock_url, __, ___):
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
         mock_on_get.return_value = None
         mock_get_workflow.return_value = self.workflow
         mock_get_step.return_value = self.step2
@@ -169,7 +177,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         self.assertTrue(self.map_view.layers[0].feature_selection)
         self.assertTrue(self.map_view.layers[0].editable)
 
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    @mock.patch.object(MapView, 'get_managers')
     def test_process_step_options(self, mock_get_managers):
         mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
         resource = mock.MagicMock()
@@ -209,7 +217,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.log')
     @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    @mock.patch.object(MapView, 'get_managers')
     def test_add_layers_for_previous_steps_no_child(self, mock_get_managers, _, __):
         mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
         resource = mock.MagicMock()
@@ -239,7 +247,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view.log')
     @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    @mock.patch.object(MapView, 'get_managers')
     def test_add_layers_for_previous_steps_wrong_child_type(self, mock_get_managers, _, __):
         mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
         resource = mock.MagicMock()
@@ -271,7 +279,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
 
     @mock.patch('tethys_gizmos.gizmo_options.map_view.log')
     @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.to_geojson')
-    @mock.patch('tethysext.atcore.controllers.map_view.MapView.get_managers')
+    @mock.patch.object(MapView, 'get_managers')
     def test_add_layers_for_previous_steps_with_child(self, mock_get_managers, mock_to_geojson, _):
         mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
         mock_to_geojson.return_value = {

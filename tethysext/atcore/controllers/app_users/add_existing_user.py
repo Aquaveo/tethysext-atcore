@@ -58,7 +58,7 @@ class AddExistingUser(AppUsersViewMixin):
         session.close()
 
         active_app = get_active_app(request)
-        app_namespace = active_app.namespace
+        app_namespace = active_app.url_namespace
         next_controller = '{}:app_users_manage_users'.format(app_namespace)
 
         # Process form request

@@ -77,6 +77,9 @@ from .services.file_database.file_database_client_tests import FileDatabaseClien
 from .services.resource_condor_workflow_tests import ResourceCondorWorkflowTests  # noqa: F401
 from .services.resource_workflows.helpers_tests import HelpersTests  # noqa: F401
 from .services.app_users.permissions_manager import AppPermissionsManagerTests  # noqa: F401
+from .services.model_database_base import ModelDatabaseBaseTests  # noqa: F401
+from .services.model_database import ModelDatabaseTests  # noqa: F401
+from .services.model_file_database import ModelFileDatabaseTests  # noqa: F401
 from .urls.app_users_tests import AppUserUrlsTests  # noqa: F401
 from .urls.resources_tests import ResourceUrlsTests  # noqa: F401
 from .urls.resource_workflows_tests import ResourceWorkflowsTests  # noqa: F401

@@ -9,6 +9,7 @@
 from unittest import mock
 from django.test import RequestFactory
 from sqlalchemy.orm.exc import NoResultFound
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.models.app_users.organization import Organization
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.models.app_users import AppUser
@@ -58,7 +59,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         self.session.add(self.app_user)
         self.session.commit()
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.ModifyUser._handle_modify_user_requests')
+    @mock.patch.object(ModifyUser, '_handle_modify_user_requests')
     def test_get(self, mock_handle_modify_user):
         mock_request = mock.MagicMock()
         modify_user = ModifyUser()
@@ -67,7 +68,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         # test the results
         mock_handle_modify_user.assert_called_with(mock_request)
 
-    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.ModifyUser._handle_modify_user_requests')
+    @mock.patch.object(ModifyUser, '_handle_modify_user_requests')
     def test_post(self, mock_handle_modify_user):
         mock_request = mock.MagicMock()
 
@@ -79,11 +80,11 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post(self, _, mock_get_app_user_model, mock_get_organization_model,
                                                mock_get_sessionmaker, mock_get_active_app,
@@ -110,7 +111,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1', 'Role2']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -131,11 +132,11 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_permissions_manager')
+    @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_create_new_client(self, _, mock_get_app_user_model,
                                                                  mock_get_organization_model, mock_get_sessionmaker,
@@ -163,7 +164,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1', 'Role2']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -187,9 +188,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_user_not_found_exception(self, _, mock_get_app_user_model,
                                                                    __, mock_get_sessionmaker, mock_get_active_app, ___,
@@ -218,7 +219,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1', 'Role2']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         mock_edit_session = mock_get_sessionmaker()()
         mock_edit_session.query().filter().one.side_effect = NoResultFound
@@ -242,9 +243,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_create_new_invalid_client(self, _, mock_get_app_user_model,
                                                                          __, mock_get_sessionmaker, mock_get_active_app,
@@ -273,7 +274,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['APP_ADMIN']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -323,9 +324,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_get(self, _, mock_get_app_user_model, mock_get_organization_model,
                                               mock_get_sessionmaker, mock_get_active_app, mock_render):
@@ -345,7 +346,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['APP_ADMIN', 'DEVELOPER']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -369,9 +370,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_create_new_client_is_me(self, _, mock_get_app_user_model,
                                                                        __,
@@ -400,7 +401,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['DEVELOPER']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -441,9 +442,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_password_confirm_password_user_space_error(self, _,
                                                                                           mock_get_app_user_model,
@@ -474,7 +475,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['APP_ADMIN']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -522,9 +523,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post_duplicate_username(self, _, mock_get_app_user_model,
                                                                   __, mock_get_sessionmaker, mock_get_active_app,
@@ -553,7 +554,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         # app_user.ROLES.get_no_organization_roles.return_value = [Roles.ORG_ADMIN]
         app_user.ROLES.get_organization_required_roles.return_value = [Roles.ORG_ADMIN]
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -602,9 +603,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_validate_edit_confirm_password(self, _, mock_get_app_user_model,
                                                                          __, mock_get_sessionmaker,
@@ -630,7 +631,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['DEVELOPER']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -673,9 +674,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_validate_edit__password_confirm_password(self, _, mock_get_app_user_model,
                                                                                    __, mock_get_sessionmaker,
@@ -701,7 +702,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_no_organization_roles.return_value = ['DEVELOPER']
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()
@@ -744,9 +745,9 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_organization_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
+    @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_normal_user_change_role(self, _, mock_get_app_user_model, __, mock_get_sessionmaker,
                                                     mock_get_active_app, mock_render):
@@ -784,7 +785,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         app_user.ROLES.get_organization_required_roles.return_value = [Roles.ORG_ADMIN]
 
-        mock_get_active_app().namespace = 'NameSpace'
+        mock_get_active_app().url_namespace = 'NameSpace'
 
         # call method
         modify_user = ModifyUser()

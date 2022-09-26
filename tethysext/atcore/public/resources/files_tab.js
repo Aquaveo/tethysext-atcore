@@ -29,13 +29,13 @@ function collapse_tree_elements(elem) {
     // Change the glyphicon for the folder based on if it is expanded.
     if(!isexpanded)
     {
-        elem.classList.remove("glyphicon-folder-open");
-        elem.classList.add("glyphicon-folder-close");
+        elem.classList.remove("bi-folder2-open");
+        elem.classList.add("bi-folder2");
     }
     else
     {
-        elem.classList.remove("glyphicon-folder-close");
-        elem.classList.add("glyphicon-folder-open");
+        elem.classList.remove("bi-folder2");
+        elem.classList.add("bi-folder2-open");
     }
     // Hide or show each tree item based on if it is expanded or not.
     toggleelems.forEach(function(element){
@@ -109,8 +109,8 @@ function files_tab_loaded() {
     document.getElementById('tree-collapse').addEventListener("click", function() {
         document.querySelectorAll('.folder').forEach(function(folder) {
                 folder.dataset.isexpanded = false;
-                folder.classList.remove("glyphicon-folder-open");
-                folder.classList.add("glyphicon-folder-close");
+                folder.classList.remove("bi-folder2-open");
+                folder.classList.add("bi-folder2");
                 collapse_tree_elements(folder);
         });
     });
@@ -118,8 +118,8 @@ function files_tab_loaded() {
     document.getElementById('tree-expand').addEventListener("click", function() {
         document.querySelectorAll('.folder').forEach(function(folder) {
                 folder.dataset.isexpanded = true;
-                folder.classList.remove("glyphicon-folder-close");
-                folder.classList.add("glyphicon-folder-open");
+                folder.classList.remove("bi-folder2");
+                folder.classList.add("bi-folder2-open");
                 collapse_tree_elements(folder);
         });
     });

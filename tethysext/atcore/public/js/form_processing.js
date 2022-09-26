@@ -9,13 +9,13 @@
 // Global setTimeout variables so that it can be cleared
 
 function add_processing_div() {
-    var div_show = document.createElement("show-background");
-    var image_show = document.createElement("show-image");
+    var div_show = document.createElement("div");
+    var image_show = document.createElement("div");
     var elem = document.createElement("img");
 
     if ($('#show-background').length === 0) {
         div_show.id = 'show-background';
-        div_show.className="center-parent hidden";
+        div_show.className="center-parent d-none";
         document.body.appendChild(div_show);
         image_show.id = 'show-image';
         document.getElementById("show-background").appendChild(image_show);
@@ -28,11 +28,11 @@ function add_processing_div() {
 
 // Generate a GIF that covers page while loading
 function show_processing() {
-    $('#show-background').removeClass('hidden');
+    $('#show-background').removeClass('d-none');
 }
 
 function hide_processing() {
-    $('#show-background').addClass('hidden');
+    $('#show-background').addClass('d-none');
 }
 
 

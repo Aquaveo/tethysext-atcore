@@ -29,9 +29,9 @@ Required CSS:
         <span class="workflow-step-title">{{ step.name }}</span>
         {% if step.show_lock %}
           {% if step.is_locked %}
-          <span class="workflow-step-lock pull-right"><i class="fa fa-lock" aria-hidden="true" title="Locked"></i></span>
+          <span class="workflow-step-lock float-end"><i class="fa fa-lock" aria-hidden="true" title="Locked"></i></span>
           {% else %}
-          <span class="workflow-step-lock pull-right"><i class="fa fa-unlock" aria-hidden="true" title="Unlocked"></i></span>
+          <span class="workflow-step-lock float-end"><i class="fa fa-unlock" aria-hidden="true" title="Unlocked"></i></span>
           {% endif %}
         {% endif %}
       </a>
