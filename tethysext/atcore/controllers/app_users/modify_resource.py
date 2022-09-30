@@ -81,13 +81,15 @@ class ModifyResource(AppUsersViewMixin):
 
         # Defaults
         valid = True
+        resource = None
+        context = dict()
         resource_name = ""
         resource_name_error = ""
         resource_description = ""
         resource_srid = self.srid_default
         resource_srid_text = ""
         resource_srid_error = ""
-        selected_organizations = []
+        selected_organizations = list()
         organization_select_error = ""
         file_upload_error = ""
 
@@ -147,7 +149,11 @@ class ModifyResource(AppUsersViewMixin):
                     valid = False
                     resource_srid_error = self.srid_error
 
-                if valid:
+                custom_valid, custom_fields_errors = self.validate_custom_fields(post_params)
+                context.update(custom_fields_errors)
+
+
+                if valid and custom_valid:
                     # Look up existing resource
                     if editing:
                         resource = session.query(_Resource).get(resource_id)
@@ -272,6 +278,10 @@ class ModifyResource(AppUsersViewMixin):
                 options=organization_options,
                 error=organization_select_error
             )
+            
+            # Initialize custom fields
+            custom_fields = self.initialize_custom_fields(session, request, resource, editing)
+            context.update(custom_fields)
 
         except Exception as e:
             session and session.rollback()
@@ -292,7 +302,7 @@ class ModifyResource(AppUsersViewMixin):
             # Close sessions
             session and session.close()
 
-        context = {
+        context.update({
             'next_controller': next_controller,
             'editing': editing,
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
@@ -309,9 +319,9 @@ class ModifyResource(AppUsersViewMixin):
             'file_upload_help': self.file_upload_help,
             'file_upload_accept': self.file_upload_accept,
             'base_template': self.base_template
-        }
+        })
 
-        context = self.get_context(context)
+        context = self.get_context(request, context, editing)
 
         return render(request, self.template_name, context)
 
@@ -404,7 +414,19 @@ class ModifyResource(AppUsersViewMixin):
         """
         pass
 
-    def get_context(self, context):
+    def initialize_custom_fields(self, session, request, resource, editing):
+        """
+        Hook to allow for initializing custom fields
+        """
+        return dict()
+
+    def validate_custom_fields(self, params):
+        """
+        Hook to allow for validating custom fields
+        """
+        return True, dict()
+
+    def get_context(self, request, context, editing):
         """
         Hook to add to context.
         Args:
