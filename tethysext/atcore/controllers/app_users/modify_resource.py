@@ -437,7 +437,7 @@ class ModifyResource(AppUsersViewMixin):
 
         Returns:
             bool, dict: False if any custom fields invalid, Template context variables for validation feedback (i.e. error messages).
-        """
+        """ # noqa: E501
         return True, dict()
 
     def get_context(self, request, context, editing):
