@@ -152,7 +152,6 @@ class ModifyResource(AppUsersViewMixin):
                 custom_valid, custom_fields_errors = self.validate_custom_fields(post_params)
                 context.update(custom_fields_errors)
 
-
                 if valid and custom_valid:
                     # Look up existing resource
                     if editing:
@@ -278,7 +277,7 @@ class ModifyResource(AppUsersViewMixin):
                 options=organization_options,
                 error=organization_select_error
             )
-            
+
             # Initialize custom fields
             custom_fields = self.initialize_custom_fields(session, request, resource, editing)
             context.update(custom_fields)
