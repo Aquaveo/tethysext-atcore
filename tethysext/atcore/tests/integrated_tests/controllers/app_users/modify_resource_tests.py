@@ -35,8 +35,8 @@ class ModifyResourceTests(SqlAlchemyTestCase):
             username='foo',
             email='foo@bar.com',
             password='pass'
-        )
 
+        )
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.user = staff_user
         self.request.FILES = []
@@ -289,6 +289,6 @@ class ModifyResourceTests(SqlAlchemyTestCase):
     def test_get_context(self):
         context = {'success': True}
 
-        ret_context = ModifyResource().get_context(context)
+        ret_context = ModifyResource().get_context(request=self.request, context=context, editing=False)
 
         self.assertEqual(ret_context, context)
