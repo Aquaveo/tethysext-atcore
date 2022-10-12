@@ -415,13 +415,28 @@ class ModifyResource(AppUsersViewMixin):
 
     def initialize_custom_fields(self, session, request, resource, editing):
         """
-        Hook to allow for initializing custom fields
+        Hook to allow for initializing custom fields.
+
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            resource(Resource): The resource being edited.
+            editing(bool): True if rendering form for editing.
+
+        Returns:
+            dict: Template context variables for defining custom fields (i.e. gizmos, initial values, etc.).
         """
         return dict()
 
     def validate_custom_fields(self, params):
         """
-        Hook to allow for validating custom fields
+        Hook to allow for validating custom fields.
+
+        Args:
+            params: The request.POST object with values submitted by user.
+
+        Returns:
+            bool, dict: False if any custom fields invalid, Template context variables for validation feedback (i.e. error messages).
         """
         return True, dict()
 
