@@ -35,7 +35,7 @@
   <div class="row">
     <div class="col-md-12">
       <h1>{% if editing %}Edit{% else %}New{% endif %} {{ type_singular }}</h1>
-      <form id="new-resource-form" method="post" action="" {% if show_file_upload_field %}enctype="multipart/form-data"{% endif %}>
+      <form id="new-resource-form" method="post" action="" {% if show_file_upload_field %}enctype="multipart/form-data"{% endif %} novalidate>
         {% csrf_token %}
         <div class="row">
           <div class="col-md-6">
