@@ -1,5 +1,6 @@
 {% load tethys_gizmos %}
 {% csrf_token %}
+{% block dataset_table %}
 <input name="feature-id" value="{{ feature_id }}" hidden>
 <h6 class="title">{{ dataset_title }}</h6>
 <div class="row" {% if plot_columns %}style="min-width:675px;"{% endif %}>
@@ -52,3 +53,4 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
