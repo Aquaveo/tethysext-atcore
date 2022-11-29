@@ -12,6 +12,8 @@ requirements:
       - conda-forge
     packages:
       - django=3.2.*
+      - django-select2
+      - django-taggit
       - coverage
       - factory_boy
       - filelock
@@ -25,6 +27,4 @@ requirements:
       - panel
   pip:
     - django-datetime-widget2
-    - django-select2
-    - django-taggit
 post:
