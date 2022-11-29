@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:master
+FROM tethysplatform/tethys-core:dev
 
 #####################
 # Default Variables #
