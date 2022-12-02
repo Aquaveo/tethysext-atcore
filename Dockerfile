@@ -29,7 +29,8 @@ ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
-RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; tethys install -N"
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
+RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV_NAME} tethys install -N"
 
 #########
 # CHOWN #
