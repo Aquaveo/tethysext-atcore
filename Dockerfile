@@ -29,11 +29,7 @@ ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
-RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
-  ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; conda list \
-  ; pip list \
-  ; tethys install -N"
+RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; tethys install -N"
 
 #########
 # CHOWN #
