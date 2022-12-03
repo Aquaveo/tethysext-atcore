@@ -13,7 +13,7 @@ ENV TETHYS_PUBLIC_HOST 'localhost'
 #########
 RUN mkdir -p "${TETHYSAPP_DIR}" \
   ; mkdir -p "${TETHYSEXT_DIR}" \
-  ; mkdir -p "${TETHYS_PERSIST}/keys"
+  ; mkdir -p "${TETHYS_HOME}/keys"
 
 # Speed up APT installs and Install APT packages
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
@@ -38,10 +38,8 @@ RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV
 RUN export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') \
   ; find ${TETHYSAPP_DIR} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
   ; find ${TETHYSEXT_DIR} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/keys ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/src ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
+  ; find ${TETHYS_PERSIST} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
+  ; find ${TETHYS_HOME}/keys ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
 
 #########################
 # CONFIGURE ENVIRONMENT #
