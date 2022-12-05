@@ -149,7 +149,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh ${TETHYS_MANAGE}"
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh ${TETHYS_MANAGE}'
 
   cleanup:
     needs: [build]
