@@ -27,7 +27,7 @@ env:
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
-  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@tethys-postgis:5432/tethys_postgis
+  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@localhost:5432/tethys_postgis
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
