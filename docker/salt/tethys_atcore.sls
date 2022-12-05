@@ -29,13 +29,13 @@ Site_Settings_Atcore:
   cmd.run:
     - name: >
         tethys site
-        --title "Portal"
-        --tab-title "Portal"
-        --logo "/atcore/images/aquaveo_logo.png"
+        --brand-text "Portal"
+        --site-title "Aquaveo Portal"
+        --brand-image "/atcore/images/aquaveo_logo.png"
         --favicon "/atcore/images/aquaveo_favicon.ico"
-        --base-css atcore/css/tethys_main.css
-        --library-css atcore/css/app_library.css
-        --copyright "Copyright © 2020 Aquaveo, LLC"
+        --portal-base-css atcore/css/tethys_main.css
+        --apps-library-css atcore/css/app_library.css
+        --copyright "Copyright © {{ time.now.year }} Aquaveo, LLC"
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
