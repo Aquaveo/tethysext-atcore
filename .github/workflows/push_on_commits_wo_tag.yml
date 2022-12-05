@@ -110,7 +110,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     container: 
-      image: ${{ env.TEST_IMAGE }}
+      image: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
       env:
         ATCORE_TEST_DATABASE: ${{ env.ATCORE_TEST_DATABASE }}
         POSTGRES_DB: ${{ env.POSTGRES_DB }}
