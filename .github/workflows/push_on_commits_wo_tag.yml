@@ -31,7 +31,6 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -79,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       tethys-postgis:
-        image: mdillon/postgis:9.6
+        image: postgis/postgis:12-2.5
         env:
           POSTGRES_HOST: tethys-postgis
           POSTGRES_PASSWORD: please_dont_use_default_passwords
@@ -112,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       tethys-postgis:
-        image: mdillon/postgis:9.6
+        image: postgis/postgis:12-2.5
         env:
           POSTGRES_HOST: tethys-postgis
           POSTGRES_PASSWORD: please_dont_use_default_passwords
@@ -144,13 +143,13 @@ jobs:
 
     - name: Tweak Install for Testing
       run: |
-        docker exec tethys_atcore bash -c 'conda run -n tethys pip list'
-        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys tethys install -d -q -w'
+        docker exec tethys_atcore bash -c 'micromamba run -n tethys pip list'
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda micromamba -n tethys tethys install -d -q -w'
         docker exec tethys_atcore bash -c 'touch /var/www/tethys/exts/tethysext-atcore/tethysext/atcore/tests/files/arc_grid/precip30min.*'
 
     - name: Run Tests
       run: |
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . /opt/conda/bin/activate tethys && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
+        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
 
   cleanup:
     needs: [build]
