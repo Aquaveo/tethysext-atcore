@@ -35,7 +35,7 @@ Site_Settings_Atcore:
         --favicon "/atcore/images/aquaveo_favicon.ico"
         --portal-base-css atcore/css/tethys_main.css
         --apps-library-css atcore/css/app_library.css
-        --copyright "Copyright © {{ time.now.year }} Aquaveo, LLC"
+        --copyright "Copyright © 2022 Aquaveo, LLC"
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 

@@ -144,7 +144,7 @@ jobs:
     - name: Tweak Install for Testing
       run: |
         docker exec tethys_atcore bash -c 'micromamba run -n tethys pip list'
-        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda micromamba -n tethys tethys install -d -q -w'
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && micromamba -n tethys tethys install -d -q -w'
         docker exec tethys_atcore bash -c 'touch /var/www/tethys/exts/tethysext-atcore/tethysext/atcore/tests/files/arc_grid/precip30min.*'
 
     - name: Run Tests
