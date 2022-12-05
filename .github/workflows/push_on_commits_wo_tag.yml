@@ -27,7 +27,7 @@ env:
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
-  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@172.17.0.1:5432/tethys_postgis
+  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@tethys-postgis:5432/tethys_postgis
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -137,7 +137,7 @@ jobs:
 
     - name: Run Docker Image
       run: |
-        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
+        docker run -d --name tethys_atcore -e ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
         sleep 120s
         docker logs tethys_atcore
 
@@ -149,7 +149,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh ${TETHYS_MANAGE}'
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && source ci-test.sh ${TETHYS_MANAGE}'
 
   cleanup:
     needs: [build]
