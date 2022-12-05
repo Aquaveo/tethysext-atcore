@@ -15,7 +15,7 @@ class SlideSheet(TethysGizmoOptions):
     """
     gizmo_name = 'slide_sheet'
 
-    def __init__(self, id='slide-sheet', content_template='', title='', attributes={}, classes='', **kwargs):
+    def __init__(self, id='slide-sheet', content_template='', title='', attributes=None, classes='', **kwargs):
         """
         constructor
 
@@ -24,6 +24,8 @@ class SlideSheet(TethysGizmoOptions):
             content_template(str): path to template to use for slide sheet content.
             title(str): title for slide sheet.
         """
+        attributes = {} if attributes is None else attributes
+
         # Initialize parent
         super(SlideSheet, self).__init__(attributes=attributes, classes=classes)
 

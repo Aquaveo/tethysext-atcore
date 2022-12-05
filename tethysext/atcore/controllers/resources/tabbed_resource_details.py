@@ -170,10 +170,11 @@ class TabbedResourceDetails(ResourceDetails):
             )
 
             response = tab_controller(
+                *args,
                 request=request,
                 resource_id=resource.id,
                 tab_slug=tab_slug,
-                *args, **kwargs
+                **kwargs
             )
 
         # Map the request to a method on the TabView class matching the tab action
@@ -197,11 +198,12 @@ class TabbedResourceDetails(ResourceDetails):
                 return HttpResponseBadRequest(f'"{tab_action}" is not a valid action for tab "{tab_slug}"')
 
             response = action_handler(
+                *args,
                 request=request,
                 resource=resource,
                 session=session,
                 tab_slug=tab_slug,
-                *args,  **kwargs
+                **kwargs
             )
 
         return response

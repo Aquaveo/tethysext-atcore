@@ -50,7 +50,7 @@ class FileCollectionsControllerMixin:
             file_count = 0
             total_size = 0
             # Get file count and total size
-            for relative_root, dirs, files in file_collection_client.walk():
+            for relative_root, _dirs, files in file_collection_client.walk():
                 file_count += len(files)
 
                 for file in files:
@@ -58,11 +58,11 @@ class FileCollectionsControllerMixin:
                     total_size += os.path.getsize(file_path)
 
             # Make total size human readable
-            for unit in ['Bytes', 'KB', 'MB', 'GB', 'TB']:
+            for _unit in ['Bytes', 'KB', 'MB', 'GB', 'TB']:
                 if total_size < 1024:
                     break
                 total_size /= 1024.0
-            total_size = f"{total_size:.2f} {unit}"
+            total_size = f"{total_size:.2f} {_unit}"
 
             # Create file collection details tuple
             file_collection_details = ('File Collection Details', {

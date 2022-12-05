@@ -194,7 +194,7 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
         export_dir = os.path.join(self.root_dir, 'export_files')
         resource.export(database_client, export_dir)
         self.assertTrue(os.path.exists(os.path.join(export_dir, str(file_collection.id))))
-        for root, dirs, files in collection_client.walk():
+        for root, _dirs, files in collection_client.walk():
             for file in files:
                 self.assertTrue(os.path.exists(
                     os.path.join(export_dir, str(collection_client.instance.id), root, file))
@@ -217,12 +217,12 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
         resource.export(database_client, export_dir)
         self.assertTrue(os.path.exists(os.path.join(export_dir, str(file_collection_1.id))))
         self.assertTrue(os.path.exists(os.path.join(export_dir, str(file_collection_2.id))))
-        for root, dirs, files in collection_client_1.walk():
+        for root, _dirs, files in collection_client_1.walk():
             for file in files:
                 self.assertTrue(os.path.exists(
                     os.path.join(export_dir, str(collection_client_1.instance.id), root, file))
                 )
-        for root, dirs, files in collection_client_2.walk():
+        for root, _dirs, files in collection_client_2.walk():
             for file in files:
                 self.assertTrue(os.path.exists(
                     os.path.join(export_dir, str(collection_client_2.instance.id), root, file))

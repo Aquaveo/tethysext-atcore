@@ -460,7 +460,7 @@ class SpatialInputMWV(MapWorkflowView):
         # Sort the features for consistent ID'ing
         s_features = sorted(geojson['features'], key=lambda f: f['geometry']['coordinates'])
 
-        for i, feature in enumerate(s_features):
+        for _i, feature in enumerate(s_features):
             if 'geometry' not in feature or \
                'coordinates' not in feature['geometry'] or \
                'type' not in feature['geometry']:

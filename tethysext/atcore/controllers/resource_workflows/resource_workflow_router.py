@@ -223,12 +223,13 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             )
 
             response = controller(
+                *args,
                 request=request,
                 resource_id=resource_id,
                 workflow_id=workflow_id,
                 step_id=step_id,
                 back_url=self.back_url,
-                *args, **kwargs
+                **kwargs
             )
 
             return response
@@ -296,13 +297,14 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             )
 
             response = controller(
+                *args,
                 request=request,
                 resource_id=resource_id,
                 workflow_id=workflow_id,
                 step_id=step_id,
                 result_id=result_id,
                 back_url=self.back_url,
-                *args, **kwargs
+                **kwargs
             )
 
             return response

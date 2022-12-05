@@ -252,7 +252,7 @@ class FileCollectionClient(MetaMixin):
         Returns:
             Generate giving a list of files in the FileCollection
         """
-        for root, dirs, files in os.walk(self.path):
+        for root, _dirs, files in os.walk(self.path):
             for file in files:
                 yield os.path.relpath(os.path.join(root, file), self.path)
 
