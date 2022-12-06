@@ -147,6 +147,11 @@ jobs:
         docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && micromamba run -n tethys tethys install -d -q -w'
         docker exec tethys_atcore bash -c 'touch /var/www/tethys/exts/tethysext-atcore/tethysext/atcore/tests/files/arc_grid/precip30min.*'
 
+    - name: Inspect Docker Network
+      run: |
+        docker network ls
+        docker network inspect bridge
+
     - name: Run Tests
       run: |
         docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && source ci-test.sh ${TETHYS_MANAGE}'
