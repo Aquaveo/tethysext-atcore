@@ -137,7 +137,7 @@ jobs:
 
     - name: Run Docker Image
       run: |
-        docker run -d --name tethys_atcore --next ${{ job.services.postgis.network }} -e ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
+        docker run -d --name tethys_atcore --network ${{ job.services.postgis.network }} -e ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
         sleep 120s
         docker logs tethys_atcore
 
