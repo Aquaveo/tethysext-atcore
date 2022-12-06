@@ -13,11 +13,16 @@ def setup_module_for_sqlalchemy_tests():
     global g_transaction, g_connection, g_engine, Session
     Session = sessionmaker()
     # Connect to the database and create the schema within a transaction
-    g_engine = create_engine(TEST_DB_URL)
+    g_engine = create_engine(
+        TEST_DB_URL,
+        pool_size=50,
+        max_overflow=-1,
+        connect_args={"connect_timeout": 1}
+    )
     g_connection = g_engine.connect()
     g_transaction = g_connection.begin()
     # Initialize db with staff user
-    initialize_app_users_db(g_connection)
+    initialize_app_users_db(g_engine)
     return g_engine, g_connection, g_transaction
 
 
