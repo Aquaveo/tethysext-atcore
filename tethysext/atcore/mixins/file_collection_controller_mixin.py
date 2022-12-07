@@ -58,11 +58,11 @@ class FileCollectionsControllerMixin:
                     total_size += os.path.getsize(file_path)
 
             # Make total size human readable
-            for unit in ['Bytes', 'KB', 'MB', 'GB', 'TB']:
+            for _unit in ['Bytes', 'KB', 'MB', 'GB', 'TB']:
                 if total_size < 1024:
                     break
                 total_size /= 1024.0
-            total_size = f"{total_size:.2f} {unit}"
+            total_size = f"{total_size:.2f} {_unit}"
 
             # Create file collection details tuple
             file_collection_details = ('File Collection Details', {
