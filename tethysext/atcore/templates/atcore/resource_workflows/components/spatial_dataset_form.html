@@ -1,9 +1,10 @@
 {% load tethys_gizmos %}
 {% csrf_token %}
+{% block dataset_table %}
 <input name="feature-id" value="{{ feature_id }}" hidden>
 <h6 class="title">{{ dataset_title }}</h6>
 <div class="row" {% if plot_columns %}style="min-width:675px;"{% endif %}>
-    <div class="col-sm-6 pop-up-col table-col">
+    <div class="{% if plot_columns %}col-sm-6{% else %}col{% endif %} pop-up-col table-col">
         <a id="spatial-dataset-add-row-btn" class="btn btn-xs btn-outline-secondary table-btn float-end" title="Add row">
             <span class="bi bi-plus-lg"></span>
         </a>
@@ -46,7 +47,10 @@
             </tbody>
         </table>
     </div>
-    <div class="col-sm-6 pop-up-col">
-        <div id="spatial-dataset-plot"></div>
-    </div>
+    {% if plot_columns %}
+        <div class="col-sm-6 pop-up-col">
+            <div id="spatial-dataset-plot"></div>
+        </div>
+    {% endif %}
 </div>
+{% endblock %}

@@ -212,7 +212,7 @@ class ManageResources(AppUsersViewMixin):
             resource = session.query(_Resource).get(resource_id)
             try:
                 self.perform_custom_delete_operations(session, request, resource)
-            except:  # noqa: E722
+            except Exception:  # noqa: E722
                 log.exception(f'Unable to perform custom delete operations on resource {resource}.')
             session.delete(resource)
             session.commit()

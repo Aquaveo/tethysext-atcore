@@ -16,22 +16,21 @@ env:
   POSTGRES_DB: tethys_postgis
   POSTGRES_PASSWORD: please_dont_use_default_passwords
   POSTGRES_PORT: 5432
-  TETHYS_PUBLIC_HOST: localhost
-  TETHYS_DB_HOST: 172.17.0.1
+  TETHYS_PUBLIC_HOST: postgis
+  TETHYS_DB_HOST: postgis
   TETHYS_DB_PORT: 5432
   TETHYS_DB_USERNAME: tethys_super
   TETHYS_DB_PASSWORD: please_dont_use_default_passwords
   TETHYS_DB_SUPERUSER: tethys_super
   TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
-  APP_DB_HOST: localhost
+  APP_DB_HOST: postgis
   APP_DB_PORT: 5432
   APP_DB_USERNAME: tethys_super
   APP_DB_PASSWORD: please_dont_use_default_passwords
-  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@172.17.0.1:5432/tethys_postgis
+  ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@postgis:5432/tethys_postgis
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -78,10 +77,10 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     services:
-      tethys-postgis:
-        image: mdillon/postgis:9.6
+      postgis:
+        image: postgis/postgis:12-2.5
         env:
-          POSTGRES_HOST: tethys-postgis
+          POSTGRES_HOST: postgis
           POSTGRES_PASSWORD: please_dont_use_default_passwords
           POSTGRES_DB: tethys_postgis
           POSTGRES_PORT: 5432
@@ -105,16 +104,16 @@ jobs:
 
     - name: Run Salt Test
       run: |
-        docker run --rm --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }} /bin/bash -c "cd /usr/lib/tethys && source ./run.sh --test"
+        docker run --rm --name tethys_atcore --network ${{ job.services.postgis.network }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }} /bin/bash -c "cd /usr/lib/tethys && source ./run.sh --test"
 
   unit_tests:
     needs: [build]
     runs-on: ubuntu-latest
     services:
-      tethys-postgis:
-        image: mdillon/postgis:9.6
+      postgis:
+        image: postgis/postgis:12-2.5
         env:
-          POSTGRES_HOST: tethys-postgis
+          POSTGRES_HOST: postgis
           POSTGRES_PASSWORD: please_dont_use_default_passwords
           POSTGRES_DB: tethys_postgis
           POSTGRES_PORT: 5432
@@ -138,19 +137,24 @@ jobs:
 
     - name: Run Docker Image
       run: |
-        docker run -d --name tethys_atcore -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
+        docker run -d --name tethys_atcore --network ${{ job.services.postgis.network }} -e ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
         sleep 120s
         docker logs tethys_atcore
 
     - name: Tweak Install for Testing
       run: |
-        docker exec tethys_atcore bash -c 'conda run -n tethys pip list'
-        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && conda run -n tethys tethys install -d -q -w'
+        docker exec tethys_atcore bash -c 'micromamba run -n tethys pip list'
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && micromamba run -n tethys tethys install -d -q -w'
         docker exec tethys_atcore bash -c 'touch /var/www/tethys/exts/tethysext-atcore/tethysext/atcore/tests/files/arc_grid/precip30min.*'
+
+    - name: Inspect Docker Network
+      run: |
+        docker network ls
+        docker network inspect ${{ job.services.postgis.network }}
 
     - name: Run Tests
       run: |
-        docker exec tethys_atcore bash -c "cd /var/www/tethys/exts/tethysext-atcore && . /opt/conda/bin/activate tethys && ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} source ci-test.sh /usr/lib/tethys/tethys/tethys_portal/manage.py"
+        docker exec tethys_atcore bash -c 'cd /var/www/tethys/exts/tethysext-atcore && source ci-test.sh ${TETHYS_MANAGE}'
 
   cleanup:
     needs: [build]

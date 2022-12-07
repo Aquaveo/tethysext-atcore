@@ -257,8 +257,7 @@ class MapViewTests(SqlAlchemyTestCase):
         resource_id = '12345'
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
-        setattr(mock_settings, 'ENABLE_OPEN_PORTAL', True)
-
+        mock_settings.ENABLE_OPEN_PORTAL = True
         response = self.controller(request=mock_request, resource_id=resource_id, back_url='/foo/bar')
 
         mock_has_permission.assert_any_call(mock_request, 'use_map_geocode')

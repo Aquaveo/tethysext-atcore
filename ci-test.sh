@@ -8,20 +8,20 @@ fi
 rm -f .coverage
 
 echo "Running Unit Tests..."
-coverage run -a --rcfile=ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
+micromamba run -n tethys coverage run -a --rcfile=ci-coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
 unittest_ret_val=$?
 
 echo "Running Intermediate Tests..."
-coverage run -a --rcfile=ci-coverage.ini "$1" test -v 2 tethysext.atcore.tests.integrated_tests
+micromamba run -n tethys coverage run -a --rcfile=ci-coverage.ini "$1" test -v 2 tethysext.atcore.tests.integrated_tests
 intermediate_ret_val=$?
 
 # Minimum Required Coverage
 minimum_required_coverage=90
-coverage report -m --rcfile=ci-coverage.ini --skip-covered --fail-under $minimum_required_coverage
+micromamba run -n tethys coverage report -m --rcfile=ci-coverage.ini --skip-covered --fail-under $minimum_required_coverage
 coverage_ret_val=$?
 
 #echo "Linting..."
-flake8
+micromamba run -n tethys flake8
 echo "Testing Complete"
 
 if [ "$unittest_ret_val" -ne "0" ] || [ "$intermediate_ret_val" -ne "0" ] || [ "$coverage_ret_val" -ne "0" ]; then

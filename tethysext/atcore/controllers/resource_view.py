@@ -45,18 +45,20 @@ class ResourceView(ResourceViewMixin):
 
         if the_method is not None:
             return the_method(
+                *args,
                 request=request,
                 session=session,
                 resource=resource,
                 back_url=back_url,
-                *args, **kwargs
+                **kwargs
             )
 
         # Get Managers Hook
         model_db = self.get_model_db(
+            *args,
             request=request,
             resource=resource,
-            *args, **kwargs
+            **kwargs
         )
 
         # Initialize context
@@ -118,11 +120,12 @@ class ResourceView(ResourceViewMixin):
             return HttpResponseNotFound()
 
         return the_method(
+            *args,
             request=request,
             session=session,
             resource=resource,
             back_url=back_url,
-            *args, **kwargs
+            **kwargs
         )
 
     def request_to_method(self, request):

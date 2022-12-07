@@ -52,7 +52,7 @@ class BaseSpatialManager(object):
     SLD_PATH = ''
     WORKSPACE = 'my-app'
     URI = 'http://app.aquaveo.com/my-app'
-    GEOSERVER_CLUSTER_PORTS = (8082, 8083, 8084)
+    GEOSERVER_CLUSTER_PORTS = (8081, 8082, 8083, 8084)
 
     # Suffixes
     LEGEND_SUFFIX = 'legend'

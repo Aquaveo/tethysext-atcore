@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:master
+FROM tethysplatform/tethys-core:dev
 
 #####################
 # Default Variables #
@@ -13,7 +13,7 @@ ENV TETHYS_PUBLIC_HOST 'localhost'
 #########
 RUN mkdir -p "${TETHYSAPP_DIR}" \
   ; mkdir -p "${TETHYSEXT_DIR}" \
-  ; mkdir -p "${TETHYS_PERSIST}/keys"
+  ; mkdir -p "${TETHYS_HOME}/keys"
 
 # Speed up APT installs and Install APT packages
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
@@ -29,11 +29,8 @@ ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
-RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
-  ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; conda list \
-  ; pip list \
-  ; tethys install -N"
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
+RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV_NAME} tethys install -N"
 
 #########
 # CHOWN #
@@ -41,10 +38,8 @@ RUN /bin/bash -c ". ${CONDA_HOME}/bin/activate tethys \
 RUN export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') \
   ; find ${TETHYSAPP_DIR} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
   ; find ${TETHYSEXT_DIR} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/keys ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
-  ; find /usr/lib/tethys/src ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
+  ; find ${TETHYS_PERSIST} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} \
+  ; find ${TETHYS_HOME}/keys ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
 
 #########################
 # CONFIGURE ENVIRONMENT #

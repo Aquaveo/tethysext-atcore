@@ -137,7 +137,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         }
         self._add_dataset(d)
 
-    def plot_from_dataframe(self, data_frame, series_axes=[], series_labels=[]):
+    def plot_from_dataframe(self, data_frame, series_axes=None, series_labels=None):
         """
         Adds a pandas.DataFrame with multiple columns to the result.
 
@@ -148,6 +148,9 @@ class PlotWorkflowResult(ResourceWorkflowResult):
              the first column is x and the rest are ys.
             series_labels(list): A list of series' label. For example: ['Series 1', 'Series 2', 'Series 3'].
         """
+        series_axes = [] if series_axes is None else series_axes
+        series_labels = [] if series_labels is None else series_labels
+
         if not isinstance(data_frame, pd.DataFrame):
             raise ValueError('The argument "data_frame" must be a pandas.DataFrame.')
 
@@ -240,7 +243,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
                 if 'series_labels' in ds.keys():
                     series_labels = ds['series_labels']
                     if not series_labels:
-                        for i in range(len(series_axes)):
+                        for _i in range(len(series_axes)):
                             series_labels.append(f"Data Series {label_count}")
                             label_count += 1
                 if 'dataset' in ds.keys():
