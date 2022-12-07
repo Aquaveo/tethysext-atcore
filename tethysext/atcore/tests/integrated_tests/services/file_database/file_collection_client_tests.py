@@ -814,7 +814,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
             root_directory=root_dir, database_meta={}, collection_meta={}
         )
         collection_client = FileCollectionClient(self.session, database_client, self.general_collection_id)
-        for root, _dirs, files in collection_client.walk():
+        for root, _, files in collection_client.walk():
             for file in files:
                 with collection_client.open_file(os.path.join(root, file), 'r') as _:
                     pass

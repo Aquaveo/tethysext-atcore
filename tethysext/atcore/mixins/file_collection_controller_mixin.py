@@ -50,7 +50,7 @@ class FileCollectionsControllerMixin:
             file_count = 0
             total_size = 0
             # Get file count and total size
-            for relative_root, _dirs, files in file_collection_client.walk():
+            for relative_root, _, files in file_collection_client.walk():
                 file_count += len(files)
 
                 for file in files:
