@@ -110,7 +110,7 @@ class FileCollectionsControllerMixinTests(SqlAlchemyTestCase):
         mock_session = mock.MagicMock()
         mock_file_collection = mock.MagicMock(id='test_id', meta={'test_key': 'test_value'})
         mock_resource = mock.MagicMock(file_collections=[mock_file_collection])
-        mock_fcc_walk = mock.MagicMock(return_value=[('test_root', ['test_'], ['test_Files'])])
+        mock_fcc_walk = mock.MagicMock(return_value=[('test_root', ['test_dirs'], ['test_Files'])])
         mock_fdbc().get_collection.return_value = mock.MagicMock(path='test_path', walk=mock_fcc_walk)
         mock_getsize.return_value = 2e12
         self.mixin.get_app = mock.MagicMock()
