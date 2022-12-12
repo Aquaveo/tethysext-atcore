@@ -245,7 +245,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
     def test_prepare(self):
         self.app.get_scheduler = mock.MagicMock(return_value=self.scheduler)
         manager = Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
-                          self.scheduler_name, jobs=self.jobs, input_files=[self.key_path])
+                          self.scheduler_name, jobs=self.jobs, input_files=[str(self.key_path)])
 
         id = manager.prepare()
 
