@@ -23,160 +23,162 @@
     <h1>{% block organizations_title %}{{ page_title }}{% endblock %}</h1>
 
     {% for organization_license, organization_cards in organization_cards.items %}
-      <h5>{{ organization_license }}</h5>
-      <div id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
-      {% for organization_card in organization_cards %}
-        <div class="card manage-card">
+      <div class="organization-license-group mb-2">
+        <h5>{{ organization_license }}</h5>
+        <div id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
+        {% for organization_card in organization_cards %}
+          <div class="card manage-card">
 
-          {# CARD HEADER #}
-          <div class="card-header manage-card-header" role="tab" id="heading-{{ organization_card.id }}">
+            {# CARD HEADER #}
+            <div class="card-header manage-card-header" role="tab" id="heading-{{ organization_card.id }}">
 
-            {# ORG TITLE #}
-            <div class="manage-item-title-wrapper">
-              <span class="manage-item-title">
-                <a role="button"
-                   data-bs-toggle="collapse"
-                   data-parent="#{{ organization_license|slugify }}-cards"
-                   href="#collapse-{{ organization_card.id }}"
-                   aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
-                   aria-controls="collapse-{{ organization_card.id }}">
-                  {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
+              {# ORG TITLE #}
+              <div class="manage-item-title-wrapper">
+                <span class="manage-item-title">
+                  <a role="button"
+                    data-bs-toggle="collapse"
+                    data-parent="#{{ organization_license|slugify }}-cards"
+                    href="#collapse-{{ organization_card.id }}"
+                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                    aria-controls="collapse-{{ organization_card.id }}">
+                    {{ organization_card.name }}{% if request.user.is_staff %} ({{ organization_card.id }}){% endif%}
+                  </a>
+                </span>
+              </div>
+
+              {# ACTION BUTTONS #}
+              {% if organization_card.can_modify_members or organization_card.can_modify %}
+              <div class="manage-grid-actions">
+
+                {# MODIFY MEMBERS BUTTON #}
+                {% if organization_card.can_modify_members %}
+                <a class="btn btn-outline-secondary btn-users btn-flat"
+                  href="{% url tethys_app.namespace|add:':app_users_manage_organization_members' organization_card.id %}?next=manage-organizations"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Manage Members">
+                  <span class="bi bi-person-fill"></span>
                 </a>
-              </span>
-            </div>
+                {% endif %}
 
-            {# ACTION BUTTONS #}
-            {% if organization_card.can_modify_members or organization_card.can_modify %}
-            <div class="manage-grid-actions">
+                {# EDIT ORG BUTTON #}
+                {% if organization_card.can_edit %}
+                <a class="btn btn-outline-secondary btn-edit btn-flat"
+                  href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization_card.id %}"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Edit">
+                  <span class="bi bi-pencil-square"></span>
+                </a>
+                {% endif %}
 
-              {# MODIFY MEMBERS BUTTON #}
-              {% if organization_card.can_modify_members %}
-              <a class="btn btn-outline-secondary btn-users btn-flat"
-                 href="{% url tethys_app.namespace|add:':app_users_manage_organization_members' organization_card.id %}?next=manage-organizations"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="top"
-                 title="Manage Members">
-                <span class="bi bi-person-fill"></span>
-              </a>
-              {% endif %}
-
-              {# EDIT ORG BUTTON #}
-              {% if organization_card.can_edit %}
-              <a class="btn btn-outline-secondary btn-edit btn-flat"
-                 href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization_card.id %}"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="top"
-                 title="Edit">
-                <span class="bi bi-pencil-square"></span>
-              </a>
-              {% endif %}
-
-              {# DELETE ORG BUTTON #}
-              {% if organization_card.can_delete %}
-              <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat"
-                 href="javascript:void(0);"
-                 data-id="{{ organization_card.id }}"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="top"
-                 title="Delete">
-                <span class="bi bi-trash"></span>
-              </a>
+                {# DELETE ORG BUTTON #}
+                {% if organization_card.can_delete %}
+                <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat"
+                  href="javascript:void(0);"
+                  data-id="{{ organization_card.id }}"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Delete">
+                  <span class="bi bi-trash"></span>
+                </a>
+                {% endif %}
+              </div>
               {% endif %}
             </div>
-            {% endif %}
-          </div>
 
-          {# CARD BODY #}
-          <div id="collapse-{{ organization_card.id }}"
-               class="card-collapse collapse {% if forloop.first %}in{% endif %}"
-               role="tabpanel"
-               aria-labelledby="heading-{{ organization_card.id }}">
-            <div class="card-body list-group-card-body">
-              <ul class="list-group">
+            {# CARD BODY #}
+            <div id="collapse-{{ organization_card.id }}"
+                class="card-collapse collapse {% if forloop.first %}in{% endif %}"
+                role="tabpanel"
+                aria-labelledby="heading-{{ organization_card.id }}">
+              <div class="card-body list-group-card-body">
+                <ul class="list-group">
 
-                {# LICENSE #}
-                {% if organization_card.license %}
-                <li class="list-group-item">
-                  <p class="manage-section-title">LICENSE</p>
-                  <span class="manage-tag project-tag">{{ organization_card.license }}</span>
-                </li>
-                {% endif %}
+                  {# LICENSE #}
+                  {% if organization_card.license %}
+                  <li class="list-group-item">
+                    <p class="manage-section-title">LICENSE</p>
+                    <span class="manage-tag project-tag">{{ organization_card.license }}</span>
+                  </li>
+                  {% endif %}
 
-                {# CONSULTANT #}
-                {% if organization_card.consultant %}
-                <li class="list-group-item">
-                  <p class="manage-section-title">CONSULTANT</p>
-                  <span class="manage-tag project-tag">{{ organization_card.consultant.name }}</span>
-                </li>
-                {% endif %}
+                  {# CONSULTANT #}
+                  {% if organization_card.consultant %}
+                  <li class="list-group-item">
+                    <p class="manage-section-title">CONSULTANT</p>
+                    <span class="manage-tag project-tag">{{ organization_card.consultant.name }}</span>
+                  </li>
+                  {% endif %}
 
-                {# MEMBERS SECTION #}
-                <li class="list-group-item">
-                  <p class="manage-section-title">MEMBERS</p>
-                  {% for member in organization_card.members %}
-                    {% if link_to_members %}
-                    <a href="{% url tethys_app.namespace|add:':app_users_edit_user' member.1 %}?next=manage-organizations"><span class="manage-tag member-tag manage-tag-hover">{% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}</span></a>
-                    {% else %}
-                    <span class="manage-tag member-tag">
-                      {% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}
-                    </span>
-                    {% endif %}
+                  {# MEMBERS SECTION #}
+                  <li class="list-group-item">
+                    <p class="manage-section-title">MEMBERS</p>
+                    {% for member in organization_card.members %}
+                      {% if link_to_members %}
+                      <a href="{% url tethys_app.namespace|add:':app_users_edit_user' member.1 %}?next=manage-organizations"><span class="manage-tag member-tag manage-tag-hover">{% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}</span></a>
+                      {% else %}
+                      <span class="manage-tag member-tag">
+                        {% if member.0 == request.user.username %}Me{% else %}{{ member.0 }}{% endif %}
+                      </span>
+                      {% endif %}
+                    {% endfor %}
+                  </li>
+
+                  {# RESOURCES SECTION #}
+                  {% for resource_display_type, resources in organization_card.resources.items %}
+                  <li class="list-group-item">
+                    <p class="manage-section-title">{{ resource_display_type|upper }}</p>
+                    {% for resource in resources %}
+                      {% with tethys_app.namespace|add:':'|add:resource.slug|add:'_resource_details' as resource_details_href %}
+                        <a href="{% url resource_details_href resource.id %}?back=manage-organizations"><span class="manage-tag project-tag manage-tag-hover">{{ resource.name }}</span></a>
+                      {% endwith %}
+                    {% endfor %}
+                  </li>
                   {% endfor %}
-                </li>
 
-                {# RESOURCES SECTION #}
-                {% for resource_display_type, resources in organization_card.resources.items %}
-                <li class="list-group-item">
-                  <p class="manage-section-title">{{ resource_display_type|upper }}</p>
-                  {% for resource in resources %}
-                    {% with tethys_app.namespace|add:':'|add:resource.slug|add:'_resource_details' as resource_details_href %}
-                      <a href="{% url resource_details_href resource.id %}?back=manage-organizations"><span class="manage-tag project-tag manage-tag-hover">{{ resource.name }}</span></a>
-                    {% endwith %}
-                  {% endfor %}
-                </li>
-                {% endfor %}
-
-                {# CLIENTS #}
-                {% if organization_card.clients %}
-                <li class="list-group-item">
-                  <div class="row">
-                    <div class="col-md-8">
-                      <p class="manage-section-title">CLIENTS</p>
+                  {# CLIENTS #}
+                  {% if organization_card.clients %}
+                  <li class="list-group-item">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <p class="manage-section-title">CLIENTS</p>
+                      </div>
                     </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <table class="table">
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>License</th>
-                            <th>Created</th>
-                            <th>Expires</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for client in organization_card.clients %}
-                          <tr>
-                            <td><a href="{% url tethys_app.namespace|add:':app_users_edit_organization' client.id %}">{{ client.name }}</a></td>
-                            <td>{{ client.license_display_name }}</td>
-                            <td>{{ client.created|date:'M d, Y' }}</td>
-                            <td>{{ client.license_expires|date:'M d, Y' }}</td>
-                          </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>License</th>
+                              <th>Created</th>
+                              <th>Expires</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for client in organization_card.clients %}
+                            <tr>
+                              <td><a href="{% url tethys_app.namespace|add:':app_users_edit_organization' client.id %}">{{ client.name }}</a></td>
+                              <td>{{ client.license_display_name }}</td>
+                              <td>{{ client.created|date:'M d, Y' }}</td>
+                              <td>{{ client.license_expires|date:'M d, Y' }}</td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
-                </li>
-                {% endif %}
+                  </li>
+                  {% endif %}
 
-                {% block custom_organization_fields %}{% endblock %}
-              </ul>
+                  {% block custom_organization_fields %}{% endblock %}
+                </ul>
+              </div>
             </div>
           </div>
+        {% endfor %}
         </div>
-      {% endfor %}
       </div>
     {% endfor %}
   </div>
