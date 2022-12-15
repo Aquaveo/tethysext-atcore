@@ -214,8 +214,8 @@ class ModifyOrganization(AppUsersViewMixin):
                         session.add(organization)
 
                     # Add resources
-                    for resource in selected_resources:
-                        resource = session.query(_Resource).get(resource)
+                    for resource_id in selected_resources:
+                        resource = session.query(_Resource).get(resource_id)
                         organization.resources.append(resource)
 
                     # Assign consultant
