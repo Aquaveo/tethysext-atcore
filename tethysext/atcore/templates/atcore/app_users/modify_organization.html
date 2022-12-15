@@ -41,8 +41,8 @@
         </div>
 
         {# ORGANIZTAION CUSTOM FIELDS #}
-        {% block custom_fields %}
-        {% endblock %}
+        {% block custom_fields %}{% endblock %}
+
         <a class="btn btn-outline-secondary" href="{% url next_controller %}">Cancel</a>
         <input type="submit" class="btn btn-success" name="modify-organization-submit"
                value="{% if editing %}Save Changes{% else %}Create Organization{% endif %}">

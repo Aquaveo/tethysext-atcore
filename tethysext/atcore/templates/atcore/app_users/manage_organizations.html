@@ -23,7 +23,7 @@
     <h1>{% block organizations_title %}{{ page_title }}{% endblock %}</h1>
 
     {% for organization_license, organization_cards in organization_cards.items %}
-      <div class="organization-license-group mb-2">
+      <div class="organization-license-group mb-3">
         <h5>{{ organization_license }}</h5>
         <div id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
         {% for organization_card in organization_cards %}
