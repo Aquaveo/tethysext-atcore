@@ -120,7 +120,7 @@ class ModifyOrganization(AppUsersViewMixin):
                         filter(_Organization.id == organization_id). \
                         one()
 
-                except (StatementError, NoResultFound) as e:
+                except (StatementError, NoResultFound):
                     raise ATCoreException('Unable to find the organization.')
 
                 organization_name = organization.name
@@ -330,7 +330,7 @@ class ModifyOrganization(AppUsersViewMixin):
             )
 
             hide_consultant_licenses = self.get_hide_consultant_licenses(request)
-            
+
             # Initialize custom fields
             custom_fields = self.initialize_custom_fields(session, request, organization, editing)
             context.update(custom_fields)
