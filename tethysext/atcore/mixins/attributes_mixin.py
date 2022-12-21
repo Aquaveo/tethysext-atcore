@@ -34,10 +34,7 @@ class AttributesMixin(object):
         Returns:
             varies: value of attribute.
         """
-        if key not in self.attributes:
-            return default
-
-        return self.attributes[key]
+        return self.attributes.get(key, default)
 
     def set_attribute(self, key, value):
         """
