@@ -25,7 +25,7 @@ class AttributesMixin(object):
     def attributes(self, value):
         self._attributes = json.dumps(value)
 
-    def get_attribute(self, key):
+    def get_attribute(self, key, default=None):
         """
         Get value of a specific attribute.
         Args:
@@ -34,10 +34,7 @@ class AttributesMixin(object):
         Returns:
             varies: value of attribute.
         """
-        if key not in self.attributes:
-            return None
-
-        return self.attributes[key]
+        return self.attributes.get(key, default)
 
     def set_attribute(self, key, value):
         """

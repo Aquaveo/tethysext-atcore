@@ -6,6 +6,8 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import traceback
+import logging
 # Django
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -19,6 +21,9 @@ from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 # ATCore
 from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
+from tethysext.atcore.exceptions import ATCoreException
+
+log = logging.getLogger(f'tethys.{__name__}')
 
 
 class ModifyOrganization(AppUsersViewMixin):
@@ -56,13 +61,13 @@ class ModifyOrganization(AppUsersViewMixin):
         _Organization = self.get_organization_model()
         _Resource = self.get_resource_model()
         make_session = self.get_sessionmaker()
-
-        user_session = make_session()
-        request_app_user = _AppUser.get_app_user_from_request(request, user_session)
-        user_session.close()
+        session = make_session()
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Defaults
         valid = True
+        organization = None
+        context = dict()
         organization_name = ""
         selected_resources = []
         selected_consultant = ""
@@ -101,235 +106,253 @@ class ModifyOrganization(AppUsersViewMixin):
 
         # If and ID is provided, then we are editing an existing consultant
         editing = organization_id is not None
+        creating = not editing
 
-        # Don't have the ability to create more organizations
-        if not editing and not licenses_can_assign:
-            messages.error(request, "We're sorry, but you are unable to create new organizations at this time.")
-            return redirect(reverse(next_controller))
+        try:
+            # Don't have the ability to create more organizations
+            if creating and not licenses_can_assign:
+                raise ATCoreException("We're sorry, but you are unable to create new organizations at this time.")
 
-        if editing:
-            # Initialize the parameters from the existing consultant
-            edit_session = make_session()
+            if editing:
+                # Initialize the parameters from the existing consultant
+                try:
+                    organization = session.query(_Organization). \
+                        filter(_Organization.id == organization_id). \
+                        one()
 
-            try:
-                organization = edit_session.query(_Organization). \
-                    filter(_Organization.id == organization_id). \
-                    one()
+                except (StatementError, NoResultFound):
+                    raise ATCoreException('Unable to find the organization.')
 
-            except (StatementError, NoResultFound):
-                messages.warning(request, 'The organization could not be found.')
-                edit_session.close()
-                return redirect(reverse(next_controller))
+                organization_name = organization.name
+                old_license = organization.license
+                selected_license = organization.license
+                selected_consultant = str(organization.consultant.id) if organization.consultant else ""
+                is_active = organization.active
 
-            organization_name = organization.name
-            old_license = organization.license
-            selected_license = organization.license
-            selected_consultant = str(organization.consultant.id) if organization.consultant else ""
-            is_active = organization.active
-
-            # Ensure old license option is in license options
-            old_license_option = (
-                _Organization.LICENSES.get_display_name_for(old_license),
-                old_license
-            )
-
-            if old_license_option not in license_options:
-                license_options.append(old_license_option)
-
-            # Ensure consultant users cannot change their license on their own.
-            if not has_permission(request, 'assign_any_license') \
-                    and organization.license == _Organization.LICENSES.CONSULTANT:
-                license_options = (
-                    (
-                        _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.CONSULTANT),
-                        _Organization.LICENSES.CONSULTANT
-                    ),
+                # Ensure old license option is in license options
+                old_license_option = (
+                    _Organization.LICENSES.get_display_name_for(old_license),
+                    old_license
                 )
 
-            for resource in organization.resources:
-                selected_resources.append(str(resource.id))
+                if old_license_option not in license_options:
+                    license_options.append(old_license_option)
 
-            # Determine if current user is a member of the organization
-            am_member = organization.is_member(request_app_user)
-
-            edit_session.close()
-
-        # Process form submission
-        if request.POST and 'modify-organization-submit' in request.POST:
-            # Validate the form
-            organization_name = request.POST.get('organization-name', "")
-            selected_resources = request.POST.getlist('organization-resources')
-            selected_consultant = request.POST.get('organization-consultant', "")
-            selected_license = request.POST.get('organization-license', "")
-
-            if not am_member:
-                is_active = request.POST.get('organization-status') == 'on'
-
-            # Organization name is required
-            if organization_name == "":
-                valid = False
-                organization_name_error = "Name is required."
-
-            # Validate license
-            if not selected_license or not _Organization.LICENSES.is_valid(selected_license):
-                valid = False
-                license_error = "You must assign a valid license to the organization."
-
-            # Validate license assign permission
-            assign_permission = _Organization.LICENSES.get_assign_permission_for(selected_license)
-            if not has_permission(request, assign_permission) and selected_license != old_license:
-                valid = False
-                license_error = "You do not have permission to assign this license to this organization."
-
-            # Validate consultant
-            if not request_app_user.is_staff() and not selected_consultant \
-                    and _Organization.LICENSES.must_have_consultant(selected_license):
-                valid = False
-                consultant_error = "You must assign the organization to at least one consultant organization."
-
-            if selected_consultant and not _Organization.LICENSES.can_have_consultant(selected_license):
-                selected_consultant = ""
-
-            if valid:
-                create_session = make_session()
-
-                # Lookup existing organization and assign/reset fields
-                if editing:
-                    organization = create_session.query(_Organization).get(organization_id)
-                    organization.name = organization_name
-                    organization.license = selected_license
-                    organization.active = is_active
-                    organization.resources = []
-
-                # Create new organization
-                else:
-                    organization = _Organization(
-                        name=organization_name,
-                        license=selected_license,
-                        active=is_active
+                # Ensure consultant users cannot change their license on their own.
+                if not has_permission(request, 'assign_any_license') \
+                        and organization.license == _Organization.LICENSES.CONSULTANT:
+                    license_options = (
+                        (
+                            _Organization.LICENSES.get_display_name_for(_Organization.LICENSES.CONSULTANT),
+                            _Organization.LICENSES.CONSULTANT
+                        ),
                     )
-                    create_session.add(organization)
 
-                # Add resources
-                for resource in selected_resources:
-                    resource = create_session.query(_Resource).get(resource)
-                    organization.resources.append(resource)
+                for resource in organization.resources:
+                    selected_resources.append(str(resource.id))
 
-                # Assign consultant
-                if selected_consultant:
-                    consultant = create_session.query(_Organization).get(selected_consultant)
-                    organization.consultant = consultant
-                else:
-                    organization.consultant = None
+                # Determine if current user is a member of the organization
+                am_member = organization.is_member(request_app_user)
 
-                # Update user account active status
-                organization.update_member_activity(create_session, request)
+            # Process form submission
+            if request.POST and 'modify-organization-submit' in request.POST:
+                # Validate the form
+                post_params = request.POST
+                organization_name = post_params.get('organization-name', "")
+                selected_resources = post_params.getlist('organization-resources')
+                selected_consultant = post_params.get('organization-consultant', "")
+                selected_license = post_params.get('organization-license', "")
 
-                # Make clients inactive as well if inactive
-                if not is_active:
-                    for client_org in organization.clients:
-                        client_org.active = False
-                        client_org.update_member_activity(create_session, request)
+                if not am_member:
+                    is_active = post_params.get('organization-status') == 'on'
 
-                create_session.commit()
+                # Organization name is required
+                if organization_name == "":
+                    valid = False
+                    organization_name_error = "Name is required."
 
-                # Update organization member custom_permissions if license changed
-                if selected_license != old_license:
-                    permissions_manager = self.get_permissions_manager()
-                    for member in organization.members:
-                        member.update_permissions(create_session, request, permissions_manager)
+                # Validate license
+                if not selected_license or not _Organization.LICENSES.is_valid(selected_license):
+                    valid = False
+                    license_error = "You must assign a valid license to the organization."
 
-                create_session.close()
+                # Validate license assign permission
+                assign_permission = _Organization.LICENSES.get_assign_permission_for(selected_license)
+                if not has_permission(request, assign_permission) and selected_license != old_license:
+                    valid = False
+                    license_error = "You do not have permission to assign this license to this organization."
 
-                # Redirect
-                return redirect(reverse(next_controller))
+                # Validate consultant
+                if not request_app_user.is_staff() and not selected_consultant \
+                        and _Organization.LICENSES.must_have_consultant(selected_license):
+                    valid = False
+                    consultant_error = "You must assign the organization to at least one consultant organization."
 
-        # Define form
-        organization_name_input = TextInput(
-            display_text='Name',
-            name='organization-name',
-            initial=organization_name,
-            error=organization_name_error
-        )
+                if selected_consultant and not _Organization.LICENSES.can_have_consultant(selected_license):
+                    selected_consultant = ""
 
-        license_select = SelectInput(
-            display_text='License',
-            name='organization-license',
-            multiple=False,
-            disabled=False,
-            options=license_options,
-            initial=selected_license,
-            error=license_error
-        )
+                # Validate custom fields
+                custom_valid, custom_fields_errors = self.validate_custom_fields(post_params)
+                context.update(custom_fields_errors)
 
-        # Populate users select box
-        session = make_session()
+                if valid and custom_valid:
+                    # Lookup existing organization and assign/reset fields
+                    if editing:
+                        organization = session.query(_Organization).get(organization_id)
+                        organization.name = organization_name
+                        organization.license = selected_license
+                        organization.active = is_active
+                        organization.resources = []
 
-        request_app_user = _AppUser.get_app_user_from_request(request, session)
+                    # Create new organization
+                    else:
+                        organization = _Organization(
+                            name=organization_name,
+                            license=selected_license,
+                            active=is_active
+                        )
+                        session.add(organization)
 
-        # Populate projects select box
-        resources = request_app_user.get_resources(session, request, for_assigning=True)
+                    # Add resources
+                    for resource_id in selected_resources:
+                        resource = session.query(_Resource).get(resource_id)
+                        organization.resources.append(resource)
 
-        resource_options = [(r.name, str(r.id)) for r in resources]
+                    # Assign consultant
+                    if selected_consultant:
+                        consultant = session.query(_Organization).get(selected_consultant)
+                        organization.consultant = consultant
+                    else:
+                        organization.consultant = None
 
-        # Sort the project options
-        project_select = SelectInput(
-            display_text=_Resource.DISPLAY_TYPE_PLURAL + ' (Optional)',
-            name='organization-resources',
-            multiple=True,
-            options=resource_options,
-            initial=selected_resources
-        )
+                    # Update user account active status
+                    organization.update_member_activity(session, request)
 
-        # Populate owner select box
-        consultant_options = request_app_user.get_organizations(session, request, as_options=True, consultants=True)
-        consultant_organizations = request_app_user.get_organizations(session, request, consultants=True)
+                    # Make clients inactive as well if inactive
+                    if not is_active:
+                        for client_org in organization.clients:
+                            client_org.active = False
+                            client_org.update_member_activity(session, request)
 
-        # Remove this organization for consultant options if present
-        if editing:
-            temp_consultant_options = []
-            for consultant_option in consultant_options:
-                if consultant_option[1] != str(organization.id):
-                    temp_consultant_options.append(consultant_option)
+                    session.commit()
 
-            consultant_options = temp_consultant_options
+                    # Update organization member custom_permissions if license changed
+                    if selected_license != old_license:
+                        permissions_manager = self.get_permissions_manager()
+                        for member in organization.members:
+                            member.update_permissions(session, request, permissions_manager)
 
-        # Prepend None option
-        consultant_options.insert(0, ('None', ''))
+                    # Call post processing hook
+                    self.handle_organization_finished_processing(
+                        session, request, request_app_user, organization, editing
+                    )
 
-        # Default selected consultant if none selected yet.
-        if len(consultant_options) > 0 and not selected_consultant:
-            selected_consultant = consultant_options[0][1]
+                    # Redirect
+                    return redirect(reverse(next_controller))
 
-        constultant_select = SelectInput(
-            display_text='Consultant',
-            name='organization-consultant',
-            multiple=False,
-            options=consultant_options,
-            error=consultant_error,
-            initial=selected_consultant
-        )
+            # Define form
+            organization_name_input = TextInput(
+                display_text='Name',
+                name='organization-name',
+                initial=organization_name,
+                error=organization_name_error
+            )
 
-        organization_status_toggle = ToggleSwitch(
-            display_text='Status',
-            name='organization-status',
-            on_label='Active',
-            off_label='Inactive',
-            on_style='primary',
-            off_style='default',
-            initial=is_active,
-            size='medium'
-        )
+            license_select = SelectInput(
+                display_text='License',
+                name='organization-license',
+                multiple=False,
+                disabled=False,
+                options=license_options,
+                initial=selected_license,
+                error=license_error
+            )
 
-        license_to_consultant_map = self.get_license_to_consultant_map(
-            request, license_options, consultant_organizations
-        )
+            # Populate users select box
+            request_app_user = _AppUser.get_app_user_from_request(request, session)
 
-        hide_consultant_licenses = self.get_hide_consultant_licenses(request)
+            # Populate projects select box
+            resources = request_app_user.get_resources(session, request, for_assigning=True)
 
-        session.close()
+            resource_options = [(r.name, str(r.id)) for r in resources]
 
-        context = {
+            # Sort the project options
+            project_select = SelectInput(
+                display_text=_Resource.DISPLAY_TYPE_PLURAL + ' (Optional)',
+                name='organization-resources',
+                multiple=True,
+                options=resource_options,
+                initial=selected_resources
+            )
+
+            # Populate owner select box
+            consultant_options = request_app_user.get_organizations(session, request, as_options=True, consultants=True)
+            consultant_organizations = request_app_user.get_organizations(session, request, consultants=True)
+
+            # Remove this organization for consultant options if present
+            if editing:
+                temp_consultant_options = []
+                for consultant_option in consultant_options:
+                    if consultant_option[1] != str(organization.id):
+                        temp_consultant_options.append(consultant_option)
+
+                consultant_options = temp_consultant_options
+
+            # Prepend None option
+            consultant_options.insert(0, ('None', ''))
+
+            # Default selected consultant if none selected yet.
+            if len(consultant_options) > 0 and not selected_consultant:
+                selected_consultant = consultant_options[0][1]
+
+            constultant_select = SelectInput(
+                display_text='Consultant',
+                name='organization-consultant',
+                multiple=False,
+                options=consultant_options,
+                error=consultant_error,
+                initial=selected_consultant
+            )
+
+            organization_status_toggle = ToggleSwitch(
+                display_text='Status',
+                name='organization-status',
+                on_label='Active',
+                off_label='Inactive',
+                on_style='primary',
+                off_style='default',
+                initial=is_active,
+                size='medium',
+            )
+
+            license_to_consultant_map = self.get_license_to_consultant_map(
+                request, license_options, consultant_organizations
+            )
+
+            hide_consultant_licenses = self.get_hide_consultant_licenses(request)
+
+            # Initialize custom fields
+            custom_fields = self.initialize_custom_fields(session, request, organization, editing)
+            context.update(custom_fields)
+
+        except Exception as e:
+            session and session.rollback()
+
+            if type(e) is ATCoreException:
+                error_message = str(e)
+            else:
+                traceback.print_exc()
+                error_message = ("An unexpected error occurred while uploading your project. Please try again or "
+                                 "contact support@aquaveo.com for further assistance.")
+            log.exception(error_message)
+            messages.error(request, error_message)
+
+            # Sessions closed in finally block
+            return redirect(reverse(next_controller))
+        finally:
+            session and session.close()
+
+        context.update({
             'page_title': _Organization.DISPLAY_TYPE_SINGULAR,
             'editing': editing,
             'am_member': am_member,
@@ -342,7 +365,7 @@ class ModifyOrganization(AppUsersViewMixin):
             'hide_consultant_licenses': hide_consultant_licenses,
             'organization_status_toggle': organization_status_toggle,
             'base_template': self.base_template
-        }
+        })
 
         return render(request, self.template_name, context)
 
@@ -391,3 +414,42 @@ class ModifyOrganization(AppUsersViewMixin):
                 hide_consultant_licenses.append(license)
 
         return hide_consultant_licenses
+
+    def initialize_custom_fields(self, session, request, organization, editing):
+        """
+        Hook to allow for initializing custom fields.
+
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            organization(Organization): The organization being created / edited.
+            editing(bool): True if rendering form for editing.
+
+        Returns:
+            dict: Template context variables for defining custom fields (i.e. gizmos, initial values, etc.).
+        """
+        return dict()
+
+    def validate_custom_fields(self, params):
+        """
+        Hook to allow for validating custom fields.
+
+        Args:
+            params: The request.POST object with values submitted by user.
+
+        Returns:
+            bool, dict: False if any custom fields invalid, Template context variables for validation feedback (i.e. error messages).
+        """  # noqa: E501
+        return True, dict()
+
+    def handle_organization_finished_processing(self, session, request, request_app_user, organization, editing):
+        """
+        Hook to allow for post processing after the resource has finished being created or updated.
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            request_app_user(AppUser): app user that is making the request.
+            organization(Organization): The organization being created / edited.
+            editing(bool): True if editing, False if creating a new resource.
+        """
+        pass

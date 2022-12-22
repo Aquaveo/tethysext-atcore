@@ -4,13 +4,14 @@ from sqlalchemy import Column, Boolean, String, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship, backref, validates
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.licenses import Licenses
+from tethysext.atcore.mixins import AttributesMixin
 from .associations import organization_resource_association, user_organization_association
 from .base import AppUsersBase
 
 __all__ = ['Organization']
 
 
-class Organization(AppUsersBase):
+class Organization(AppUsersBase, AttributesMixin):
     """
     Definition for organizations table.
     """
@@ -31,6 +32,7 @@ class Organization(AppUsersBase):
     license_expires = Column(DateTime)
     active = Column(Boolean, default=True)
     archived = Column(Boolean, default=False)
+    _attributes = Column(String)
 
     # Relationships
     resources = relationship('Resource',

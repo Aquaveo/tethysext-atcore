@@ -4,15 +4,13 @@
 {% block app_navigation_items %}
   <p style="margin-bottom: 5px;"><b>Name:</b></p>
   <p>Name of the organization (e.g.: Salt Lake City).</p>
-  <li class="nav-item separator"></li>
   <p style="margin-bottom: 5px;"><b>License:</b></p>
   <p>The type of license to assign to the organization.</p>
-  <li class="nav-item separator"></li>
   <p style="margin-bottom: 5px;"><b>Owner:</b></p>
   <p>The organization that will manage this organization.</p>
-  <li class="nav-item separator"></li>
   <p style="margin-bottom: 5px;"><b>Projects:</b></p>
   <p>Projects that members of this organization will be able to access.</p>
+  {% block custom_field_help %}{% endblock %}
 {% endblock %}
 
 {% block app_content %}
@@ -21,17 +19,30 @@
       <h1>{% if editing %}Edit{% else %}New{% endif %} {{ page_title }}</h1>
       <form id="new-user-group-form" method="post" action="">
         {% csrf_token %}
+        {# NAME FIELD #}
         {% gizmo text_input organization_name_input %}
+
+        {# ORGANIZATION TYPE FIELD #}
         {% gizmo select_input organization_type_select %}
+
+        {# ORGANIZATION CONSULTANT FIELD #}
         <div id="consultant-select-wrapper">
           {% gizmo select_input owner_select %}
         </div>
+
+        {# ORGANIZATION PROJECTS FIELD #}
         {% gizmo select_input project_select %}
-        <div id="status-toggle-wrapper">
+
+        {# ORGANIZATION STATUS FIELD #}
+        <div id="status-toggle-wrapper" class="mb-2">
         {% if not am_member %}
           {% gizmo organization_status_toggle %}
         {% endif %}
         </div>
+
+        {# ORGANIZTAION CUSTOM FIELDS #}
+        {% block custom_fields %}{% endblock %}
+
         <a class="btn btn-outline-secondary" href="{% url next_controller %}">Cancel</a>
         <input type="submit" class="btn btn-success" name="modify-organization-submit"
                value="{% if editing %}Save Changes{% else %}Create Organization{% endif %}">
