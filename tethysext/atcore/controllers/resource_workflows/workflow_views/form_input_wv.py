@@ -44,7 +44,12 @@ class FormInputWV(ResourceWorkflowView):
         mod = __import__(package, fromlist=[p_class])
         ParamClass = getattr(mod, p_class)
 
-        if current_step.options['renderer'] == 'django':
+        # Get the renderer option
+        renderer = current_step.options['renderer']
+        context.update({'renderer': renderer})
+
+        # Django Renderer
+        if renderer == 'django':
             p = ParamClass()
             if hasattr(p, 'update_precedence'):
                 p.update_precedence()
@@ -59,7 +64,9 @@ class FormInputWV(ResourceWorkflowView):
                 'form_title': form_title,
                 'form': form,
             })
-        elif current_step.options['renderer'] == 'bokeh':
+
+        # Bokeh Renderer
+        elif renderer == 'bokeh':
             script = server_document(request.build_absolute_uri())
             context.update({
                 'read_only': self.is_read_only(request, current_step),
