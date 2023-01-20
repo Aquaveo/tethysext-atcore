@@ -1,5 +1,5 @@
 {% extends "atcore/resource_workflows/map_workflow_view.html" %}
-{% load tethys_gizmos static %}
+{% load tethys_gizmos static django_bootstrap5 %}
 
 {% block app_actions %}
   {% if allow_shapefile %}
@@ -58,7 +58,7 @@
         <p class="help-block spatial-attributes-error"></p>
       </div>
       {% csrf_token %}
-      {{ attributes_form }}
+      {% bootstrap_form attributes_form %}
     </form>
     <a class="btn btn-outline-secondary spatial-attributes-ok" href="javscript:void(0)">Save</a>
   </div>
