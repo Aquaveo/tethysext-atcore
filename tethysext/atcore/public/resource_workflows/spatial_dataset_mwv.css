@@ -4,7 +4,7 @@
 }
 
 #spatial-data-popup .ol-popup-content {
-    max-height: 410px;
+    max-height: none;
 }
 
 #spatial-data-popup .ol-popup-content .title {
@@ -75,4 +75,9 @@
 /* plot styles */
 #spatial-dataset-plot {
     padding-top: 28px;
+}
+
+#spatial-dataset-table-container {
+    overflow: auto;
+    max-width: 100%;
 }
