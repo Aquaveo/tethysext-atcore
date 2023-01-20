@@ -3,7 +3,7 @@
 }
 
 #spatial-attributes form {
-    max-height: 160px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
@@ -21,4 +21,8 @@
 
 #spatial-attributes .btn {
     margin-top: 10px;
+}
+
+.ol-popup-content {
+    max-height: 400px;
 }
