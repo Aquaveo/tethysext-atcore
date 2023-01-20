@@ -131,6 +131,20 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
 
         return status
 
+    def get_step_by_name(self, name):
+        """
+        Get the step from the workflow with given name.
+
+        Args:
+            name(str): The name of the step you want to get.
+
+        Returns:
+            ResourceWorkflowStep: the step with matching name or None if not found.
+        """
+        for step in self.steps:
+            if step.name == name:
+                return step
+
     def get_adjacent_steps(self, step):
         """
         Get the adjacent steps to the given step.
