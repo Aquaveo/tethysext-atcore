@@ -458,7 +458,33 @@ class SpatialInputMWV(MapWorkflowView):
             return geojson
 
         # Sort the features for consistent ID'ing
-        s_features = sorted(geojson['features'], key=lambda f: f['geometry']['coordinates'])
+        min_sort_vals = []
+        for idx, feature in enumerate(geojson['features']):
+            # Get the min coordinates for each feature, depending on feature type
+            cur_x = []
+            cur_y = []
+            geometry = feature['geometry']
+            for coordinates in geometry['coordinates']:
+                if type(coordinates) == float:
+                    # Point feature
+                    cur_x.append(geometry['coordinates'][0])
+                    cur_y.append(geometry['coordinates'][1])
+                elif type(coordinates) == list:
+                    for val in coordinates:
+                        if type(val) == float:
+                            # LineString feature
+                            cur_x.append(coordinates[0])
+                            cur_y.append(coordinates[1])
+                        elif type(val) == list:
+                            # Polygon and Extent feature
+                            cur_x.append(val[0])
+                            cur_y.append(val[1])
+            min_sort_vals.append((min(cur_x), min(cur_y), idx))
+        # Sort the min coordinates, and then store the features in that order
+        s_features = []
+        sorted_values = sorted(min_sort_vals)
+        for sorted_value in sorted_values:
+            s_features.append(geojson['features'][sorted_value[2]])
 
         for _, feature in enumerate(s_features):
             if 'geometry' not in feature or \
