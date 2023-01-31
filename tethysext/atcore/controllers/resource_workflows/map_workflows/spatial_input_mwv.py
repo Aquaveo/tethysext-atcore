@@ -477,7 +477,7 @@ class SpatialInputMWV(MapWorkflowView):
 
             # Generate ID if not given
             if 'id' not in feature['properties']:
-                feature['properties']['id'] = str(uuid.uuid4())
+                feature['properties']['id'] = 'drawing_layer.' + str(uuid.uuid4())
 
             post_processed_geojson['features'].append(processed_feature)
 
