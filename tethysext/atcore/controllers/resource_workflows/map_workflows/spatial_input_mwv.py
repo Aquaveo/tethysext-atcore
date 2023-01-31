@@ -479,7 +479,8 @@ class SpatialInputMWV(MapWorkflowView):
                             # Polygon and Extent feature
                             cur_x.append(val[0])
                             cur_y.append(val[1])
-            min_sort_vals.append((min(cur_x), min(cur_y), idx))
+            cur_val = (min(cur_x), min(cur_y), idx) if cur_x and cur_y else (None, None, idx)
+            min_sort_vals.append(cur_val)
         # Sort the min coordinates, and then store the features in that order
         s_features = []
         sorted_values = sorted(min_sort_vals)
