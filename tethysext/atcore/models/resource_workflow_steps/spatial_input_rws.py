@@ -123,7 +123,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             # Skip attributes that are not given, raising a validation error if it is required
             if attribute_name not in attributes:
                 if value_required:
-                    validation_errors.append(f'{attribute_title} is required.')
+                    validation_errors.append(f'{defined_attribute.label} is required.')
                 continue
 
             # Get the value
@@ -133,7 +133,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             val = None if value in null_equivalents else value
 
             if val is None and value_required:
-                validation_errors.append(f'{attribute_title} is required.')
+                validation_errors.append(f'{defined_attribute.label} is required.')
                 continue
 
             # Cast values to numbers if definition is a number field
