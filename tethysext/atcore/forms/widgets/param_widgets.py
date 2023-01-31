@@ -181,7 +181,7 @@ def generate_django_form(parameterized_obj, form_field_prefix=None, read_only=Fa
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
 
-        # Get appropriate Django field/widget based on param type           
+        # Get appropriate Django field/widget based on param type
         form_class.base_fields[p_name] = widget_map[type(p)](parameterized_obj, p, p.name)
 
         # Set label with param label if set, otherwise derive from parameter name
