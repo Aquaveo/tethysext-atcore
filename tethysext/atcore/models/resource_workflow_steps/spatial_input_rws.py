@@ -145,7 +145,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             except TypeError:
                 validation_errors.append(f'{attribute_title} must be a number.')
                 continue
-            
+
             # Convert "on" value to boolean for Boolean fields
             if isinstance(defined_attribute, param.Boolean):
                 val = val in ('on', 'checked')
