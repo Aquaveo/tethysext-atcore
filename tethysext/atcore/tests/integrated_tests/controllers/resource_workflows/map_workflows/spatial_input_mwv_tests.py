@@ -613,13 +613,13 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertEqual(geojson['features'][2]['geometry']['type'], ret['features'][0]['geometry']['type'])
         self.assertEqual(geojson['features'][2]['geometry']['coordinates'],
                          ret['features'][0]['geometry']['coordinates'])
-        # Make sure the LineString (second feature in geojson) comes second in the return value
-        self.assertEqual(geojson['features'][1]['geometry']['type'], ret['features'][1]['geometry']['type'])
-        self.assertEqual(geojson['features'][1]['geometry']['coordinates'],
-                         ret['features'][1]['geometry']['coordinates'])
-        # Make sure the Polygon (first feature in geojson) comes last in the return value
-        self.assertEqual(geojson['features'][0]['geometry']['type'], ret['features'][2]['geometry']['type'])
+        # Make sure the LineString (first feature in geojson) comes second in the return value
+        self.assertEqual(geojson['features'][0]['geometry']['type'], ret['features'][1]['geometry']['type'])
         self.assertEqual(geojson['features'][0]['geometry']['coordinates'],
+                         ret['features'][1]['geometry']['coordinates'])
+        # Make sure the Polygon (second feature in geojson) comes last in the return value
+        self.assertEqual(geojson['features'][1]['geometry']['type'], ret['features'][2]['geometry']['type'])
+        self.assertEqual(geojson['features'][1]['geometry']['coordinates'],
                          ret['features'][2]['geometry']['coordinates'])
         self.assertIn('properties', ret['features'][0])
         self.assertIn('properties', ret['features'][1])
