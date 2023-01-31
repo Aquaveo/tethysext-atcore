@@ -586,11 +586,11 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             'features': [
                 {'geometry': {'coordinates': [[-86.713342, 33.500775], [-86.704177, 33.507294]], 'type': 'LineString'},
                  'properties': {}},
-                {'geometry': {'coordinates': [[-86.655385, 33.532015],
-                                              [-86.655385, 33.542351],
-                                              [-86.629775, 33.542351],
-                                              [-86.629775, 33.532015],
-                                              [-86.655385, 33.532015]], 'type': 'Polygon'},
+                {'geometry': {'coordinates': [[[-86.655385, 33.532015],
+                                               [-86.655385, 33.542351],
+                                               [-86.629775, 33.542351],
+                                               [-86.629775, 33.532015],
+                                               [-86.655385, 33.532015]]], 'type': 'Polygon'},
                  'properties': {}},
                 {'geometry': {'coordinates': [-87.718464, 33.49583], 'type': 'Point'}, 'properties': {}},
             ]
