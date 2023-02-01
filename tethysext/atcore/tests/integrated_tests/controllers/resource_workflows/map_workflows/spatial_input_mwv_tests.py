@@ -562,7 +562,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         geojson = {
             'features': [
                 {'geometry': {'coordinates': [], 'type': 'some_type'}, 'properties': {}},
-                {'geometry': {'coordinates': []}}
+                {'geometry': {'coordinates': [], 'type': ''}}
             ]
         }
 
