@@ -8,8 +8,6 @@
 """
 import logging
 
-from django.forms.fields import MultipleChoiceField
-
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps.form_input_rws import FormInputRWS
 from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
