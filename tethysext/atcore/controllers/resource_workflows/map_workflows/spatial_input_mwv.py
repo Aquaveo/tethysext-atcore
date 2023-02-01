@@ -441,6 +441,19 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             object: geojson object.
         """  # noqa: E501
+        def sort_by_coordinates(f):
+            coordinates = f['geometry']['coordinates']
+            geom_type = f['geometry']['type']
+            if geom_type == 'LineString':
+                # List of list of X,Y:  [[X1, Y1], [X2, Y2], ...]
+                return min(coordinates)
+            elif geom_type == 'Polygon':
+                # List of list of list of X,Y, just do outer ring:  [[[X1, Y1], [X2, Y2], ...], [...]]
+                return min(coordinates[0])
+            else:
+                # Points, just a list of X, Y:  [X1, Y1]
+                return coordinates
+
         post_processed_geojson = {
             'type': 'FeatureCollection',
             'crs': {
@@ -458,34 +471,7 @@ class SpatialInputMWV(MapWorkflowView):
             return geojson
 
         # Sort the features for consistent ID'ing
-        min_sort_vals = []
-        for idx, feature in enumerate(geojson['features']):
-            # Get the min coordinates for each feature, depending on feature type
-            cur_x = []
-            cur_y = []
-            geometry = feature['geometry']
-            for coordinates in geometry['coordinates']:
-                if type(coordinates) == float:
-                    # Point feature
-                    cur_x.append(geometry['coordinates'][0])
-                    cur_y.append(geometry['coordinates'][1])
-                elif type(coordinates) == list:
-                    for val in coordinates:
-                        if type(val) == float:
-                            # LineString feature
-                            cur_x.append(coordinates[0])
-                            cur_y.append(coordinates[1])
-                        elif type(val) == list:
-                            # Polygon and Extent feature
-                            cur_x.append(val[0])
-                            cur_y.append(val[1])
-            cur_val = (min(cur_x), min(cur_y), idx) if cur_x and cur_y else (None, None, idx)
-            min_sort_vals.append(cur_val)
-        # Sort the min coordinates, and then store the features in that order
-        s_features = []
-        sorted_values = sorted(min_sort_vals)
-        for sorted_value in sorted_values:
-            s_features.append(geojson['features'][sorted_value[2]])
+        s_features = sorted(geojson['features'], key=sort_by_coordinates)
 
         for _, feature in enumerate(s_features):
             if 'geometry' not in feature or \
