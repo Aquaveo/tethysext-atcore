@@ -441,6 +441,19 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             object: geojson object.
         """  # noqa: E501
+        def sort_by_coordinates(f):
+            coordinates = f['geometry']['coordinates']
+            geom_type = f['geometry']['type']
+            if geom_type == 'LineString':
+                # List of list of X,Y:  [[X1, Y1], [X2, Y2], ...]
+                return min(coordinates)
+            elif geom_type == 'Polygon':
+                # List of list of list of X,Y, just do outer ring:  [[[X1, Y1], [X2, Y2], ...], [...]]
+                return min(coordinates[0])
+            else:
+                # Points, just a list of X, Y:  [X1, Y1]
+                return coordinates
+
         post_processed_geojson = {
             'type': 'FeatureCollection',
             'crs': {
@@ -458,7 +471,7 @@ class SpatialInputMWV(MapWorkflowView):
             return geojson
 
         # Sort the features for consistent ID'ing
-        s_features = sorted(geojson['features'], key=lambda f: f['geometry']['coordinates'])
+        s_features = sorted(geojson['features'], key=sort_by_coordinates)
 
         for _, feature in enumerate(s_features):
             if 'geometry' not in feature or \
@@ -477,7 +490,7 @@ class SpatialInputMWV(MapWorkflowView):
 
             # Generate ID if not given
             if 'id' not in feature['properties']:
-                feature['properties']['id'] = str(uuid.uuid4())
+                feature['properties']['id'] = 'drawing_layer.' + str(uuid.uuid4())
 
             post_processed_geojson['features'].append(processed_feature)
 
