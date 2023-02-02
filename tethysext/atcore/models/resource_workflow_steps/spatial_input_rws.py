@@ -118,7 +118,9 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
         for attribute_name, defined_attribute in all_defined_attributes.items():
             # Validate parameters that are "Required" but have no value
             value_required = not defined_attribute.allow_None
-            attribute_title = attribute_name.replace("_", " ").title()
+            attribute_title = (
+                defined_attribute.label if defined_attribute.label else attribute_name.replace("_", " ").title()
+            )
 
             # Skip attributes that are not given, raising a validation error if it is required
             if attribute_name not in attributes:
@@ -145,7 +147,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             except TypeError:
                 validation_errors.append(f'{attribute_title} must be a number.')
                 continue
-            
+
             # Convert "on" value to boolean for Boolean fields
             if isinstance(defined_attribute, param.Boolean):
                 val = val in ('on', 'checked')
