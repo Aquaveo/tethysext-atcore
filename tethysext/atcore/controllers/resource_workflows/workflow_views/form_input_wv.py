@@ -107,14 +107,14 @@ class FormInputWV(ResourceWorkflowView):
                 if p.startswith('param-form-'):
                     try:
                         param_name = p[11:]
-                        params[param_name] = request.POST.get(p, None)
+                        params[param_name] = form.cleaned_data[p]
                     except ValueError as e:
                         raise RuntimeError('error setting param data: {}'.format(e))
 
             # Get the param class and save the data from the form
             # for the next time the form is loaded
             param_class = ParamClass()
-            param_values = dict(param_class.get_param_values())
+            param_values = dict(param_class.param.get_param_values())
             for k, v in params.items():
                 try:
                     params[k] = type(param_values[k])(v)
