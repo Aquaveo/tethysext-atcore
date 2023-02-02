@@ -121,7 +121,6 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             attribute_title = (
                 defined_attribute.label if defined_attribute.label else attribute_name.replace("_", " ").title()
             )
-            # attribute_title = attribute_name.replace("_", " ").title()
 
             # Skip attributes that are not given, raising a validation error if it is required
             if attribute_name not in attributes:
