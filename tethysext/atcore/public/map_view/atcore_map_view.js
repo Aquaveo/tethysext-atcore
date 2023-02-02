@@ -1237,15 +1237,17 @@ var ATCORE_MAP_VIEW = (function() {
     };
 
     generate_properties_table_title = function(feature, layer) {
-        let title = '';
+        let title = 'Properties';
 
         // Get custom title from layer data properties
-        if (layer.hasOwnProperty('tethys_data') && layer.tethys_data.hasOwnProperty('popup_title')) {
-            title = layer.tethys_data.popup_title;
-        }
-        // Or use the legend title as a fallback
-        else {
-            title = layer.tethys_legend_title;
+        if (layer) {
+            if (layer.hasOwnProperty('tethys_data') && layer.tethys_data.hasOwnProperty('popup_title')) {
+                title = layer.tethys_data.popup_title;
+            }
+            // Or use the legend title as a fallback
+            else {
+                title = layer.tethys_legend_title;
+            }
         }
 
         let title_markup = '<h6 class="properites-title">' + title + '</h6>';

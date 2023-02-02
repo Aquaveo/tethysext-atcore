@@ -562,7 +562,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         geojson = {
             'features': [
                 {'geometry': {'coordinates': [], 'type': 'some_type'}, 'properties': {}},
-                {'geometry': {'coordinates': []}}
+                {'geometry': {'coordinates': [], 'type': 'some_type'}, 'properties': {}}
             ]
         }
 
@@ -579,3 +579,48 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertEqual(geojson['features'][0]['geometry']['coordinates'],
                          ret['features'][0]['geometry']['coordinates'])
         self.assertIn('properties', ret['features'][0])
+
+    def test_post_process_geojson_sorting(self):
+        # When sorted, the Point type should be first, then LineString, then Polygon
+        geojson = {
+            'features': [
+                {'geometry': {'coordinates': [[-86.713342, 33.500775], [-86.704177, 33.507294]], 'type': 'LineString'},
+                 'properties': {}},
+                {'geometry': {'coordinates': [[[-86.655385, 33.532015],
+                                               [-86.655385, 33.542351],
+                                               [-86.629775, 33.542351],
+                                               [-86.629775, 33.532015],
+                                               [-86.655385, 33.532015]]], 'type': 'Polygon'},
+                 'properties': {}},
+                {'geometry': {'coordinates': [-87.718464, 33.49583], 'type': 'Point'}, 'properties': {}},
+            ]
+        }
+
+        ret = SpatialInputMWV().post_process_geojson(geojson)
+
+        self.assertIn('type', ret)
+        self.assertIn('crs', ret)
+        self.assertIn('type', ret['crs'])
+        self.assertIn('properties', ret['crs'])
+        self.assertIn('features', ret)
+        self.assertIn('type', ret['features'][0])
+        self.assertIn('geometry', ret['features'][0])
+        self.assertIn('type', ret['features'][1])
+        self.assertIn('geometry', ret['features'][1])
+        self.assertIn('type', ret['features'][2])
+        self.assertIn('geometry', ret['features'][2])
+        # Make sure the Point (last feature in geojson) comes first in the return value
+        self.assertEqual(geojson['features'][2]['geometry']['type'], ret['features'][0]['geometry']['type'])
+        self.assertEqual(geojson['features'][2]['geometry']['coordinates'],
+                         ret['features'][0]['geometry']['coordinates'])
+        # Make sure the LineString (first feature in geojson) comes second in the return value
+        self.assertEqual(geojson['features'][0]['geometry']['type'], ret['features'][1]['geometry']['type'])
+        self.assertEqual(geojson['features'][0]['geometry']['coordinates'],
+                         ret['features'][1]['geometry']['coordinates'])
+        # Make sure the Polygon (second feature in geojson) comes last in the return value
+        self.assertEqual(geojson['features'][1]['geometry']['type'], ret['features'][2]['geometry']['type'])
+        self.assertEqual(geojson['features'][1]['geometry']['coordinates'],
+                         ret['features'][2]['geometry']['coordinates'])
+        self.assertIn('properties', ret['features'][0])
+        self.assertIn('properties', ret['features'][1])
+        self.assertIn('properties', ret['features'][2])
