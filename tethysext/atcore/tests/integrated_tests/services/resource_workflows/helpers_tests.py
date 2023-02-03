@@ -33,6 +33,20 @@ class HelpersTests(unittest.TestCase):
     @mock.patch('argparse._sys')
     def test_parse_workflow_step_args(self, mock_sys):
         mock_sys.argv = ['prog']
-        ret = helpers.parse_workflow_step_args()
+        ret, _ = helpers.parse_workflow_step_args()
 
         self.assertIsInstance(ret, Namespace)
+
+    @mock.patch('argparse._sys')
+    def test_parse_workflow_step_args_with_extra(self, mock_sys):
+        mock_sys.argv = ['prog']  # No extra argument
+        ret, extra_args = helpers.parse_workflow_step_args()
+
+        self.assertIsInstance(ret, Namespace)
+        self.assertListEqual(extra_args, [])
+
+        mock_sys.argv = ['prog', '--extra_arg']  # Extra argument
+        ret, extra_args = helpers.parse_workflow_step_args()
+
+        self.assertIsInstance(ret, Namespace)
+        self.assertListEqual(extra_args, ['--extra_arg'])

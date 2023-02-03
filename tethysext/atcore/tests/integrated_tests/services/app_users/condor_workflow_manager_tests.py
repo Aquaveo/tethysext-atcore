@@ -120,6 +120,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
                     '../base_scenario/base_ohl_series.json',
                     '../detention_basin_scenario/detention_basin_ohl_series.json',
                 ],
+                'arguments': 'extra',
             },
             'parents': [base_job['name'], dt_job['name']]
         }
@@ -282,7 +283,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual(self.jobs[2]['name'], manager.jobs[2]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[2]._attributes['universe'])
         self.assertEqual('post_process.py', manager.jobs[2]._attributes['executable'])
-        self.assertEqual(expected_args, manager.jobs[2]._attributes['arguments'])
+        self.assertEqual(expected_args + ' extra', manager.jobs[2]._attributes['arguments'])
         self.assertEqual('../base_scenario/base_ohl_series.json,  '
                          '../detention_basin_scenario/detention_basin_ohl_series.json, ../testkey',
                          manager.jobs[2]._attributes['transfer_input_files'])

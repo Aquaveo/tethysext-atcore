@@ -14,7 +14,7 @@ from tethysext.atcore.services.resource_workflows.decorators import workflow_ste
 
 @workflow_step_job
 def main(resource_db_session, model_db_session, resource, workflow, step, gs_private_url, gs_public_url, resource_class,
-         workflow_class, params_json, params_file, cmd_args):
+         workflow_class, params_json, params_file, cmd_args, extra_args):
     print('Given Arguments:')
     print(str(cmd_args))
 

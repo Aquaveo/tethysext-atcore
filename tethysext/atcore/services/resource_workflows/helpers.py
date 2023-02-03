@@ -75,5 +75,5 @@ def parse_workflow_step_args():
         dest='app_namespace',
         default='agwa'
     )
-    args = parser.parse_args()
-    return args
+    args, unknown_args = parser.parse_known_args()
+    return args, unknown_args
