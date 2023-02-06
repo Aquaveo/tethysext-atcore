@@ -201,10 +201,8 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         for job in self.jobs:
             # Set arguments for each job
             existing_job_args = job.get_attribute('arguments')
-            if existing_job_args and type(existing_job_args) != list:
-                job_args_list = []
-                job_args_list.append(existing_job_args)
-                existing_job_args = job_args_list
+            if existing_job_args:
+                existing_job_args = existing_job_args.split()
             current_job_args = self.job_args + (existing_job_args if existing_job_args else [])
             job.set_attribute('arguments', current_job_args)
 

@@ -39,14 +39,24 @@ class HelpersTests(unittest.TestCase):
 
     @mock.patch('argparse._sys')
     def test_parse_workflow_step_args_with_extra(self, mock_sys):
-        mock_sys.argv = ['prog']  # No extra argument
+        # No extra arguments
+        mock_sys.argv = ['prog']
         ret, extra_args = helpers.parse_workflow_step_args()
-
         self.assertIsInstance(ret, Namespace)
         self.assertListEqual(extra_args, [])
 
-        mock_sys.argv = ['prog', '--extra_arg']  # Extra argument
+        # Extra (optional) arguments
+        mock_sys.argv = ['prog', '--extra_arg', '--extra_arg_2']  # Extra arguments
         ret, extra_args = helpers.parse_workflow_step_args()
-
         self.assertIsInstance(ret, Namespace)
-        self.assertListEqual(extra_args, ['--extra_arg'])
+        self.assertListEqual(extra_args, ['--extra_arg', '--extra_arg_2'])
+
+        # Extra arguments after all of the required (and optional) job arguments
+        mock_sys.argv = ['prog', 'resource_db_url', 'model_db_url', 'resource_id', 'resource_workflow_id',
+                         'resource_workflow_step_id', 'gs_private_url', 'gs_public_url', 'resource_class',
+                         'workflow_class', 'workflow_params_file', '-s', 'scenario_id', '-a', 'app_workspace',
+                         'extra_argument_1', 'extra_argument_2', 'extra_argument_3']
+
+        ret, extra_args = helpers.parse_workflow_step_args()
+        self.assertIsInstance(ret, Namespace)
+        self.assertListEqual(extra_args, ['extra_argument_1', 'extra_argument_2', 'extra_argument_3'])
