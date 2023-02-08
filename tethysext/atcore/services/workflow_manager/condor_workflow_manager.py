@@ -200,7 +200,11 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Parametrize each job
         for job in self.jobs:
             # Set arguments for each job
-            job.set_attribute('arguments', self.job_args)
+            existing_job_args = job.get_attribute('arguments')
+            if existing_job_args:
+                existing_job_args = existing_job_args.split()
+            current_job_args = self.job_args + (existing_job_args if existing_job_args else [])
+            job.set_attribute('arguments', current_job_args)
 
             # Add input files to transfer input files
             transfer_input_files_str = job.get_attribute('transfer_input_files') or ''
