@@ -228,7 +228,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
                     self.scheduler_name, jobs=None)
             self.assertTrue(False)  # This line should not be reached
         except ValueError as e:
-            self.assertEqual('"jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
+            self.assertEqual('Given "jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
                              'or equivalent dictionary.', str(e))
 
     def test_workspace_no_path(self):
