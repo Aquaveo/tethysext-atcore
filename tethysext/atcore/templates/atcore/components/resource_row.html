@@ -1,4 +1,12 @@
 <tr class="resource-row">
+  {# SELECT CONTROL #}
+  <td class="select-row">
+    <label class="flatmark">
+      <input class="select-row-control" type="checkbox" title="Select row">
+      <span class="checkmark checkbox"></span>
+    </label>
+  </td>
+
   {# NAME VALUE #}
   <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
     <a href="{{ resource.action_href }}">{{ resource.name }}</a>
