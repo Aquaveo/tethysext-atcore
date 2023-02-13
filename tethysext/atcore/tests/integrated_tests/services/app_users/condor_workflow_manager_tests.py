@@ -150,7 +150,6 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual(str(self.step.id), manager.resource_workflow_step_id)
         self.assertEqual(self.step.name, manager.resource_workflow_step_name)
         self.assertEqual(self.jobs, manager.jobs)
-        self.assertFalse(manager.jobs_are_function)
         self.assertEqual(self.user, manager.user)
         self.assertEqual(self.working_directory, manager.working_directory)
         self.assertEqual(self.app, manager.app)
@@ -200,7 +199,6 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual(str(self.step.id), manager.resource_workflow_step_id)
         self.assertEqual(self.step.name, manager.resource_workflow_step_name)
         self.assertEqual(self.jobs, manager.jobs)
-        self.assertFalse(manager.jobs_are_function)
         self.assertEqual(self.user, manager.user)
         self.assertEqual(self.working_directory, manager.working_directory)
         self.assertEqual(self.app, manager.app)
@@ -230,7 +228,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
                     self.scheduler_name, jobs=None)
             self.assertTrue(False)  # This line should not be reached
         except ValueError as e:
-            self.assertEqual('Argument "jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
+            self.assertEqual('"jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
                              'or equivalent dictionary.', str(e))
 
     def test_workspace_no_path(self):

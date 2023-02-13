@@ -40,7 +40,6 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
             input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
         """  # noqa: E501
-        self.jobs_are_function = inspect.isfunction(jobs)
         self.validate_jobs(jobs)
 
         # DB url for database containing the resource
@@ -187,8 +186,11 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         self.workflow.save()
 
         # Preprocess jobs if they are dicts or a callback function
-        cur_jobs = self.jobs(self) if self.jobs_are_function else self.jobs
-        self.validate_jobs(cur_jobs)  # Validate again (needed if self.jobs was a callback function)
+        if inspect.isfunction(self.jobs):
+            cur_jobs = self.jobs(self)
+            self.validate_jobs(cur_jobs)  # Validate again (needed if self.jobs was a callback function)
+        else:
+            cur_jobs = self.jobs
         if isinstance(cur_jobs[0], dict):
             # Jobs are dicts
             cur_jobs = self._build_job_nodes(cur_jobs)
@@ -322,7 +324,9 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         Args:
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
         """
-        if not inspect.isfunction(jobs):
-            if not jobs or not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs):
-                raise ValueError('Argument "jobs" is not defined or empty. Must provide at least one '
-                                 'CondorWorkflowJobNode or equivalent dictionary.')
+        if (
+            not jobs or
+            (not inspect.isfunction(jobs) and not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs))
+        ):
+            raise ValueError('"jobs" is not defined or empty. Must provide at least one '
+                             'CondorWorkflowJobNode or equivalent dictionary.')
