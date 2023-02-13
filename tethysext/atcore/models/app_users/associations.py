@@ -34,3 +34,11 @@ step_parent_child_association = Table(
     Column('child_id', GUID, ForeignKey('app_users_resource_workflow_steps.id')),
     Column('parent_id', GUID, ForeignKey('app_users_resource_workflow_steps.id'))
 )
+
+resource_parent_child_association = Table(
+    'app_users_resource_parent_child_association',
+    AppUsersBase.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('child_id', GUID, ForeignKey('app_users_resources.id')),
+    Column('parent_id', GUID, ForeignKey('app_users_resources.id'))
+)
