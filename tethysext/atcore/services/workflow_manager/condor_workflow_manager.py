@@ -328,5 +328,5 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             not jobs or
             (not inspect.isfunction(jobs) and not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs))
         ):
-            raise ValueError('"jobs" is not defined or empty. Must provide at least one '
+            raise ValueError('Given "jobs" is not defined or empty. Must provide at least one '
                              'CondorWorkflowJobNode or equivalent dictionary.')
