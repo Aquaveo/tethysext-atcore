@@ -69,77 +69,12 @@
               <th></th>
             </thead>
             <tbody>
+              {# RESOURCE ROWS #}
               {% for resource in resources %}
-                <tr>
-                  {# NAME VALUE #}
-                  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <a href="{{ resource.action_href }}">{{ resource.name }}</a>
-                  </td>
-
-                  {# DESCRIPTION VALUE #}
-                  {% if not resource.description %}
-                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <i><font color="#A8A8A8">No Description</font></i>
-                  </td>
-                  {% else %}
-                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <span>{{ resource.description }}</span>
-                  </td>
-                  {% endif %}
-
-                  {# ORGANIZATIONS VALUE #}
-                   <td>
-                     {% for organization in resource.organizations %}
-                       {% if show_links_to_organizations %}
-                         <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
-                       {% else %}
-                         <span class="manage-tag organization-tag">{{ organization.name }}</span>
-                       {% endif %}
-                     {% endfor %}
-                  </td>
-
-                  {# CREATED BY VALUE #}
-                  {% if resource.created_by %}
-                  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    {% if resource.created_by == '_staff_user' %}staff{% else %}{{ resource.created_by }}{% endif %}
-                  </td>
-                  {% else %}
-                  <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <i><font color="#A8A8A8">Unknown</font></i>
-                  </td>
-                  {% endif %}
-
-                  {# DATE CREATED VALUE #}
-                  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    {{ resource.date_created }} UTC
-                  </td>
-
-                  {# DEBUGGING FIELDS #}
-                  {% if show_debugging_info %}
-                  <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
-                    {{ resource.debugging }}
-                  </td>
-                  {% endif %}
-
-                  {# BUTTONS #}
-                  <td class="btn-td">
-                    <div class="btn-toolbar float-end">
-                      {% if resource.editable %}
-                        <a class="btn btn-outline-secondary btn-edit btn-flat" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><span class="bi bi-pencil-square"></span></a>
-                      {% endif %}
-                      {% if resource.deletable %}
-                        <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><span class="bi bi-trash"></span></a>
-                      {% endif %}
-                      {% if resource.action == 'processing' %}
-                        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-arrow-clockwise"></span></a>
-                      {% elif resource.action == 'error' %}
-                        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-x-lg"></span></a>
-                      {% else %}
-                        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-chevron-right"></span></a>
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
+                {# TOP LEVEL RESOURCES HAVE NO PARENTS #}
+                {% if not resource.parents %}
+                  {% include "atcore/components/resource_row.html" with resource=resource %}
+                {% endif %}
               {% endfor %}
             </tbody>
           </table>
@@ -196,6 +131,7 @@
   <link href="{% static 'atcore/app_users/css/sort.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/center.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/flex.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/flatmark.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
