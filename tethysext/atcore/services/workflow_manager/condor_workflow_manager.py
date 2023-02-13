@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import inspect
 import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
@@ -39,9 +40,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
             input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
         """  # noqa: E501
-        if not jobs or not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs):
-            raise ValueError('Argument "jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
-                             'or equivalent dictionary.')
+        self.validate_jobs(jobs)
 
         # DB url for database containing the resource
         self.resource_db_url = str(session.get_bind().url)
@@ -78,7 +77,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
 
         # Job Definition Variables
         self.jobs = jobs
-        self.jobs_are_dicts = isinstance(jobs[0], dict)
+        self.session = session
         self.user = user
         self.working_directory = working_directory
         self.app = app
@@ -186,9 +185,16 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Save the workflow
         self.workflow.save()
 
-        # Preprocess jobs if they are dicts
-        if self.jobs_are_dicts:
-            self.jobs = self._build_job_nodes(self.jobs)
+        # Preprocess jobs if they are dicts or a callback function
+        if inspect.isfunction(self.jobs):
+            cur_jobs = self.jobs(self)
+            self.validate_jobs(cur_jobs)  # Validate again (needed if self.jobs was a callback function)
+        else:
+            cur_jobs = self.jobs
+        if isinstance(cur_jobs[0], dict):
+            # Jobs are dicts
+            cur_jobs = self._build_job_nodes(cur_jobs)
+        self.jobs = cur_jobs
 
         # Add file names as args
         input_file_names = []
@@ -310,3 +316,17 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Execute
         self.workflow.execute()
         return str(self.workflow.id)
+
+    def validate_jobs(self, jobs):
+        """
+        Validates that the jobs are defined (not empty) and are a CondorWorkflowJobNode or equivalent dicaiontry.
+
+        Args:
+            jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
+        """
+        if (
+            not jobs or
+            (not inspect.isfunction(jobs) and not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs))
+        ):
+            raise ValueError('Given "jobs" is not defined or empty. Must provide at least one '
+                             'CondorWorkflowJobNode or equivalent dictionary.')
