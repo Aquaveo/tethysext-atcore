@@ -2,13 +2,13 @@
   {# SELECT CONTROL #}
   <div class="col-1 align-self-center col-control">
     <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="">
+      <input class="form-check-input select-resource-control" type="checkbox" value="" data-id="{{ resource.id }}" data-name="{{ resource.name }}">
     </div>
   </div>
 
   {# NAME VALUE #}
   <div class="col align-self-center name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-    <a href="{{ resource.action_href }}">{{ resource.name }}</a>
+    {% if resource.has_parents %}<i class="bi bi-arrow-return-right"></i> {% endif %}<a href="{{ resource.action_href }}">{{ resource.name }}</a>
   </div>
 
   {# DESCRIPTION VALUE #}
@@ -24,7 +24,7 @@
   <div class="col align-self-center">
     {% for organization in resource.organizations %}
       {% if show_links_to_organizations %}
-        <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">organization.name }}</span></a>
+        <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
       {% else %}
         <span class="manage-tag organization-tag">{{ organization.name }}</span>
       {% endif %}
@@ -49,7 +49,7 @@
 
   {# DEBUGGING FIELDS #}
   {% if show_debugging_info %}
-  <div class="col align-self-center location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
+  <div class="col align-self-center location" style="cursor: pointer; max-width: 200px; max-height: 60px; overflow: auto;" nowrap>
     {{ resource.debugging }}
   </div>
   {% endif %}

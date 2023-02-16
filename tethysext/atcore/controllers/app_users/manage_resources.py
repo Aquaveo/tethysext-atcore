@@ -32,7 +32,7 @@ class ManageResources(AppUsersViewMixin):
     template_name = 'atcore/app_users/manage_resources.html'
     base_template = 'atcore/app_users/base.html'
     default_action_title = 'Launch'
-    http_method_names = ['get', 'delete']
+    http_method_names = ['get', 'post', 'delete']
 
     ACTION_LAUNCH = 'launch'
     ACTION_PROCESSING = 'processing'
@@ -43,6 +43,17 @@ class ManageResources(AppUsersViewMixin):
         Route get requests.
         """
         return self._handle_get(request)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Route post requests.
+        """
+        action = request.POST.get('action', None)
+
+        if action == 'new-group-from-selected':
+            return self._handle_new_group_from_selected(request)
+
+        return JsonResponse({'success': False, 'error': 'Invalid action: {}'.format(action)})
 
     def delete(self, request, *args, **kwargs):
         """
@@ -133,42 +144,49 @@ class ManageResources(AppUsersViewMixin):
         all_resources = self.get_resources(session, request, request_app_user)
 
         # Build cards
-        resource_cards = []
-        for resource in all_resources:
-            resource_card = resource.__dict__
-            resource_card['editable'] = self.can_edit_resource(session, request, resource)
-            resource_card['deletable'] = self.can_delete_resource(session, request, resource)
-            resource_card['organizations'] = resource.organizations
-            resource_card['debugging'] = resource.attributes
-            resource_card['debugging']['id'] = str(resource.id)
+        def build_resource_cards(resources):
+            resource_cards = []
+            for resource in resources:
+                resource_card = resource.__dict__
+                resource_card['editable'] = self.can_edit_resource(session, request, resource)
+                resource_card['deletable'] = self.can_delete_resource(session, request, resource)
+                resource_card['organizations'] = resource.organizations
+                resource_card['debugging'] = resource.attributes
+                resource_card['debugging']['id'] = str(resource.id)
+                resource_card['has_parents'] = len(resource.parents) > 0
 
-            # Get resource action parameters
-            action_dict = self.get_resource_action(
-                session=session,
-                request=request,
-                request_app_user=request_app_user,
-                resource=resource
-            )
+                # Get resource action parameters
+                action_dict = self.get_resource_action(
+                    session=session,
+                    request=request,
+                    request_app_user=request_app_user,
+                    resource=resource
+                )
 
-            resource_card['action'] = action_dict['action']
-            resource_card['action_title'] = action_dict['title']
-            resource_card['action_href'] = action_dict['href']
+                resource_card['action'] = action_dict['action']
+                resource_card['action_title'] = action_dict['title']
+                resource_card['action_href'] = action_dict['href']
 
-            resource_cards.append(resource_card)
+                # Build child resources recursively
+                resource_card['children'] = build_resource_cards(resource.children) if resource.children else []
+                resource_cards.append(resource_card)
 
-        # Only attempt to sort if the sort field is a valid attribute of _Resource
-        if hasattr(_Resource, sort_by):
-            sorted_resources = sorted(
-                resource_cards,
-                key=lambda resource_card: (not resource_card[sort_by], resource_card[sort_by]),
-                reverse=sort_reversed
-            )
-        else:
-            sorted_resources = resource_cards
+            # Only attempt to sort if the sort field is a valid attribute of _Resource
+            if hasattr(_Resource, sort_by):
+                sorted_resources = sorted(
+                    resource_cards,
+                    key=lambda resource_card: (not resource_card[sort_by], resource_card[sort_by]),
+                    reverse=sort_reversed
+                )
+            else:
+                sorted_resources = resource_cards
+            return sorted_resources
+        
+        resource_cards = build_resource_cards(all_resources)
 
         # Generate pagination
         paginated_resources, pagination_info = paginate(
-            objects=sorted_resources,
+            objects=resource_cards,
             results_per_page=results_per_page,
             page=page,
             result_name='projects',
@@ -196,6 +214,58 @@ class ManageResources(AppUsersViewMixin):
         session.close()
 
         return render(request, self.template_name, context)
+
+    @active_user_required()
+    @permission_required('create_resource')
+    def _handle_new_group_from_selected(self, request):
+        """
+        Handle creating new "group" resource (resource with children).
+        """
+        _AppUser = self.get_app_user_model()
+        _Resource = self.get_resource_model()
+        print(request.POST)
+        name = request.POST.get('name', '')
+        description = request.POST.get('description', '')
+        children = request.POST.getlist('children', [])
+        json_response = {'success': True}
+
+        if not name:
+            json_response['success'] = False
+            json_response['error'] = 'Name is required.'
+            return JsonResponse(json_response)
+
+        print(f'Creating new {_Resource.DISPLAY_TYPE_SINGULAR} named "{name}" with children {children}')
+        
+        make_session = self.get_sessionmaker()
+        session = make_session()
+        request_app_user = _AppUser.get_app_user_from_request(request, session)
+        
+        try:
+            # Create new resource
+            resource = _Resource()
+            resource.name = name
+            resource.description = description
+            resource.created_by = request_app_user.username
+            session.add(resource)
+            session.commit()
+
+            # Get child resources
+            for child_id in children:
+                child_resource = session.query(_Resource).get(child_id)
+                resource.children.append(child_resource)
+
+                for organization in child_resource.organizations:
+                    if organization not in resource.organizations:
+                        resource.organizations.append(organization)                 
+
+            session.commit()
+
+        except Exception as e:
+            json_response = {'success': False,
+                             'error': repr(e)}
+        
+        session.close()
+        return JsonResponse(json_response)
 
     @permission_required('delete_resource')
     def _handle_delete(self, request, resource_id):
