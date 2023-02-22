@@ -219,7 +219,7 @@ var SPATIAL_DATASET_MWV = (function() {
                                 // Find the next input and paste the value
                                 $paste_cell.closest('table tbody')
                                     .find(input_at_row_col)
-                                    .val(data_value);
+                                    .val(data_value.replace(/\,/g,''));
                             });
                         });
 
