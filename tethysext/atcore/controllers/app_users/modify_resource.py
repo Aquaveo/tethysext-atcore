@@ -91,6 +91,8 @@ class ModifyResource(AppUsersViewMixin):
         resource_srid_error = ""
         selected_organizations = list()
         organization_select_error = ""
+        selected_children = list()
+        children_select_error = ""
         file_upload_error = ""
 
         # GET params
@@ -123,6 +125,7 @@ class ModifyResource(AppUsersViewMixin):
                 resource_description = post_params.get('resource-description', "")
                 resource_srid = post_params.get('spatial-ref-select', self.srid_default)
                 selected_organizations = post_params.getlist('assign-organizations', [])
+                selected_children = post_params.getlist('assign-children', [])
                 files = request.FILES
 
                 # Validate
@@ -135,9 +138,8 @@ class ModifyResource(AppUsersViewMixin):
                 # Must assign project to at least one organization
                 if len(selected_organizations) < 1:
                     valid = False
-                    organization_select_error = "Must assign {} to at least one organization.".format(
-                        _Resource.DISPLAY_TYPE_SINGULAR.lower()
-                    )
+                    organization_select_error = f"Must assign {_Resource.DISPLAY_TYPE_SINGULAR.lower()} " \
+                        "to at least one organization."
 
                 if creating and self.include_file_upload and self.file_upload_required \
                    and 'input-file-upload' not in files:
@@ -165,6 +167,9 @@ class ModifyResource(AppUsersViewMixin):
                         # Reset the organizations
                         resource.organizations = []
 
+                        # Reset the children
+                        resource.children = []
+
                     # Otherwise create a new project
                     else:
                         resource = _Resource()
@@ -178,6 +183,13 @@ class ModifyResource(AppUsersViewMixin):
                         organization = session.query(_Organization).get(organization_id)
                         if organization:
                             resource.organizations.append(organization)
+
+                    # Assign children to resource
+                    if selected_children:
+                        children = session.query(_Resource) \
+                            .filter(_Resource.id.in_(selected_children)) \
+                            .all()
+                        resource.children.extend(children)
 
                     # Assign spatial reference id, handling change if editing
                     if self.include_srid:
@@ -225,10 +237,13 @@ class ModifyResource(AppUsersViewMixin):
                 if self.include_srid:
                     resource_srid = resource.get_attribute('srid')
 
-                # Get organizations of user
+                # Get organizations of resource
                 for organization in resource.organizations:
                     if organization.active or request.user.is_staff or has_permission(request, 'has_app_admin_role'):
                         selected_organizations.append(str(organization.id))
+
+                # Get children of resource
+                selected_children = [c.id for c in resource.children]
 
             # Define form
             resource_name_input = TextInput(
@@ -236,7 +251,8 @@ class ModifyResource(AppUsersViewMixin):
                 name='resource-name',
                 placeholder='e.g.: My {}'.format(_Resource.DISPLAY_TYPE_SINGULAR.title()),
                 initial=resource_name,
-                error=resource_name_error
+                error=resource_name_error,
+                classes='mb-3',
             )
 
             # Initial spatial reference value
@@ -263,7 +279,8 @@ class ModifyResource(AppUsersViewMixin):
                 query_delay=500,
                 initial=srid_initial,
                 error=resource_srid_error,
-                spatial_reference_service=spatial_reference_url
+                spatial_reference_service=spatial_reference_url,
+                classes='mb-3',
             )
 
             # Populate organizations select
@@ -276,6 +293,26 @@ class ModifyResource(AppUsersViewMixin):
                 initial=selected_organizations,
                 options=organization_options,
                 error=organization_select_error
+            )
+            
+            # Populate children select, excluding: 
+            # self, resources not in the same organization(s), resources with children
+            children_options = [
+                (c.name, c.id) \
+                for c in session.query(_Resource) \
+                    .filter(_Resource.id != resource.id) \
+                    .filter(_Resource.organizations.any(_Organization.id.in_(selected_organizations))) \
+                    .filter(~_Resource.children.any()) \
+                    .all()
+            ]
+
+            children_select = SelectInput(
+                display_text=f'Child {_Resource.DISPLAY_TYPE_PLURAL}',
+                name='assign-children',
+                multiple=True,
+                initial=selected_children,
+                options=children_options,
+                error=children_select_error,
             )
 
             # Initialize custom fields
@@ -308,6 +345,7 @@ class ModifyResource(AppUsersViewMixin):
             'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
             'resource_name_input': resource_name_input,
             'organization_select': organization_select,
+            'children_select': children_select,
             'resource_description': resource_description,
             'show_srid_field': self.include_srid,
             'spatial_reference_select': spatial_reference_select,
