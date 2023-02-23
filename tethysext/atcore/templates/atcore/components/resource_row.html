@@ -1,61 +1,63 @@
-<div class="row resource-row">
+<tr class="resource-row">
   {# SELECT CONTROL #}
-  <div class="col-1 align-self-center col-control">
+  <td class="select-row">
     <div class="form-check">
       <input class="form-check-input select-resource-control" type="checkbox" value="" data-id="{{ resource.id }}" data-name="{{ resource.name }}">
     </div>
-  </div>
+  </td>
 
   {# NAME VALUE #}
-  <div class="col align-self-center name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
     {% if resource.has_parents %}<i class="bi bi-arrow-return-right"></i> {% endif %}<a href="{{ resource.action_href }}">{{ resource.name }}</a>
-  </div>
+  </td>
 
   {# DESCRIPTION VALUE #}
-  <div class="col-2 align-self-center description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-    {% if not resource.description %}
-      <i><font color="#A8A8A8">No Description</font></i>
-    {% else %}
-      <span>{{ resource.description }}</span>
-    {% endif %}
-  </div>
+  {% if not resource.description %}
+  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+    <i><font color="#A8A8A8">No Description</font></i>
+  </td>
+  {% else %}
+  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+    <span>{{ resource.description }}</span>
+  </td>
+  {% endif %}
 
   {# ORGANIZATIONS VALUE #}
-  <div class="col align-self-center">
-    {% for organization in resource.organizations %}
-      {% if show_links_to_organizations %}
-        <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
-      {% else %}
-        <span class="manage-tag organization-tag">{{ organization.name }}</span>
-      {% endif %}
-    {% endfor %}
-  </div>
+    <td>
+      {% for organization in resource.organizations %}
+        {% if show_links_to_organizations %}
+          <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
+        {% else %}
+          <span class="manage-tag organization-tag">{{ organization.name }}</span>
+        {% endif %}
+      {% endfor %}
+  </td>
 
   {# CREATED BY VALUE #}
   {% if resource.created_by %}
-  <div class="col align-self-center created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
     {% if resource.created_by == '_staff_user' %}staff{% else %}{{ resource.created_by }}{% endif %}
-  </div>
+  </td>
   {% else %}
-  <div class="col align-self-center created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
     <i><font color="#A8A8A8">Unknown</font></i>
-  </div>
+  </td>
   {% endif %}
 
   {# DATE CREATED VALUE #}
-  <div class="col-2 align-self-center date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
     {{ resource.date_created }} UTC
-  </div>
+  </td>
 
   {# DEBUGGING FIELDS #}
   {% if show_debugging_info %}
-  <div class="col align-self-center location" style="cursor: pointer; max-width: 200px; max-height: 60px; overflow: auto;" nowrap>
+  <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
     {{ resource.debugging }}
-  </div>
+  </td>
   {% endif %}
 
   {# BUTTONS #}
-  <div class="col-2 align-self-center btn-td">
+  <td class="btn-td">
     <div class="btn-toolbar float-end">
       {% if resource.editable %}
         <a class="btn btn-outline-secondary btn-edit btn-flat" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><span class="bi bi-pencil-square"></span></a>
@@ -71,10 +73,10 @@
         <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-chevron-right"></span></a>
       {% endif %}
     </div>
-  </div>
-</div>
+  </td>
+</tr>
 {% if resource.children %}
   {% for child in resource.children %}
-    {% include "atcore/components/resource_row.html" with resource=child level=level|add:1 %}
+    {% include "atcore/components/resource_row.html" with resource=child %}
   {% endfor %}
 {% endif %}
