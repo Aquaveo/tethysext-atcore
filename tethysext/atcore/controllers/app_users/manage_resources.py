@@ -208,7 +208,8 @@ class ManageResources(AppUsersViewMixin):
             'show_links_to_organizations': has_permission(request, 'edit_organizations'),
             'show_users_link': has_permission(request, 'modify_users'),
             'show_resources_link': has_permission(request, 'view_resources'),
-            'show_organizations_link': has_permission(request, 'view_organizations')
+            'show_organizations_link': has_permission(request, 'view_organizations'),
+            'show_organizations_column': len(request_app_user.get_organizations(session, request)) > 1,
         })
 
         session.close()
