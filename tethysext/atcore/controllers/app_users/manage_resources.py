@@ -205,6 +205,8 @@ class ManageResources(AppUsersViewMixin):
             'base_template': self.base_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
+            'show_select_column': has_permission(request, 'create_resource'),
+            'show_group_button': has_permission(request, 'create_resource'),
             'show_new_button': has_permission(request, 'create_resource'),
             'show_debugging_info': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),

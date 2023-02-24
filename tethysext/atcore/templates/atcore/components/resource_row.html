@@ -1,10 +1,12 @@
 <tr class="resource-row{% if parent %} child child-{{ parent.id }} d-none{% endif %}">
   {# SELECT CONTROL #}
+  {% if show_select_column %}
   <td class="select-row">
     <div class="form-check">
       <input class="form-check-input select-resource-control" type="checkbox" value="" data-id="{{ resource.id }}" data-name="{{ resource.name }}">
     </div>
   </td>
+  {% endif %}
 
   {# NAME VALUE #}
   <td class="name" data-id="{{ resource.name }}">

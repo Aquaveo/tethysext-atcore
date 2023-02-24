@@ -26,6 +26,6 @@
     transition: transform 0.15s ease-in-out;
 }
 
-[data-ts-toggle="table-row-collapse"].rotate-90 .bi::before {
+[data-ts-toggle="table-row-collapse"].expanded .bi::before {
     transform: rotate(90deg);
 }

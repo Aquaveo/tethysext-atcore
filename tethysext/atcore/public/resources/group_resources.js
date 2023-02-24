@@ -6,14 +6,6 @@ function get_selected_resources() {
     return resources;
 }
 
-function on_add_to_existing(event) {
-    let resources = get_selected_resources();
-    console.log('Add from existing...');
-    console.log(resources);
-    let modal = new bootstrap.Modal(document.getElementById('add-to-existing-group-modal'));
-    modal.show();
-}
-
 function on_new_from_selected(event) {
     let resources = get_selected_resources();
 
@@ -61,9 +53,6 @@ function on_new_from_selected_submit(event) {
 }
 
 function init_group_resources_menu() {
-    let add_to_existing_button = document.getElementById("btn-add-to-existing-group");
-    add_to_existing_button.onclick = on_add_to_existing;
-
     let new_from_selected_button = document.getElementById("btn-new-from-selected");
     new_from_selected_button.onclick = on_new_from_selected;
 
