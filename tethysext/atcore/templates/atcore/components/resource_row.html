@@ -1,4 +1,4 @@
-<tr class="resource-row">
+<tr class="resource-row{% if parent %} child child-{{ parent.id }} d-none{% endif %}">
   {# SELECT CONTROL #}
   <td class="select-row">
     <div class="form-check">
@@ -7,8 +7,10 @@
   </td>
 
   {# NAME VALUE #}
-  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-    {% if resource.has_parents %}<i class="bi bi-arrow-return-right"></i> {% endif %}<a href="{{ resource.action_href }}">{{ resource.name }}</a>
+  <td class="name" data-id="{{ resource.name }}">
+    {% if resource.has_parents %}<span style="display: inline-block; width: {{ resource.level }}rem;" class="child-spacer level-{{ resource.level }}"></span>{% endif %}
+    {% if resource.has_children %}<button data-ts-toggle="table-row-collapse" data-ts-target=".child-{{ resource.id }}" type="button"><i class="bi bi-chevron-right"></i></button> {% endif %}
+    <a href="{{ resource.action_href }}">{{ resource.name }}</a>
   </td>
 
   {# DESCRIPTION VALUE #}
@@ -79,6 +81,6 @@
 </tr>
 {% if resource.children %}
   {% for child in resource.children %}
-    {% include "atcore/components/resource_row.html" with resource=child %}
+    {% include "atcore/components/resource_row.html" with resource=child parent=resource %}
   {% endfor %}
 {% endif %}

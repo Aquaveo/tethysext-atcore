@@ -144,16 +144,18 @@ class ManageResources(AppUsersViewMixin):
         all_resources = self.get_resources(session, request, request_app_user)
 
         # Build cards
-        def build_resource_cards(resources):
+        def build_resource_cards(resources, level=0):
             resource_cards = []
             for resource in resources:
-                resource_card = resource.__dict__
+                resource_card = resource.__dict__ if getattr(resource, '__dict__', None) else dict()
+                resource_card['level'] = level
                 resource_card['editable'] = self.can_edit_resource(session, request, resource)
                 resource_card['deletable'] = self.can_delete_resource(session, request, resource)
                 resource_card['organizations'] = resource.organizations
                 resource_card['debugging'] = resource.attributes
                 resource_card['debugging']['id'] = str(resource.id)
                 resource_card['has_parents'] = len(resource.parents) > 0
+                resource_card['has_children'] = len(resource.children) > 0
 
                 # Get resource action parameters
                 action_dict = self.get_resource_action(
@@ -168,7 +170,7 @@ class ManageResources(AppUsersViewMixin):
                 resource_card['action_href'] = action_dict['href']
 
                 # Build child resources recursively
-                resource_card['children'] = build_resource_cards(resource.children) if resource.children else []
+                resource_card['children'] = build_resource_cards(resource.children, level=level+1) if resource.children else []
                 resource_cards.append(resource_card)
 
             # Only attempt to sort if the sort field is a valid attribute of _Resource
@@ -224,7 +226,6 @@ class ManageResources(AppUsersViewMixin):
         """
         _AppUser = self.get_app_user_model()
         _Resource = self.get_resource_model()
-        print(request.POST)
         name = request.POST.get('name', '')
         description = request.POST.get('description', '')
         children = request.POST.getlist('children', [])
@@ -235,8 +236,8 @@ class ManageResources(AppUsersViewMixin):
             json_response['error'] = 'Name is required.'
             return JsonResponse(json_response)
 
-        print(f'Creating new {_Resource.DISPLAY_TYPE_SINGULAR} named "{name}" with children {children}')
-        
+        log.debug(f'Creating new {_Resource.DISPLAY_TYPE_SINGULAR} group named "{name}" with children {children}')
+
         make_session = self.get_sessionmaker()
         session = make_session()
         request_app_user = _AppUser.get_app_user_from_request(request, session)
