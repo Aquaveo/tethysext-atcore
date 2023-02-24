@@ -74,9 +74,9 @@ class ManageResources(AppUsersViewMixin):
         Handle get requests.
         """
         # User setting constants
-        _SETTINGS_PAGE = 'projects'
-        _SETTING_PROJECTS_PER_PAGE = 'setting_projects-per-page'
-        _SETTING_SORT_PROJECT_BY = 'setting_sort-projects-by'
+        _SETTINGS_PAGE = 'resources'
+        _SETTING_RESOURCES_PER_PAGE = 'setting_resources-per-page'
+        _SETTING_SORT_RESOURCE_BY = 'setting_sort-resources-by'
 
         # Setup
         _AppUser = self.get_app_user_model()
@@ -90,24 +90,24 @@ class ManageResources(AppUsersViewMixin):
         params = request.GET
 
         page = int(params.get('page', 1))
-        results_per_page = params.get('show', None)
+        resources_per_page = params.get('show', None)
         sort_by_raw = params.get('sort_by', None)
 
         # Update setting if user made a change
-        if results_per_page:
+        if resources_per_page:
             request_app_user.update_setting(
                 session=session,
                 page=_SETTINGS_PAGE,
-                key=_SETTING_PROJECTS_PER_PAGE,
-                value=results_per_page
+                key=_SETTING_RESOURCES_PER_PAGE,
+                value=resources_per_page
             )
 
         # Get the existing user setting if loading for the first time
         else:
-            results_per_page = request_app_user.get_setting(
+            resources_per_page = request_app_user.get_setting(
                 session=session,
                 page=_SETTINGS_PAGE,
-                key=_SETTING_PROJECTS_PER_PAGE,
+                key=_SETTING_RESOURCES_PER_PAGE,
                 as_value=True
             )
 
@@ -116,7 +116,7 @@ class ManageResources(AppUsersViewMixin):
             request_app_user.update_setting(
                 session=session,
                 page=_SETTINGS_PAGE,
-                key=_SETTING_SORT_PROJECT_BY,
+                key=_SETTING_SORT_RESOURCE_BY,
                 value=sort_by_raw
             )
 
@@ -125,17 +125,17 @@ class ManageResources(AppUsersViewMixin):
             sort_by_raw = request_app_user.get_setting(
                 session=session,
                 page=_SETTINGS_PAGE,
-                key=_SETTING_SORT_PROJECT_BY,
+                key=_SETTING_SORT_RESOURCE_BY,
                 as_value=True
             )
 
         # Set default settings if not set
-        if not results_per_page:
-            results_per_page = 10
+        if not resources_per_page:
+            resources_per_page = 10
         if not sort_by_raw:
             sort_by_raw = 'date_created:reverse'
 
-        results_per_page = int(results_per_page)
+        resources_per_page = int(resources_per_page)
 
         sort_reversed = ':reverse' in sort_by_raw
         sort_by = sort_by_raw.split(':')[0]
@@ -181,15 +181,15 @@ class ManageResources(AppUsersViewMixin):
             else:
                 sorted_resources = resource_cards
             return sorted_resources
-        
+
         resource_cards = build_resource_cards(all_resources)
 
         # Generate pagination
         paginated_resources, pagination_info = paginate(
             objects=resource_cards,
-            results_per_page=results_per_page,
+            results_per_page=resources_per_page,
             page=page,
-            result_name='projects',
+            result_name=_Resource.DISPLAY_TYPE_PLURAL,
             sort_by_raw=sort_by_raw,
             sort_reversed=sort_reversed
         )
