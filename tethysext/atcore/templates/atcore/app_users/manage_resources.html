@@ -9,7 +9,7 @@
         <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-expand-all" data-ts-toggle="table-row-expand-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All"><i class="bi bi-chevron-expand"></i></a>
         <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-collapse-all" data-ts-toggle="table-row-collapse-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All"><i class="bi bi-chevron-contract"></i></a>
         {% if show_group_button and resources %}
-        <a class="btn btn-outline-secondary manage-action-btn btn-group" role="button" href="javascript:void(0);" id="btn-new-from-selected" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Group"><i class="bi bi-collection"></i></a>
+        <a class="btn btn-outline-secondary manage-action-btn btn-group" role="button" href="javascript:void(0);" id="btn-group-resource" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Group"><i class="bi bi-collection"></i></a>
         {% endif %}
       </div>
       {% if show_new_button and resources %}
@@ -136,16 +136,16 @@
       </div>
     </div>
   {% endif %}
-  <!-- New Group from Selected Modal -->
-  <div class="modal fade" id="new-group-from-selected-modal" tabindex="-1" role="dialog" aria-labelledby="new-group-from-selected-modal-label">
+  <!-- New Group Modal -->
+  <div class="modal fade" id="new-group-modal" tabindex="-1" role="dialog" aria-labelledby="new-group-modal-label">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title" id="new-group-from-selected-modal-label">New {{ type_singular }} Group from Selected</h4>
+          <h4 class="modal-title" id="new-group-modal-label">New {{ type_singular }} Group</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="new-group-from-selected-form">
+          <form id="new-group-form">
             {% csrf_token %}
             <input type="text" name="action" value="new-group-from-selected" hidden>
             <div class="mb-3">
