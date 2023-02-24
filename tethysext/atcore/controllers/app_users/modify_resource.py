@@ -294,16 +294,16 @@ class ModifyResource(AppUsersViewMixin):
                 options=organization_options,
                 error=organization_select_error
             )
-            
-            # Populate children select, excluding: 
+
+            # Populate children select, excluding:
             # self, resources not in the same organization(s), resources with children
             children_options = [
-                (c.name, c.id) \
-                for c in session.query(_Resource) \
-                    .filter(_Resource.id != resource.id) \
-                    .filter(_Resource.organizations.any(_Organization.id.in_(selected_organizations))) \
-                    .filter(~_Resource.children.any()) \
-                    .all()
+                (c.name, c.id)
+                for c in session.query(_Resource)
+                .filter(_Resource.id != resource.id)
+                .filter(_Resource.organizations.any(_Organization.id.in_(selected_organizations)))
+                .filter(~_Resource.children.any())
+                .all()
             ]
 
             children_select = SelectInput(

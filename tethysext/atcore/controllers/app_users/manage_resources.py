@@ -170,7 +170,8 @@ class ManageResources(AppUsersViewMixin):
                 resource_card['action_href'] = action_dict['href']
 
                 # Build child resources recursively
-                resource_card['children'] = build_resource_cards(resource.children, level=level+1) if resource.children else []
+                resource_card['children'] = build_resource_cards(resource.children, level=level+1) \
+                    if resource.children else []
                 resource_cards.append(resource_card)
 
             # Only attempt to sort if the sort field is a valid attribute of _Resource
@@ -241,7 +242,7 @@ class ManageResources(AppUsersViewMixin):
         make_session = self.get_sessionmaker()
         session = make_session()
         request_app_user = _AppUser.get_app_user_from_request(request, session)
-        
+
         try:
             # Create new resource
             resource = _Resource()
@@ -258,14 +259,14 @@ class ManageResources(AppUsersViewMixin):
 
                 for organization in child_resource.organizations:
                     if organization not in resource.organizations:
-                        resource.organizations.append(organization)                 
+                        resource.organizations.append(organization)
 
             session.commit()
 
         except Exception as e:
             json_response = {'success': False,
                              'error': repr(e)}
-        
+
         session.close()
         return JsonResponse(json_response)
 
