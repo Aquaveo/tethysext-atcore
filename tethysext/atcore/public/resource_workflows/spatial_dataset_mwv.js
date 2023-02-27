@@ -252,7 +252,9 @@ var SPATIAL_DATASET_MWV = (function() {
         m_plotting_enabled = true;
         m_plot = PLOT_ID;
         m_plot_config = {
-            staticPlot: true,
+            modeBarButtonsToRemove: ['zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
+                                     'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian',
+                                     'toggleSpikelines', 'sendDataToCloud'],
         };
         // Reset column names and selectors
         m_x_column = [];
@@ -324,6 +326,7 @@ var SPATIAL_DATASET_MWV = (function() {
                     title: m_y_column[i],
                 },
                 showlegend: false,
+                hovermode: 'closest',
             };
 
             // Create series
