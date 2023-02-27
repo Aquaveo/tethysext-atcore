@@ -33,6 +33,8 @@ class ManageResources(AppUsersViewMixin):
     base_template = 'atcore/app_users/base.html'
     default_action_title = 'Launch'
     http_method_names = ['get', 'post', 'delete']
+    collapse_groups = False
+    highlight_groups = True
 
     ACTION_LAUNCH = 'launch'
     ACTION_PROCESSING = 'processing'
@@ -215,6 +217,8 @@ class ManageResources(AppUsersViewMixin):
             'show_resources_link': has_permission(request, 'view_resources'),
             'show_organizations_link': has_permission(request, 'view_organizations'),
             'show_organizations_column': len(request_app_user.get_organizations(session, request)) > 1,
+            'collapse_groups': self.collapse_groups,
+            'highlight_groups': self.highlight_groups,
         })
 
         session.close()
