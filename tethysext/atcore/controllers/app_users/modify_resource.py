@@ -297,14 +297,14 @@ class ModifyResource(AppUsersViewMixin):
 
             # Populate children select, excluding:
             # self, resources not in the same organization(s), resources with children
-            children_options = [
-                (c.name, c.id)
-                for c in session.query(_Resource)
-                .filter(_Resource.id != resource.id)
-                .filter(_Resource.organizations.any(_Organization.id.in_(selected_organizations)))
+            children_options_query = session.query(_Resource) \
+                .filter(_Resource.organizations.any(_Organization.id.in_(selected_organizations))) \
                 .filter(~_Resource.children.any())
-                .all()
-            ]
+            
+            if resource is not None:
+                children_options_query = children_options_query.filter(_Resource.id != resource.id)
+            
+            children_options = [(c.name, c.id) for c in children_options_query.all()]
 
             children_select = SelectInput(
                 display_text=f'Child {_Resource.DISPLAY_TYPE_PLURAL}',
