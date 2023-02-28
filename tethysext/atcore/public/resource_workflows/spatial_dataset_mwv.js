@@ -31,10 +31,10 @@ var SPATIAL_DATASET_MWV = (function() {
  	    m_plotting_enabled,             // Stores whether plotting is enabled or not
  	    m_plot,                         // Plot handle
  	    m_plot_config,                  // Configuration options for plot
- 	    m_x_column,                     // Name of the x column
- 	    m_y_column,                     // Name of the y column
- 	    m_x_column_selector,            // CSS selector of the inputs for the x column
- 	    m_y_column_selector;            // CSS selector of the inputs for the y column
+ 	    m_x_column = [],                // Name of the x column
+ 	    m_y_column = [],                // Name of the y column
+ 	    m_x_column_selector = [],       // CSS selector of the inputs for the x column
+ 	    m_y_column_selector = [];       // CSS selector of the inputs for the y column
 
  	var m_public_interface;				// Object returned by the module
 
@@ -239,7 +239,8 @@ var SPATIAL_DATASET_MWV = (function() {
     init_plot = function() {
         // Skip if no plot columns specified
         if (!m_plot_columns || !(m_plot_columns instanceof Array) ||
-            m_plot_columns.length < 2) {
+            (!(m_plot_columns[0] instanceof Array) && m_plot_columns.length < 2) ||
+            ((m_plot_columns[0] instanceof Array) && m_plot_columns[0].length < 2)) {
 
             // Mark plotting as disabled and exit init_plot
             m_plotting_enabled = false;
@@ -251,12 +252,35 @@ var SPATIAL_DATASET_MWV = (function() {
         m_plotting_enabled = true;
         m_plot = PLOT_ID;
         m_plot_config = {
-            staticPlot: true,
+            modeBarButtonsToRemove: ['zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
+                                     'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian',
+                                     'toggleSpikelines', 'sendDataToCloud'],
         };
-        m_x_column = m_plot_columns[0];
-        m_y_column = m_plot_columns[1];
-        m_x_column_selector = "input[name='" + m_x_column + "']";
-        m_y_column_selector = "input[name='" + m_y_column + "']";
+        // Reset column names and selectors
+        m_x_column = [];
+        m_y_column = [];
+        m_x_column_selector = [];
+        m_y_column_selector = [];
+        if (!(m_plot_columns[0] instanceof Array))
+        {
+            // Old:  2-tuple/2-list
+            m_x_column.push(m_plot_columns[0]);
+            m_y_column.push(m_plot_columns[1]);
+        }
+        else
+        {
+            // New:  List of 2-tuple/2-list
+            for (let i = 0; i < m_plot_columns.length; i++)
+            {
+                m_x_column.push(m_plot_columns[i][0]);
+                m_y_column.push(m_plot_columns[i][1]);
+            }
+        }
+        for (let i = 0; i < m_x_column.length; i++)
+        {
+            m_x_column_selector.push("input[name='" + m_x_column[i] + "']");
+            m_y_column_selector.push("input[name='" + m_y_column[i] + "']");
+        }
 
         // Create empty plot
         update_plot();
@@ -271,42 +295,53 @@ var SPATIAL_DATASET_MWV = (function() {
             return;
         }
 
-        let $x_inputs = $(m_x_column_selector);
-        let $y_inputs = $(m_y_column_selector);
+        // Loop on each of the columns to set up the data
+        let data = [];
+        let layouts = [];
+        for (let i = 0; i < m_x_column.length; i++)
+        {
+            let $x_inputs = $(m_x_column_selector[i]);
+            let $y_inputs = $(m_y_column_selector[i]);
 
-        // Get values of inputs
-        let x_values = $x_inputs.map(function() {
-        	return parseFloat($(this).val());
-        }).get();
+            // Get values of inputs
+            let x_values = $x_inputs.map(function() {
+                return parseFloat($(this).val());
+            }).get();
 
-        // Get values of inputs
-        let y_values = $y_inputs.map(function() {
-        	return parseFloat($(this).val());
-        }).get();
+            // Get values of inputs
+            let y_values = $y_inputs.map(function() {
+                return parseFloat($(this).val());
+            }).get();
 
-        // Setup layout
-        let layout = {
-            autosize: true,
-            height: 315,
-            width: 300,
-            margin: {l: 50, r: 0, t: 0, b: 40},
-            xaxis: {
-                title: m_x_column,
-            },
-            yaxis: {
-                title: m_y_column,
-            }
-        };
+            // Setup layout
+            let layout = {
+                autosize: true,
+                height: 315,
+                width: 300,
+                margin: {l: 50, r: 0, t: 0, b: 40},
+                xaxis: {
+                    title: m_x_column[i],
+                },
+                yaxis: {
+                    title: m_y_column[i],
+                },
+                showlegend: false,
+                hovermode: 'closest',
+            };
 
-        // Create series
-        let series = {
-            x: x_values,
-            y: y_values,
-            mode: 'lines+markers',
-            type: 'scatter'
-        };
+            // Create series
+            let series = {
+                x: x_values,
+                y: y_values,
+                mode: 'lines+markers',
+                type: 'scatter',
+                name: m_y_column[i],
+            };
 
-        let data = [series];
+            data.push(series);
+            layouts.push(layout);
+        }
+        let layout = layouts[0];
 
         let out = Plotly.validate(data, layout);
         if (out) {
@@ -334,16 +369,19 @@ var SPATIAL_DATASET_MWV = (function() {
             return;
         }
 
-        let $x_inputs = $(m_x_column_selector);
-        let $y_inputs = $(m_y_column_selector);
+        for (let i = 0; i < m_x_column.length; i++)
+        {
+            let $x_inputs = $(m_x_column_selector[i]);
+            let $y_inputs = $(m_y_column_selector[i]);
 
-        $x_inputs.on('change', function() {
-            update_plot();
-        });
+            $x_inputs.on('change', function() {
+                update_plot();
+            });
 
-        $y_inputs.on('change', function() {
-            update_plot();
-        });
+            $y_inputs.on('change', function() {
+                update_plot();
+            });
+        }
     };
 
     disable_automatic_plot_update = function() {
@@ -352,11 +390,14 @@ var SPATIAL_DATASET_MWV = (function() {
             return;
         }
 
-        let $x_inputs = $(m_x_column_selector);
-        let $y_inputs = $(m_y_column_selector);
+        for (let i = 0; i < m_x_column_selector.length; i++)
+        {
+            let $x_inputs = $(m_x_column_selector[i]);
+            let $y_inputs = $(m_y_column_selector[i]);
 
-        $x_inputs.off('change');
-        $y_inputs.off('change');
+            $x_inputs.off('change');
+            $y_inputs.off('change');
+        }
     };
 
 
