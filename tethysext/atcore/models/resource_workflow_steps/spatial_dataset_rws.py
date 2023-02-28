@@ -20,7 +20,7 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
         dataset_title(str): Title of the dataset (e.g.: Hydrograph). Defaults to 'Dataset'.
         template_dataset(pd.DataFrame): A Pandas dataset to use as a template for the dataset. Default is pd.DataFrame(columns=['X', 'Y'])
         read_only_columns(tuple,list): Names of columns of the template dataset that are read only. All columns are editable by default.
-        plot_columns(2-tuple): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given.
+        plot_columns(Union[2-tuple, list of 2-tuple]): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given. Multiple series plotted if a list of 2-tuple given, ex: [(x1, y1), (x2, y2)].
         max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
         empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
     """  # noqa: #501
