@@ -33,6 +33,7 @@ class ManageResources(AppUsersViewMixin):
     base_template = 'atcore/app_users/base.html'
     default_action_title = 'Launch'
     http_method_names = ['get', 'post', 'delete']
+    enable_groups = False
     collapse_groups = False
     highlight_groups = True
 
@@ -200,6 +201,8 @@ class ManageResources(AppUsersViewMixin):
         )
         context = self.get_base_context(request)
         context.update({
+            'collapse_groups': self.collapse_groups,
+            'highlight_groups': self.highlight_groups,
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
             'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
@@ -207,8 +210,9 @@ class ManageResources(AppUsersViewMixin):
             'base_template': self.base_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
-            'show_select_column': has_permission(request, 'create_resource'),
-            'show_group_button': has_permission(request, 'create_resource'),
+            'show_select_column': self.enable_groups and has_permission(request, 'create_resource'),
+            'show_group_buttons': self.enable_groups,
+            'show_new_group_button': self.enable_groups and has_permission(request, 'create_resource'),
             'show_new_button': has_permission(request, 'create_resource'),
             'show_debugging_info': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),
@@ -217,8 +221,6 @@ class ManageResources(AppUsersViewMixin):
             'show_resources_link': has_permission(request, 'view_resources'),
             'show_organizations_link': has_permission(request, 'view_organizations'),
             'show_organizations_column': len(request_app_user.get_organizations(session, request)) > 1,
-            'collapse_groups': self.collapse_groups,
-            'highlight_groups': self.highlight_groups,
         })
 
         session.close()

@@ -5,13 +5,15 @@
 {% block app_content %}
   {% with tethys_app.namespace|add:':'|add:resource_slug as base_resource_href %}
     <div class="btn-toolbar top-action-btns float-end" role="toolbar" aria-label="Manage resources toolbar">
+      {% if show_group_buttons and resources %}
       <div class="btn-group me-1">
         <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-expand-all" data-ts-toggle="table-row-expand-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All"><i class="bi bi-chevron-expand"></i></a>
         <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-collapse-all" data-ts-toggle="table-row-collapse-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All"><i class="bi bi-chevron-contract"></i></a>
-        {% if show_group_button and resources %}
+        {% if show_new_group_button %}
         <a class="btn btn-outline-secondary manage-action-btn btn-group" role="button" href="javascript:void(0);" id="btn-group-resource" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Group"><i class="bi bi-collection"></i></a>
         {% endif %}
       </div>
+      {% endif %}
       {% if show_new_button and resources %}
       <div class="btn-group">  
         <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><i class="bi bi-plus-lg"></i></a>

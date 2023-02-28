@@ -53,8 +53,17 @@
             {# ORGANIZATIONS FIELD #}
             {% gizmo organization_select %}
 
-            {# CHILDREN FIELD #}
-            {% gizmo children_select %}
+            {% if show_relationship_fields %}
+              {# PARENTS FIELD #}
+              {% if show_parents_field %}
+                {% gizmo parents_select %}
+              {% endif %}
+
+              {# CHILDREN FIELD #}
+              {% if show_children_field %}
+                {% gizmo children_select %}
+              {% endif %}
+            {% endif %}
 
             {# SPATIAL REFERENCE FIELD #}
             {% if show_srid_field %}

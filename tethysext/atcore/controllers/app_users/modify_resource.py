@@ -53,6 +53,15 @@ class ModifyResource(AppUsersViewMixin):
     file_upload_label = "Input Files" if file_upload_multiple else "Input File"
     file_upload_help = "Upload files associated with this resource."
     file_upload_error = "Must provide file(s)."
+    
+    # Relationship fields options
+    enable_relationship_fields = False
+    parents_field_label = None
+    children_field_label = None
+    show_parents_field_on_edit = True
+    show_children_field_on_edit = True
+    show_parents_field_on_new = True
+    show_children_field_on_new = True
 
     def get(self, request, *args, **kwargs):
         """
@@ -91,6 +100,8 @@ class ModifyResource(AppUsersViewMixin):
         resource_srid_error = ""
         selected_organizations = list()
         organization_select_error = ""
+        selected_parents = list()
+        parents_select_error = ""
         selected_children = list()
         children_select_error = ""
         file_upload_error = ""
@@ -109,6 +120,13 @@ class ModifyResource(AppUsersViewMixin):
         # If ID is provided, then we are editing, otherwise we are creating a new resource
         editing = resource_id is not None
         creating = not editing
+        
+        if editing:
+            enable_parents_field = self.show_parents_field_on_edit
+            enable_children_field = self.show_children_field_on_edit
+        else:
+            enable_parents_field = self.show_parents_field_on_new
+            enable_children_field = self.show_children_field_on_new
 
         try:
             # Check if can create resources
@@ -125,6 +143,7 @@ class ModifyResource(AppUsersViewMixin):
                 resource_description = post_params.get('resource-description', "")
                 resource_srid = post_params.get('spatial-ref-select', self.srid_default)
                 selected_organizations = post_params.getlist('assign-organizations', [])
+                selected_parents = post_params.getlist('assign-parents', [])
                 selected_children = post_params.getlist('assign-children', [])
                 files = request.FILES
 
@@ -167,6 +186,9 @@ class ModifyResource(AppUsersViewMixin):
                         # Reset the organizations
                         resource.organizations = []
 
+                        # Reset the parents
+                        resource.parents = []
+
                         # Reset the children
                         resource.children = []
 
@@ -184,12 +206,20 @@ class ModifyResource(AppUsersViewMixin):
                         if organization:
                             resource.organizations.append(organization)
 
-                    # Assign children to resource
-                    if selected_children:
-                        children = session.query(_Resource) \
-                            .filter(_Resource.id.in_(selected_children)) \
-                            .all()
-                        resource.children.extend(children)
+                    if self.enable_relationship_fields:
+                        # Assign parents to resource
+                        if enable_parents_field and selected_parents:
+                            parents = session.query(_Resource) \
+                                .filter(_Resource.id.in_(selected_parents)) \
+                                .all()
+                            resource.parents.extend(parents)
+
+                        # Assign children to resource
+                        if enable_children_field and selected_children:
+                            children = session.query(_Resource) \
+                                .filter(_Resource.id.in_(selected_children)) \
+                                .all()
+                            resource.children.extend(children)
 
                     # Assign spatial reference id, handling change if editing
                     if self.include_srid:
@@ -242,8 +272,14 @@ class ModifyResource(AppUsersViewMixin):
                     if organization.active or request.user.is_staff or has_permission(request, 'has_app_admin_role'):
                         selected_organizations.append(str(organization.id))
 
-                # Get children of resource
-                selected_children = [c.id for c in resource.children]
+                if self.enable_relationship_fields:
+                    if enable_parents_field:
+                        # Get parents of resource
+                        selected_parents = [p.id for p in resource.parents]
+                    
+                    if enable_children_field:
+                        # Get children of resource
+                        selected_children = [c.id for c in resource.children]
 
             # Define form
             resource_name_input = TextInput(
@@ -295,25 +331,62 @@ class ModifyResource(AppUsersViewMixin):
                 error=organization_select_error
             )
 
-            # Populate children select, excluding:
-            # self, resources not in the same organization(s), resources with children
-            children_options_query = session.query(_Resource) \
-                .filter(_Resource.organizations.any(_Organization.id.in_(selected_organizations))) \
-                .filter(~_Resource.children.any())
-            
-            if resource is not None:
-                children_options_query = children_options_query.filter(_Resource.id != resource.id)
-            
-            children_options = [(c.name, c.id) for c in children_options_query.all()]
+            # Populate parents and children selects
+            parents_select = None
+            children_select = None
+            if self.enable_relationship_fields:
+                app_user_organizations_ids = [o[1] for o in organization_options]
 
-            children_select = SelectInput(
-                display_text=f'Child {_Resource.DISPLAY_TYPE_PLURAL}',
-                name='assign-children',
-                multiple=True,
-                initial=selected_children,
-                options=children_options,
-                error=children_select_error,
-            )
+                # Populate parents select
+                if enable_parents_field:                  
+                    parents_options = self.get_parents_select_options(
+                        session=session,
+                        request=request,
+                        request_app_user=request_app_user,
+                        resource=resource,
+                        app_user_organizations=app_user_organizations_ids,
+                    )
+
+                    parent_select_label = (
+                        f'Parent {_Resource.DISPLAY_TYPE_PLURAL}'
+                        if not self.parents_field_label
+                        else self.parents_field_label
+                    )
+
+                    parents_select = SelectInput(
+                        display_text=parent_select_label,
+                        name='assign-parents',
+                        multiple=True,
+                        initial=selected_parents,
+                        options=parents_options,
+                        error=parents_select_error,
+                    )
+
+                # Populate children select, excluding:
+                # self, resources not in the same organization(s), resources with children
+                if enable_children_field:
+                    children_options = self.get_child_select_options(
+                        session=session,
+                        request=request,
+                        request_app_user=request_app_user,
+                        resource=resource,
+                        app_user_organizations=app_user_organizations_ids,
+                    )
+
+                    children_select_label = (
+                        f'Child {_Resource.DISPLAY_TYPE_PLURAL}'
+                        if not self.children_field_label
+                        else self.children_field_label
+                    )
+
+                    children_select = SelectInput(
+                        display_text=children_select_label,
+                        name='assign-children',
+                        multiple=True,
+                        initial=selected_children,
+                        options=children_options,
+                        error=children_select_error,
+                    )
 
             # Initialize custom fields
             custom_fields = self.initialize_custom_fields(session, request, resource, editing)
@@ -345,8 +418,12 @@ class ModifyResource(AppUsersViewMixin):
             'type_plural': _Resource.DISPLAY_TYPE_PLURAL,
             'resource_name_input': resource_name_input,
             'organization_select': organization_select,
+            'parents_select': parents_select,
             'children_select': children_select,
             'resource_description': resource_description,
+            'show_relationship_fields': self.enable_relationship_fields,
+            'show_parents_field': enable_parents_field,
+            'show_children_field': enable_children_field,
             'show_srid_field': self.include_srid,
             'spatial_reference_select': spatial_reference_select,
             'show_file_upload_field': self.include_file_upload and creating,
@@ -425,6 +502,62 @@ class ModifyResource(AppUsersViewMixin):
                 filenames.append(filename)
 
         resource.set_attribute('files', filenames)
+
+    def get_parents_select_options(self, session, request, request_app_user, resource, app_user_organizations):
+        """
+        Build the list of options for the parent relationship select field.
+
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            request_app_user(AppUser): app user that is making the request.
+            resource(Resource): The resource being edited.
+            app_user_organizations (list<str>): List of organization ids to which the app user belongs.
+        
+        Returns:
+            list<2-tuples<name, id>>: A list of 2-tuples, each tuple containing the name and id of a resource.
+        """
+        _Resource = self.get_resource_model()
+        _Organization = self.get_organization_model()
+        
+        # Resource belonging to user's organization
+        parents_options_query = session.query(_Resource) \
+            .filter(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
+        
+        # If resource is defined (editing) also exclude that resource
+        if resource is not None:
+            parents_options_query = parents_options_query.filter(_Resource.id != resource.id)
+        
+        parents_options = [(p.name, p.id) for p in parents_options_query.all()]
+        return parents_options
+
+    def get_child_select_options(self, session, request, request_app_user, resource, app_user_organizations):
+        """
+        Build the list of options for the child relationship select field.
+
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            request_app_user(AppUser): app user that is making the request.
+            resource(Resource): The resource being edited.
+            app_user_organizations (list<str>): List of organization ids to which the app user belongs.
+        
+        Returns:
+            list<2-tuples<name, id>>: A list of 2-tuples, each tuple containing the name and id of a resource.
+        """
+        _Resource = self.get_resource_model()
+        _Organization = self.get_organization_model()
+        
+        # Resource belonging to user's organization
+        children_options_query = session.query(_Resource) \
+            .filter(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
+
+        # If resource is defined (editing) also exclude that resource
+        if resource is not None:
+            children_options_query = children_options_query.filter(_Resource.id != resource.id)
+        
+        children_options = [(c.name, c.id) for c in children_options_query.all()]
+        return children_options
 
     def handle_srid_changed(self, session, request, request_app_user, resource, old_srid, new_srid):
         """
