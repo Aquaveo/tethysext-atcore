@@ -136,7 +136,7 @@ class ResourceWorkflowsTab(ResourceTab):
             status = workflow.get_status()
             app_namespace = self.get_app().url_namespace
             url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
-            href = reverse(url_name, args=(resource.id, str(workflow.id)))
+            href = reverse(url_name, args=(workflow.resource.id, str(workflow.id)))
             status_style = get_style_for_status(status)
 
             if status == workflow.STATUS_PENDING or status == '' or status is None:

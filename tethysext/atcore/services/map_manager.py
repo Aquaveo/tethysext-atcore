@@ -81,14 +81,14 @@ class MapManagerBase(object):
     @property
     def map_extent(self):
         if not self._map_extent:
-            view, extent = self.get_map_extent()
+            _, extent = self.get_map_extent()
             self._map_extent = extent
         return self._map_extent
 
     @property
     def default_view(self):
         if not self._default_view:
-            view, extent = self.get_map_extent()
+            view, _ = self.get_map_extent()
             self._default_view = view
         return self._default_view
 
