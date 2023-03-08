@@ -32,7 +32,6 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
         mock_context = mock.MagicMock()
-        mock_model_db = mock.MagicMock()
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
@@ -60,19 +59,18 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
             session=mock_session,
             resource=mock_resource,
             context=mock_context,
-            model_db=mock_model_db,
             workflow_id=mock_workflow_id,
             step_id=mock_step_id,
             result_id=mock_result_id
         )
 
-    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ReportWorkflowResultsView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only')
     @mock.patch.object(MapWorkflowView, 'process_step_options')
     @mock.patch.object(MapWorkflowView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_dataframe(self, mock_sup_get_context, mock_mapWV_get_context, _,
-                                            mock_is_read_only, mock_get_managers):
+                                            mock_is_read_only, mock_get_map_manager):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -108,7 +106,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_data.add_pandas_dataframe(dataset_title, df)
         mock_current_step.results = [mock_data]
 
-        mock_get_managers.return_value = ['bokeh', 'lines']
+        mock_get_map_manager.return_value = mock.MagicMock()
 
         mock_pandas_data = mock.MagicMock(spec=pd.DataFrame)
         mock_pandas_data.columns = ['foo', 'bar', 'baz']
@@ -139,13 +137,13 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context.update.call_args[0][0]['report_results'][0]['dataset']['data_description'],
                          'test description')
 
-    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ReportWorkflowResultsView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only')
     @mock.patch.object(MapWorkflowView, 'process_step_options')
     @mock.patch.object(MapWorkflowView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_plot(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                       mock_get_managers):
+                                       mock_get_map_manager):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -179,7 +177,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_data.add_series('Water Surface', water_surface)
         mock_current_step.results = [mock_data]
 
-        mock_get_managers.return_value = ['model_db', 'map_manager']
+        mock_get_map_manager.return_value = mock.MagicMock()
 
         mock_pandas_data = mock.MagicMock(spec=pd.DataFrame)
         mock_pandas_data.columns = ['foo', 'bar', 'baz']
@@ -212,13 +210,13 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIn('Distance from left bank (ft)',
                       mock_context.update.call_args[0][0]['report_results'][0]['plot']['plot']['script'])
 
-    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ReportWorkflowResultsView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only')
     @mock.patch.object(MapWorkflowView, 'process_step_options')
     @mock.patch.object(MapWorkflowView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_map(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                      mock_get_managers):
+                                      mock_get_map_manager):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -258,7 +256,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
                              'excluded_properties': None}]
         mock_current_step.results = [mock_data]
 
-        mock_get_managers.return_value = ['model_db', mock_map_manager]
+        mock_get_map_manager.return_value = mock_map_manager
         mock_options = {'url': 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/',
                         'params': {'LAYERS': 'steem:depth_test', 'TILED': True,
                                    'TILESORIGIN': '0.0,0.0'}, 'serverType': 'geoserver',
@@ -300,13 +298,13 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertEqual(mock_context['report_results'][0]['map']['map'], [mock_build_wms_layer])
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view.log')
-    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ReportWorkflowResultsView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only')
     @mock.patch.object(MapWorkflowView, 'process_step_options')
     @mock.patch.object(MapWorkflowView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_map_wrong_type(self, mock_sup_get_context, mock_mapWV_get_context, _,
-                                                 mock_is_read_only, mock_get_managers, mock_log):
+                                                 mock_is_read_only, mock_get_map_manager, mock_log):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -338,7 +336,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_data.layers = [{'type': 'test_type'}]
         mock_current_step.results = [mock_data]
 
-        mock_get_managers.return_value = ['model_db', mock_map_manager]
+        mock_get_map_manager.return_value = mock_map_manager
 
         mock_sup_get_context.return_value = {}
         mock_mapWV_get_context.return_value = {}
@@ -354,13 +352,13 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
         )
         mock_log.warning.assert_called_with('Unsupported layer type will be skipped: test_type')
 
-    @mock.patch.object(ReportWorkflowResultsView, 'get_managers')
+    @mock.patch.object(ReportWorkflowResultsView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only')
     @mock.patch.object(MapWorkflowView, 'process_step_options')
     @mock.patch.object(MapWorkflowView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
     def test_process_step_options_map_geojson(self, mock_sup_get_context, mock_mapWV_get_context, _, mock_is_read_only,
-                                              mock_get_managers):
+                                              mock_get_map_manager):
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
@@ -399,7 +397,7 @@ class ReportWorkflowResultViewTests(SqlAlchemyTestCase):
                              'excluded_properties': None}]
         mock_current_step.results = [mock_data]
 
-        mock_get_managers.return_value = ['model_db', mock_map_manager]
+        mock_get_map_manager.return_value = mock_map_manager
         mock_build_geojson_layer = mock.MagicMock()
         mock_map_manager.build_geojson_layer.return_value = mock_build_geojson_layer
         mock_map_manager.build_legend.return_value = 'legend'

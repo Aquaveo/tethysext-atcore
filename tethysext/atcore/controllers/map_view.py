@@ -53,7 +53,7 @@ class MapView(ResourceView):
     layer_tab_name = 'Layers'
     map_type = 'tethys_map_view'
 
-    def get_context(self, request, session, resource, context, model_db, *args, **kwargs):
+    def get_context(self, request, session, resource, context, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
@@ -62,7 +62,6 @@ class MapView(ResourceView):
             session (sqlalchemy.Session): the session.
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
 
         Returns:
             dict: modified context dictionary.
@@ -80,7 +79,7 @@ class MapView(ResourceView):
             resource_id = resource.id
 
         # Get Managers Hook
-        model_db, map_manager = self.get_managers(
+        map_manager = self.get_map_manager(
             request=request,
             resource=resource,
             *args, **kwargs
@@ -100,7 +99,7 @@ class MapView(ResourceView):
         map_view.width = '100%'  # Ensure 100% width
         map_view.disable_basemap = self.should_disable_basemap(
             request=request,
-            model_db=model_db,
+            resource=resource,
             map_manager=map_manager
         )
 
@@ -220,14 +219,14 @@ class MapView(ResourceView):
 
         return context
 
-    def get_permissions(self, request, permissions, model_db, *args, **kwargs):
+    def get_permissions(self, request, permissions, resource, *args, **kwargs):
         """
         Hook to modify permissions.
 
         Args:
             request (HttpRequest): The request.
             permissions (dict): The permissions dictionary with boolean values.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            resource (Resource): The resource.
 
         Returns:
             dict: modified permissions dictionary.
@@ -310,7 +309,7 @@ class MapView(ResourceView):
         Render the HTML for a legend.
         """
         # Get Managers Hook
-        model_db, map_manager = self.get_managers(
+        map_manager = self.get_map_manager(
             request=request,
             resource=resource,
             *args, **kwargs
@@ -359,7 +358,7 @@ class MapView(ResourceView):
                                 append is append an associated layer into an existing layer group
         """
         # Get Managers Hook
-        model_db, map_manager = self.get_managers(
+        map_manager = self.get_map_manager(
             request=request,
             resource=resource,
             *args, **kwargs
@@ -395,13 +394,13 @@ class MapView(ResourceView):
         response = str(html.content, 'utf-8')
         return JsonResponse({'success': True, 'response': response})
 
-    def should_disable_basemap(self, request, model_db, map_manager):
+    def should_disable_basemap(self, request, resource, map_manager):
         """
         Hook to override disabling the basemap.
 
         Args:
             request (HttpRequest): The request.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            resource (Resource): Resource instance or None.
             map_manager (MapManager): MapManager instance associated with this request.
 
         Returns:
@@ -409,37 +408,22 @@ class MapView(ResourceView):
         """
         return self.default_disable_basemap
 
-    def get_managers(self, request, resource, *args, **kwargs):
+    def get_map_manager(self, request, resource, *args, **kwargs):
         """
-        Hook to get managers. Avoid removing or modifying items in context already to prevent unexpected behavior.
+        Lazily build and retrieve a MapManager instance.
 
         Args:
             request (HttpRequest): The request.
             resource (Resource): Resource instance or None.
 
         Returns:
-            model_db (ModelDatabase): ModelDatabase instance.
-            map_manager (MapManager): Map Manager instance
-        """  # noqa: E501
-        # Lazy load the model_db and map_manager if not defined
-        if not getattr(self, '_model_db', None) or not getattr(self, '_map_manager', None):
-            database_id = None
-
-            if resource:
-                database_id = resource.get_attribute('database_id')
-
-            if not database_id:
-                log.warning('no model database provided')
-                self._model_db = None
-                # raise RuntimeError('A resource with database_id attribute is required: '
-                #                    'Resource - {} Database ID - {}'.format(resource, database_id))
-            else:
-                self._model_db = self._ModelDatabase(app=self._app, database_id=database_id)
+            MapManager: MapManager instance.
+        """
+        if not getattr(self, '_map_manager', None):
             gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
-            self._map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=self._model_db)
-
-        return self._model_db, self._map_manager
+            self._map_manager = self._MapManager(spatial_manager=spatial_manager, resource=resource)
+        return self._map_manager
 
     def get_plot_data(self, request, session, resource, *args, **kwargs):
         """
@@ -463,10 +447,7 @@ class MapView(ResourceView):
             return redirect(self.back_url)
 
         # Initialize MapManager
-        model_db = self._ModelDatabase(app=self._app, database_id=database_id)
-        gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
-        spatial_manager = self._SpatialManager(geoserver_engine=gs_engine)
-        map_manager = self._MapManager(spatial_manager=spatial_manager, model_db=model_db)
+        map_manager = self.get_map_manager(request, resource, *args, **kwargs)
         title, data, layout = map_manager.get_plot_for_layer_feature(layer_name, feature_id)
 
         return JsonResponse({'title': title, 'data': data, 'layout': layout})

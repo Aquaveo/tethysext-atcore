@@ -37,21 +37,6 @@ def tearDownModule():
 class NoTitleView(MapView):
     map_title = 'this_title'
 
-    def get_model_db(self, request, resource, *args, **kwargs):
-        """
-        Need to override this for now, b/c the default implementation does not allow for the resource being None.
-        """
-        return mock.MagicMock(spec=ModelDatabase)
-
-    def get_managers(self, request, resource, *args, **kwargs):
-        """
-        Need to override this for now, b/c the default implementation does not allow for the resource being None.
-        """
-        mock_map_manager = mock.MagicMock(spec=MapManagerBase)
-        mock_map_manager.compose_map.return_value = mock.MagicMock(), mock.MagicMock(), mock.MagicMock()
-
-        return mock.MagicMock(spec=ModelDatabase), mock_map_manager
-
 
 class MapViewTests(SqlAlchemyTestCase):
 
@@ -93,6 +78,7 @@ class MapViewTests(SqlAlchemyTestCase):
         )
 
         self.resource_id = 'abc123'
+        self.resource = mock.MagicMock(spec=Resource, id=self.resource_id)
         self.django_user = UserFactory()
         self.django_user.is_staff = True
         self.django_user.is_superuser = True
@@ -342,13 +328,13 @@ class MapViewTests(SqlAlchemyTestCase):
 
     def test_should_disable_basemap(self):
         mv = MapView()
-        self.assertFalse(mv.should_disable_basemap(request='Test1', model_db='model_db', map_manager='map_mange'))
+        self.assertFalse(mv.should_disable_basemap(request='Test1', resource=self.resource, map_manager='map_mange'))
 
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_permissions(self, mock_hp):
         mv = MapView()
         mock_request = mock.MagicMock()
-        permissions = mv.get_permissions(request=mock_request, permissions={}, model_db=mock.MagicMock(),
+        permissions = mv.get_permissions(request=mock_request, permissions={}, resource=mock.MagicMock(),
                                          map_manager=mock.MagicMock())
         self.assertIn('can_use_geocode', permissions)
         self.assertIn('can_use_plot', permissions)
@@ -750,11 +736,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         expected_result = \
             '{"success": true, "response": "<ul class=\\"legend-list\\" data-collapsed=\\"false\\">\\n  \\n    ' \
@@ -802,11 +787,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
 
@@ -841,11 +825,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
 
@@ -881,11 +864,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
 
@@ -921,11 +903,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
 
@@ -960,11 +941,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
 
@@ -999,11 +979,10 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request.user = self.django_user
 
         mock_resource = mock.MagicMock(spec=Resource)
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         response = mv.build_layer_group_tree_item(mock_request, self.session, mock_resource)
 
@@ -1023,15 +1002,6 @@ class MapViewTests(SqlAlchemyTestCase):
         self.assertNotIn(self.layer_2_dropdown_menu_no_rr, response_dict['response'])
         self.assertNotIn('remove-action', response_dict['response'])
         self.assertNotIn('rename-action', response_dict['response'])
-
-    @mock.patch('tethysext.atcore.controllers.map_view.log.warning')
-    def test_get_managers_no_db(self, _):
-        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
-        resource = mock.MagicMock()
-        resource.get_attribute.return_value = ''
-        model_db, _ = self.mv.get_managers(self.request_factory, resource)
-
-        self.assertFalse(model_db)
 
     def test_convert_geojson_to_shapefile(self):
         json_data = {
@@ -1055,11 +1025,11 @@ class MapViewTests(SqlAlchemyTestCase):
         mock_request = self.request_factory.post('/foo/bar/map-view', data=data)
         mock_request.user = self.django_user
 
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
-        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), model_db=mock_model_db)
+        mock_resource = mock.MagicMock(spec=Resource)
+        mock_map_manager = MapManagerBase(spatial_manager=mock.MagicMock(), resource=mock_resource)
 
         mv = MapView()
-        mv.get_managers = mock.MagicMock(return_value=(mock_model_db, mock_map_manager))
+        mv.get_map_manager = mock.MagicMock(return_value=mock_map_manager)
 
         # TODO: this method only works with pyshape 1.x, not 2.x
         # response = mv.convert_geojson_to_shapefile(mock_request, self.session, mock_resource)

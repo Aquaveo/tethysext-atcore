@@ -146,15 +146,15 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         # test result
         update_settings_call_args = request_app_user.update_setting.call_args_list
 
-        self.assertEqual('setting_projects-per-page', update_settings_call_args[0][1]['key'])
+        self.assertEqual('setting_resources-per-page', update_settings_call_args[0][1]['key'])
         self.assertEqual(session, update_settings_call_args[0][1]['session'])
         self.assertEqual('15', update_settings_call_args[0][1]['value'])
-        self.assertEqual('projects', update_settings_call_args[0][1]['page'])
+        self.assertEqual('resources', update_settings_call_args[0][1]['page'])
 
-        self.assertEqual('setting_sort-projects-by', update_settings_call_args[1][1]['key'])
+        self.assertEqual('setting_sort-resources-by', update_settings_call_args[1][1]['key'])
         self.assertEqual(session, update_settings_call_args[1][1]['session'])
         self.assertEqual('date_created:', update_settings_call_args[1][1]['value'])
-        self.assertEqual('projects', update_settings_call_args[0][1]['page'])
+        self.assertEqual('resources', update_settings_call_args[0][1]['page'])
 
         mock_get_resource_action.assert_called_with(session=session, request=mock_request,
                                                     request_app_user=request_app_user, resource=self.resource)
@@ -229,13 +229,13 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         # test result
         update_settings_call_args = request_app_user.get_setting.call_args_list
 
-        self.assertEqual('setting_projects-per-page', update_settings_call_args[0][1]['key'])
+        self.assertEqual('setting_resources-per-page', update_settings_call_args[0][1]['key'])
         self.assertEqual(session, update_settings_call_args[0][1]['session'])
-        self.assertEqual('projects', update_settings_call_args[0][1]['page'])
+        self.assertEqual('resources', update_settings_call_args[0][1]['page'])
 
-        self.assertEqual('setting_sort-projects-by', update_settings_call_args[1][1]['key'])
+        self.assertEqual('setting_sort-resources-by', update_settings_call_args[1][1]['key'])
         self.assertEqual(session, update_settings_call_args[1][1]['session'])
-        self.assertEqual('projects', update_settings_call_args[0][1]['page'])
+        self.assertEqual('resources', update_settings_call_args[0][1]['page'])
 
         mock_get_resource_action.assert_called_with(session=session, request=mock_request,
                                                     request_app_user=request_app_user, resource=self.resource)
@@ -412,7 +412,8 @@ class ManageResourcesTests(SqlAlchemyTestCase):
             manage_resources.get_resources(mock_session, mock_request, mock_request_app_user)
 
         # Test the results
-        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type')
+        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type',
+                                                               include_children=False)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
     def test_can_edit_resource(self, mock_has_permission):

@@ -53,7 +53,7 @@ class ModifyResource(AppUsersViewMixin):
     file_upload_label = "Input Files" if file_upload_multiple else "Input File"
     file_upload_help = "Upload files associated with this resource."
     file_upload_error = "Must provide file(s)."
-    
+
     # Relationship fields options
     enable_relationship_fields = False
     parents_field_label = None
@@ -120,7 +120,7 @@ class ModifyResource(AppUsersViewMixin):
         # If ID is provided, then we are editing, otherwise we are creating a new resource
         editing = resource_id is not None
         creating = not editing
-        
+
         if editing:
             enable_parents_field = self.show_parents_field_on_edit
             enable_children_field = self.show_children_field_on_edit
@@ -276,7 +276,7 @@ class ModifyResource(AppUsersViewMixin):
                     if enable_parents_field:
                         # Get parents of resource
                         selected_parents = [p.id for p in resource.parents]
-                    
+
                     if enable_children_field:
                         # Get children of resource
                         selected_children = [c.id for c in resource.children]
@@ -338,7 +338,7 @@ class ModifyResource(AppUsersViewMixin):
                 app_user_organizations_ids = [o[1] for o in organization_options]
 
                 # Populate parents select
-                if enable_parents_field:                  
+                if enable_parents_field:
                     parents_options = self.get_parents_select_options(
                         session=session,
                         request=request,
@@ -513,21 +513,21 @@ class ModifyResource(AppUsersViewMixin):
             request_app_user(AppUser): app user that is making the request.
             resource(Resource): The resource being edited.
             app_user_organizations (list<str>): List of organization ids to which the app user belongs.
-        
+
         Returns:
             list<2-tuples<name, id>>: A list of 2-tuples, each tuple containing the name and id of a resource.
         """
         _Resource = self.get_resource_model()
         _Organization = self.get_organization_model()
-        
+
         # Resource belonging to user's organization
         parents_options_query = session.query(_Resource) \
             .filter(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
-        
+
         # If resource is defined (editing) also exclude that resource
         if resource is not None:
             parents_options_query = parents_options_query.filter(_Resource.id != resource.id)
-        
+
         parents_options = [(p.name, p.id) for p in parents_options_query.all()]
         return parents_options
 
@@ -541,13 +541,13 @@ class ModifyResource(AppUsersViewMixin):
             request_app_user(AppUser): app user that is making the request.
             resource(Resource): The resource being edited.
             app_user_organizations (list<str>): List of organization ids to which the app user belongs.
-        
+
         Returns:
             list<2-tuples<name, id>>: A list of 2-tuples, each tuple containing the name and id of a resource.
         """
         _Resource = self.get_resource_model()
         _Organization = self.get_organization_model()
-        
+
         # Resource belonging to user's organization
         children_options_query = session.query(_Resource) \
             .filter(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
@@ -555,7 +555,7 @@ class ModifyResource(AppUsersViewMixin):
         # If resource is defined (editing) also exclude that resource
         if resource is not None:
             children_options_query = children_options_query.filter(_Resource.id != resource.id)
-        
+
         children_options = [(c.name, c.id) for c in children_options_query.all()]
         return children_options
 

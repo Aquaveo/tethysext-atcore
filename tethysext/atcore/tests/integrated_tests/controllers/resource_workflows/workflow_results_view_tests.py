@@ -39,7 +39,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         mock_session = mock.MagicMock()
         mock_resource = mock.MagicMock()
         mock_context = mock.MagicMock()
-        mock_model_db = mock.MagicMock()
+        mock_resource = mock.MagicMock()
         mock_workflow_id = mock.MagicMock()
         mock_step_id = mock.MagicMock()
         mock_result_id = mock.MagicMock()
@@ -58,7 +58,6 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
             session=mock_session,
             resource=mock_resource,
             context=mock_context,
-            model_db=mock_model_db,
             workflow_id=mock_workflow_id,
             step_id=mock_step_id,
             result_id=mock_result_id
@@ -71,7 +70,6 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
             session=mock_session,
             resource=mock_resource,
             context=mock_context,
-            model_db=mock_model_db,
             workflow_id=mock_workflow_id,
             step_id=mock_step_id,
         )
@@ -197,7 +195,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
         mock_request = mock.MagicMock()
         mock_session = mock.MagicMock()
         mock_step = mock.MagicMock()
-        mock_model_db = mock.MagicMock()
+        mock_resource = mock.MagicMock()
         mock_current_url = mock.MagicMock()
         mock_previous_url = mock.MagicMock()
         mock_next_url = mock.MagicMock()
@@ -210,7 +208,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
             mock_request,
             mock_session,
             mock_step,
-            mock_model_db,
+            mock_resource,
             mock_current_url,
             mock_previous_url,
             mock_next_url
@@ -222,7 +220,7 @@ class WorkflowResultsViewTests(SqlAlchemyTestCase):
             request=mock_request,
             session=mock_session,
             step=mock_step,
-            model_db=mock_model_db,
+            resource=mock_resource,
             current_url=mock_current_url,
             previous_url=mock_previous_url,
             next_url=mock_next_url

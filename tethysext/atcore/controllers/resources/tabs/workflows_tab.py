@@ -123,10 +123,10 @@ class ResourceWorkflowsTab(ResourceTab):
             resource=resource,
             app_user=app_user,
         )
-        
+
         if not self.show_all_workflows and app_user_role not in self.show_all_workflows_roles:
             workflows_query = workflows_query.filter(ResourceWorkflow.creator_id == app_user.id)
-        
+
         workflows = workflows_query.order_by(ResourceWorkflow.date_created.desc()).all()
 
         # Build up workflow cards for workflows table

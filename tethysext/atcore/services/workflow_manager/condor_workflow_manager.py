@@ -10,6 +10,7 @@ import inspect
 import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
+from tethysext.atcore.services.model_database import ModelDatabase
 from .base_workflow_manager import BaseWorkflowManager
 from tethysext.atcore.utilities import generate_geoserver_urls
 from tethys_apps.exceptions import TethysAppSettingDoesNotExist
@@ -24,14 +25,14 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
     ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
                                          'resources', 'resource_workflows')
 
-    def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
+    def __init__(self, session, resource, resource_workflow_step, user, working_directory, app, scheduler_name,
                  jobs=None, input_files=None, gs_engine=None, *args):
         """
         Constructor.
 
         Args:
             session(sqlalchemy.orm.Session): An SQLAlchemy session bound to the resource workflow.
-            model_db(ModelDatabase): ModelDatabase instance bound to model database.
+            resource(Resource): The resource being processed.
             resource_workflow_step(atcore.models.app_users.ResourceWorkflowStep): Instance of ResourceWorkflowStep. Note: Must have active session (i.e. not closed).
             user(auth.User): The Django user submitting the job.
             working_directory(str): Path to users's workspace.
@@ -46,15 +47,18 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         self.resource_db_url = str(session.get_bind().url)
 
         # DB URL for database containing the model database
-        if model_db:
-            try:
+        self.model_db_url = ''
+        try:
+            database_id = resource.get_attribute('database_id', None)
+            if database_id:
+                model_db = ModelDatabase(app, database_id=database_id)
                 self.model_db_url = model_db.db_url
-            except TethysAppSettingDoesNotExist:
-                log.warning('no model database found')
-                self.model_db_url = None
-        else:
-            log.warning('no model database provided')
-            self.model_db_url = None
+        except TethysAppSettingDoesNotExist:
+            log.exception('An unexpected error occurred while trying to get the model '
+                          f'database from resource: {resource}.')
+        finally:
+            if not self.model_db_url:
+                log.warning('no model database provided')
 
         # Serialize GeoServer Connection
         self.gs_private_url = ''

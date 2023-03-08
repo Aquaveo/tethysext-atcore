@@ -53,14 +53,6 @@ class ResourceView(ResourceViewMixin):
                 **kwargs
             )
 
-        # Get Managers Hook
-        model_db = self.get_model_db(
-            *args,
-            request=request,
-            resource=resource,
-            **kwargs
-        )
-
         # Initialize context
         context = {}
 
@@ -89,7 +81,6 @@ class ResourceView(ResourceViewMixin):
             session=session,
             context=context,
             resource=resource,
-            model_db=model_db,
             *args, **kwargs
         )
 
@@ -100,7 +91,7 @@ class ResourceView(ResourceViewMixin):
         permissions = self.get_permissions(
             request=request,
             permissions=permissions,
-            model_db=model_db,
+            resource=resource,
             *args, **kwargs
         )
 
@@ -158,32 +149,7 @@ class ResourceView(ResourceViewMixin):
         """  # noqa: E501
         return None
 
-    def get_model_db(self, request, resource, *args, **kwargs):
-        """
-        Hook to get managers. Avoid removing or modifying items in context already to prevent unexpected behavior.
-
-        Args:
-            request (HttpRequest): The request.
-            resource (Resource): Resource instance or None.
-
-        Returns:
-            model_db (ModelDatabase): ModelDatabase instance.
-            map_manager (MapManager): Map Manager instance
-        """  # noqa: E501
-        database_id = None
-
-        if resource:
-            database_id = resource.get_attribute('database_id')
-
-        if not database_id:
-            log.warning('No model database provided')
-            model_db = None
-        else:
-            model_db = self._ModelDatabase(app=self._app, database_id=database_id)
-
-        return model_db
-
-    def get_context(self, request, session, resource, context, model_db, *args, **kwargs):
+    def get_context(self, request, session, resource, context, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
 
@@ -192,21 +158,20 @@ class ResourceView(ResourceViewMixin):
             session (sqlalchemy.Session): the session.
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
 
         Returns:
             dict: modified context dictionary.
         """  # noqa: E501
         return context
 
-    def get_permissions(self, request, permissions, model_db, *args, **kwargs):
+    def get_permissions(self, request, permissions, resource, *args, **kwargs):
         """
         Hook to modify permissions.
 
         Args:
             request (HttpRequest): The request.
             permissions (dict): The permissions dictionary with boolean values.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            resource (Resource): the resource for this request.
 
         Returns:
             dict: modified permisssions dictionary.

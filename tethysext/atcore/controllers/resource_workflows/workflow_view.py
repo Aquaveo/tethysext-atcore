@@ -36,7 +36,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
     finish_title = 'Finish'
     valid_step_classes = [ResourceWorkflowStep]
 
-    def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, *args, **kwargs):
+    def get_context(self, request, session, resource, context, workflow_id, step_id, *args, **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior. This method is called during initialization of the view.
 
@@ -45,7 +45,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             session (sqlalchemy.Session): the session.
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            workflow_id (str): The id of the workflow.
+            step_id (str): The id of the step.
 
         Returns:
             dict: modified context dictionary.
@@ -160,13 +161,6 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         step_url_name = self.get_step_url_name(request, workflow)
         current_url = reverse(step_url_name, args=(resource.id, workflow.id, str(step.id)))
 
-        # Get Managers Hook
-        model_db = self.get_model_db(
-            request=request,
-            resource=resource,
-            *args, **kwargs
-        )
-
         if next_step:
             next_url = reverse(step_url_name, args=(resource.id, workflow.id, str(next_step.id)))
         else:
@@ -194,7 +188,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
                 request=request,
                 session=session,
                 step=step,
-                model_db=model_db,
+                resource=resource,
                 current_url=current_url,
                 previous_url=previous_url,
                 next_url=next_url
@@ -632,7 +626,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             None or HttpResponse: If an HttpResponse is returned, render that instead.
         """  # noqa: E501
 
-    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
 
@@ -640,7 +634,7 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
-            model_db(ModelDatabase): The model database associated with the resource.
+            resource(Resource): The resource for this request.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.

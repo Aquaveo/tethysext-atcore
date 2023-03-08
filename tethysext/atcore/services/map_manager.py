@@ -72,9 +72,9 @@ class MapManagerBase(object):
 
     _DEFAULT_POPUP_EXCLUDED_PROPERTIES = ['id', 'type', 'layer_name']
 
-    def __init__(self, spatial_manager, model_db):
+    def __init__(self, spatial_manager, resource):
         self.spatial_manager = spatial_manager
-        self.model_db = model_db
+        self.resource = resource
         self._map_extent = None
         self._default_view = None
 
@@ -545,21 +545,13 @@ class MapManagerBase(object):
         Returns:
             MVView, 4-list<float>: default view and extent of the project.
         """
-        extent = self.spatial_manager.get_extent_for_project(
-            model_db=self.model_db
-        )
-
-        # Compute center
-        center = self.DEFAULT_CENTER
-        if extent and len(extent) >= 4:
-            center_x = (extent[0] + extent[2]) / 2.0
-            center_y = (extent[1] + extent[3]) / 2.0
-            center = [center_x, center_y]
+        # Get extent for resource
+        extent = self.spatial_manager.get_extent_for_project()
 
         # Construct the default view
         view = MVView(
             projection='EPSG:4326',
-            center=center,
+            extent=extent,
             zoom=self.DEFAULT_ZOOM,
             maxZoom=self.MAX_ZOOM,
             minZoom=self.MIN_ZOOM
