@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 from tethys_sdk.gizmos import TethysGizmoOptions
+from tethys_portal.dependencies import vendor_static_dependencies
 
 
 class SpatialReferenceSelect(TethysGizmoOptions):
@@ -48,16 +49,16 @@ class SpatialReferenceSelect(TethysGizmoOptions):
     @staticmethod
     def get_vendor_js():
         """
-        JavaScript vendor libraries.
+        JavaScript vendor libraries
         """
-        return ('tethys_gizmos/vendor/select2_4.0.2/js/select2.full.min.js',)
+        return (vendor_static_dependencies["select2"].js_url,)
 
     @staticmethod
     def get_vendor_css():
         """
-        CSS vendor libraries.
+        CSS vendor libraries
         """
-        return ('tethys_gizmos/vendor/select2_4.0.2/css/select2.min.css',)
+        return (vendor_static_dependencies["select2"].css_url,)
 
     @staticmethod
     def get_gizmo_js():
