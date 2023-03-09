@@ -25,7 +25,6 @@ from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
     WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -83,7 +82,6 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             _Resource=mock.MagicMock(spec=Resource),
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_map_manager,
-            _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
             _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
         self.mock_mm = mock.MagicMock()
@@ -94,7 +92,6 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             _Resource=mock.MagicMock(spec=Resource),
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_mm,
-            _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
             _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
 

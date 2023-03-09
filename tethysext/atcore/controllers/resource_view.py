@@ -10,7 +10,6 @@ import logging
 from django.shortcuts import render
 from django.http import HttpResponseNotFound, HttpResponse
 from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 
 log = logging.getLogger(f'tethys.{__name__}')
@@ -20,8 +19,6 @@ class ResourceView(ResourceViewMixin):
     """
     Base controller for all Resource-based views.
     """
-    _ModelDatabase = ModelDatabase
-
     view_title = ''
     view_subtitle = ''
     template_name = ''

@@ -16,7 +16,6 @@ from django.contrib import messages
 from tethys_sdk.permissions import has_permission, permission_required
 from tethys_sdk.gizmos import ToggleSwitch, CesiumMapView
 from tethysext.atcore.controllers.resource_view import ResourceView
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.gizmos import SlideSheet
 import json
 import shapefile
@@ -48,7 +47,6 @@ class MapView(ResourceView):
     show_legends = False
 
     _MapManager = None
-    _ModelDatabase = ModelDatabase
     _SpatialManager = None
     layer_tab_name = 'Layers'
     map_type = 'tethys_map_view'

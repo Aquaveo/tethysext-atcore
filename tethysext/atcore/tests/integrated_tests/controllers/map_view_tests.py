@@ -62,7 +62,6 @@ class MapViewTests(SqlAlchemyTestCase):
             _Resource=mock.MagicMock(spec=Resource),
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_map_manager,
-            _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
             _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
         self.mock_mm = mock.MagicMock()
@@ -73,7 +72,6 @@ class MapViewTests(SqlAlchemyTestCase):
             _Resource=mock.MagicMock(spec=Resource),
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_mm,
-            _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
             _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
 
@@ -175,7 +173,6 @@ class MapViewTests(SqlAlchemyTestCase):
             _Resource=mock.MagicMock(spec=Resource),
             _PermissionsManager=mock.MagicMock(spec=AppPermissionsManager),
             _MapManager=self.mock_map_manager,
-            _ModelDatabase=mock.MagicMock(spec=ModelDatabase),
             _SpatialManager=mock.MagicMock(spec=ModelDBSpatialManager),
         )
 
