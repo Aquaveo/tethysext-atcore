@@ -63,6 +63,11 @@ class ResourceTests(SqlAlchemyTestCase):
     def test_resource_SLUG(self):
         class TestSlug(Resource):
             DISPLAY_TYPE_PLURAL = 'Test Resources'
+            TYPE = 'testing__test_slug_resource__testing'
+            __mapper_args__ = {
+                'polymorphic_on': 'type',
+                'polymorphic_identity': TYPE
+            }
 
         resource = TestSlug(
             name=self.name,

@@ -21,7 +21,11 @@ class NotResourceWorkflowResult:
 
 
 class AnotherResourceWorkflowResult(ResourceWorkflowResult):
-    pass
+    TYPE = 'testing__another_resource_workflow_result__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class WorkflowResultsViewTests(SqlAlchemyTestCase):
