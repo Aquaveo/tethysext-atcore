@@ -191,7 +191,7 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Scatter')
     def test_get_plot_object_plotly_line(self, mock_scatter_plot, mock_plotly_figure, mock_options):
         mock_plotly_plot = mock.MagicMock(
-            spec=go.Figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
+            xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
             add_trace=mock.MagicMock(return_value=mock_scatter_plot)
         )
         mock_plotly_figure.return_value = mock_plotly_plot
@@ -220,7 +220,7 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
     def test_get_plot_object_plotly_list_dataset(self, mock_scatter_plot, mock_plotly_figure,
                                                  mock_options):
         mock_plotly_plot = mock.MagicMock(
-            spec=go.Figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
+            xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
             add_trace=mock.MagicMock(return_value=mock_scatter_plot)
         )
         mock_plotly_figure.return_value = mock_plotly_plot
