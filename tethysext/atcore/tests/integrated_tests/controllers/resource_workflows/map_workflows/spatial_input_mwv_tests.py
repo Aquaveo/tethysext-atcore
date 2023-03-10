@@ -50,6 +50,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.MissingPrj_zip = self.shapefile_dir / 'MissingPrj.zip'
         self.MissingSHP_zip = self.shapefile_dir / 'MissingSHP.zip'
         self.Det1poly4326_zip = self.shapefile_dir / 'Det1poly4326.zip'
+        self.TestDates4326_zip = self.shapefile_dir / 'TestDates4326.zip'
 
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.namespace = 'my_namespace'
@@ -624,3 +625,34 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertIn('properties', ret['features'][0])
         self.assertIn('properties', ret['features'][1])
         self.assertIn('properties', ret['features'][2])
+
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    def test_parse_shapefile_with_datesvalid(self, mock_get_app):
+        mock_app = TethysAppBase()
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
+        mock_get_app.return_value = mock_app
+
+        with open(self.TestDates4326_zip, 'rb') as f:
+            shapefile = InMemoryUploadedFile(
+                file=f,
+                field_name='shapefile',
+                name='TestDates4326.zip',
+                content_type='application/zip',
+                size=1040,
+                charset=None
+            )
+
+            geojson = SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+        self.assertIn('features', geojson)
+        self.assertIn('type', geojson)
+        self.assertEqual('FeatureCollection', geojson['type'])
+        self.assertEqual(5, len(geojson['features']))
+        self.assertIn('coordinates', geojson['features'][0]['geometry'])
+        self.assertEqual('LineString', geojson['features'][0]['geometry']['type'])
+        self.assertIn('properties', geojson['features'][0])
+        self.assertIn('type', geojson['features'][0])
+        self.assertIn('Date3', geojson['features'][0]['properties'])
+        self.assertTrue(len(geojson['features'][0]['properties']['Date3']) > 0)
