@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import datetime
 import json
 import os
 import zipfile
@@ -265,6 +266,10 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             dict: Dictionary equivalent of GeoJSON.
         """
+        def _json_default(obj):
+            if type(obj) is datetime.date or type(obj) is datetime.datetime:
+                return obj.isoformat()
+
         workdir = None
 
         if not in_memory_file:
@@ -333,7 +338,7 @@ class SpatialInputMWV(MapWorkflowView):
             }
 
             # Convert to geojson objects
-            geojson_str = json.dumps(geojson_dicts)
+            geojson_str = json.dumps(geojson_dicts, default=_json_default)
             geojson_objs = geojson.loads(geojson_str)
 
             # Validate
