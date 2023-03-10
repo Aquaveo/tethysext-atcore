@@ -18,7 +18,6 @@ from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -163,6 +162,7 @@ class MapViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.map_view.has_permission')
     def test_get_no_title(self, mock_has_permission, mock_render, _):
         self.mock_app.get_persistent_store_database = mock.MagicMock()
+        self.mock_app.get_spatial_dataset_service = mock.MagicMock()
         mock_request = self.request_factory.get('/foo/bar/map-view/')
         mock_request.user = self.django_user
 

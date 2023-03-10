@@ -312,7 +312,9 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
     @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
     @mock.patch.object(MapView, 'get_map_manager')
-    def test_run_job(self, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job, _):
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
+    def test_run_job(self, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job, _,
+                     mock_ModelDatabase):
         map_manager = mock.MagicMock(
             spec=MapManagerBase,
             spatial_manager=mock.MagicMock(
@@ -324,6 +326,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
                 )
             )
         )
+        mock_ModelDatabase.return_value = mock.MagicMock(db_url='fake_db_url')
 
         mock_get_map_manager.return_value = map_manager
         mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')

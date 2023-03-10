@@ -1,5 +1,5 @@
 """
-********************************************************************************update_status.py
+********************************************************************************
 * Name: condor_workflow_manager_tests.py
 * Author: mlebaron
 * Created On: September 4, 2019
@@ -82,6 +82,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.working_directory = 'path/to/dir'
 
         self.app = tethys_app_base.TethysAppBase()
+        self.app.get_persistent_store_database = mock.MagicMock(return_value='some_url')
 
         base_job = {
             'name': 'base_scenario',
