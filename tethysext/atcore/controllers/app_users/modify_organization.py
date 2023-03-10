@@ -6,7 +6,6 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import traceback
 import logging
 # Django
 from django.contrib import messages
@@ -341,7 +340,6 @@ class ModifyOrganization(AppUsersViewMixin):
             if type(e) is ATCoreException:
                 error_message = str(e)
             else:
-                traceback.print_exc()
                 error_message = ("An unexpected error occurred while uploading your project. Please try again or "
                                  "contact support@aquaveo.com for further assistance.")
             log.exception(error_message)
