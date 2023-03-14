@@ -15,14 +15,19 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for
 
 
 class CustomOrganization(Organization):
-    pass
+    TYPE = 'testing__custom_organization__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class CustomResource(Resource):
-    TYPE = 'custom_type'
+    TYPE = 'testing_custom_resource_1__testing'
 
     # Polymorphism
     __mapper_args__ = {
+        'polymorphic_on': 'type',
         'polymorphic_identity': TYPE,
     }
 

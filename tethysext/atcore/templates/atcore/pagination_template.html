@@ -39,7 +39,7 @@ Requires a variable (whatever it may be called) that is an dictionary of the fol
                     <option value="{{ opt }}"{% if x.show == opt %} selected {% endif %}>{{ opt }}</option>
                     {% endfor %}
                     <option value="100000000"{% if x.show == 100000000 or x.show not in x.results_per_page_options %} selected {% endif %}>All</option>
-                </select> results per page
+                </select> {{ x.result_name }} per page
                 <br><br>
             </div>
             {% endif %}

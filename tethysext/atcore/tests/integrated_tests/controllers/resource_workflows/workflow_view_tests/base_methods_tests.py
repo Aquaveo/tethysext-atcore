@@ -86,11 +86,11 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
         mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
-        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        resource = mock.MagicMock()
         workflow_id = str(self.workflow.id)
         step_id = str(self.step1.id)
 
-        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context,
                                                  workflow_id=workflow_id, step_id=step_id)
 
         self.assertEqual(self.workflow.id, ret['workflow'].id)
@@ -108,12 +108,12 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
         mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
-        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        resource = mock.MagicMock()
         self.step1.set_status(self.step1.ROOT_STATUS_KEY, 'Error')
         msg = 'Some helpful error message'
         self.step1.set_attribute(self.step1.ATTR_STATUS_MESSAGE, msg)
 
-        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context,
                                                  str(self.workflow.id), str(self.step1.id))
 
         msg_call_args = mock_messages.error.call_args_list
@@ -133,12 +133,12 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
         mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
-        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        resource = mock.MagicMock()
         self.step1.set_status(self.step1.ROOT_STATUS_KEY, 'Complete')
         msg = 'Some helpful success message'
         self.step1.set_attribute(self.step1.ATTR_STATUS_MESSAGE, msg)
 
-        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context,
                                                  str(self.workflow.id), str(self.step1.id))
 
         msg_call_args = mock_messages.success.call_args_list
@@ -158,12 +158,12 @@ class WorkflowViewBaseMethodsTests(WorkflowViewTestCase):
         mock_app.objects.get.return_value = mock.MagicMock(url_namespace='my_workspace')
         resource = mock.MagicMock()
         context = {}
-        model_db = mock.MagicMock(spec=ResourceWorkflowStep)
+        resource = mock.MagicMock()
         self.step1.set_status(self.step1.STATUS_WORKING, 'Complete')
         msg = 'Some helpful info message'
         self.step1.set_attribute(self.step1.ATTR_STATUS_MESSAGE, msg)
 
-        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context, model_db,
+        ret = ResourceWorkflowView().get_context(self.request, self.session, resource, context,
                                                  str(self.workflow.id), str(self.step1.id))
 
         msg_call_args = mock_messages.info.call_args_list

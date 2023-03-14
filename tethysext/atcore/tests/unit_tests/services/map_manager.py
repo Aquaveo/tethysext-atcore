@@ -12,7 +12,7 @@ from collections import OrderedDict
 from unittest import mock
 import unittest
 from tethys_gizmos.gizmo_options import MVLayer
-from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.services.model_db_spatial_manager import ModelDBSpatialManager
 from tethysext.atcore.services.map_manager import MapManagerBase
 
@@ -27,8 +27,8 @@ class MapManagerBaseTests(unittest.TestCase):
 
     def setUp(self):
         self.spatial_manager = mock.MagicMock(spec=ModelDBSpatialManager)
-        self.model_db = mock.MagicMock(spec=ModelDatabase)
-        self.map_manager = _MapManager(self.spatial_manager, self.model_db)
+        self.resource = mock.MagicMock(spec=Resource)
+        self.map_manager = _MapManager(self.spatial_manager, self.resource)
 
     def tearDown(self):
         pass
@@ -93,15 +93,13 @@ class MapManagerBaseTests(unittest.TestCase):
 
         mock_mvv.assert_called_with(
             projection='EPSG:4326',
-            center=[0.0, 0.0],
+            extent=[-10, -10, 10, 10],
             zoom=MapManagerBase.DEFAULT_ZOOM,
             maxZoom=MapManagerBase.MAX_ZOOM,
             minZoom=MapManagerBase.MIN_ZOOM
         )
 
-        self.spatial_manager.get_extent_for_project.assert_called_with(
-            model_db=self.model_db
-        )
+        self.spatial_manager.get_extent_for_project.assert_called()
 
         self.assertEqual(mock_mvv(), view)
         self.assertEqual(test_extent, extent)
@@ -113,15 +111,13 @@ class MapManagerBaseTests(unittest.TestCase):
 
         mock_mvv.assert_called_with(
             projection='EPSG:4326',
-            center=MapManagerBase.DEFAULT_CENTER,
+            extent=None,
             zoom=MapManagerBase.DEFAULT_ZOOM,
             maxZoom=MapManagerBase.MAX_ZOOM,
             minZoom=MapManagerBase.MIN_ZOOM
         )
 
-        self.spatial_manager.get_extent_for_project.assert_called_with(
-            model_db=self.model_db
-        )
+        self.spatial_manager.get_extent_for_project.assert_called()
 
         self.assertEqual(mock_mvv(), view)
         self.assertIsNone(extent)
@@ -345,7 +341,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_cesium_layer(
@@ -391,7 +387,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_cesium_layer(
@@ -446,7 +442,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_geojson_layer(
@@ -503,7 +499,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_geojson_layer(
@@ -558,7 +554,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_wms_layer(
@@ -612,7 +608,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_wms_layer(
@@ -676,7 +672,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_wms_layer(
@@ -729,7 +725,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_wms_layer(
@@ -786,7 +782,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_wms_layer(
@@ -846,7 +842,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -890,7 +886,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -935,7 +931,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -979,7 +975,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1024,7 +1020,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1070,7 +1066,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1127,7 +1123,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1178,7 +1174,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1223,7 +1219,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1269,7 +1265,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1314,7 +1310,7 @@ class MapManagerBaseTests(unittest.TestCase):
             mock_map_extent.return_value = extent
             map_manager = _MapManager(
                 spatial_manager=self.spatial_manager,
-                model_db=self.model_db
+                resource=self.resource
             )
 
             ret = map_manager._build_mv_layer(
@@ -1349,7 +1345,7 @@ class MapManagerBaseTests(unittest.TestCase):
     def test_vector_style_map(self):
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.get_vector_style_map()
@@ -1392,7 +1388,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_legend(mock_layer, units='Ft')
@@ -1426,7 +1422,7 @@ class MapManagerBaseTests(unittest.TestCase):
 
         map_manager = _MapManager(
             spatial_manager=self.spatial_manager,
-            model_db=self.model_db
+            resource=self.resource
         )
 
         ret = map_manager.build_legend(mock_layer, units='Ft')

@@ -60,7 +60,7 @@ class SpatialReferenceSelectTests(unittest.TestCase):
         self.assertEqual('spatial_reference_select', val.gizmo_name)
 
     def test_get_vendor_js(self):
-        self.assertIn('select2.full.min.js', SpatialReferenceSelect.get_vendor_js()[0])
+        self.assertIn('select2.min.js', SpatialReferenceSelect.get_vendor_js()[0])
 
     def test_get_vendor_css(self):
         self.assertIn('select2.min.css', SpatialReferenceSelect.get_vendor_css()[0])

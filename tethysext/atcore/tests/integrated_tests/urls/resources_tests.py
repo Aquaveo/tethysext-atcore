@@ -15,7 +15,11 @@ class CustomOrganization(Organization):
 
 
 class CustomResource(Resource):
-    pass
+    TYPE = 'testing__custom_resource_3__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class CustomManageResources(ManageResources):

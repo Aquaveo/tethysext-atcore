@@ -40,6 +40,7 @@ from .controllers.resource_workflows.workflow_results_view_tests import Workflow
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewBaseMethodsTests  # noqa: F401
 from .controllers.resource_workflows.workflow_view_tests import WorkflowViewLockMethodsTests  # noqa: F401
 from .forms.widgets.param_widgets_tests import ParamWidgetsTests  # noqa: F401
+from .gizmos.spatial_reference_select import SpatialReferenceSelectTests  # noqa: F401
 from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from .mixins.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401

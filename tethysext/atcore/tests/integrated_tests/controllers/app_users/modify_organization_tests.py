@@ -446,8 +446,9 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['organization_status_toggle']['disabled'])
         self.assertEqual('', context['organization_status_toggle']['error'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_organization.log')
     @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
-    def test_handle_modify_user_requests_cannot_create_error(self, mock_get_org_model):
+    def test_handle_modify_user_requests_cannot_create_error(self, mock_get_org_model, mock_log):
         organization = mock.MagicMock()
         organization.LICENSES = mock.MagicMock()
         organization.LICENSES.list.return_value = []
@@ -462,3 +463,4 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.mock_reverse.assert_called()
         self.assertEqual('app_namespace:app_users_manage_organizations', self.mock_reverse.call_args[0][0])
         self.mock_redirect.assert_called()
+        mock_log.exception.assert_called()

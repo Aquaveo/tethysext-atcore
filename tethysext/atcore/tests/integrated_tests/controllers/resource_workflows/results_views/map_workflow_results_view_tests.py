@@ -7,7 +7,6 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_
 from tethysext.atcore.controllers.resource_workflows.workflow_results_view import WorkflowResultsView
 from tethysext.atcore.models.resource_workflow_results import SpatialWorkflowResult
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.controllers.resource_workflows.mixins import ResultViewMixin
 from tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view import MapWorkflowResultsView  # noqa: E501
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -121,12 +120,11 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
 
         return [self.cesium_primitive_layer]
 
-    def get_context_setup(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers, mock_get_result,
+    def get_context_setup(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_map_manager, mock_get_result,
                           initial_layer_groups, result_options, result_layers):
         self.mock_request = mock.MagicMock()
         self.mock_session = mock.MagicMock()
         self.mock_resource = mock.MagicMock()
-        self.mock_model_database = mock.MagicMock(spec=ModelDatabase)
         self.mock_result = mock.MagicMock(
             spec=SpatialWorkflowResult,
             options=result_options,
@@ -145,14 +143,14 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             'layer_groups': initial_layer_groups
         }
         self.mock_map_manager = mock.MagicMock(spec=MapManagerBase)
-        mock_mwv_get_managers.return_value = (self.mock_model_database, self.mock_map_manager)
+        mock_mwv_get_map_manager.return_value = self.mock_map_manager
 
     @mock.patch.object(MapWorkflowResultsView, 'get_result')
     @mock.patch.object(MapWorkflowView, 'set_feature_selection')
-    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(MapWorkflowView, 'get_map_manager')
     @mock.patch.object(AtcoreMapView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
-    def test_get_context_geojson(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
+    def test_get_context_geojson(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_map_manager,
                                  mock_mwv_set_feature_selection, mock_get_result):
 
         workflow_id = '123'
@@ -170,7 +168,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.get_context_setup(
             mock_wrv_get_context,
             mock_mwv_get_context,
-            mock_mwv_get_managers,
+            mock_mwv_get_map_manager,
             mock_get_result,
             initial_layer_groups,
             result_options,
@@ -185,7 +183,6 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             session=self.mock_session,
             resource=self.mock_resource,
             context={},
-            model_db=self.mock_model_database,
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id
@@ -196,7 +193,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIn('result_workflow_context', ret)
         mock_mwv_set_feature_selection.assert_called_with(map_view=self.mock_map_view, enabled=False)
         mock_get_result.assert_called_with(self.mock_request, result_id, self.mock_session)
-        mock_mwv_get_managers.assert_called_with(request=self.mock_request, resource=self.mock_resource)
+        mock_mwv_get_map_manager.assert_called_with(request=self.mock_request, resource=self.mock_resource)
 
         self.mock_map_manager.build_geojson_layer.assert_called()
         self.mock_map_manager.build_layer_group.assert_called_with(
@@ -211,10 +208,10 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
 
     @mock.patch.object(MapWorkflowResultsView, 'get_result')
     @mock.patch.object(MapWorkflowView, 'set_feature_selection')
-    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(MapWorkflowView, 'get_map_manager')
     @mock.patch.object(AtcoreMapView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
-    def test_get_context_wms(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
+    def test_get_context_wms(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_map_manager,
                              mock_mwv_set_feature_selection, mock_get_result):
         workflow_id = '123'
         step_id = '456'
@@ -230,7 +227,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.get_context_setup(
             mock_wrv_get_context,
             mock_mwv_get_context,
-            mock_mwv_get_managers,
+            mock_mwv_get_map_manager,
             mock_get_result,
             initial_layer_groups,
             result_options,
@@ -245,7 +242,6 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             session=self.mock_session,
             resource=self.mock_resource,
             context={},
-            model_db=self.mock_model_database,
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id
@@ -256,7 +252,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIn('result_workflow_context', ret)
         mock_mwv_set_feature_selection.assert_called_with(map_view=self.mock_map_view, enabled=False)
         mock_get_result.assert_called_with(self.mock_request, result_id, self.mock_session)
-        mock_mwv_get_managers.assert_called_with(request=self.mock_request, resource=self.mock_resource)
+        mock_mwv_get_map_manager.assert_called_with(request=self.mock_request, resource=self.mock_resource)
 
         self.mock_map_manager.build_wms_layer.assert_called()
         self.mock_map_manager.build_layer_group.assert_called_with(
@@ -273,10 +269,10 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch.object(MapWorkflowResultsView, 'translate_layers_to_cesium')
     @mock.patch.object(MapWorkflowResultsView, 'get_result')
     @mock.patch.object(MapWorkflowView, 'set_feature_selection')
-    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(MapWorkflowView, 'get_map_manager')
     @mock.patch.object(AtcoreMapView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
-    def test_get_context_cesium(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
+    def test_get_context_cesium(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_map_manager,
                                 mock_mwv_set_feature_selection, mock_get_result, mock_translate_layers_to_cesium):
         workflow_id = '123'
         step_id = '456'
@@ -294,7 +290,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.get_context_setup(
             mock_wrv_get_context,
             mock_mwv_get_context,
-            mock_mwv_get_managers,
+            mock_mwv_get_map_manager,
             mock_get_result,
             initial_layer_groups,
             result_options,
@@ -313,7 +309,6 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             session=self.mock_session,
             resource=self.mock_resource,
             context={},
-            model_db=self.mock_model_database,
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id
@@ -324,7 +319,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIn('result_workflow_context', ret)
         mock_mwv_set_feature_selection.assert_called_with(map_view=self.mock_map_view, enabled=False)
         mock_get_result.assert_called_with(self.mock_request, result_id, self.mock_session)
-        mock_mwv_get_managers.assert_called_with(request=self.mock_request, resource=self.mock_resource)
+        mock_mwv_get_map_manager.assert_called_with(request=self.mock_request, resource=self.mock_resource)
 
         self.mock_map_manager.build_cesium_layer.assert_called()
         self.mock_map_manager.build_layer_group.assert_called_with(
@@ -346,10 +341,10 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view.log')
     @mock.patch.object(MapWorkflowResultsView, 'get_result')
     @mock.patch.object(MapWorkflowView, 'set_feature_selection')
-    @mock.patch.object(MapWorkflowView, 'get_managers')
+    @mock.patch.object(MapWorkflowView, 'get_map_manager')
     @mock.patch.object(AtcoreMapView, 'get_context')
     @mock.patch.object(WorkflowResultsView, 'get_context')
-    def test_get_context_invalid_type(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_managers,
+    def test_get_context_invalid_type(self, mock_wrv_get_context, mock_mwv_get_context, mock_mwv_get_map_manager,
                                       mock_mwv_set_feature_selection, mock_get_result, mock_log):
         workflow_id = '123'
         step_id = '456'
@@ -366,7 +361,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.get_context_setup(
             mock_wrv_get_context,
             mock_mwv_get_context,
-            mock_mwv_get_managers,
+            mock_mwv_get_map_manager,
             mock_get_result,
             initial_layer_groups,
             result_options,
@@ -379,7 +374,6 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
             session=self.mock_session,
             resource=self.mock_resource,
             context={},
-            model_db=self.mock_model_database,
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id
@@ -390,7 +384,7 @@ class MapWorkflowResultViewTests(SqlAlchemyTestCase):
         self.assertIn('result_workflow_context', ret)
         mock_mwv_set_feature_selection.assert_called_with(map_view=self.mock_map_view, enabled=False)
         mock_get_result.assert_called_with(self.mock_request, result_id, self.mock_session)
-        mock_mwv_get_managers.assert_called_with(request=self.mock_request, resource=self.mock_resource)
+        mock_mwv_get_map_manager.assert_called_with(request=self.mock_request, resource=self.mock_resource)
 
         self.mock_map_manager.build_geojson_layer.assert_not_called()
         self.mock_map_manager.build_wms_layer.assert_not_called()

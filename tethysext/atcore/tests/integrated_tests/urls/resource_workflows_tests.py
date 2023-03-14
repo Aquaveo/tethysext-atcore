@@ -31,11 +31,19 @@ class AppUserChild(AppUser):
 
 
 class OrganizationChild(Organization):
-    pass
+    TYPE = 'testing__organization_child__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class ResourceChild(Resource):
-    pass
+    TYPE = 'testing__resource_child__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class ResourceWorkflowsTests(unittest.TestCase):
