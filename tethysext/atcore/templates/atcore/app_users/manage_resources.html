@@ -4,11 +4,22 @@
 
 {% block app_content %}
   {% with tethys_app.namespace|add:':'|add:resource_slug as base_resource_href %}
-    {% if show_new_button and resources %}
-    <div class="top-action-btns float-end">
-      <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><span class="bi bi-plus-lg"></span></a>
+    <div class="btn-toolbar top-action-btns float-end" role="toolbar" aria-label="Manage resources toolbar">
+      {% if show_group_buttons and resources %}
+      <div class="btn-group me-1">
+        <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-expand-all" data-ts-toggle="table-row-expand-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All"><i class="bi bi-chevron-expand"></i></a>
+        <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-collapse-all" data-ts-toggle="table-row-collapse-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All"><i class="bi bi-chevron-contract"></i></a>
+        {% if show_new_group_button %}
+        <a class="btn btn-outline-secondary manage-action-btn btn-group" role="button" href="javascript:void(0);" id="btn-group-resource" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Group"><i class="bi bi-collection"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if show_new_button and resources %}
+      <div class="btn-group">  
+        <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><i class="bi bi-plus-lg"></i></a>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
 
     <h1>{{ page_title }}</h1>
 
@@ -18,6 +29,11 @@
         <div id="resources-table" class="table-responsive table-sortable">
           <table class="table table-hover table-bottom-border" id="resource_table">
             <thead>
+              {# SELECT #}
+              {% if show_select_column %}
+              <th></th>
+              {% endif %}
+
               {# NAME HEADER #}
               <th>
                 <span class="sortable" data-sort-field="name">Name</span>
@@ -35,9 +51,11 @@
               </th>
 
               {# ORGANIZATION HEADER #}
+              {% if show_organizations_column %}
               <th>
                 <span>Organizations</span>
               </th>
+              {% endif %}
 
               {# CREATED BY HEADER #}
               <th>
@@ -69,77 +87,12 @@
               <th></th>
             </thead>
             <tbody>
+              {# RESOURCE ROWS #}
               {% for resource in resources %}
-                <tr>
-                  {# NAME VALUE #}
-                  <td class="name" data-id="{{ resource.name }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <a href="{{ resource.action_href }}">{{ resource.name }}</a>
-                  </td>
-
-                  {# DESCRIPTION VALUE #}
-                  {% if not resource.description %}
-                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <i><font color="#A8A8A8">No Description</font></i>
-                  </td>
-                  {% else %}
-                  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <span>{{ resource.description }}</span>
-                  </td>
-                  {% endif %}
-
-                  {# ORGANIZATIONS VALUE #}
-                   <td>
-                     {% for organization in resource.organizations %}
-                       {% if show_links_to_organizations %}
-                         <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
-                       {% else %}
-                         <span class="manage-tag organization-tag">{{ organization.name }}</span>
-                       {% endif %}
-                     {% endfor %}
-                  </td>
-
-                  {# CREATED BY VALUE #}
-                  {% if resource.created_by %}
-                  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    {% if resource.created_by == '_staff_user' %}staff{% else %}{{ resource.created_by }}{% endif %}
-                  </td>
-                  {% else %}
-                  <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    <i><font color="#A8A8A8">Unknown</font></i>
-                  </td>
-                  {% endif %}
-
-                  {# DATE CREATED VALUE #}
-                  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
-                    {{ resource.date_created }} UTC
-                  </td>
-
-                  {# DEBUGGING FIELDS #}
-                  {% if show_debugging_info %}
-                  <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
-                    {{ resource.debugging }}
-                  </td>
-                  {% endif %}
-
-                  {# BUTTONS #}
-                  <td class="btn-td">
-                    <div class="btn-toolbar float-end">
-                      {% if resource.editable %}
-                        <a class="btn btn-outline-secondary btn-edit btn-flat" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><span class="bi bi-pencil-square"></span></a>
-                      {% endif %}
-                      {% if resource.deletable %}
-                        <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><span class="bi bi-trash"></span></a>
-                      {% endif %}
-                      {% if resource.action == 'processing' %}
-                        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-arrow-clockwise"></span></a>
-                      {% elif resource.action == 'error' %}
-                        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-x-lg"></span></a>
-                      {% else %}
-                        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-chevron-right"></span></a>
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
+                {# TOP LEVEL RESOURCES HAVE NO PARENTS #}
+                {% if not resource.has_parents %}
+                  {% include "atcore/components/resource_row.html" with resource=resource %}
+                {% endif %}
               {% endfor %}
             </tbody>
           </table>
@@ -185,6 +138,39 @@
       </div>
     </div>
   {% endif %}
+  <!-- New Group Modal -->
+  <div class="modal fade" id="new-group-modal" tabindex="-1" role="dialog" aria-labelledby="new-group-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="new-group-modal-label">New {{ type_singular }} Group</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="new-group-form">
+            {% csrf_token %}
+            <input type="text" name="action" value="new-group-from-selected" hidden>
+            <div class="mb-3">
+              <label for="new-group-resource-name" class="form-label">Name</label>
+              <input type="text" class="form-control" id="new-group-resource-name" name="name">
+            </div>
+            <div class="mb-3">
+              <label for="new-group-resource-description">Description</label>
+              <textarea class="form-control" id="new-group-resource-description" name="description" rows=5></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="new-group-resources-select">{{ type_plural }} to Group</label>
+              <select class="form-select resources-select" id="new-group-resources-select" name="children" multiple></select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <a id="modal-new-group-button" class="btn btn-success btn-group-modal" href="javascript:void(0);">Create Group</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block app_actions %}
@@ -196,6 +182,7 @@
   <link href="{% static 'atcore/app_users/css/sort.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/center.css' %}" rel="stylesheet"/>
   <link href="{% static 'atcore/css/flex.css' %}" rel="stylesheet"/>
+  <link href="{% static 'atcore/css/table_row_collapse.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
@@ -203,5 +190,7 @@
   <script src="{% static 'atcore/js/csrf.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/delete_row.js' %}"></script>
   <script src="{% static 'atcore/app_users/js/sort.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/resources/group_resources.js' %}" type="text/javascript"></script>
+  <script src="{% static 'atcore/js/table_row_collapse.js' %}" type="text/javascript"></script>
 {% endblock %}
 

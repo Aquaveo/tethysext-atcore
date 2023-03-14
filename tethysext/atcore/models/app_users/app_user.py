@@ -219,7 +219,7 @@ class AppUser(AppUsersBase):
 
         return return_value
 
-    def get_resources(self, session, request, of_type=None, cascade=True, for_assigning=False):
+    def get_resources(self, session, request, of_type=None, cascade=True, for_assigning=False, include_children=True):
         """
         Get the resources that the request user is able to assign to clients and consultants.
         Args:
@@ -228,6 +228,7 @@ class AppUser(AppUsersBase):
             of_type(Resource): A subclass of Resource.
             cascade(bool): Also retrieve resources of child organizations.
             for_assigning(bool): check assign permission versus view permission.
+            include_children(bool): include the resources that are children to other resources.
         Returns:
         """
         from tethys_sdk.permissions import has_permission
@@ -236,7 +237,6 @@ class AppUser(AppUsersBase):
             _Resource = of_type
         else:
             _Resource = self.get_resource_model()
-        resources = set()
 
         if for_assigning:
             can_get_all = has_permission(request, 'assign_any_resource', user=self.django_user)
@@ -244,17 +244,19 @@ class AppUser(AppUsersBase):
             can_get_all = has_permission(request, 'view_all_resources', user=self.django_user)
 
         if self.is_staff() or can_get_all:
-            resources = session.query(_Resource).all()
+            q = session.query(_Resource)
 
         # Other users can only assign resources that belong to their organizations
         else:
-            for organization in self.get_organizations(session, request, cascade=cascade):
-                org_resources = session.query(_Resource).\
-                    filter(_Resource.organizations.contains(organization)).\
-                    all()
-                for org_rsrc in org_resources:
-                    resources.add(org_rsrc)
+            _Organization = self.get_organization_model()
+            organization_ids = [o.id for o in self.get_organizations(session, request, cascade=cascade)]
+            q = session.query(_Resource) \
+                .filter(_Resource.organizations.any(_Organization.id.in_(organization_ids)))
 
+        if not include_children:
+            q = q.filter(~_Resource.parents.any())
+
+        resources = set(q.all())
         return self.filter_resources(resources)
 
     def filter_resources(self, resources):

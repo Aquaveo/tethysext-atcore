@@ -23,7 +23,6 @@ from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv import SpatialInputMWV
 from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
     WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -144,14 +143,14 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=False)
-    def test_process_step_options_no_attributes_nor_active_role(self, _, mock_params, mock_get_managers, __, ___):
+    def test_process_step_options_no_attributes_nor_active_role(self, _, mock_params, mock_get_map_manager, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
         map_view = MapView()
         map_view.layers = []
-        mock_get_managers.return_value = None, map_view
+        mock_get_map_manager.return_value = map_view
 
         resource = mock.MagicMock()
         self.context['map_view'] = map_view
@@ -166,15 +165,15 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.generate_django_form')
-    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
-    def test_process_step_options_with_attributes_and_active_role(self, _, mock_params, mock_get_managers,
+    def test_process_step_options_with_attributes_and_active_role(self, _, mock_params, mock_get_map_manager,
                                                                   mock_form, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
         map_view = MapView()
         map_view.layers = []
-        mock_get_managers.return_value = None, map_view
+        mock_get_map_manager.return_value = map_view
         mock_form.return_view = {}
 
         resource = mock.MagicMock()
@@ -190,12 +189,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
-    def test_process_step_options_unknown_shape(self, _, mock_params, mock_get_managers, __, ___):
+    def test_process_step_options_unknown_shape(self, _, mock_params, mock_get_map_manager, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
-        mock_get_managers.return_value = None, MapView()
+        mock_get_map_manager.return_value = MapView()
 
         resource = mock.MagicMock()
         map_view = MapView()
@@ -220,12 +219,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                                                      'properties': {}}]}
         mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'},
                                                       'properties': {'id': 7}}]}
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': {'value': 'shapes'}}
         self.request.FILES = {'shapefile': 'Det1poly.shp'}
 
-        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-                                                       './prev', './next')
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./current', response.url)
@@ -238,36 +237,36 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                                                      'properties': {}}]}
         mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'},
                                                       'properties': {'id': 7}}]}
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': {'value': 'shapes'}}
         self.request.FILES = {'shapefile': None}
 
-        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-                                                       './prev', './next')
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./prev', response.url)
 
     def test_process_step_data_previous(self):
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': None, 'previous-submit': True}
         self.request.FILES = {'shapefile': None}
 
-        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-                                                       './prev', './next')
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./prev', response.url)
 
     def test_process_step_data_not_previous(self):
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': None, 'next-submit': True}
         self.request.FILES = {'shapefile': None}
         self.step1._parameters = {'geometry': {'value': 'shapes'}}
         response = None
 
         try:
-            response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db,
+            response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
                                                            './current', './prev', './next')
         except ValueError as e:
             self.assertEqual('You must either draw at least one singular_name or upload a shapefile of my_plural_name.',

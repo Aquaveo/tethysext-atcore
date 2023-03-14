@@ -12,11 +12,19 @@ class CustomAppUser(AppUser):
 
 
 class CustomOrganization(Organization):
-    pass
+    TYPE = 'testing__custom_organization_1__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class CustomResource(Resource):
-    pass
+    TYPE = 'testing__custom_resource_2__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class CustomManageUsers(ManageUsers):

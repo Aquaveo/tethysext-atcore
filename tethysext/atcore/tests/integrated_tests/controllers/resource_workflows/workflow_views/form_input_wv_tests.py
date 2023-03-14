@@ -121,13 +121,13 @@ class FormInputWVTests(WorkflowViewTestCase):
         # request = self.request_factory.post('/foo/bar/form-input', data=data)
         # request.user = self.django_user
         #
-        # mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        # mock_resource = mock.MagicMock()
         #
         # ret = FormInputWV().process_step_data(
         #     request=request,
         #     session=self.session,
         #     step=self.firws,
-        #     model_db=mock_model_db,
+        #     resource=mock_resource,
         #     current_url=current_url,
         #     next_url=next_url,
         #     previous_url=previous_url

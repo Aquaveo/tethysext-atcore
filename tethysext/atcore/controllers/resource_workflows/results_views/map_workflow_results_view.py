@@ -27,7 +27,7 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
     valid_result_classes = [SpatialWorkflowResult]
     show_legends = True
 
-    def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
+    def get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args,
                     **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
@@ -37,7 +37,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             session (sqlalchemy.Session): the session.
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
 
         Returns:
             dict: modified context dictionary.
@@ -47,7 +46,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             session=session,
             resource=resource,
             context=context,
-            model_db=model_db,
             workflow_id=workflow_id,
             step_id=step_id,
             *args, **kwargs
@@ -59,7 +57,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         #     session=session,
         #     resource=resource,
         #     context=context,
-        #     model_db=model_db,
         #     workflow_id=workflow_id,
         #     step_id=step_id,
         #     result_id=result_id,
@@ -71,7 +68,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             session=session,
             resource=resource,
             context=context,
-            model_db=model_db,
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id,
@@ -88,10 +84,9 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         # Get the result object for this view
         result = self.get_result(request, result_id, session)
         # Get managers
-        _, map_manager = self.get_managers(
+        map_manager = self.get_map_manager(
             request=request,
             resource=resource,
-            *args, **kwargs
         )
 
         # Get Map View and Layer Groups

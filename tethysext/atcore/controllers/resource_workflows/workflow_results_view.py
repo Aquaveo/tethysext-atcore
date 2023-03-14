@@ -13,7 +13,7 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
     valid_step_classes = [ResultsResourceWorkflowStep]
     valid_result_classes = [ResourceWorkflowResult]
 
-    def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
+    def get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args,
                     **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
@@ -23,7 +23,6 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
             session (sqlalchemy.Session): the session.
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
             workflow_id (str): UUID of the workflow.
             step_id (str): UUID of the step.
             result_id (str): UUID of the result.
@@ -42,7 +41,6 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
             session=session,
             resource=resource,
             context=context,
-            model_db=model_db,
             workflow_id=workflow_id,
             step_id=step_id,
             *args, **kwargs
@@ -129,7 +127,7 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
                 '", "'.join([valid_class.__name__ for valid_class in self.valid_result_classes])
             ))
 
-    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
 
@@ -137,7 +135,7 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
-            model_db(ModelDatabase): The model database associated with the resource.
+            resource(Resource): The resource for this request.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.
@@ -157,7 +155,7 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
             request=request,
             session=session,
             step=step,
-            model_db=model_db,
+            resource=resource,
             current_url=current_url,
             previous_url=previous_url,
             next_url=next_url

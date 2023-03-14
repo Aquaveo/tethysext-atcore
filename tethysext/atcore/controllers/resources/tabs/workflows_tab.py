@@ -117,17 +117,17 @@ class ResourceWorkflowsTab(ResourceTab):
         _AppUser = self.get_app_user_model()
         app_user = _AppUser.get_app_user_from_request(request, session)
         app_user_role = app_user.role
-        if self.show_all_workflows or app_user_role in self.show_all_workflows_roles:
-            workflows = session.query(ResourceWorkflow). \
-                filter(ResourceWorkflow.resource_id == resource.id). \
-                order_by(ResourceWorkflow.date_created.desc()). \
-                all()
-        else:
-            workflows = session.query(ResourceWorkflow). \
-                filter(ResourceWorkflow.resource_id == resource.id). \
-                filter(ResourceWorkflow.creator_id == app_user.id). \
-                order_by(ResourceWorkflow.date_created.desc()). \
-                all()
+        workflows_query = self.get_workflows_query(
+            request=request,
+            session=session,
+            resource=resource,
+            app_user=app_user,
+        )
+
+        if not self.show_all_workflows and app_user_role not in self.show_all_workflows_roles:
+            workflows_query = workflows_query.filter(ResourceWorkflow.creator_id == app_user.id)
+
+        workflows = workflows_query.order_by(ResourceWorkflow.date_created.desc()).all()
 
         # Build up workflow cards for workflows table
         workflow_cards = []
@@ -136,7 +136,7 @@ class ResourceWorkflowsTab(ResourceTab):
             status = workflow.get_status()
             app_namespace = self.get_app().url_namespace
             url_name = f'{app_namespace}:{workflow.TYPE}_workflow'
-            href = reverse(url_name, args=(resource.id, str(workflow.id)))
+            href = reverse(url_name, args=(workflow.resource.id, str(workflow.id)))
             status_style = get_style_for_status(status)
 
             if status == workflow.STATUS_PENDING or status == '' or status is None:
@@ -282,3 +282,25 @@ class ResourceWorkflowsTab(ResourceTab):
             session and session.close()
 
         return JsonResponse({'success': True})
+
+    def get_workflows_query(self, request, session, resource, app_user):
+        """
+        Build the base SQLAlchemy query for workflows that are to be displayed in this tab.
+
+        Args:
+            request (django.http.HttpRequest): Django request object.
+            session (sqlalchemy.orm.Session): SQLAlchemy session object.
+            resource (Resource): The resource.
+            app_user (AppUser): The App User.
+
+        Returns:
+            sqlalchemy.orm.Query: An uncalled SQLAlchemy Query object.
+        """
+        resource_ids = [resource.id]
+
+        for child in resource.children:
+            resource_ids.append(child.id)
+
+        workflows_query = session.query(ResourceWorkflow) \
+            .filter(ResourceWorkflow.resource_id.in_(resource_ids))
+        return workflows_query

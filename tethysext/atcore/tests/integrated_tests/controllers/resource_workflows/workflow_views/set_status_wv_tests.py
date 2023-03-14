@@ -4,7 +4,6 @@ from django.http import HttpRequest
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from django.test import RequestFactory
 from tethysext.atcore.services.app_users.roles import Roles
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.models.app_users import AppUser, Resource
 from tethysext.atcore.models.resource_workflow_steps import SetStatusRWS
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
@@ -234,13 +233,13 @@ class SetStatusWVTests(WorkflowViewTestCase):
         request = self.request_factory.post('/foo/bar/set-status', data=data)
         request.user = self.django_user
 
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
 
         ret = SetStatusWV().process_step_data(
             request=request,
             session=self.session,
             step=self.ssrws_no_options,
-            model_db=mock_model_db,
+            resource=mock_resource,
             current_url=current_url,
             next_url=next_url,
             previous_url=previous_url
@@ -265,14 +264,14 @@ class SetStatusWVTests(WorkflowViewTestCase):
         request = self.request_factory.post('/foo/bar/set-status', data=data)
         request.user = self.django_user
 
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
 
         with self.assertRaises(ValueError) as cm:
             SetStatusWV().process_step_data(
                 request=request,
                 session=self.session,
                 step=self.ssrws_no_options,
-                model_db=mock_model_db,
+                resource=mock_resource,
                 current_url=current_url,
                 next_url=next_url,
                 previous_url=previous_url
@@ -293,14 +292,14 @@ class SetStatusWVTests(WorkflowViewTestCase):
         request = self.request_factory.post('/foo/bar/set-status', data=data)
         request.user = self.django_user
 
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
 
         with self.assertRaises(ValueError) as cm:
             SetStatusWV().process_step_data(
                 request=request,
                 session=self.session,
                 step=self.ssrws_custom_titles,
-                model_db=mock_model_db,
+                resource=mock_resource,
                 current_url=current_url,
                 next_url=next_url,
                 previous_url=previous_url
@@ -322,14 +321,14 @@ class SetStatusWVTests(WorkflowViewTestCase):
         request = self.request_factory.post('/foo/bar/set-status', data=data)
         request.user = self.django_user
 
-        mock_model_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
 
         with self.assertRaises(RuntimeError) as cm:
             SetStatusWV().process_step_data(
                 request=request,
                 session=self.session,
                 step=self.ssrws_no_options,
-                model_db=mock_model_db,
+                resource=mock_resource,
                 current_url=current_url,
                 next_url=next_url,
                 previous_url=previous_url

@@ -4,12 +4,12 @@ import uuid
 from django.utils.text import slugify
 from django.utils.functional import classproperty
 from sqlalchemy import Column, Boolean, DateTime, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin, UserLockMixin
 
 from .app_user import AppUsersBase
-from .associations import organization_resource_association
+from .associations import organization_resource_association, resource_parent_child_association
 
 __all__ = ['Resource']
 
@@ -40,6 +40,14 @@ class Resource(StatusMixin, AttributesMixin, UserLockMixin, AppUsersBase):
     organizations = relationship('Organization',
                                  secondary=organization_resource_association,
                                  back_populates='resources')
+
+    children = relationship(
+        'Resource',
+        secondary=resource_parent_child_association,
+        backref=backref('parents'),
+        primaryjoin=id == resource_parent_child_association.c.parent_id,
+        secondaryjoin=id == resource_parent_child_association.c.child_id,
+    )
 
     # Polymorphism
     __mapper_args__ = {
