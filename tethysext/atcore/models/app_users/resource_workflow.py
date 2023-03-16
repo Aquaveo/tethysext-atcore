@@ -183,12 +183,15 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         previous_steps = self.steps[:step_index]
         return previous_steps
 
-    def get_tabular_data_for_previous_steps(self, step, request, session):
+    def get_tabular_data_for_previous_steps(self, step, request, session, resource):
         """
         Get all tabular data for previous steps based on the given step.
 
         Args:
-           step(ResourceWorkflowStep): A step belonging to this workflow.
+            step(ResourceWorkflowStep): A step belonging to this workflow.
+            request(HttpRequest): The request.
+            session(sqlalchemy.orm.Session): Session bound to the steps.
+            resource(Resource): the resource for this request.
 
         Returns:
             dict: a dictionary with tabular data per step.
@@ -211,7 +214,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
                 package, p_class = step.options['param_class'].rsplit('.', 1)
                 mod = __import__(package, fromlist=[p_class])
                 ParamClass = getattr(mod, p_class)
-                step_param_class = ParamClass(request=request, session=session)
+                step_param_class = ParamClass(request=request, session=session, resource=resource)
             step_params = step.get_parameter('form-values')
             fixed_params = dict()
             for key, value in step_params.items():

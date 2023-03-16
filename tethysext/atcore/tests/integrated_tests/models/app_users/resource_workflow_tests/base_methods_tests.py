@@ -242,8 +242,9 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
     def test_get_tabular_data_for_previous_steps(self, mock_get_parameter):
         request = mock.MagicMock()
         session = mock.MagicMock()
+        resource = mock.MagicMock()
         mock_get_parameter.return_value = {'existing_data': 'data_value'}
-        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session)
+        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session, resource)
 
         expected_result = {'foo': {'Existing Data': 'data_name'}}
         self.assertEqual(expected_result, ret)
@@ -252,8 +253,9 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
     def test_get_tabular_data_for_previous_steps_no_key(self, mock_get_parameter):
         request = mock.MagicMock()
         session = mock.MagicMock()
+        resource = mock.MagicMock()
         mock_get_parameter.return_value = {'existing_data1': 'data_value'}
-        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session)
+        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session, resource)
 
         expected_result = {'foo': {'Existing Data1': 'data_value'}}
         self.assertEqual(expected_result, ret)
@@ -261,7 +263,8 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
     def test_get_tabular_data_for_previous_steps_no_mappable(self):
         request = mock.MagicMock()
         session = mock.MagicMock()
-        ret = self.step_3.workflow.get_tabular_data_for_previous_steps(self.step_3, request, session)
+        resource = mock.MagicMock()
+        ret = self.step_3.workflow.get_tabular_data_for_previous_steps(self.step_3, request, session, resource)
 
         expected_result = {'foo': {}}
         self.assertEqual(expected_result, ret)
@@ -269,12 +272,14 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
     def test_get_tabular_data_for_previous_steps_no_workflow(self):
         request = mock.MagicMock()
         session = mock.MagicMock()
+        resource = mock.MagicMock()
         self.assertRaises(
             ValueError,
             self.step_5.workflow.get_tabular_data_for_previous_steps,
             self.step_1,
             request,
-            session
+            session,
+            resource
         )
 
     def test_get_url_name(self):
