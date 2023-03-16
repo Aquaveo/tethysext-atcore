@@ -49,7 +49,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         can_run_workflows = not self.is_read_only(request, current_step)
 
         # get tabular data if any
-        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session)
+        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session,
+                                                                                 resource)
 
         has_tabular_data = len(tabular_data) > 0
         # Save changes to map view and layer groups
