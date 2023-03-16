@@ -50,7 +50,7 @@ class FormInputWV(ResourceWorkflowView):
 
         # Django Renderer
         if renderer == 'django':
-            p = ParamClass()
+            p = ParamClass(request=request, session=session, resource=resource)
             if hasattr(p, 'update_precedence'):
                 p.update_precedence()
             for k, v in current_step.get_parameter('form-values').items():
@@ -94,7 +94,7 @@ class FormInputWV(ResourceWorkflowView):
         mod = __import__(package, fromlist=[p_class])
         ParamClass = getattr(mod, p_class)
         if step.options['renderer'] == 'django':
-            param_class_for_form = ParamClass()
+            param_class_for_form = ParamClass(request=request, session=session, resource=resource)
             form = generate_django_form(param_class_for_form, form_field_prefix='param-form-')(request.POST)
             params = {}
 
@@ -113,7 +113,7 @@ class FormInputWV(ResourceWorkflowView):
 
             # Get the param class and save the data from the form
             # for the next time the form is loaded
-            param_class = ParamClass()
+            param_class = ParamClass(request=request, session=session, resource=resource)
             param_values = dict(param_class.param.get_param_values())
             for k, v in params.items():
                 try:
@@ -136,7 +136,7 @@ class FormInputWV(ResourceWorkflowView):
                     except ValueError as e:
                         raise RuntimeError('error setting param data: {}'.format(e))
 
-            param_class = ParamClass()
+            param_class = ParamClass(request=request, session=session, resource=resource)
             param_values = dict(param_class.get_param_values())
             for k, v in params.items():
                 try:
