@@ -50,7 +50,6 @@ class ResourceStatus(ResourceViewMixin):
         app = self.get_app()
         job_manager = app.get_job_manager()
         jobs = job_manager.list_jobs()
-        show_job_table_actions = request.user and request.user.is_staff
         SessionMaker = self.get_sessionmaker()
         session = SessionMaker()
         app_user = self._AppUser.get_app_user_from_request(request, session)
@@ -82,6 +81,7 @@ class ResourceStatus(ResourceViewMixin):
 
         # Job logs contain sensitive information, so only show them to staff and app admins
         show_job_table_actions = app_user.is_staff() or app_user.get_role() == self._AppUser.ROLES.APP_ADMIN
+        session.close()
         jobs_table = JobsTable(
             jobs=filtered_jobs,
             column_fields=('id', 'name', 'creation_time', 'execute_time', 'run_time'),
