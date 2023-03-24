@@ -50,6 +50,9 @@ class ResourceStatus(ResourceViewMixin):
         app = self.get_app()
         job_manager = app.get_job_manager()
         jobs = job_manager.list_jobs()
+        SessionMaker = self.get_sessionmaker()
+        session = SessionMaker()
+        app_user = self._AppUser.get_app_user_from_request(request, session)
 
         # Filter by resource
         filtered_jobs = []
@@ -76,6 +79,9 @@ class ResourceStatus(ResourceViewMixin):
             # TODO: Should this be filtered down more? By user? Permissions?
             filtered_jobs = jobs
 
+        # Job logs contain sensitive information, so only show them to staff and app admins
+        show_job_table_actions = app_user.is_staff() or app_user.get_role() == self._AppUser.ROLES.APP_ADMIN
+        session.close()
         jobs_table = JobsTable(
             jobs=filtered_jobs,
             column_fields=('id', 'name', 'creation_time', 'execute_time', 'run_time'),
@@ -84,6 +90,8 @@ class ResourceStatus(ResourceViewMixin):
             bordered=False,
             condensed=False,
             show_status=True,
+            actions=['logs'],
+            show_actions=show_job_table_actions,
             show_detailed_status=self.show_detailed_status
         )
 

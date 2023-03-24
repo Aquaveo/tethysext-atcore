@@ -86,9 +86,11 @@ class SpatialCondorJobMWV(MapWorkflowView):
         """  # noqa: E501
         step_status = current_step.get_status()
         if step_status != current_step.STATUS_PENDING:
-            return self.render_condor_jobs_table(request, resource, workflow, current_step, previous_step, next_step)
+            return self.render_condor_jobs_table(
+                request, session, resource, workflow, current_step, previous_step, next_step
+            )
 
-    def render_condor_jobs_table(self, request, resource, workflow, current_step, previous_step, next_step):
+    def render_condor_jobs_table(self, request, session, resource, workflow, current_step, previous_step, next_step):
         """
         Render a condor jobs table showing the status of the current job that is processing.
             request(HttpRequest): The request.
@@ -103,6 +105,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         app = self.get_app()
         job_manager = app.get_job_manager()
         step_job = job_manager.get_job(job_id=job_id)
+        app_user = self._AppUser.get_app_user_from_request(request, session)
+        show_job_table_actions = app_user.is_staff() or app_user.get_role() == self._AppUser.ROLES.APP_ADMIN
 
         jobs_table = JobsTable(
             jobs=[step_job],
@@ -112,6 +116,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
             condensed=False,
             show_status=True,
             show_detailed_status=True,
+            actions=['logs'],
+            show_actions=show_job_table_actions,
         )
 
         # Build step cards

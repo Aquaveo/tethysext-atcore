@@ -44,7 +44,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         tests_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
         self.working_dir_path = os.path.join(tests_dir, 'files', 'working_dir')
 
-        self.request = mock.MagicMock(spec=HttpRequest)
+        self.user = mock.MagicMock()
+        self.request = mock.MagicMock(spec=HttpRequest, user=self.user)
         self.request.GET = {}
         self.request.POST = {}
         self.request.path = './path'
@@ -137,7 +138,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         SpatialCondorJobMWV().on_get_step(self.request, self.session, self.resource, self.workflow, self.step,
                                           None, None)
 
-        mock_rcjt.assert_called_with(self.request, self.resource, self.workflow, self.step, None, None)
+        mock_rcjt.assert_called_with(self.request, self.session, self.resource, self.workflow, self.step, None, None)
 
     @mock.patch.object(ResourceWorkflowView, 'workflow_locked_for_request_user', return_value=False)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
@@ -157,8 +158,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
 
-        SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.resource, self.workflow, self.step,
-                                                       None, None)
+        SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.session, self.resource, self.workflow,
+                                                       self.step, None, None)
 
         arg_call_list = mock_render.call_args_list[0][0][2]
         self.assertEqual(self.resource, arg_call_list['resource'])
@@ -196,8 +197,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
 
-        SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.resource, self.workflow, self.step,
-                                                       None, None)
+        SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.session, self.resource, self.workflow,
+                                                       self.step, None, None)
 
         arg_call_list = mock_render.call_args_list[0][0][2]
         self.assertEqual(self.resource, arg_call_list['resource'])
