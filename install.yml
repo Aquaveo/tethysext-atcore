@@ -23,7 +23,7 @@ requirements:
       - param
       - pyshp
       - requests
-      - sqlalchemy=1.4.*
+      - sqlalchemy<2
       - panel
   pip:
     - django-datetime-widget2

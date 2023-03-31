@@ -18,7 +18,8 @@ def parse_url(url):
     Splits url into parts.
     e.g.: "http://admin:geoserver@localhost:8181/geoserver/rest"
     """
-    url_pattern = r'(?P<protocol>[\w]*)://(?P<username>[\w\-\.]*):(?P<password>[\w\-\.!@#\$%&\*|]*)' \
+    url_pattern = r'(?P<protocol>[\w]*)://(?P<username>[\w\-\.]*)' \
+                  r':(?P<password>[\w\~\`\!\@\#\$\%\^\&\*\(\)\-\_\+\=\[\]\{\}\|\:\;\<\>\,\.\?]*)' \
                   r'@(?P<host>[\w\-\.]*):*(?P<port>[0-9]*)/(?P<path>[\w\-\./]*)'
     result = re.match(url_pattern, url)
     if result:
@@ -153,3 +154,10 @@ def import_from_string(path):
     # Import the function or class
     obj = getattr(module, obj_name)
     return obj
+
+
+if __name__ == '__main__':
+    import sys
+    print(f'Parsing url: {sys.argv[1]}')
+    url = parse_url(sys.argv[1])
+    print(f'Url: {url}')

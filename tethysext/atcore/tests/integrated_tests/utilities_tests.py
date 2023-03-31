@@ -47,6 +47,20 @@ class UtilitiesTests(DjangoTestCase):
         self.assertEqual('geoserver/rest', result_url.path)
         self.assertEqual('http://localhost/geoserver/rest', result_url.endpoint)
 
+    def test_parse_url_password_chars(self):
+        password = "~`!@#$%^&*()-_+={}[]|:;<>,.?" \
+                   "abcdefghijklmnopqrstuvwxyz" \
+                   "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                   "0123456789"
+        url = f"http://admin:{password}@localhost:80/geoserver/rest"
+        result_url = utilities.parse_url(url)
+        self.assertEqual('admin', result_url.username)
+        self.assertEqual(password, result_url.password)
+        self.assertEqual('localhost', result_url.host)
+        self.assertEqual('80', result_url.port)
+        self.assertEqual('geoserver/rest', result_url.path)
+        self.assertEqual('http://localhost:80/geoserver/rest', result_url.endpoint)
+
     def test_parse_url_without_invalid_url(self):
         self.assertRaises(ValueError,
                           utilities.parse_url,
