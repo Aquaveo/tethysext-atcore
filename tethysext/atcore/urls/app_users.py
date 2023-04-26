@@ -208,7 +208,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resources,
+                _Resources=_Resources,
                 _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
@@ -221,7 +221,6 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resources,
                 _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
@@ -234,7 +233,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resources,
+                _Resources=_Resources,
                 _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
@@ -247,7 +246,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _persistent_store_name=persistent_store_name,
                 _AppUser=_AppUser,
                 _Organization=_Organization,
-                _Resource=_Resources,
+                _Resources=_Resources,
                 _PermissionsManager=_PermissionsManager,
                 base_template=base_template
             )
