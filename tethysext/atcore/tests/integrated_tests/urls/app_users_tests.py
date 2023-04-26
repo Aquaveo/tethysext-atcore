@@ -2,9 +2,10 @@ from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.models.app_users import AppUser, Resource, Organization
 from tethysext.atcore.urls import app_users
 from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, UserAccount, \
-    ModifyOrganization, ManageOrganizationMembers, ManageOrganizations
+    ModifyOrganization, ManageOrganizationMembers, ManageOrganizations, ManageResources, ModifyResource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
+from tethysext.atcore.tests.integrated_tests.urls.resources_tests import CustomManageResources, CustomModifyResource
 
 
 class CustomAppUser(AppUser):
@@ -223,4 +224,29 @@ class AppUserUrlsTests(TethysTestCase):
         app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomAppUser])
         app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomOrganization])
         self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_models=[CustomResource])
+                          custom_models=[CustomResource])  # Resource models not allowed
+
+    def test_custom_resources(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        url_maps = app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, base_url_path=self.base_url_path,
+                                  custom_resources=[CustomResource])
+        self.url_asserts(url_maps, with_base_url=True)
+
+    def test_custom_resources_invalid(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          base_url_path=self.base_url_path,
+                          custom_resources=[CustomAppUser])  # Not a Resource
+
+    def test_custom_resources_dict(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        url_maps = app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, base_url_path=self.base_url_path,
+                                  custom_resources={CustomResource: [CustomManageResources, CustomModifyResource]})
+        self.url_asserts(url_maps, with_base_url=True)
+
+        self.controller_asserts(url_maps, ['resources_manage_resources'], ManageResources, CustomManageResources)
+        self.controller_asserts(url_maps, ['resources_new_resource', 'resources_edit_resource'],
+                                ModifyResource, CustomModifyResource)

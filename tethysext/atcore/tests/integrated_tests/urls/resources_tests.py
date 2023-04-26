@@ -208,3 +208,10 @@ class ResourceUrlsTests(TethysTestCase):
                        resource_model=CustomResource)
         self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
                           custom_models=[CustomResource], resource_model=CustomResource)
+
+    def test_resource_model(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        resources.urls(MockUrlMapMaker, mockapp, mock_db_name, resource_model=CustomResource)
+        self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          resource_model=CustomOrganization)  # Not a Resource
