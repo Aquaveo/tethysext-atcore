@@ -33,7 +33,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         base_template (str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
         custom_controllers (list<TethysController>): Any number of TethysController subclasses to override default controller classes.
         custom_models (list<cls>): custom subclasses of AppUser or Organization models.
-        custom_resources (list<Resource>): custom subclasses of Resource models.
+        custom_resources (list<Resource> or dict<Resource: list<TethysController>>): list of custom subclasses of Resource models or dict with Resoruce models as keys and list of controllers as values.
         custom_permissions_manager (cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
 
     Url Map Names:
@@ -253,19 +253,31 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         )
     ]
 
-    for _Resource in _Resources:
-        resources_urls = resources.urls(
-            url_map_maker=url_map_maker,
-            app=app,
-            persistent_store_name=persistent_store_name,
-            base_url_path=base_url_path,
-            base_template=base_template,
-            custom_controllers=custom_controllers,
-            custom_models=custom_models,
-            custom_permissions_manager=custom_permissions_manager,
-            resource_model=_Resource
-        )
-
-        url_maps.extend(resources_urls)
+    if isinstance(custom_resources, dict):
+        for _Resource, _ResourceControllers in custom_resources.items():
+            url_maps.extend(resources.urls(
+                url_map_maker=url_map_maker,
+                app=app,
+                persistent_store_name=persistent_store_name,
+                base_url_path=base_url_path,
+                base_template=base_template,
+                custom_controllers=_ResourceControllers,
+                custom_models=custom_models,
+                custom_permissions_manager=custom_permissions_manager,
+                resource_model=_Resource
+            ))
+    else:
+        for _Resource in _Resources:
+            url_maps.extend(resources.urls(
+                url_map_maker=url_map_maker,
+                app=app,
+                persistent_store_name=persistent_store_name,
+                base_url_path=base_url_path,
+                base_template=base_template,
+                custom_controllers=custom_controllers,
+                custom_models=custom_models,
+                custom_permissions_manager=custom_permissions_manager,
+                resource_model=_Resource
+            ))
 
     return url_maps
