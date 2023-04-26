@@ -190,7 +190,7 @@ class AppUsersResourceControllerTests(SqlAlchemyTestCase):
 
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.get_resource_model')
     def test_get_resource(self, _, mock_app_user, mock_session):
         app_user_resource_controller = AppUsersResourceController()
         mock_request = mock.MagicMock()
@@ -214,7 +214,7 @@ class AppUsersResourceControllerTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.get_resource_model')
     def test_get_resource_can_view_atcore_exception(self, mock_resource, mock_app_user, mock_session, mock_redirect,
                                                     mock_messages):
         mock_request = mock.MagicMock()
@@ -245,7 +245,7 @@ class AppUsersResourceControllerTests(SqlAlchemyTestCase):
     # @mock.patch('tethysext.atcore.controllers.app_users.mixins.redirect')
     # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_sessionmaker')
     # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_app_user_model')
-    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppUsersViewMixin.get_resource_model')
+    # @mock.patch('tethysext.atcore.controllers.app_users.mixins.ResourceViewMixin.get_resource_model')
     # def test_get_resource_can_view_statement_error(self, mock_resource, mock_app_user, mock_session, mock_redirect,
     #                                                mock_messages):
     #     import pdb

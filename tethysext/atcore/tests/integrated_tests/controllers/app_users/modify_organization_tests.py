@@ -9,7 +9,7 @@
 from unittest import mock
 from django.http import HttpRequest, QueryDict
 from django.contrib.auth.models import User
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceBackUrlViewMixin
 from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users.organization import Organization
@@ -103,8 +103,9 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch.object(ResourceBackUrlViewMixin, 'default_back_url', return_value='/some/back/url/')  # noqa:E501
     @mock.patch.object(ModifyOrganization, '_handle_modify_user_requests')  # noqa: E501
-    def test_get(self, mock_handle):
+    def test_get(self, mock_handle, _):
         self.request.method = 'get'
         controller = ModifyOrganization.as_controller()
 
@@ -112,8 +113,9 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
         mock_handle.assert_called()
 
+    @mock.patch.object(ResourceBackUrlViewMixin, 'default_back_url', return_value='/some/back/url/')  # noqa:E501
     @mock.patch.object(ModifyOrganization, '_handle_modify_user_requests')  # noqa: E501
-    def test_post(self, mock_handle):
+    def test_post(self, mock_handle, _):
         self.request.method = 'post'
         controller = ModifyOrganization.as_controller()
 
@@ -217,19 +219,19 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertFalse(context['owner_select']['disabled'])
         self.assertEqual('', context['owner_select']['error'])
 
-        self.assertEqual({}, context['project_select']['attributes'])
-        self.assertEqual('', context['project_select']['classes'])
-        self.assertEqual('Resources (Optional)', context['project_select']['display_text'])
-        self.assertEqual('organization-resources', context['project_select']['name'])
-        self.assertTrue(context['project_select']['initial_is_iterable'])
-        self.assertEqual([], context['project_select']['initial'])
-        self.assertTrue(context['project_select']['multiple'])
-        self.assertFalse(context['project_select']['original'])
-        self.assertFalse(context['project_select']['placeholder'])
-        self.assertEqual('null', context['project_select']['select2_options'])
-        self.assertEqual([], context['project_select']['options'])
-        self.assertFalse(context['project_select']['disabled'])
-        self.assertEqual('', context['project_select']['error'])
+        self.assertEqual({}, context['resources_select_inputs'][0]['attributes'])
+        self.assertEqual('', context['resources_select_inputs'][0]['classes'])
+        self.assertEqual('Resources (Optional)', context['resources_select_inputs'][0]['display_text'])
+        self.assertEqual('organization-resources-resources', context['resources_select_inputs'][0]['name'])
+        self.assertTrue(context['resources_select_inputs'][0]['initial_is_iterable'])
+        self.assertEqual([], context['resources_select_inputs'][0]['initial'])
+        self.assertTrue(context['resources_select_inputs'][0]['multiple'])
+        self.assertFalse(context['resources_select_inputs'][0]['original'])
+        self.assertFalse(context['resources_select_inputs'][0]['placeholder'])
+        self.assertEqual('null', context['resources_select_inputs'][0]['select2_options'])
+        self.assertEqual([], context['resources_select_inputs'][0]['options'])
+        self.assertFalse(context['resources_select_inputs'][0]['disabled'])
+        self.assertEqual('', context['resources_select_inputs'][0]['error'])
 
         self.assertEqual('app_namespace:app_users_manage_users', context['next_controller'])
 
@@ -253,7 +255,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
 
     @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_handle_modify_user_requests_modify_organization(self, _):
-        self.request.GET = {'next': 'manage-resources'}
+        self.request.GET = {'next': 'manage-resources-resources'}
         self.request.POST.update({
             'organization-name': 'Aquaveo',
             'organization-resources': ['Resource'],
@@ -272,7 +274,7 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_handle_modify_user_requests_invalid_modify_2(self, _):
         self.mock_organization_has_permission.return_value = False
-        self.request.GET = {'next': 'manage-organizations'}
+        self.request.GET = {'next': 'manage-organizations-resources'}
         self.request.POST.update({
             'organization-consultant': 'consultant',
             'organization-resources': ['Resource'],
@@ -288,9 +290,9 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
     def test_handle_modify_user_requests_invalid_modify(self, _, mock_get_app_user, mock_have_consultant):
         self.mock_organization_has_permission.return_value = False
         mock_have_consultant.return_value = True
-        self.request.GET = {'next': 'manage-resources'}
+        self.request.GET = {'next': 'manage-resources-resources'}
         self.request.POST.update({
-            'organization-resources': ['Resource'],
+            'organization-resources-resources': ['Resource'],
             'modify-organization-submit': True
         })
         app_user = mock.MagicMock(clients=[mock.MagicMock()], members=[mock.MagicMock()])
@@ -353,19 +355,19 @@ class ModifyOrganizationsTests(SqlAlchemyTestCase):
         self.assertEqual('You must assign the organization to at least one consultant organization.',
                          context['owner_select']['error'])
 
-        self.assertEqual({}, context['project_select']['attributes'])
-        self.assertEqual('', context['project_select']['classes'])
-        self.assertEqual('Resources (Optional)', context['project_select']['display_text'])
-        self.assertEqual('organization-resources', context['project_select']['name'])
-        self.assertTrue(context['project_select']['initial_is_iterable'])
-        self.assertEqual([['Resource']], context['project_select']['initial'])
-        self.assertTrue(context['project_select']['multiple'])
-        self.assertFalse(context['project_select']['original'])
-        self.assertFalse(context['project_select']['placeholder'])
-        self.assertEqual('null', context['project_select']['select2_options'])
-        self.assertEqual([], context['project_select']['options'])
-        self.assertFalse(context['project_select']['disabled'])
-        self.assertEqual('', context['project_select']['error'])
+        self.assertEqual({}, context['resources_select_inputs'][0]['attributes'])
+        self.assertEqual('', context['resources_select_inputs'][0]['classes'])
+        self.assertEqual('Resources (Optional)', context['resources_select_inputs'][0]['display_text'])
+        self.assertEqual('organization-resources-resources', context['resources_select_inputs'][0]['name'])
+        self.assertTrue(context['resources_select_inputs'][0]['initial_is_iterable'])
+        self.assertEqual([['Resource']], context['resources_select_inputs'][0]['initial'])
+        self.assertTrue(context['resources_select_inputs'][0]['multiple'])
+        self.assertFalse(context['resources_select_inputs'][0]['original'])
+        self.assertFalse(context['resources_select_inputs'][0]['placeholder'])
+        self.assertEqual('null', context['resources_select_inputs'][0]['select2_options'])
+        self.assertEqual([], context['resources_select_inputs'][0]['options'])
+        self.assertFalse(context['resources_select_inputs'][0]['disabled'])
+        self.assertEqual('', context['resources_select_inputs'][0]['error'])
 
         self.assertEqual('app_namespace:resources_manage_resources', context['next_controller'])
 

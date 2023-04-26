@@ -168,8 +168,8 @@ class ModifyOrganization(MultipleResourcesViewMixin):
                 # Process resource select params
                 for _Resource in _Resources:
                     selected_resources[_Resource.SLUG].extend(
-                        post_params.getlist(f'organization-resources-{_Resource.SLUG}'
-                    ))
+                        post_params.getlist(f'organization-resources-{_Resource.SLUG}')
+                    )
 
                 if not am_member:
                     is_active = post_params.get('organization-status') == 'on'
@@ -287,8 +287,8 @@ class ModifyOrganization(MultipleResourcesViewMixin):
             resources_by_type = {_Resource.SLUG: [] for _Resource in _Resources}
             for resource in resources:
                 if resource.SLUG in resources_by_type:
-                    resources_by_type[resource.SLUG].append((resource.name, str(resource.id)))    
-            
+                    resources_by_type[resource.SLUG].append((resource.name, str(resource.id)))
+
             resources_select_inputs = [
                 SelectInput(
                     display_text=f'{_Resource.DISPLAY_TYPE_PLURAL} (Optional)',
@@ -296,7 +296,7 @@ class ModifyOrganization(MultipleResourcesViewMixin):
                     multiple=True,
                     options=resources_by_type[_Resource.SLUG],
                     initial=selected_resources[_Resource.SLUG]
-                ) 
+                )
                 for _Resource in _Resources
             ]
 

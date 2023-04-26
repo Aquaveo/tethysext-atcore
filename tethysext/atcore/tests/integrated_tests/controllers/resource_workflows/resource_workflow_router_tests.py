@@ -11,7 +11,7 @@ from django.http import HttpRequest
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from tethys_apps.models import TethysApp
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceBackUrlViewMixin
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
 from tethysext.atcore.exceptions import ATCoreException
 from tethysext.atcore.mixins.results_mixin import ResultsMixin
@@ -148,6 +148,11 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_session_maker = session_patcher.start()
         self.mock_get_session_maker.return_value = mock.MagicMock
         self.addCleanup(session_patcher.stop)
+
+        default_url_patcher = mock.patch.object(ResourceBackUrlViewMixin, 'default_back_url')
+        self.mock_default_url = default_url_patcher.start()
+        self.mock_default_url.return_value = '/some/default/url/'
+        self.addCleanup(default_url_patcher.stop)
 
         get_step_mixins_patcher = mock.patch.object(WorkflowViewMixin, 'get_step')  # noqa: E501
         self.mock_get_step_mixins = get_step_mixins_patcher.start()

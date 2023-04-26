@@ -12,7 +12,8 @@ from django.test import RequestFactory
 from django.test.utils import override_settings
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceViewMixin
+from tethysext.atcore.controllers.app_users.mixins import (AppUsersViewMixin, ResourceBackUrlViewMixin,
+                                                           ResourceViewMixin, MultipleResourcesViewMixin)
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.exceptions import ATCoreException
 
@@ -21,7 +22,15 @@ class FakeAppUsersView(AppUsersViewMixin):
     pass
 
 
+class FakeResourceBackUrlView(ResourceBackUrlViewMixin):
+    pass
+
+
 class FakeResourceView(ResourceViewMixin):
+    pass
+
+
+class FakeMultipleResourcesViewMixin(MultipleResourcesViewMixin):
     pass
 
 
@@ -56,11 +65,6 @@ class AppUsersViewMixinTests(TethysTestCase):
 
         self.assertEqual(Organization, ret)
 
-    def test_get_resource_model(self):
-        ret = self.fauc.get_resource_model()
-
-        self.assertEqual(Resource, ret)
-
     @mock.patch('tethysext.atcore.controllers.app_users.mixins.AppPermissionsManager')
     def test_get_permissions_manager(self, mock_apm):
         mock_app = mock.MagicMock()
@@ -85,6 +89,35 @@ class AppUsersViewMixinTests(TethysTestCase):
         self.assertRaises(NotImplementedError, self.fauc.get_sessionmaker)
 
 
+class ResourceBackUrlViewMixinTests(TethysTestCase):
+    def setUp(self):
+        self.srid = '2232'
+        self.query = 'Colorado'
+        self.resource_id = 'abc123'
+        self.user = UserFactory()
+        self.request_factory = RequestFactory()
+        self.frbuv = FakeResourceBackUrlView()
+
+    def tearDown(self):
+        pass
+
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.get_active_app')
+    @mock.patch('tethysext.atcore.controllers.app_users.mixins.reverse')
+    def test_default_back_url(self, mock_reverse, mock_aa):
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_aa.return_value = mock.MagicMock(url_namespace='test1')
+
+        # Execute the method
+        self.frbuv.default_back_url(mock_request, resource_id=mock_resource_id)
+
+        # test results
+        mock_aa.assert_called_with(mock_request)
+        call_args = mock_reverse.call_args_list
+        self.assertEqual('test1:resources_resource_details', call_args[0][0][0])
+        self.assertEqual('abc123', call_args[0][1]['args'][0])
+
+
 class ResourceViewMixinTests(TethysTestCase):
 
     def setUp(self):
@@ -98,21 +131,9 @@ class ResourceViewMixinTests(TethysTestCase):
     def tearDown(self):
         pass
 
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.get_active_app')
-    @mock.patch('tethysext.atcore.controllers.app_users.mixins.reverse')
-    def test_default_back_url(self, mock_reverse, mock_aa):
-        mock_request = self.request_factory.get('/foo/bar/')
-        mock_resource_id = self.resource_id
-        mock_aa.return_value = mock.MagicMock(url_namespace='test1')
-
-        # Execute the method
-        self.farc.default_back_url(mock_request, resource_id=mock_resource_id)
-
-        # test results
-        mock_aa.assert_called_with(mock_request)
-        call_args = mock_reverse.call_args_list
-        self.assertEqual('test1:resources_resource_details', call_args[0][0][0])
-        self.assertEqual('abc123', call_args[0][1]['args'][0])
+    def test_get_resource_model(self):
+        ret = self.farc.get_resource_model()
+        self.assertEqual(Resource, ret)
 
     def test_get_resource_has_permission(self):
         self.farc.get_app_user_model = mock.MagicMock()
@@ -124,7 +145,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_session = self.farc.get_sessionmaker()()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
-        mock_resource = mock_session.query().filter().one()
+        mock_resource = mock_session.query().get()
 
         ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
 
@@ -140,7 +161,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_session = mock.MagicMock()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
-        mock_resource = mock_session.query().filter().one()
+        mock_resource = mock_session.query().get()
 
         ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
@@ -171,7 +192,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
         mock_session = mock.MagicMock()
-        mock_resource = mock_session.query().filter().one()
+        mock_resource = mock_session.query().get()
 
         ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
@@ -189,5 +210,101 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_session.query.side_effect = NoResultFound
 
         self.assertRaises(NoResultFound, self.farc.get_resource, request=mock_request, resource_id=mock_resource_id)
+
+        mock_session.close.assert_called()
+
+
+class MultipleResourcesViewMixinTests(TethysTestCase):
+
+    def setUp(self):
+        self.srid = '2232'
+        self.query = 'Colorado'
+        self.resource_id = 'abc123'
+        self.user = UserFactory()
+        self.request_factory = RequestFactory()
+        self.fmrv = FakeMultipleResourcesViewMixin()
+
+    def tearDown(self):
+        pass
+
+    def test_get_resource_models(self):
+        ret = self.fmrv.get_resource_models()
+        self.assertListEqual([Resource], ret)
+
+    def test_get_resource_has_permission(self):
+        self.fmrv.get_app_user_model = mock.MagicMock()
+        self.fmrv.get_resource_model = mock.MagicMock()
+        self.fmrv.get_sessionmaker = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_session = self.fmrv.get_sessionmaker()()
+        mock_requests_app_user = self.fmrv.get_app_user_model().get_app_user_from_request()
+        mock_requests_app_user.can_view.return_value = True
+        mock_resource = mock_session.query().get()
+
+        ret = self.fmrv.get_resource(request=mock_request, resource_id=mock_resource_id)
+
+        self.assertEqual(mock_resource, ret)
+        mock_session.close.assert_called()
+
+    def test_get_resource_has_permission_with_session(self):
+        self.fmrv.get_app_user_model = mock.MagicMock()
+        self.fmrv.get_resource_model = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_session = mock.MagicMock()
+        mock_requests_app_user = self.fmrv.get_app_user_model().get_app_user_from_request()
+        mock_requests_app_user.can_view.return_value = True
+        mock_resource = mock_session.query().get()
+
+        ret = self.fmrv.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
+
+        self.assertEqual(mock_resource, ret)
+        mock_session.close.assert_not_called()
+
+    @override_settings(ENABLE_OPEN_PORTAL=False)
+    def test_get_resource_no_permission(self):
+        self.fmrv.get_app_user_model = mock.MagicMock()
+        self.fmrv.get_resource_model = mock.MagicMock()
+        self.fmrv.get_sessionmaker = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_session = self.fmrv.get_sessionmaker()()
+        mock_requests_app_user = self.fmrv.get_app_user_model().get_app_user_from_request()
+        mock_requests_app_user.can_view.return_value = False
+
+        self.assertRaises(ATCoreException, self.fmrv.get_resource, request=mock_request, resource_id=mock_resource_id)
+
+        mock_session.close.assert_called()
+
+    @override_settings(ENABLE_OPEN_PORTAL=True)
+    def test_get_resource_open_portal(self):
+        self.fmrv.get_app_user_model = mock.MagicMock()
+        self.fmrv.get_resource_model = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_session = mock.MagicMock()
+        mock_resource = mock_session.query().get()
+
+        ret = self.fmrv.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
+
+        self.assertEqual(mock_resource, ret)
+        mock_session.close.assert_not_called()
+
+    def test_get_resource_db_exception(self):
+        self.fmrv.get_app_user_model = mock.MagicMock()
+        self.fmrv.get_resource_model = mock.MagicMock()
+        self.fmrv.get_sessionmaker = mock.MagicMock()
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_resource_id = self.resource_id
+        mock_session = self.fmrv.get_sessionmaker()()
+        mock_session.query.side_effect = NoResultFound
+
+        self.assertRaises(NoResultFound, self.fmrv.get_resource, request=mock_request, resource_id=mock_resource_id)
 
         mock_session.close.assert_called()

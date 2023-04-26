@@ -46,7 +46,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         app_users_manage_organization_members <organization_id>
         app_users_new_organization
         app_users_edit_organization <organization_id>
-        
+
     Url Map Names for each Resource given:
         <resource_slug>_manage_resources
         <resource_slug>_new_resource

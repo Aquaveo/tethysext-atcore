@@ -9,7 +9,7 @@
 import json
 from unittest import mock
 from django.test import RequestFactory
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin, ResourceViewMixin
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.models.app_users import AppUser, Resource
 from django.core.handlers.wsgi import WSGIRequest
@@ -105,7 +105,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch.object(ManageResources, 'can_edit_resource')
     @mock.patch.object(ManageResources, 'get_resources')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
-    @mock.patch.object(AppUsersViewMixin, 'get_resource_model')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
     @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,
@@ -187,7 +187,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch.object(ManageResources, 'can_edit_resource')
     @mock.patch.object(ManageResources, 'get_resources')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
-    @mock.patch.object(AppUsersViewMixin, 'get_resource_model')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
     @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get_first_time(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,
@@ -263,7 +263,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     @mock.patch.object(ManageResources, 'perform_custom_delete_operations')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
-    @mock.patch.object(AppUsersViewMixin, 'get_resource_model')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
     def test_handle_delete(self, _, mock_get_session, mock_custom_delete, __):
         session = mock_get_session()()
         mock_resource = mock.MagicMock()
@@ -286,7 +286,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     @mock.patch.object(ManageResources, 'perform_custom_delete_operations')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
-    @mock.patch.object(AppUsersViewMixin, 'get_resource_model')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
     def test_handle_delete_query_exception(self, _, mock_get_session, mock_custom_delete, __):
         session = mock_get_session()()
         session.query().get.side_effect = Exception
@@ -310,7 +310,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     @mock.patch.object(ManageResources, 'perform_custom_delete_operations')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
-    @mock.patch.object(AppUsersViewMixin, 'get_resource_model')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
     def test_handle_delete_delete_exception(self, _, mock_get_session, mock_custom_delete, __, mock_log):
         session = mock_get_session()()
         mock_custom_delete.side_effect = Exception
@@ -405,7 +405,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_session = mock.MagicMock()
         mock_request_app_user = mock.MagicMock()
-        with mock.patch.object(AppUsersViewMixin, 'get_resource_model') as mock_get_resource_model:
+        with mock.patch.object(ResourceViewMixin, 'get_resource_model') as mock_get_resource_model:
             mock_get_resource_model.return_value = 'resource_type'
             # Call the method
             manage_resources = ManageResources()

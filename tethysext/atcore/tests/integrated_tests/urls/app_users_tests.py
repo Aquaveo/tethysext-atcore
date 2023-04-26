@@ -222,6 +222,5 @@ class AppUserUrlsTests(TethysTestCase):
         mock_db_name = "foo"
         app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomAppUser])
         app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomOrganization])
-        app_users.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomResource])
         self.assertRaises(ValueError, app_users.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_models=['invalid-model'])
+                          custom_models=[CustomResource])

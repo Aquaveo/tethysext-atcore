@@ -10,7 +10,9 @@ from unittest import mock
 from django.http import HttpRequest
 from django.http import QueryDict
 from django.contrib.auth.models import User
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.app_users.mixins import (
+    AppUsersViewMixin, ResourceViewMixin, ResourceBackUrlViewMixin
+)
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.controllers.app_users.modify_resource import ModifyResource
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -62,7 +64,7 @@ class ModifyResourceTests(SqlAlchemyTestCase):
         self.get_organization_model.return_value = mock.MagicMock()
         self.addCleanup(get_organization_model_patcher.stop)
 
-        get_resource_model_patcher = mock.patch.object(AppUsersViewMixin, 'get_resource_model')
+        get_resource_model_patcher = mock.patch.object(ResourceViewMixin, 'get_resource_model')
         self.get_resource_model = get_resource_model_patcher.start()
         self.get_resource_model.return_value = mock.MagicMock()
         self.addCleanup(get_resource_model_patcher.stop)
@@ -110,8 +112,9 @@ class ModifyResourceTests(SqlAlchemyTestCase):
     def tearDown(self):
         super().tearDown()
 
+    @mock.patch.object(ResourceBackUrlViewMixin, 'default_back_url', return_value='/some/back/url/')  # noqa:E501
     @mock.patch.object(ModifyResource, '_handle_modify_resource_requests')
-    def test_get(self, mock_handle):
+    def test_get(self, mock_handle, _):
         mock_handle.return_value = {'success': True}
         controller = ModifyResource.as_controller()
         self.request.method = 'get'
@@ -120,8 +123,9 @@ class ModifyResourceTests(SqlAlchemyTestCase):
 
         self.assertTrue(ret['success'])
 
+    @mock.patch.object(ResourceBackUrlViewMixin, 'default_back_url', return_value='/some/back/url/')  # noqa:E501
     @mock.patch.object(ModifyResource, '_handle_modify_resource_requests')
-    def test_post(self, mock_handle):
+    def test_post(self, mock_handle, _):
         mock_handle.return_value = {'success': True}
         controller = ModifyResource.as_controller()
         self.request.method = 'post'
