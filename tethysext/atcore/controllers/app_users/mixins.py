@@ -88,12 +88,19 @@ class ResourceBackUrlViewMixin(AppUsersViewMixin):
         Returns:
             str: back url.
         """
-        resource_id = kwargs.get('resource_id', '') or args[0]
         active_app = get_active_app(request)
         app_namespace = active_app.url_namespace
-        resource = self.get_resource(request, resource_id)
-        back_controller = f'{app_namespace}:{resource.SLUG}_resource_details'
-        return reverse(back_controller, args=(str(resource_id),))
+        resource_id = kwargs.get('resource_id', '')
+        resource = self.get_resource(request, resource_id) if resource_id else None
+        if resource:
+            # Get resource_details page for the resource
+            resource = self.get_resource(request, resource_id)
+            back_controller = f'{app_namespace}:{resource.SLUG}_resource_details'
+            return reverse(back_controller, args=(str(resource_id),))
+        else:
+            # If no resource_id provided, default to the index page of the app
+            back_controller = f'{app_namespace}:{active_app.index}'
+            return reverse(back_controller)
 
 
 class ResourceViewMixin(ResourceBackUrlViewMixin):
@@ -130,13 +137,11 @@ class ResourceViewMixin(ResourceBackUrlViewMixin):
 
         request_app_user = _AppUser.get_app_user_from_request(request, session)
         try:
-            resource = session.query(_Resource). \
-                filter(_Resource.id == resource_id). \
-                one()
+            resource = session.query(_Resource).get(resource_id)
 
             # TODO: Let the apps check permissions so anonymous user only has access to app specific resources?
             if not getattr(settings, 'ENABLE_OPEN_PORTAL', False):
-                if not request_app_user.can_view(session, request, resource):
+                if resource and not request_app_user.can_view(session, request, resource):
                     raise ATCoreException('You are not allowed to access this {}'.format(
                         _Resource.DISPLAY_TYPE_SINGULAR.lower()
                     ))
