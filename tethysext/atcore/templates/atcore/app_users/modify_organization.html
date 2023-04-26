@@ -20,18 +20,20 @@
       <form id="new-user-group-form" method="post" action="">
         {% csrf_token %}
         {# NAME FIELD #}
-        {% gizmo text_input organization_name_input %}
+        {% gizmo organization_name_input %}
 
         {# ORGANIZATION TYPE FIELD #}
-        {% gizmo select_input organization_type_select %}
+        {% gizmo organization_type_select %}
 
         {# ORGANIZATION CONSULTANT FIELD #}
         <div id="consultant-select-wrapper">
-          {% gizmo select_input owner_select %}
+          {% gizmo owner_select %}
         </div>
 
-        {# ORGANIZATION PROJECTS FIELD #}
-        {% gizmo select_input project_select %}
+        {# ORGANIZATION RESOURCES FIELD #}
+        {% for resources_select_input in resources_select_inputs %}
+          {% gizmo resources_select_input %}
+        {% endfor %}
 
         {# ORGANIZATION STATUS FIELD #}
         <div id="status-toggle-wrapper" class="mb-2">
