@@ -99,8 +99,9 @@ class ModifyOrganization(MultipleResourcesViewMixin):
 
         if next_arg == 'manage-users':
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
-        elif next_arg == 'manage-resources':
-            next_controller = f'{app_namespace}:{_Resource.SLUG}_manage_resources'
+        elif 'manage-resources' in next_arg:
+            resource_slug = next_arg.replace('manage-resources-', '')
+            next_controller = f'{app_namespace}:{resource_slug}_manage_resources'
         else:
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)
 

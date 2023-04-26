@@ -136,6 +136,7 @@ class ManageResources(ResourceViewMixin):
         resource_cards = []
         for resource in all_resources:
             resource_card = resource.__dict__
+            resource_card['slug'] = resource.SLUG
             resource_card['editable'] = self.can_edit_resource(session, request, resource)
             resource_card['deletable'] = self.can_delete_resource(session, request, resource)
             resource_card['organizations'] = resource.organizations

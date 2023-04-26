@@ -91,7 +91,7 @@
                    <td>
                      {% for organization in resource.organizations %}
                        {% if show_links_to_organizations %}
-                         <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
+                         <a href="{% url tethys_app.namespace|add:':app_users_edit_organization' organization.id %}?next=manage-resources-{{ resource.slug }}"><span class="manage-tag organization-tag manage-tag-hover">{{ organization.name }}</span></a>
                        {% else %}
                          <span class="manage-tag organization-tag">{{ organization.name }}</span>
                        {% endif %}
