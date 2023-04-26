@@ -163,14 +163,12 @@ class ModifyOrganization(MultipleResourcesViewMixin):
                 organization_name = post_params.get('organization-name', "")
                 selected_consultant = post_params.get('organization-consultant', "")
                 selected_license = post_params.get('organization-license', "")
-                selected_resources =[]
 
                 # Process resource select params
                 for _Resource in _Resources:
                     selected_resources[_Resource.SLUG].extend(
                         post_params.getlist(f'organization-resources-{_Resource.SLUG}'
                     ))
-                print(selected_resources)
 
                 if not am_member:
                     is_active = post_params.get('organization-status') == 'on'
