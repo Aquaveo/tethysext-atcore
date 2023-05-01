@@ -1,9 +1,17 @@
 from tethys_sdk.testing import TethysTestCase
-from tethysext.atcore.models.app_users import Resource
+from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.urls import resources
 from tethysext.atcore.controllers.app_users import ManageResources, ModifyResource, ResourceDetails, ResourceStatus
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.tests.mock.url_map_maker import MockUrlMapMaker
+
+
+class CustomAppUser(AppUser):
+    pass
+
+
+class CustomOrganization(Organization):
+    pass
 
 
 class CustomResource(Resource):
@@ -82,7 +90,8 @@ class ResourceUrlsTests(TethysTestCase):
         self.assertEqual(len(controller_names), num_controllers_tested)
 
     def test_vanilla(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None)
+        url_maps = resources.urls(MockUrlMapMaker, None, None,
+                                  resource_model=CustomResource)
 
         self.name_asserts(url_maps)
         self.assertEqual(len(url_maps), self.num_urls)
@@ -90,29 +99,34 @@ class ResourceUrlsTests(TethysTestCase):
         self.url_asserts(url_maps)
 
     def test_base_url_path(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None, base_url_path=self.base_url_path)
+        url_maps = resources.urls(MockUrlMapMaker, None, None, base_url_path=self.base_url_path,
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
 
     def test_base_url_path_startswith_slash(self):
         startswith_path = '/' + self.base_url_path
-        url_maps = resources.urls(MockUrlMapMaker, None, None, base_url_path=startswith_path)
+        url_maps = resources.urls(MockUrlMapMaker, None, None, base_url_path=startswith_path,
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
 
     def test_base_url_path_endswith_slash(self):
         endswith_path = self.base_url_path + '/'
-        url_maps = resources.urls(MockUrlMapMaker, None, None, base_url_path=endswith_path)
+        url_maps = resources.urls(MockUrlMapMaker, None, None, base_url_path=endswith_path,
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
 
     def test_custom_manage_resources_controller(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomManageResources])
+        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomManageResources],
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(url_maps, ['resources_manage_resources'], ManageResources, CustomManageResources)
 
     def test_custom_modify_resource_controller(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomModifyResource])
+        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomModifyResource],
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(
             url_maps,
@@ -122,12 +136,14 @@ class ResourceUrlsTests(TethysTestCase):
         )
 
     def test_custom_resource_details_controller(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceDetails])
+        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceDetails],
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(url_maps, ['resources_resource_details'], ResourceDetails, CustomResourceDetails)
 
     def test_custom_resource_status_controller(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceStatus])
+        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_controllers=[CustomResourceStatus],
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(url_maps, ['resources_resource_status'], ResourceStatus, CustomResourceStatus)
 
@@ -135,16 +151,17 @@ class ResourceUrlsTests(TethysTestCase):
         mockapp = object()
         mock_db_name = "foo"
         self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_controllers=[InvalidController])
+                          custom_controllers=[InvalidController], resource_model=CustomResource)
 
     def test_invalid_controller_arg_not_class(self):
         mockapp = object()
         mock_db_name = "foo"
         self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_controllers=['not-a-class'])
+                          custom_controllers=['not-a-class'], resource_model=CustomResource)
 
     def test_custom_permissions_manager(self):
-        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_permissions_manager=CustomPermissionsManager)
+        url_maps = resources.urls(MockUrlMapMaker, None, None, custom_permissions_manager=CustomPermissionsManager,
+                                  resource_model=CustomResource)
         self.assertEqual(len(url_maps), self.num_urls)
 
         for url_map in url_maps:
@@ -155,13 +172,13 @@ class ResourceUrlsTests(TethysTestCase):
         mockapp = object()
         mock_db_name = "foo"
         self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_permissions_manager='not-a-class')
+                          custom_permissions_manager='not-a-class', resource_model=CustomResource)
 
     def test_invalid_custom_permissions_manager_not_permissions_manager(self):
         mockapp = object()
         mock_db_name = "foo"
         self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_permissions_manager=InvalidPermissionsManager)
+                          custom_permissions_manager=InvalidPermissionsManager, resource_model=CustomResource)
 
     def test_custom_base_url_path_and_models(self):
         mockapp = object()
@@ -169,7 +186,8 @@ class ResourceUrlsTests(TethysTestCase):
         url_maps = resources.urls(
             MockUrlMapMaker, mockapp, mock_db_name, base_url_path=self.base_url_path,
             custom_controllers=[CustomManageResources, CustomModifyResource, CustomResourceDetails,
-                                CustomResourceStatus]
+                                CustomResourceStatus],
+            resource_model=CustomResource
         )
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
@@ -184,6 +202,16 @@ class ResourceUrlsTests(TethysTestCase):
         # NOTE: Don't know how to validate this... for not just test that it doesn't throw an error.
         mockapp = object()
         mock_db_name = "foo"
-        resources.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomResource])
+        resources.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomAppUser],
+                       resource_model=CustomResource)
+        resources.urls(MockUrlMapMaker, mockapp, mock_db_name, custom_models=[CustomOrganization],
+                       resource_model=CustomResource)
         self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
-                          custom_models=['invalid-model'])
+                          custom_models=[CustomResource], resource_model=CustomResource)
+
+    def test_resource_model(self):
+        mockapp = object()
+        mock_db_name = "foo"
+        resources.urls(MockUrlMapMaker, mockapp, mock_db_name, resource_model=CustomResource)
+        self.assertRaises(ValueError, resources.urls, MockUrlMapMaker, mockapp, mock_db_name,
+                          resource_model=CustomOrganization)  # Not a Resource

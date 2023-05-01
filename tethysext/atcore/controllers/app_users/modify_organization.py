@@ -19,14 +19,14 @@ from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, ToggleSwitch, SelectInput
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.app_users.mixins import MultipleResourcesViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.exceptions import ATCoreException
 
 log = logging.getLogger(f'tethys.{__name__}')
 
 
-class ModifyOrganization(AppUsersViewMixin):
+class ModifyOrganization(MultipleResourcesViewMixin):
     """
     Controller for modify_organization page.
 
@@ -59,7 +59,7 @@ class ModifyOrganization(AppUsersViewMixin):
         """
         _AppUser = self.get_app_user_model()
         _Organization = self.get_organization_model()
-        _Resource = self.get_resource_model()
+        _Resources = self.get_resource_models()
         make_session = self.get_sessionmaker()
         session = make_session()
         request_app_user = _AppUser.get_app_user_from_request(request, session)
@@ -69,7 +69,7 @@ class ModifyOrganization(AppUsersViewMixin):
         organization = None
         context = dict()
         organization_name = ""
-        selected_resources = []
+        selected_resources = {_Resource.SLUG: [] for _Resource in _Resources}
         selected_consultant = ""
         selected_license = ""
         is_active = True
@@ -99,8 +99,9 @@ class ModifyOrganization(AppUsersViewMixin):
 
         if next_arg == 'manage-users':
             next_controller = '{}:app_users_manage_users'.format(app_namespace)
-        elif next_arg == 'manage-resources':
-            next_controller = f'{app_namespace}:{_Resource.SLUG}_manage_resources'
+        elif 'manage-resources' in next_arg:
+            resource_slug = next_arg.replace('manage-resources-', '')
+            next_controller = f'{app_namespace}:{resource_slug}_manage_resources'
         else:
             next_controller = '{}:app_users_manage_organizations'.format(app_namespace)
 
@@ -148,8 +149,10 @@ class ModifyOrganization(AppUsersViewMixin):
                         ),
                     )
 
+                # Get resources assigned to the organization
                 for resource in organization.resources:
-                    selected_resources.append(str(resource.id))
+                    if resource.SLUG in selected_resources:
+                        selected_resources[resource.SLUG].append(str(resource.id))
 
                 # Determine if current user is a member of the organization
                 am_member = organization.is_member(request_app_user)
@@ -159,9 +162,14 @@ class ModifyOrganization(AppUsersViewMixin):
                 # Validate the form
                 post_params = request.POST
                 organization_name = post_params.get('organization-name', "")
-                selected_resources = post_params.getlist('organization-resources')
                 selected_consultant = post_params.get('organization-consultant', "")
                 selected_license = post_params.get('organization-license', "")
+
+                # Process resource select params
+                for _Resource in _Resources:
+                    selected_resources[_Resource.SLUG].extend(
+                        post_params.getlist(f'organization-resources-{_Resource.SLUG}')
+                    )
 
                 if not am_member:
                     is_active = post_params.get('organization-status') == 'on'
@@ -214,9 +222,10 @@ class ModifyOrganization(AppUsersViewMixin):
                         session.add(organization)
 
                     # Add resources
-                    for resource_id in selected_resources:
-                        resource = session.query(_Resource).get(resource_id)
-                        organization.resources.append(resource)
+                    for _Resource in _Resources:
+                        for resource_id in selected_resources[_Resource.SLUG]:
+                            resource = session.query(_Resource).get(resource_id)
+                            organization.resources.append(resource)
 
                     # Assign consultant
                     if selected_consultant:
@@ -271,19 +280,25 @@ class ModifyOrganization(AppUsersViewMixin):
             # Populate users select box
             request_app_user = _AppUser.get_app_user_from_request(request, session)
 
-            # Populate projects select box
+            # Populate resources select box
             resources = request_app_user.get_resources(session, request, for_assigning=True)
 
-            resource_options = [(r.name, str(r.id)) for r in resources]
+            # Group resources by type
+            resources_by_type = {_Resource.SLUG: [] for _Resource in _Resources}
+            for resource in resources:
+                if resource.SLUG in resources_by_type:
+                    resources_by_type[resource.SLUG].append((resource.name, str(resource.id)))
 
-            # Sort the project options
-            project_select = SelectInput(
-                display_text=_Resource.DISPLAY_TYPE_PLURAL + ' (Optional)',
-                name='organization-resources',
-                multiple=True,
-                options=resource_options,
-                initial=selected_resources
-            )
+            resources_select_inputs = [
+                SelectInput(
+                    display_text=f'{_Resource.DISPLAY_TYPE_PLURAL} (Optional)',
+                    name=f'organization-resources-{_Resource.SLUG}',
+                    multiple=True,
+                    options=resources_by_type[_Resource.SLUG],
+                    initial=selected_resources[_Resource.SLUG]
+                )
+                for _Resource in _Resources
+            ]
 
             # Populate owner select box
             consultant_options = request_app_user.get_organizations(session, request, as_options=True, consultants=True)
@@ -359,7 +374,7 @@ class ModifyOrganization(AppUsersViewMixin):
             'organization_name_input': organization_name_input,
             'organization_type_select': license_select,
             'owner_select': constultant_select,
-            'project_select': project_select,
+            'resources_select_inputs': resources_select_inputs,
             'next_controller': next_controller,
             'license_to_consultant_map': license_to_consultant_map,
             'hide_consultant_licenses': hide_consultant_licenses,

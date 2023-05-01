@@ -14,7 +14,7 @@ from django.shortcuts import render, reverse
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
-from tethysext.atcore.controllers.app_users.mixins import AppUsersViewMixin
+from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 from tethysext.atcore.services.app_users.decorators import active_user_required
 from tethysext.atcore.services.paginate import paginate
 
@@ -22,7 +22,7 @@ from tethysext.atcore.services.paginate import paginate
 log = logging.getLogger(f'tethys.{__name__}')
 
 
-class ManageResources(AppUsersViewMixin):
+class ManageResources(ResourceViewMixin):
     """
     Controller for manage_resources page.
 
@@ -136,6 +136,7 @@ class ManageResources(AppUsersViewMixin):
         resource_cards = []
         for resource in all_resources:
             resource_card = resource.__dict__
+            resource_card['slug'] = resource.SLUG
             resource_card['editable'] = self.can_edit_resource(session, request, resource)
             resource_card['deletable'] = self.can_delete_resource(session, request, resource)
             resource_card['organizations'] = resource.organizations
@@ -286,8 +287,8 @@ class ManageResources(AppUsersViewMixin):
         Returns:
             list<Resources>: the list of resources to render on the manage_resources page.
         """
-        of_type = self.get_resource_model()
-        return request_app_user.get_resources(session, request, of_type=of_type)
+        _Resource = self.get_resource_model()
+        return request_app_user.get_resources(session, request, of_type=_Resource)
 
     def perform_custom_delete_operations(self, session, request, resource):
         """
