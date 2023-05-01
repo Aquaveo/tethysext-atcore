@@ -19,14 +19,14 @@
     blank. You may want to use <a href="http://spatialreference.org/">spatialref.org</a> to help you identify the
     appropriate spatial reference system.
   </p>
-
-  {% block custom_field_help %}{% endblock %}
   {% endif %}
 
   {% if show_file_upload_field %}
   <p style="margin-bottom: 5px;"><b>{{ file_upload_label }}</b></p>
   <p>{{ file_upload_help }}</p>
   {% endif %}
+
+  {% block custom_field_help %}{% endblock %}
 {% endblock %}
 
 {% block app_content %}
