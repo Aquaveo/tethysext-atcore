@@ -77,9 +77,10 @@ var SPATIAL_DATA_MWV = (function() {
         // Create new overlay for map
         m_data_popup_overlay = new ol.Overlay({
             element: m_$data_popup_container.get(0),
-            autoPan: true,
-            autoPanAnimation: {
-                duration: 250
+            autoPan: {
+                animation: {
+                    duration: 250
+                }
             }
         });
 

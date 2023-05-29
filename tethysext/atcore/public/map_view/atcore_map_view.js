@@ -1079,9 +1079,10 @@ var ATCORE_MAP_VIEW = (function() {
         // Create the overlay
         m_props_popup_overlay = new ol.Overlay({
             element: m_$props_popup_container.get(0),
-            autoPan: true,
-            autoPanAnimation: {
-                duration: 250
+            autoPan: {
+                animation: {
+                    duration: 250
+                }
             }
         });
 
