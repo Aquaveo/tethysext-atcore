@@ -270,9 +270,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow', return_value=None)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
-    def test_run_job__read_only(self, mock_get_step, _):
+    def test_run_job__read_only(self, mock_get_step, _, __):
         mock_get_step.return_value = self.step
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
@@ -285,8 +286,9 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow', return_value=None)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
-    def test_run_job_no_schedule_name(self, _):
+    def test_run_job_no_schedule_name(self, _, __):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
 
@@ -296,8 +298,9 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         except RuntimeError as e:
             self.assertEqual('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.', str(e))
 
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow', return_value=None)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
-    def test_run_job_no_jobs(self, _):
+    def test_run_job_no_jobs(self, _, __):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
         self.step.options['scheduler'] = 'my_schedule'

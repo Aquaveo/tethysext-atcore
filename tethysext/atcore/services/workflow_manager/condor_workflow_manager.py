@@ -26,7 +26,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
                                          'resources', 'resource_workflows')
 
     def __init__(self, session, resource, resource_workflow_step, user, working_directory, app, scheduler_name,
-                 jobs=None, input_files=None, gs_engine=None, *args):
+                 jobs=None, input_files=None, gs_engine=None, resource_workflow=None, *args):
         """
         Constructor.
 
@@ -40,6 +40,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             scheduler_name(str): Name of the condor scheduler to use.
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
             input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
+            resource_workflow(ResourceWorkflow): The workflow.
         """  # noqa: E501
         self.validate_jobs(jobs)
 
@@ -69,6 +70,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Important IDs
         self.resource_id = str(resource_workflow_step.workflow.resource.id)
         self.resource_name = resource_workflow_step.workflow.resource.name
+        self.resource_workflow = resource_workflow
         self.resource_workflow_id = str(resource_workflow_step.workflow.id)
         self.resource_workflow_name = resource_workflow_step.workflow.name
         self.resource_workflow_type = resource_workflow_step.workflow.DISPLAY_TYPE_SINGULAR

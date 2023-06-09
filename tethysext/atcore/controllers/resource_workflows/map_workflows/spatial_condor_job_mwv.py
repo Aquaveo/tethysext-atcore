@@ -211,6 +211,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         if 'run-submit' not in request.POST and 'rerun-submit' not in request.POST:
             return redirect(request.path)
 
+        # Get the workflow from the id
+        workflow = self.get_workflow(request, workflow_id, session)
+
         # Validate data if going to next step
         step = self.get_step(request, step_id, session)
 
@@ -248,6 +251,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             app=app,
             scheduler_name=scheduler_name,
             gs_engine=gs_engine,
+            resource_workflow=workflow,
         )
 
         # Serialize parameters from all previous steps into json
