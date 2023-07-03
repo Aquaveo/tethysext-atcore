@@ -48,11 +48,14 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         self.resource_db_url = str(session.get_bind().url)
 
         # DB URL for database containing the model database
-        self.model_db_url = ''
+        self.model_db_url = None
         try:
             database_id = resource.get_attribute('database_id', None)
             if database_id:
                 model_db = ModelDatabase(app, database_id=database_id)
+                self.model_db_url = model_db.db_url
+            else:
+                model_db = ModelDatabase(app, database_id='99999999-9999-9999-9999-999999999999')
                 self.model_db_url = model_db.db_url
         except TethysAppSettingDoesNotExist:
             log.exception('An unexpected error occurred while trying to get the model '
