@@ -13,7 +13,6 @@ from django.contrib.auth.models import User
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 from tethysext.atcore.controllers.resource_view import ResourceView
 from tethysext.atcore.models.app_users import AppUser, Resource
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -27,12 +26,6 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
-class MockedModelDbMixin:
-
-    def get_model_db(self, request, resource, *args, **kwargs):
-        return mock.MagicMock(spec=ModelDatabase)
-
-
 class OnGetOverriderViewHttpResponse(ResourceView):
     response = mock.MagicMock(spec=HttpResponse)
 
@@ -40,14 +33,14 @@ class OnGetOverriderViewHttpResponse(ResourceView):
         return self.response
 
 
-class OnGetOverriderViewNonHttpResponse(MockedModelDbMixin, ResourceView):
+class OnGetOverriderViewNonHttpResponse(ResourceView):
     response = mock.MagicMock()
 
     def on_get(self, request, session, resource):
         return self.response
 
 
-class MethodMappingView(MockedModelDbMixin, ResourceView):
+class MethodMappingView(ResourceView):
     template_name = 'foo.html'
     view_title = 'Title'
     view_subtitle = 'Subtitle'
@@ -57,7 +50,7 @@ class MethodMappingView(MockedModelDbMixin, ResourceView):
         return self.response
 
 
-class NoTitlesView(MockedModelDbMixin, ResourceView):
+class NoTitlesView(ResourceView):
     template_name = 'foo.html'
     response = mock.MagicMock(spec=HttpResponse)
 
@@ -256,24 +249,6 @@ class ResourceViewTests(SqlAlchemyTestCase):
         ret = ResourceView().on_get(None, None, None)
 
         self.assertEqual(None, ret)
-
-    @mock.patch('tethysext.atcore.controllers.resource_view.log')
-    def test_get_model_db_no_resource(self, mock_log):
-        ResourceView().get_model_db(None, None)
-        mock_log.warning.assert_called_with('No model database provided')
-
-    @mock.patch('tethysext.atcore.controllers.resource_view.log')
-    def test_get_model_db_no_db_id(self, mock_log):
-        ResourceView().get_model_db(None, self.resource)
-        mock_log.warning.assert_called_with('No model database provided')
-
-    def test_get_model_db(self):
-        self.resource.set_attribute('database_id', '123456')
-
-        ret = ResourceView().get_model_db(None, self.resource)
-
-        self.assertIsInstance(ret, ModelDatabase)
-        self.assertEqual(self.resource.get_attribute('database_id'), ret.database_id)
 
     def test_get_context(self):
         context = {'key': 'val'}

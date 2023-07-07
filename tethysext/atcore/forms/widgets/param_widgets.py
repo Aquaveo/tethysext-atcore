@@ -9,7 +9,7 @@
 import param
 from django import forms
 from datetimewidget.widgets import DateWidget
-from django_select2.forms import Select2Widget
+from django_select2.forms import Select2Widget, Select2MultipleWidget
 from taggit.forms import TagField
 # from dataframewidget.forms.fields import DataFrameField
 
@@ -124,6 +124,8 @@ widget_map = {
     param.ListSelector:
         lambda po, p, name: forms.MultipleChoiceField(
             initial=po.param.inspect_value(name) or p.default,
+            widget=Select2MultipleWidget,
+            choices=p.get_range().items(),
         ),
     # param.Callable,
     param.Tuple:
@@ -146,32 +148,53 @@ widget_converter = {
 }
 
 
-def generate_django_form(parameterized_obj, set_options=None, form_field_prefix=None, read_only=False):
+def generate_django_form(parameterized_obj, form_field_prefix=None, read_only=False):
     """
     Create a Django form from a Parameterized object.
 
     Args:
         parameterized_obj(Parameterized): the parameterized object.
-        set_options(dict<attrib_name, initial_value>): Dictionary of initial value for one or more fields.
         form_field_prefix(str): A prefix to prepend to form fields
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
-    set_options = set_options or dict()
+    # Create Django Form class dynamically
     class_name = '{}Form'.format(parameterized_obj.name.title())
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
-    params = list(filter(lambda x: (x.precedence is None or x.precedence >= 0) and not x.constant,
-                         parameterized_obj.param.params().values()))
+    # Filter params based on precedence and constant state
+    params = list(
+        filter(
+            lambda x: (x.precedence is None or x.precedence >= 0) and not x.constant,
+            parameterized_obj.param.params().values()
+        )
+    )
 
-    for p in sorted(params, key=lambda p: p.precedence or 9999):
+    # Sort parameters based on precedence
+    sorted_params = sorted(params, key=lambda p: p.precedence or 9999)
+
+    for p in sorted_params:
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
         p_name = p.name
+
+        # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
+
+        # Get appropriate Django field/widget based on param type
         form_class.base_fields[p_name] = widget_map[type(p)](parameterized_obj, p, p.name)
-        form_class.base_fields[p_name].label = p.name.capitalize()
-        form_class.base_fields[p_name].widget.attrs.update({'class': 'form-control',
-                                                            'disabled': read_only})
+
+        # Set label with param label if set, otherwise derive from parameter name
+        form_class.base_fields[p_name].label = p.name.replace("_", " ").title() if not p.label else p.label
+
+        # If form is read-only, set disabled attribute
+        form_class.base_fields[p_name].widget.attrs.update({'disabled': read_only})
+
+        # Help text displayed on hover over field
+        if p.doc:
+            form_class.base_fields[p_name].widget.attrs.update({'title': p.doc})
+
+        # Set required state from allow_None
+        form_class.base_fields[p_name].required = p.allow_None
 
     return form_class

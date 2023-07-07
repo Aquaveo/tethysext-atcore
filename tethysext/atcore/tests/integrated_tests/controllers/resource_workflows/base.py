@@ -71,7 +71,7 @@ class AppUsersResourceWorkflowControllerTests(SqlAlchemyTestCase):
         # create resource workflow steps
         self.geoserver_name = ''
         self.spatial_manager = SpatialManager(object())
-        self.map_manager = MapManagerBase(self.spatial_manager, object())
+        self.map_manager = MapManagerBase(self.spatial_manager, self.resource)
 
         # Define the steps
         step = ResourceWorkflowStep(
@@ -164,7 +164,7 @@ class AppUsersResourceControllerTests(SqlAlchemyTestCase):
         # create resource workflow steps
         self.geoserver_name = ''
         self.spatial_manager = SpatialManager(object())
-        self.map_manager = MapManagerBase(self.spatial_manager, object())
+        self.map_manager = MapManagerBase(self.spatial_manager, self.resource)
 
         # Define the steps
         step = ResourceWorkflowStep(

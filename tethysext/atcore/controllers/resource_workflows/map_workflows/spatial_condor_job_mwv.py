@@ -49,7 +49,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         can_run_workflows = not self.is_read_only(request, current_step)
 
         # get tabular data if any
-        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session)
+        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session,
+                                                                                 resource)
 
         has_tabular_data = len(tabular_data) > 0
         # Save changes to map view and layer groups
@@ -154,7 +155,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
         return render(request, 'atcore/resource_workflows/spatial_condor_jobs_table.html', context)
 
-    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
 
@@ -162,7 +163,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
-            model_db(ModelDatabase): The model database associated with the resource.
+            resource(Resource): The resource for this request.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.
@@ -201,7 +202,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
                 return redirect(request.path)
 
-        return super().process_step_data(request, session, step, model_db, current_url, previous_url, next_url)
+        return super().process_step_data(request, session, step, resource, current_url, previous_url, next_url)
 
     def run_job(self, request, session, resource, workflow_id, step_id, *args, **kwargs):
         """
@@ -209,6 +210,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         """
         if 'run-submit' not in request.POST and 'rerun-submit' not in request.POST:
             return redirect(request.path)
+
+        # Get the workflow from the id
+        workflow = self.get_workflow(request, workflow_id, session)
 
         # Validate data if going to next step
         step = self.get_step(request, step_id, session)
@@ -226,11 +230,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         if not jobs:
             raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.')
 
-        # Get managers
-        model_db, map_manager = self.get_managers(
-            request=request,
-            resource=resource
-        )
+        # Get map manager
+        map_manager = self.get_map_manager(request, resource)
 
         # Get GeoServer Connection Information
         gs_engine = map_manager.spatial_manager.gs_engine
@@ -242,7 +243,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Setup the Condor Workflow
         condor_job_manager = ResourceWorkflowCondorJobManager(
             session=session,
-            model_db=model_db,
+            resource=resource,
             resource_workflow_step=step,
             jobs=jobs,
             user=request.user,
@@ -250,6 +251,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             app=app,
             scheduler_name=scheduler_name,
             gs_engine=gs_engine,
+            resource_workflow=workflow,
         )
 
         # Serialize parameters from all previous steps into json

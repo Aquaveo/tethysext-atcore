@@ -52,14 +52,15 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         can_run_workflows = not self.is_read_only(request, current_step)
 
         # get tabular data if any
-        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session)
+        tabular_data = current_step.workflow.get_tabular_data_for_previous_steps(current_step, request, session,
+                                                                                 resource)
         has_tabular_data = len(tabular_data) > 0
 
         # get workflow name
         workflow_name = current_step.workflow.name
         # Generate MVLayers for spatial data
         # Get managers
-        _, map_manager = self.get_managers(
+        map_manager = self.get_map_manager(
             request=request,
             resource=resource,
         )
@@ -145,7 +146,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             next_step=next_step
         )
 
-    def get_context(self, request, session, resource, context, model_db, workflow_id, step_id, result_id, *args,
+    def get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args,
                     **kwargs):
         """
         Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
@@ -155,7 +156,9 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             session (sqlalchemy.Session): the session.
             resource (Resource): the resource for this request.
             context (dict): The context dictionary.
-            model_db (ModelDatabase): ModelDatabase instance associated with this request.
+            workflow_id (int): The workflow id.
+            step_id (int): The step id.
+            result_id (int): The result id.
 
         Returns:
             dict: modified context dictionary.
@@ -167,7 +170,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             session=session,
             resource=resource,
             context=context,
-            model_db=model_db,
             workflow_id=workflow_id,
             step_id=step_id,
             *args, **kwargs
@@ -179,7 +181,6 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             session=session,
             resource=resource,
             context=context,
-            model_db=model_db,
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id,

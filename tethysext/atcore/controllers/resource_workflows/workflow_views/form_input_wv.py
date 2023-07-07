@@ -44,8 +44,13 @@ class FormInputWV(ResourceWorkflowView):
         mod = __import__(package, fromlist=[p_class])
         ParamClass = getattr(mod, p_class)
 
-        if current_step.options['renderer'] == 'django':
-            p = ParamClass()
+        # Get the renderer option
+        renderer = current_step.options['renderer']
+        context.update({'renderer': renderer})
+
+        # Django Renderer
+        if renderer == 'django':
+            p = ParamClass(request=request, session=session, resource=resource)
             if hasattr(p, 'update_precedence'):
                 p.update_precedence()
             for k, v in current_step.get_parameter('form-values').items():
@@ -59,7 +64,9 @@ class FormInputWV(ResourceWorkflowView):
                 'form_title': form_title,
                 'form': form,
             })
-        elif current_step.options['renderer'] == 'bokeh':
+
+        # Bokeh Renderer
+        elif renderer == 'bokeh':
             script = server_document(request.build_absolute_uri())
             context.update({
                 'read_only': self.is_read_only(request, current_step),
@@ -67,7 +74,7 @@ class FormInputWV(ResourceWorkflowView):
                 'script': script
             })
 
-    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
 
@@ -75,7 +82,7 @@ class FormInputWV(ResourceWorkflowView):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
-            model_db(ModelDatabase): The model database associated with the resource.
+            resource(Resource): the resource for this request.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.
@@ -87,7 +94,7 @@ class FormInputWV(ResourceWorkflowView):
         mod = __import__(package, fromlist=[p_class])
         ParamClass = getattr(mod, p_class)
         if step.options['renderer'] == 'django':
-            param_class_for_form = ParamClass()
+            param_class_for_form = ParamClass(request=request, session=session, resource=resource)
             form = generate_django_form(param_class_for_form, form_field_prefix='param-form-')(request.POST)
             params = {}
 
@@ -100,14 +107,14 @@ class FormInputWV(ResourceWorkflowView):
                 if p.startswith('param-form-'):
                     try:
                         param_name = p[11:]
-                        params[param_name] = request.POST.get(p, None)
+                        params[param_name] = form.cleaned_data[p]
                     except ValueError as e:
                         raise RuntimeError('error setting param data: {}'.format(e))
 
             # Get the param class and save the data from the form
             # for the next time the form is loaded
-            param_class = ParamClass()
-            param_values = dict(param_class.get_param_values())
+            param_class = ParamClass(request=request, session=session, resource=resource)
+            param_values = dict(param_class.param.get_param_values())
             for k, v in params.items():
                 try:
                     params[k] = type(param_values[k])(v)
@@ -129,7 +136,7 @@ class FormInputWV(ResourceWorkflowView):
                     except ValueError as e:
                         raise RuntimeError('error setting param data: {}'.format(e))
 
-            param_class = ParamClass()
+            param_class = ParamClass(request=request, session=session, resource=resource)
             param_values = dict(param_class.get_param_values())
             for k, v in params.items():
                 try:
@@ -154,7 +161,7 @@ class FormInputWV(ResourceWorkflowView):
             request=request,
             session=session,
             step=step,
-            model_db=model_db,
+            resource=resource,
             current_url=current_url,
             previous_url=previous_url,
             next_url=next_url

@@ -114,7 +114,7 @@ def workflow_step_controller(is_rest_controller=False):
 def workflow_step_job(job_func):
     def _wrapped():
         if job_func.__module__ == '__main__':
-            args = parse_workflow_step_args()
+            args, unknown_args = parse_workflow_step_args()
 
             print('Given Arguments:')
             print(str(args))
@@ -172,7 +172,8 @@ def workflow_step_job(job_func):
                     workflow_class=WorkflowClass,
                     params_json=params_json,
                     params_file=args.workflow_params_file,
-                    cmd_args=args
+                    cmd_args=args,
+                    extra_args=unknown_args
                 )
 
                 # Update step status

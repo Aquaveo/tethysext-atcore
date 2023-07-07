@@ -45,9 +45,9 @@ class SpatialDataMWV(MapWorkflowView):
         self.set_feature_selection(map_view=map_view, enabled=False)
 
         # Get managers
-        _, map_manager = self.get_managers(
+        map_manager = self.get_map_manager(
             request=request,
-            resource=resource
+            resource=resource,
         )
 
         parent_name = None

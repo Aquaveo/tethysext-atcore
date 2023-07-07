@@ -73,10 +73,10 @@ class SpatialDataMwvTests(WorkflowViewTestCase):
     @mock.patch.object(MapWorkflowView, 'add_layers_for_previous_steps')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role')
-    @mock.patch.object(MapView, 'get_managers')
-    def test_process_step_options_no_active_role_no_parent(self, mock_get_managers, mock_user_role,
+    @mock.patch.object(MapView, 'get_map_manager')
+    def test_process_step_options_no_active_role_no_parent(self, mock_get_map_manager, mock_user_role,
                                                            mock_get_param, mock_add_layers, _, __):
-        mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
+        mock_get_map_manager.return_value = MapManagerBase(mock.MagicMock(), mock.MagicMock())
         mock_user_role.return_value = False
         mock_get_param.return_value = {'features': []}
         map_view = mock.MagicMock(spec=MapView)
@@ -98,10 +98,10 @@ class SpatialDataMwvTests(WorkflowViewTestCase):
     @mock.patch.object(MapWorkflowView, 'add_layers_for_previous_steps')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role')
-    @mock.patch.object(MapView, 'get_managers')
-    def test_process_step_options_yes_active_role_yes_parent(self, mock_get_managers, mock_user_role,
+    @mock.patch.object(MapView, 'get_map_manager')
+    def test_process_step_options_yes_active_role_yes_parent(self, mock_get_map_manager, mock_user_role,
                                                              mock_get_param, mock_add_layers):
-        mock_get_managers.return_value = None, MapManagerBase(mock.MagicMock(), mock.MagicMock())
+        mock_get_map_manager.return_value = MapManagerBase(mock.MagicMock(), mock.MagicMock())
         mock_user_role.return_value = True
         mock_get_param.return_value = {'features': []}
         map_view = mock.MagicMock(spec=MapView)

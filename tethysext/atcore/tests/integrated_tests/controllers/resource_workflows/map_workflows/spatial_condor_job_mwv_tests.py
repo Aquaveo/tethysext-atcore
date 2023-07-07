@@ -18,8 +18,8 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condo
 from tethysext.atcore.controllers.resource_workflows.mixins import WorkflowViewMixin
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
+from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
@@ -56,7 +56,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
             'map_view': self.map_view,
             'layer_groups': []
         }
-        self.model_db = mock.MagicMock(spec=ModelDatabase)
+        self.resource = mock.MagicMock(spec=Resource)
         self.current_url = './current'
         self.next_url = './next'
         self.prev_url = './prev'
@@ -96,10 +96,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
             shutil.rmtree(self.working_dir_path)
 
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
-    @mock.patch.object(MapView, 'get_managers')
-    def test_process_step_options(self, mock_get_managers, _):
+    @mock.patch.object(MapView, 'get_map_manager')
+    def test_process_step_options(self, mock_get_map_manager, _):
         map_view = MapView()
-        mock_get_managers.return_value = None, map_view
+        mock_get_map_manager.return_value = map_view
         instance = SpatialCondorJobMWV()
         instance.map_type = 'tethys_map_view'
         instance.process_step_options(self.request, self.session, self.context, self.resource, self.step, None, None)
@@ -110,10 +110,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertTrue(self.context['can_run_workflows'])
 
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=True)
-    @mock.patch.object(MapView, 'get_managers')
-    def test_process_step_options__read_only(self, mock_get_managers, _):
+    @mock.patch.object(MapView, 'get_map_manager')
+    def test_process_step_options__read_only(self, mock_get_map_manager, _):
         map_view = MapView()
-        mock_get_managers.return_value = None, map_view
+        mock_get_map_manager.return_value = map_view
         instance = SpatialCondorJobMWV()
         instance.map_type = 'tethys_map_view'
         instance.process_step_options(self.request, self.session, self.context, self.resource, self.step, None, None)
@@ -221,7 +221,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
     def test_process_step_data_not_next(self):
         self.request.POST = {}
 
-        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.model_db,
+        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.resource,
                                                       self.current_url, self.prev_url, self.next_url)
 
         self.assertEqual(self.prev_url, ret.url)
@@ -231,7 +231,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.request.POST = {'next-submit': True}
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_WORKING)
 
-        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.model_db,
+        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.resource,
                                                       self.current_url, self.prev_url, self.next_url)
 
         msg_call_args = self.mock_message.warning.call_args_list
@@ -243,7 +243,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.request.POST = {'next-submit': True}
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_FAILED)
 
-        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.model_db,
+        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.resource,
                                                       self.current_url, self.prev_url, self.next_url)
 
         msg_call_args = self.mock_message.error.call_args_list
@@ -256,7 +256,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.request.POST = {'next-submit': True}
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_PENDING)
 
-        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.model_db,
+        ret = SpatialCondorJobMWV().process_step_data(self.request, self.session, self.step, self.resource,
                                                       self.current_url, self.prev_url, self.next_url)
 
         msg_call_args = self.mock_message.info.call_args_list
@@ -270,9 +270,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow', return_value=None)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=True)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
-    def test_run_job__read_only(self, mock_get_step, _):
+    def test_run_job__read_only(self, mock_get_step, _, __):
         mock_get_step.return_value = self.step
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
@@ -285,8 +286,9 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow', return_value=None)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
-    def test_run_job_no_schedule_name(self, _):
+    def test_run_job_no_schedule_name(self, _, __):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
 
@@ -296,8 +298,9 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         except RuntimeError as e:
             self.assertEqual('Improperly configured SpatialCondorJobRWS: no "scheduler" option supplied.', str(e))
 
+    @mock.patch.object(WorkflowViewMixin, 'get_workflow', return_value=None)
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
-    def test_run_job_no_jobs(self, _):
+    def test_run_job_no_jobs(self, _, __):
         self.request.POST['run-submit'] = True
         self.request.POST['rerun-submit'] = True
         self.step.options['scheduler'] = 'my_schedule'
@@ -312,8 +315,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
     @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
-    @mock.patch.object(MapView, 'get_managers')
-    def test_run_job(self, mock_get_managers, mock_get_working_dir, mock_prepare, mock_run_job, _):
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
+    def test_run_job(self, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job, _,
+                     mock_ModelDatabase):
         map_manager = mock.MagicMock(
             spec=MapManagerBase,
             spatial_manager=mock.MagicMock(
@@ -325,8 +330,9 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
                 )
             )
         )
+        mock_ModelDatabase.return_value = mock.MagicMock(db_url='fake_db_url')
 
-        mock_get_managers.return_value = mock.MagicMock(spec=ModelDatabase), map_manager
+        mock_get_map_manager.return_value = map_manager
         mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
         mock_prepare.return_value = self.workflow.id
         mock_run_job.return_value = str(self.workflow.id)

@@ -86,7 +86,6 @@ class BaseSpatialManager(object):
     def get_extent_for_project(self, *args, **kwargs):
         """
         Get extent of the project.
-
         """
         pass
 

@@ -41,7 +41,7 @@
             {% gizmo resource_name_input %}
 
             {# DESCRIPTION FIELD #}
-            <div class="form-group" id="resource-description-group">
+            <div class="form-group mb-3" id="resource-description-group">
               <label for="resource-description">Description</label>
               <textarea id="resource-description"
                         name="resource-description"
@@ -52,6 +52,18 @@
 
             {# ORGANIZATIONS FIELD #}
             {% gizmo organization_select %}
+
+            {% if show_relationship_fields %}
+              {# PARENTS FIELD #}
+              {% if show_parents_field %}
+                {% gizmo parents_select %}
+              {% endif %}
+
+              {# CHILDREN FIELD #}
+              {% if show_children_field %}
+                {% gizmo children_select %}
+              {% endif %}
+            {% endif %}
 
             {# SPATIAL REFERENCE FIELD #}
             {% if show_srid_field %}
@@ -64,7 +76,7 @@
 
             {# FILE UPLOAD FIELD #}
             {% if show_file_upload_field %}
-            <div class="form-group {% if file_upload_error %}has-error{% endif %}" id="input-file-upload-wrapper">
+            <div class="form-group{% if file_upload_error %} has-error{% endif %} mb-3" id="input-file-upload-wrapper">
               <label class="control-label" for="input-file-upload">{{ file_upload_label }}</label>
               <div class="input-file-wrapper">
                 <input id="input-file-upload"

@@ -6,9 +6,11 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import inspect
 import logging
 import os
 from tethys_sdk.jobs import CondorWorkflowJobNode
+from tethysext.atcore.services.model_database import ModelDatabase
 from .base_workflow_manager import BaseWorkflowManager
 from tethysext.atcore.utilities import generate_geoserver_urls
 from tethys_apps.exceptions import TethysAppSettingDoesNotExist
@@ -23,14 +25,14 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
     ATCORE_EXECUTABLE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
                                          'resources', 'resource_workflows')
 
-    def __init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name,
-                 jobs=None, input_files=None, gs_engine=None, *args):
+    def __init__(self, session, resource, resource_workflow_step, user, working_directory, app, scheduler_name,
+                 jobs=None, input_files=None, gs_engine=None, resource_workflow=None, *args):
         """
         Constructor.
 
         Args:
             session(sqlalchemy.orm.Session): An SQLAlchemy session bound to the resource workflow.
-            model_db(ModelDatabase): ModelDatabase instance bound to model database.
+            resource(Resource): The resource being processed.
             resource_workflow_step(atcore.models.app_users.ResourceWorkflowStep): Instance of ResourceWorkflowStep. Note: Must have active session (i.e. not closed).
             user(auth.User): The Django user submitting the job.
             working_directory(str): Path to users's workspace.
@@ -38,24 +40,29 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             scheduler_name(str): Name of the condor scheduler to use.
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
             input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
+            resource_workflow(ResourceWorkflow): The workflow.
         """  # noqa: E501
-        if not jobs or not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs):
-            raise ValueError('Argument "jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
-                             'or equivalent dictionary.')
+        self.validate_jobs(jobs)
 
         # DB url for database containing the resource
         self.resource_db_url = str(session.get_bind().url)
 
         # DB URL for database containing the model database
-        if model_db:
-            try:
+        self.model_db_url = None
+        try:
+            database_id = resource.get_attribute('database_id', None)
+            if database_id:
+                model_db = ModelDatabase(app, database_id=database_id)
                 self.model_db_url = model_db.db_url
-            except TethysAppSettingDoesNotExist:
-                log.warning('no model database found')
-                self.model_db_url = None
-        else:
-            log.warning('no model database provided')
-            self.model_db_url = None
+            else:
+                model_db = ModelDatabase(app, database_id='99999999-9999-9999-9999-999999999999')
+                self.model_db_url = model_db.db_url
+        except TethysAppSettingDoesNotExist:
+            log.exception('An unexpected error occurred while trying to get the model '
+                          f'database from resource: {resource}.')
+        finally:
+            if not self.model_db_url:
+                log.warning('no model database provided')
 
         # Serialize GeoServer Connection
         self.gs_private_url = ''
@@ -66,6 +73,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Important IDs
         self.resource_id = str(resource_workflow_step.workflow.resource.id)
         self.resource_name = resource_workflow_step.workflow.resource.name
+        self.resource_workflow = resource_workflow
         self.resource_workflow_id = str(resource_workflow_step.workflow.id)
         self.resource_workflow_name = resource_workflow_step.workflow.name
         self.resource_workflow_type = resource_workflow_step.workflow.DISPLAY_TYPE_SINGULAR
@@ -78,7 +86,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
 
         # Job Definition Variables
         self.jobs = jobs
-        self.jobs_are_dicts = isinstance(jobs[0], dict)
+        self.session = session
         self.user = user
         self.working_directory = working_directory
         self.app = app
@@ -186,9 +194,16 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Save the workflow
         self.workflow.save()
 
-        # Preprocess jobs if they are dicts
-        if self.jobs_are_dicts:
-            self.jobs = self._build_job_nodes(self.jobs)
+        # Preprocess jobs if they are dicts or a callback function
+        if inspect.isfunction(self.jobs):
+            cur_jobs = self.jobs(self)
+            self.validate_jobs(cur_jobs)  # Validate again (needed if self.jobs was a callback function)
+        else:
+            cur_jobs = self.jobs
+        if isinstance(cur_jobs[0], dict):
+            # Jobs are dicts
+            cur_jobs = self._build_job_nodes(cur_jobs)
+        self.jobs = cur_jobs
 
         # Add file names as args
         input_file_names = []
@@ -200,7 +215,11 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Parametrize each job
         for job in self.jobs:
             # Set arguments for each job
-            job.set_attribute('arguments', self.job_args)
+            existing_job_args = job.get_attribute('arguments')
+            if existing_job_args:
+                existing_job_args = existing_job_args.split()
+            current_job_args = self.job_args + (existing_job_args if existing_job_args else [])
+            job.set_attribute('arguments', current_job_args)
 
             # Add input files to transfer input files
             transfer_input_files_str = job.get_attribute('transfer_input_files') or ''
@@ -306,3 +325,17 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Execute
         self.workflow.execute()
         return str(self.workflow.id)
+
+    def validate_jobs(self, jobs):
+        """
+        Validates that the jobs are defined (not empty) and are a CondorWorkflowJobNode or equivalent dicaiontry.
+
+        Args:
+            jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
+        """
+        if (
+            not jobs or
+            (not inspect.isfunction(jobs) and not all(isinstance(x, (dict, CondorWorkflowJobNode)) for x in jobs))
+        ):
+            raise ValueError('Given "jobs" is not defined or empty. Must provide at least one '
+                             'CondorWorkflowJobNode or equivalent dictionary.')

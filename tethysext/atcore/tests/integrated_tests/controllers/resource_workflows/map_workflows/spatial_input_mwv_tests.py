@@ -23,7 +23,6 @@ from tethysext.atcore.controllers.map_view import MapView
 from tethysext.atcore.models.resource_workflow_steps.spatial_input_rws import SpatialInputRWS
 from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv import SpatialInputMWV
 from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep
-from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
     WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -50,6 +49,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.MissingPrj_zip = self.shapefile_dir / 'MissingPrj.zip'
         self.MissingSHP_zip = self.shapefile_dir / 'MissingSHP.zip'
         self.Det1poly4326_zip = self.shapefile_dir / 'Det1poly4326.zip'
+        self.TestDates4326_zip = self.shapefile_dir / 'TestDates4326.zip'
 
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.namespace = 'my_namespace'
@@ -143,14 +143,14 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=False)
-    def test_process_step_options_no_attributes_nor_active_role(self, _, mock_params, mock_get_managers, __, ___):
+    def test_process_step_options_no_attributes_nor_active_role(self, _, mock_params, mock_get_map_manager, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
         map_view = MapView()
         map_view.layers = []
-        mock_get_managers.return_value = None, map_view
+        mock_get_map_manager.return_value = map_view
 
         resource = mock.MagicMock()
         self.context['map_view'] = map_view
@@ -165,15 +165,15 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.generate_django_form')
-    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
-    def test_process_step_options_with_attributes_and_active_role(self, _, mock_params, mock_get_managers,
+    def test_process_step_options_with_attributes_and_active_role(self, _, mock_params, mock_get_map_manager,
                                                                   mock_form, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
         map_view = MapView()
         map_view.layers = []
-        mock_get_managers.return_value = None, map_view
+        mock_get_map_manager.return_value = map_view
         mock_form.return_view = {}
 
         resource = mock.MagicMock()
@@ -189,12 +189,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
-    @mock.patch.object(MapView, 'get_managers')
+    @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
-    def test_process_step_options_unknown_shape(self, _, mock_params, mock_get_managers, __, ___):
+    def test_process_step_options_unknown_shape(self, _, mock_params, mock_get_map_manager, __, ___):
         mock_params.return_value = {'geometry': 'shapes and such'}
-        mock_get_managers.return_value = None, MapView()
+        mock_get_map_manager.return_value = MapView()
 
         resource = mock.MagicMock()
         map_view = MapView()
@@ -219,12 +219,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                                                      'properties': {}}]}
         mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'},
                                                       'properties': {'id': 7}}]}
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': {'value': 'shapes'}}
         self.request.FILES = {'shapefile': 'Det1poly.shp'}
 
-        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-                                                       './prev', './next')
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./current', response.url)
@@ -237,36 +237,36 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                                                      'properties': {}}]}
         mock_parse_geom.return_value = {'features': [{'geometry': {'coordinates': [1, 6], 'type': 'other_type'},
                                                       'properties': {'id': 7}}]}
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': {'value': 'shapes'}}
         self.request.FILES = {'shapefile': None}
 
-        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-                                                       './prev', './next')
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./prev', response.url)
 
     def test_process_step_data_previous(self):
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': None, 'previous-submit': True}
         self.request.FILES = {'shapefile': None}
 
-        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db, './current',
-                                                       './prev', './next')
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./prev', response.url)
 
     def test_process_step_data_not_previous(self):
-        mock_db = mock.MagicMock(spec=ModelDatabase)
+        mock_resource = mock.MagicMock()
         self.request.POST = {'geometry': None, 'next-submit': True}
         self.request.FILES = {'shapefile': None}
         self.step1._parameters = {'geometry': {'value': 'shapes'}}
         response = None
 
         try:
-            response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_db,
+            response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
                                                            './current', './prev', './next')
         except ValueError as e:
             self.assertEqual('You must either draw at least one singular_name or upload a shapefile of my_plural_name.',
@@ -562,7 +562,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         geojson = {
             'features': [
                 {'geometry': {'coordinates': [], 'type': 'some_type'}, 'properties': {}},
-                {'geometry': {'coordinates': []}}
+                {'geometry': {'coordinates': [], 'type': 'some_type'}, 'properties': {}}
             ]
         }
 
@@ -579,3 +579,79 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertEqual(geojson['features'][0]['geometry']['coordinates'],
                          ret['features'][0]['geometry']['coordinates'])
         self.assertIn('properties', ret['features'][0])
+
+    def test_post_process_geojson_sorting(self):
+        # When sorted, the Point type should be first, then LineString, then Polygon
+        geojson = {
+            'features': [
+                {'geometry': {'coordinates': [[-86.713342, 33.500775], [-86.704177, 33.507294]], 'type': 'LineString'},
+                 'properties': {}},
+                {'geometry': {'coordinates': [[[-86.655385, 33.532015],
+                                               [-86.655385, 33.542351],
+                                               [-86.629775, 33.542351],
+                                               [-86.629775, 33.532015],
+                                               [-86.655385, 33.532015]]], 'type': 'Polygon'},
+                 'properties': {}},
+                {'geometry': {'coordinates': [-87.718464, 33.49583], 'type': 'Point'}, 'properties': {}},
+            ]
+        }
+
+        ret = SpatialInputMWV().post_process_geojson(geojson)
+
+        self.assertIn('type', ret)
+        self.assertIn('crs', ret)
+        self.assertIn('type', ret['crs'])
+        self.assertIn('properties', ret['crs'])
+        self.assertIn('features', ret)
+        self.assertIn('type', ret['features'][0])
+        self.assertIn('geometry', ret['features'][0])
+        self.assertIn('type', ret['features'][1])
+        self.assertIn('geometry', ret['features'][1])
+        self.assertIn('type', ret['features'][2])
+        self.assertIn('geometry', ret['features'][2])
+        # Make sure the Point (last feature in geojson) comes first in the return value
+        self.assertEqual(geojson['features'][2]['geometry']['type'], ret['features'][0]['geometry']['type'])
+        self.assertEqual(geojson['features'][2]['geometry']['coordinates'],
+                         ret['features'][0]['geometry']['coordinates'])
+        # Make sure the LineString (first feature in geojson) comes second in the return value
+        self.assertEqual(geojson['features'][0]['geometry']['type'], ret['features'][1]['geometry']['type'])
+        self.assertEqual(geojson['features'][0]['geometry']['coordinates'],
+                         ret['features'][1]['geometry']['coordinates'])
+        # Make sure the Polygon (second feature in geojson) comes last in the return value
+        self.assertEqual(geojson['features'][1]['geometry']['type'], ret['features'][2]['geometry']['type'])
+        self.assertEqual(geojson['features'][1]['geometry']['coordinates'],
+                         ret['features'][2]['geometry']['coordinates'])
+        self.assertIn('properties', ret['features'][0])
+        self.assertIn('properties', ret['features'][1])
+        self.assertIn('properties', ret['features'][2])
+
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    def test_parse_shapefile_with_datesvalid(self, mock_get_app):
+        mock_app = TethysAppBase()
+        mock_app_path = mock.MagicMock()
+        mock_app_path.path = self.shapefile_dir
+        mock_app.get_user_workspace = mock.MagicMock(return_value=mock_app_path)
+        mock_get_app.return_value = mock_app
+
+        with open(self.TestDates4326_zip, 'rb') as f:
+            shapefile = InMemoryUploadedFile(
+                file=f,
+                field_name='shapefile',
+                name='TestDates4326.zip',
+                content_type='application/zip',
+                size=1040,
+                charset=None
+            )
+
+            geojson = SpatialInputMWV().parse_shapefile(self.request, shapefile)
+
+        self.assertIn('features', geojson)
+        self.assertIn('type', geojson)
+        self.assertEqual('FeatureCollection', geojson['type'])
+        self.assertEqual(5, len(geojson['features']))
+        self.assertIn('coordinates', geojson['features'][0]['geometry'])
+        self.assertEqual('LineString', geojson['features'][0]['geometry']['type'])
+        self.assertIn('properties', geojson['features'][0])
+        self.assertIn('type', geojson['features'][0])
+        self.assertIn('Date3', geojson['features'][0]['properties'])
+        self.assertTrue(len(geojson['features'][0]['properties']['Date3']) > 0)

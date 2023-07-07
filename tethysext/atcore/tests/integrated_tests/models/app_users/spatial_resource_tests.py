@@ -2,7 +2,7 @@ import datetime
 import json
 import uuid
 
-from geoalchemy2 import func
+from sqlalchemy import func
 
 from tethysext.atcore.exceptions import InvalidSpatialResourceExtentTypeError
 from tethysext.atcore.models.app_users import SpatialResource

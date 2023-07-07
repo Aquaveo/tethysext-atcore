@@ -123,9 +123,9 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
 
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
     def test_process_step_data(self, _):
-        model_db = mock.MagicMock(spec=ModelDatabase)
+        resource = mock.MagicMock(spec=ModelDatabase)
 
-        ret = SpatialDatasetMWV().process_step_data(self.request, self.session, self.step1, model_db, self.current_url,
+        ret = SpatialDatasetMWV().process_step_data(self.request, self.session, self.step1, resource, self.current_url,
                                                     self.back_url, self.next_url)
 
         self.assertIsInstance(ret, HttpResponseRedirect)

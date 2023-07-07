@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import datetime
 import json
 import os
 import zipfile
@@ -147,7 +148,7 @@ class SpatialInputMWV(MapWorkflowView):
             next_step=next_step
         )
 
-    def process_step_data(self, request, session, step, model_db, current_url, previous_url, next_url):
+    def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
 
@@ -155,7 +156,7 @@ class SpatialInputMWV(MapWorkflowView):
             request(HttpRequest): The request.
             session(sqlalchemy.orm.Session): Session bound to the steps.
             step(ResourceWorkflowStep): The step to be updated.
-            model_db(ModelDatabase): The model database associated with the resource.
+            resource(Resource): the resource for this request.
             current_url(str): URL to step.
             previous_url(str): URL to the previous step.
             next_url(str): URL to the next step.
@@ -219,7 +220,7 @@ class SpatialInputMWV(MapWorkflowView):
                 request=request,
                 session=session,
                 step=step,
-                model_db=model_db,
+                resource=resource,
                 current_url=current_url,
                 previous_url=previous_url,
                 next_url=next_url
@@ -265,6 +266,10 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             dict: Dictionary equivalent of GeoJSON.
         """
+        def _json_default(obj):
+            if type(obj) is datetime.date or type(obj) is datetime.datetime:
+                return obj.isoformat()
+
         workdir = None
 
         if not in_memory_file:
@@ -333,7 +338,7 @@ class SpatialInputMWV(MapWorkflowView):
             }
 
             # Convert to geojson objects
-            geojson_str = json.dumps(geojson_dicts)
+            geojson_str = json.dumps(geojson_dicts, default=_json_default)
             geojson_objs = geojson.loads(geojson_str)
 
             # Validate
@@ -441,6 +446,19 @@ class SpatialInputMWV(MapWorkflowView):
         Returns:
             object: geojson object.
         """  # noqa: E501
+        def sort_by_coordinates(f):
+            coordinates = f['geometry']['coordinates']
+            geom_type = f['geometry']['type']
+            if geom_type == 'LineString':
+                # List of list of X,Y:  [[X1, Y1], [X2, Y2], ...]
+                return min(coordinates)
+            elif geom_type == 'Polygon':
+                # List of list of list of X,Y, just do outer ring:  [[[X1, Y1], [X2, Y2], ...], [...]]
+                return min(coordinates[0])
+            else:
+                # Points, just a list of X, Y:  [X1, Y1]
+                return coordinates
+
         post_processed_geojson = {
             'type': 'FeatureCollection',
             'crs': {
@@ -458,7 +476,7 @@ class SpatialInputMWV(MapWorkflowView):
             return geojson
 
         # Sort the features for consistent ID'ing
-        s_features = sorted(geojson['features'], key=lambda f: f['geometry']['coordinates'])
+        s_features = sorted(geojson['features'], key=sort_by_coordinates)
 
         for _, feature in enumerate(s_features):
             if 'geometry' not in feature or \
@@ -477,7 +495,7 @@ class SpatialInputMWV(MapWorkflowView):
 
             # Generate ID if not given
             if 'id' not in feature['properties']:
-                feature['properties']['id'] = str(uuid.uuid4())
+                feature['properties']['id'] = 'drawing_layer.' + str(uuid.uuid4())
 
             post_processed_geojson['features'].append(processed_feature)
 
