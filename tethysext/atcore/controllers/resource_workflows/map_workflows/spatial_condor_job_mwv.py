@@ -230,6 +230,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         if not jobs:
             raise RuntimeError('Improperly configured SpatialCondorJobRWS: no "jobs" option supplied.')
 
+        workflow_kwargs = step.options.get('workflow_kwargs', None)
+
         # Get map manager
         map_manager = self.get_map_manager(request, resource)
 
@@ -252,6 +254,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             scheduler_name=scheduler_name,
             gs_engine=gs_engine,
             resource_workflow=workflow,
+            workflow_kwargs=workflow_kwargs,
         )
 
         # Serialize parameters from all previous steps into json
