@@ -30,6 +30,7 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
         baseline = {
             'scheduler': '',
             'jobs': [],
+            'workflow_kwargs': {},
             'working_message': '',
             'error_message': '',
             'pending_message': '',
