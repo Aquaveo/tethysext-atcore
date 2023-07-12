@@ -16,6 +16,7 @@ class SpatialCondorJobRWS(SpatialResourceWorkflowStep):
     Options:
         scheduler(str): Name of the Condor scheduler to use.
         jobs(list<dict>): A list of dictionaries, each containing the kwargs for a CondorWorkflowJobNode.
+        workflow_kwargs(dict): Additional keyword arguments to pass to the CondorWorkflow.
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialCondorJobMWV'
     TYPE = 'spatial_condor_job_workflow_step'
@@ -30,6 +31,7 @@ class SpatialCondorJobRWS(SpatialResourceWorkflowStep):
         default_options.update({
             'scheduler': '',
             'jobs': [],
+            'workflow_kwargs': {},
             'working_message': '',
             'error_message': '',
             'pending_message': '',

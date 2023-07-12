@@ -26,7 +26,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
                                          'resources', 'resource_workflows')
 
     def __init__(self, session, resource, resource_workflow_step, user, working_directory, app, scheduler_name,
-                 jobs=None, input_files=None, gs_engine=None, resource_workflow=None, *args):
+                 jobs=None, input_files=None, gs_engine=None, resource_workflow=None, workflow_kwargs=None, *args):
         """
         Constructor.
 
@@ -41,6 +41,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
             input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
             resource_workflow(ResourceWorkflow): The workflow.
+            workflow_kwargs(dict): Optional keyword arguments to pass to the CondorWorkflow.
         """  # noqa: E501
         self.validate_jobs(jobs)
 
@@ -116,6 +117,9 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Add custom args
         self.job_args.extend(self.custom_job_args)
 
+        # Add workflow kwargs
+        self.workflow_kwargs = workflow_kwargs if workflow_kwargs is not None else {}
+
         # State variables
         self.workflow = None
         self.prepared = False
@@ -188,7 +192,8 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
                 'resource_id': self.resource_id,
                 'resource_workflow_id': self.resource_workflow_id,
                 'resource_workflow_step_id': self.resource_workflow_step_id,
-            }
+            },
+            **self.workflow_kwargs,
         )
 
         # Save the workflow
