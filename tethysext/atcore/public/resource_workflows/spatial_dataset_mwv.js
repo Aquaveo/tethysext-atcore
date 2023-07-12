@@ -338,8 +338,13 @@ var SPATIAL_DATASET_MWV = (function() {
                 name: m_y_column[i],
             };
 
-            data.push(series);
-            layouts.push(layout);
+            if (!y_values.every((item) => item == -99999.9)) {
+                data.push(series);
+                layouts.push(layout);
+            }
+        }
+        if (layouts.length == 0) {
+            return;
         }
         let layout = layouts[0];
 

@@ -46,6 +46,7 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
             'template_dataset': self.DEFAULT_DATASET,
             'read_only_columns': [],
             'plot_columns': [],
+            'optional_columns': [],
             'max_rows': self.DEFAULT_MAX_ROWS,
             'empty_rows': self.DEFAULT_EMPTY_ROWS
         })
