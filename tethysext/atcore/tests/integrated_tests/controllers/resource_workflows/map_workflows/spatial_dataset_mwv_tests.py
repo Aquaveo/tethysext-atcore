@@ -122,6 +122,36 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
         self.assertEqual([b'{"success": true}'], ret.__dict__['_container'])
 
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch.object(SpatialDatasetMWV, 'get_step')
+    @mock.patch.object(SpatialDatasetMWV, 'get_workflow')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role')
+    def test_save_spatial_data_optional_columns(self, mock_user_role, mock_get_workflow, mock_get_step, _):
+        optional_step1 = SpatialDatasetRWS(
+            geoserver_name='geo_server',
+            map_manager=mock.MagicMock(),
+            spatial_manager=mock.MagicMock(),
+            name='name1_optional',
+            help='help1_optional',
+            order=1,
+            options={
+                'max_rows': 1000,
+                'template_dataset': pd.DataFrame(columns=['Time (min)', 'Optional']),
+                'column': [],
+                'optional_columns': ['Optional'],
+            }
+        )
+        mock_user_role.return_value = True
+        mock_get_workflow.return_value = self.workflow
+        mock_get_step.return_value = optional_step1
+
+        ret = SpatialDatasetMWV().save_spatial_data(self.request, self.workflow.id, optional_step1.id,
+                                                    back_url=self.back_url, resource=self.resource,
+                                                    session=self.session)
+
+        self.assertIsInstance(ret, JsonResponse)
+        self.assertEqual([b'{"success": true}'], ret.__dict__['_container'])
+
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
     def test_process_step_data(self, _):
         resource = mock.MagicMock(spec=ModelDatabase)
 

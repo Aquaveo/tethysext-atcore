@@ -50,6 +50,7 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             'template_dataset': self.instance.DEFAULT_DATASET,
             'read_only_columns': [],
             'plot_columns': [],
+            'optional_columns': [],
             'max_rows': self.instance.DEFAULT_MAX_ROWS,
             'empty_rows': self.instance.DEFAULT_EMPTY_ROWS,
             'geocode_enabled': False,

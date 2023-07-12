@@ -17,6 +17,9 @@ from tethysext.atcore.services.resource_workflows.decorators import workflow_ste
 from tethysext.atcore.utilities import strip_list
 
 
+SPATIAL_DATASET_NODATA = -99999.9
+
+
 class SpatialDatasetMWV(SpatialDataMWV):
     """
     Controller for a map workflow view requiring spatial input (drawing).
@@ -75,6 +78,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
             'rows': rows,
             'read_only_columns': step.options.get('read_only_columns', []),
             'plot_columns': step.options.get('plot_columns', []),
+            'optional_columns': step.options.get('optional_columns', []),
             'max_rows': max_rows,
         }
 
@@ -105,10 +109,18 @@ class SpatialDatasetMWV(SpatialDataMWV):
         data = {}
         columns = step.options.get('template_dataset').columns
 
+        row_count = 0
         for column in columns:
             c = request.POST.getlist(column, [])
             strip_list(c)
             data.update({column: c})
+            row_count = max(row_count, len(c))
+
+        optional_columns = step.options.get('optional_columns', [])
+        for column in columns:
+            if column in optional_columns and not data[column]:
+                c = [SPATIAL_DATASET_NODATA] * row_count
+                data.update({column: c})
 
         # Save dataset as new pandas DataFrame
         dataset = pd.DataFrame(data=data, columns=columns, dtype=np.float64)
