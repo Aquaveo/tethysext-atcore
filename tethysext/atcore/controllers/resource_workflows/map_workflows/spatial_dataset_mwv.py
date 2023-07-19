@@ -80,6 +80,7 @@ class SpatialDatasetMWV(SpatialDataMWV):
             'plot_columns': step.options.get('plot_columns', []),
             'optional_columns': step.options.get('optional_columns', []),
             'max_rows': max_rows,
+            'nodata_val': SPATIAL_DATASET_NODATA,
         }
 
         return render(request, 'atcore/resource_workflows/components/spatial_dataset_form.html', context)

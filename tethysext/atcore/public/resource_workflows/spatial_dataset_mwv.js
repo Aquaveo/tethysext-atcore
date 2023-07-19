@@ -22,6 +22,7 @@ var SPATIAL_DATASET_MWV = (function() {
  	var TABLE_FIELD_SELECTOR = TABLE_SELECTOR + ' input';
  	var PLOT_ID = 'spatial-dataset-plot'
  	var PLOT_SELECTOR = '#' + PLOT_ID;
+    var NODATA_VALUE = -99999.9;
 
  	// Module variables
  	var m_max_rows;                     // Maximum number of rows allowed
@@ -338,7 +339,7 @@ var SPATIAL_DATASET_MWV = (function() {
                 name: m_y_column[i],
             };
 
-            if (!y_values.every((item) => item == -99999.9)) {
+            if (!y_values.every((item) => item == NODATA_VALUE)) {
                 data.push(series);
                 layouts.push(layout);
             }

@@ -40,7 +40,7 @@
                             <input {% if is_numeric %}type="number"{% else %}type="text"{% endif %}
                                 class="form-field"
                                 name="{{ column }}"
-                                value="{{ val }}"
+                                value="{% if val != nodata_val %}{{ val }}{% endif %}"
                                 {% if column in read_only_columns %}disabled{% endif %}>
                             {% endwith %}
                         </td>
