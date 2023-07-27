@@ -29,9 +29,12 @@ class ModelDatabase(ModelDatabaseBase):
         """
         return self.model_db_connection.get_id()
 
-    def get_size(self, pretty=False):
+    def get_size(self, pretty: bool = False):
         """
         Get the size of the ModelDatabase
+        
+        Args:
+            pretty: If True, return a human readable string of the size. If False, return the size in bytes.
         """
         engine = self.model_db_connection.get_engine()
 

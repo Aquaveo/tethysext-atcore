@@ -26,7 +26,7 @@ class Resource(StatusMixin, AttributesMixin, UserLockMixin, AppUsersBase):
     DISPLAY_TYPE_PLURAL = 'Resources'
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    name = Column(String)
+    name = Column(String)  # Name of the resource
     description = Column(String)
     type = Column(String)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
