@@ -1,0 +1,28 @@
+name: atcore-docs
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python
+  - pip
+  # ATCore
+  - django=3.2.*
+  - django-select2
+  - django-taggit
+  - coverage
+  - factory_boy
+  - filelock
+  - geoalchemy2
+  - geojson
+  - jinja2
+  - pandas
+  - param
+  - pyshp
+  - requests
+  - sqlalchemy<2
+  - panel
+  # Docs
+  - sphinx
+  - pip:
+      - sphinx-autobuild
