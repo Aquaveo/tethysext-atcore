@@ -35,7 +35,7 @@ class ManageResources(ResourceViewMixin):
     http_method_names = ['get', 'post', 'delete']
     enable_groups = False
     collapse_groups = False
-    highlight_groups = True
+    highlight_groups = False
 
     ACTION_LAUNCH = 'launch'
     ACTION_PROCESSING = 'processing'
@@ -160,6 +160,7 @@ class ManageResources(ResourceViewMixin):
                 resource_card['debugging']['id'] = str(resource.id)
                 resource_card['has_parents'] = len(resource.parents) > 0
                 resource_card['has_children'] = len(resource.children) > 0
+                resource_card['children'] = []
 
                 # Get resource action parameters
                 action_dict = self.get_resource_action(
@@ -174,8 +175,11 @@ class ManageResources(ResourceViewMixin):
                 resource_card['action_href'] = action_dict['href']
 
                 # Build child resources recursively
-                resource_card['children'] = build_resource_cards(resource.children, level=level+1) \
-                    if resource.children else []
+                if self.enable_groups:
+                    resource_card['children'] = build_resource_cards(resource.children, level=level+1) \
+                        if resource.children else []
+
+                # append resource to resource_cards
                 resource_cards.append(resource_card)
 
             # Only attempt to sort if the sort field is a valid attribute of _Resource
@@ -213,6 +217,7 @@ class ManageResources(ResourceViewMixin):
             'pagination_info': pagination_info,
             'show_select_column': self.enable_groups and has_permission(request, 'create_resource'),
             'show_group_buttons': self.enable_groups,
+            'enable_groups': self.enable_groups,
             'show_new_group_button': self.enable_groups and has_permission(request, 'create_resource'),
             'show_new_button': has_permission(request, 'create_resource'),
             'show_debugging_info': request_app_user.is_staff(),
