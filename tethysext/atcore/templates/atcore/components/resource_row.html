@@ -10,8 +10,8 @@
 
   {# NAME VALUE #}
   <td class="name" data-id="{{ resource.name }}">
-    {% if resource.has_parents %}<span style="display: inline-block; width: {% widthratio 25 1 resource.level %}px;" class="child-spacer level-{{ resource.level }}"></span>{% endif %}
-    {% if resource.has_children %}<button {% if not collapse_groups %}class="expanded"{% endif %} data-ts-toggle="table-row-collapse" data-ts-target=".child-{{ resource.id }}" type="button"><i class="bi bi-chevron-right"></i></button> {% endif %}
+    {% if enable_groups and resource.has_parents %}<span style="display: inline-block; width: {% widthratio 25 1 resource.level %}px;" class="child-spacer level-{{ resource.level }}"></span>{% endif %}
+    {% if enable_groups and resource.has_children %}<button {% if not collapse_groups %}class="expanded"{% endif %} data-ts-toggle="table-row-collapse" data-ts-target=".child-{{ resource.id }}" type="button"><i class="bi bi-chevron-right"></i></button> {% endif %}
     <a href="{{ resource.action_href }}">{{ resource.name }}</a>
   </td>
 
