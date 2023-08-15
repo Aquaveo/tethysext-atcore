@@ -1,5 +1,5 @@
-SQLAlchemy Models
-=================
+Models
+======
 
 This section contains the API documentation for the SQLAlchemy database models provided by ATCore.
 
@@ -7,6 +7,7 @@ This section contains the API documentation for the SQLAlchemy database models p
    :maxdepth: 2
    :caption: Contents:
 
-   database-models/app-users
-   database-models/resource-workflows
-   database-models/file-database
+   models/app-users
+   models/resource-workflows
+   models/file-database
+   models/types

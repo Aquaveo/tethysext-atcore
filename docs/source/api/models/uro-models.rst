@@ -1,5 +1,5 @@
-App Users
-=========
+URO Models
+==========
 
 The App Users models provide an app-level access control system for apps that implement them.
 
