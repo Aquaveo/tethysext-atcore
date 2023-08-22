@@ -9,22 +9,27 @@ Primary Models
 .. autoclass:: tethysext.atcore.models.app_users.app_user.AppUser
     :members:
     :undoc-members:
+    :member-order: bysource
 
 .. autoclass:: tethysext.atcore.models.app_users.organization.Organization
     :members:
     :undoc-members:
+    :member-order: bysource
 
 .. autoclass:: tethysext.atcore.models.app_users.resource.Resource
     :members:
     :undoc-members:
+    :member-order: bysource
 
 .. autoclass:: tethysext.atcore.models.app_users.spatial_resource.SpatialResource
     :members:
     :undoc-members:
+    :member-order: bysource
 
 .. autoclass:: tethysext.atcore.models.app_users.user_setting.UserSetting
     :members:
     :undoc-members:
+    :member-order: bysource
 
 Supporting Models
 -----------------
@@ -32,11 +37,14 @@ Supporting Models
 .. automodule:: tethysext.atcore.models.app_users.associations
     :members:
     :undoc-members:
+    :member-order: bysource
 
 .. automodule:: tethysext.atcore.models.app_users.base
     :members:
     :undoc-members:
+    :member-order: bysource
 
 .. automodule:: tethysext.atcore.models.app_users.initializer
     :members:
     :undoc-members:
+    :member-order: bysource

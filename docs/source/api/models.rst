@@ -7,7 +7,7 @@ This section contains the API documentation for the SQLAlchemy database models p
    :maxdepth: 2
    :caption: Contents:
 
-   models/app-users
+   models/uro-models
    models/resource-workflows
    models/file-database
    models/types
