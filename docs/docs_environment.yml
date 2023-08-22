@@ -26,3 +26,4 @@ dependencies:
   - sphinx
   - pip:
       - sphinx-autobuild
+      - sphinx_rtd_theme
