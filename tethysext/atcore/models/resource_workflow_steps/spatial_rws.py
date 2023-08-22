@@ -25,6 +25,7 @@ class SpatialResourceWorkflowStep(ResourceWorkflowStep):
         default_options = super().default_options
         default_options.update({
             'geocode_enabled': False,
+            'label_property': None,
         })
         return default_options
 
