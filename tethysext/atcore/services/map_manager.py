@@ -134,7 +134,7 @@ class MapManagerBase(object):
 
     def build_geojson_layer(self, geojson, layer_name, layer_title, layer_variable, layer_id='', visible=True,
                             public=True, selectable=False, plottable=False, has_action=False, extent=None,
-                            popup_title=None, excluded_properties=None, show_download=False):
+                            popup_title=None, excluded_properties=None, show_download=False, label_options=None):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -152,6 +152,8 @@ class MapManagerBase(object):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             show_download(boolean): enable download geojson as shapefile. Default is False.
+            label_options(dict): Dictionary for labeling.  Possibilities include label_property (the name of the
+                property to label), font (label font), text_align (alignment of the label), offset_x (x offset). Optional.
 
         Returns:
             MVLayer: the MVLayer object.
@@ -180,6 +182,7 @@ class MapManagerBase(object):
             excluded_properties=excluded_properties,
             style_map=style_map,
             show_download=show_download,
+            label_options=label_options,
         )
 
         return mv_layer
@@ -385,7 +388,7 @@ class MapManagerBase(object):
     def _build_mv_layer(self, layer_source, layer_name, layer_title, layer_variable, options, layer_id=None,
                         extent=None, visible=True, public=True, selectable=False, plottable=False, has_action=False,
                         excluded_properties=None, popup_title=None, geometry_attribute=None, style_map=None,
-                        show_download=False, times=None):
+                        show_download=False, times=None, label_options=None):
         """
         Build an MVLayer object with supplied arguments.
         Args:
@@ -405,6 +408,8 @@ class MapManagerBase(object):
             style_map(dict): Style map dictionary. See MVLayer documentation for examples of style maps. Optional.
             show_download(boolean): enable download layer. (only works for geojson layer).
             times (list): List of time steps if layer is time-enabled. Times should be represented as strings in ISO 8601 format (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"]). Currently only supported in CesiumMapView.
+            label_options(dict): Dictionary for labeling.  Possibilities include label_property (the name of the
+                property to label), font (label font), text_align (alignment of the label), offset_x (x offset). Optional.
         Returns:
             MVLayer: the MVLayer object.
         """  # noqa: E501
@@ -448,6 +453,9 @@ class MapManagerBase(object):
 
         if style_map:
             layer_options.update({'style_map': style_map})
+
+        if label_options:
+            layer_options.update({'label_options': label_options})
 
         mv_layer = MVLayer(
             source=layer_source,

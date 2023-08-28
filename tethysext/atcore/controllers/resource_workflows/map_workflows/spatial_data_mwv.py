@@ -62,13 +62,16 @@ class SpatialDataMWV(MapWorkflowView):
         else:
             title = current_step.options['dataset_title']
 
+        label_options = current_step.options['label_options']
+
         geometry_layer = map_manager.build_geojson_layer(
             geojson=geometry,
             layer_name='_pop_up_features',
             layer_variable='pop_up_features',
             layer_title='Pop Up Features',
             popup_title=title,
-            selectable=True
+            selectable=True,
+            label_options=label_options,
         )
 
         map_view.layers.insert(0, geometry_layer)
