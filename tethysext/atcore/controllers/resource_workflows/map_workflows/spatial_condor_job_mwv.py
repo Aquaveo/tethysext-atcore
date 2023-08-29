@@ -108,7 +108,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         step_job = job_manager.get_job(job_id=job_id)
         app_user = self._AppUser.get_app_user_from_request(request, session)
         show_job_table_actions = app_user.is_staff() or app_user.get_role() in [
-            self._AppUser.ROLES.APP_ADMIN, 
+            self._AppUser.ROLES.APP_ADMIN,
             self._AppUser.ROLES.ORG_ADMIN
         ]
 
