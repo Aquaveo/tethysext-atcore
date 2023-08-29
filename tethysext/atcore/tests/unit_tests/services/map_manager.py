@@ -541,6 +541,7 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title='POPUP_TITLE_PASS_THROUGH',
             excluded_properties=[1, 2, 3],
+            label_options=None,
             style_map=mock_gvsm()
         )
 
