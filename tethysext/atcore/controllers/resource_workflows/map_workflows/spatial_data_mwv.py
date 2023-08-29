@@ -62,7 +62,7 @@ class SpatialDataMWV(MapWorkflowView):
         else:
             title = current_step.options['dataset_title']
 
-        label_options = current_step.options['label_options']
+        label_options = current_step.options['label_options'] if 'label_options' in current_step.options else None
 
         geometry_layer = map_manager.build_geojson_layer(
             geojson=geometry,

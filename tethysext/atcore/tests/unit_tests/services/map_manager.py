@@ -473,7 +473,8 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title=None,
             excluded_properties=None,
-            style_map=mock_gvsm()
+            style_map=mock_gvsm(),
+            label_options=None,
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
@@ -515,7 +516,8 @@ class MapManagerBaseTests(unittest.TestCase):
             plottable=True,
             has_action=False,
             popup_title='POPUP_TITLE_PASS_THROUGH',
-            excluded_properties=[1, 2, 3]
+            excluded_properties=[1, 2, 3],
+            label_options=None,
         )
 
         expected_options = copy.deepcopy(geojson)
