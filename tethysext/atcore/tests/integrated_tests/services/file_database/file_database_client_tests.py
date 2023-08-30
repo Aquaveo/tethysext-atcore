@@ -291,6 +291,69 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'dir2')))
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'dir2', 'file3.txt')))
 
+    def test_new_collection_with_files_not_relative_to(self):
+        """Test the new_collection function with a list of files to copy."""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        base_files_root_dir = os.path.join(self.test_files_base, 'test_new_collection_with_files')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_collection_with_files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _ = self.get_database_instance(
+            database_id=database_id,
+            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        collection_files = [
+            os.path.join(root_dir, 'files', 'file1.txt'),
+            os.path.join(root_dir, 'files', 'dir1', 'file2.txt'),
+            os.path.join(root_dir, 'files', 'dir1', 'dir2', 'file3.txt'),
+        ]
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
+        collection_client = database_client.new_collection(items=collection_files)
+        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        self.assertTrue(new_file_collection is not None)
+        self.assertTrue(os.path.exists(os.path.join(database_client.path, str(collection_client.instance.id))))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file2.txt')))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file3.txt')))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1')))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1', 'file2.txt')))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1', 'dir2')))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'dir1', 'dir2', 'file3.txt')))
+
+    def test_new_collection_with_files_relative_to(self):
+        """Test the new_collection function with a list of files to copy."""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        base_files_root_dir = os.path.join(self.test_files_base, 'test_new_collection_with_files')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_collection_with_files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        _ = self.get_database_instance(
+            database_id=database_id,
+            database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
+        )
+        collection_files = [
+            os.path.join(root_dir, 'files', 'file1.txt'),
+            os.path.join(root_dir, 'files', 'dir1', 'file2.txt'),
+            os.path.join(root_dir, 'files', 'dir1', 'dir2', 'file3.txt'),
+        ]
+        database_client = FileDatabaseClient(self.session, root_dir, database_id)
+        collection_client = database_client.new_collection(
+            items=collection_files,
+            relative_to=os.path.join(root_dir, 'files')
+        )
+        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        self.assertTrue(new_file_collection is not None)
+        self.assertTrue(os.path.exists(os.path.join(database_client.path, str(collection_client.instance.id))))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1')))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'file2.txt')))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'dir2')))
+        self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'dir1', 'dir2', 'file3.txt')))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'file2.txt')))
+        self.assertFalse(os.path.exists(os.path.join(collection_client.path, 'file3.txt')))
+
     def test_new_collection_with_meta(self):
         """Test the new_collection function with meta."""
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')

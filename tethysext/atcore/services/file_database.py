@@ -113,13 +113,17 @@ class FileDatabaseClient(MetaMixin):
         )
         return collection_client
 
-    def new_collection(self, items: list = None, meta: dict = None) -> 'FileCollectionClient':
+    def new_collection(
+            self, items: list = None, meta: dict = None, move: bool = False, relative_to: str = ''
+    ) -> 'FileCollectionClient':
         """
         Create a new collection copying any files and meta data passed in.
 
         Args:
             items (list): A list of files or paths to be copied to the file collection.
-            meta: (dict): The meta data to be stored in the FileCollection
+            meta: (dict): The meta data to be stored in the FileCollection.
+            move (bool): Move the files if True, otherwise copy the files. Defaults to False.
+            relative_to (str): Preserve the relative path of the items relative to this directory.
 
         Returns:
             A new FileCollectionClient object for the FileCollection.
@@ -129,7 +133,7 @@ class FileDatabaseClient(MetaMixin):
         new_collection = FileCollectionClient.new(self._session, self, meta)
         for item in items:
             try:
-                new_collection.add_item(item)
+                new_collection.add_item(item, move=move, relative_to=relative_to)
             except (FileNotFoundError, FileExistsError, ShutilErrors) as exc:
                 new_collection.delete()
                 raise exc
@@ -291,27 +295,37 @@ class FileCollectionClient(MetaMixin):
         self.export(duplicated_client.path)
         return duplicated_client
 
-    def add_item(self, item: str, move: bool = False) -> None:
+    def add_item(self, item: str, move: bool = False, relative_to: str = '') -> None:
         """
         Add an item to the file collection.
 
         Args:
             item: A path to the item to be added.
             move: Move the file if True, otherwise just copy.
+            relative_to: Preserve the relative path of the item relative to this directory.
         """
         if not os.path.exists(item):
             raise FileNotFoundError('Item to be added does not exist.')
 
+        if relative_to and not os.path.isdir(relative_to):
+            raise FileNotFoundError('relative_to must be a directory.')
+
         if self.path in item:
             raise FileExistsError('Item to be added must not already be contained in the FileCollection.')
 
+        if not relative_to:
+            dst = self.path
+        else:
+            dst = os.path.join(self.path, os.path.relpath(os.path.dirname(item), start=relative_to))
+            os.makedirs(dst, exist_ok=True)
+
         if move:
-            shutil.move(item, self.path)
+            shutil.move(item, dst)
         else:
             if os.path.isdir(item):
-                shutil.copytree(item, os.path.join(self.path, os.path.split(item)[-1]))
+                shutil.copytree(item, os.path.join(dst, os.path.split(item)[-1]))
             else:
-                shutil.copy(item, self.path)
+                shutil.copy(item, dst)
 
     def delete_item(self, item: str):
         """
