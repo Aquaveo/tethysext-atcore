@@ -487,7 +487,7 @@ class PlotWorkflowResultViewTests(SqlAlchemyTestCase):
         mock_result.datasets = [{
             'dataset': data_test,
             'series_axes': [('x', 'y'), ('x', 'y1'), ('x', 'y2')],
-            'series_labels':['s1', 's2', 's3'],
+            'series_labels': ['s1', 's2', 's3'],
         }]
 
         mock_options = mock.MagicMock(get=mock.MagicMock())

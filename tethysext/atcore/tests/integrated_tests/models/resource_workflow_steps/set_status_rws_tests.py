@@ -1,7 +1,7 @@
 from .common import RWS_DEFAULT_OPTIONS
 from tethysext.atcore.models.resource_workflow_steps import SetStatusRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests,\
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 
 

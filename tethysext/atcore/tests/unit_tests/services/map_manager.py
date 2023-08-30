@@ -489,7 +489,8 @@ class MapManagerBaseTests(unittest.TestCase):
                 {
                     'type': 'Feature',
                     'geometry': {'type': 'Point', 'coordinates': [-87.89832948468124, 30.651451015987234]},
-                    'properties': {'id': 4}
+                    'properties': {'id': 4},
+                    'label': 'baz',
                 },
             ]
         }
@@ -517,7 +518,7 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title='POPUP_TITLE_PASS_THROUGH',
             excluded_properties=[1, 2, 3],
-            label_options=None,
+            label_options={'label_property': 'baz'},
         )
 
         expected_options = copy.deepcopy(geojson)
@@ -541,7 +542,7 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title='POPUP_TITLE_PASS_THROUGH',
             excluded_properties=[1, 2, 3],
-            label_options=None,
+            label_options={'label_property': 'baz'},
             style_map=mock_gvsm()
         )
 

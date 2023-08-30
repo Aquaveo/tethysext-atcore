@@ -8,7 +8,7 @@
 """
 import inspect
 from tethys_sdk.base import TethysController
-from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations,\
+from tethysext.atcore.controllers.app_users import ManageUsers, ModifyUser, AddExistingUser, ManageOrganizations, \
     ManageOrganizationMembers, ModifyOrganization, UserAccount
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager

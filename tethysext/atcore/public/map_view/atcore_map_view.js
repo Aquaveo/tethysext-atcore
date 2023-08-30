@@ -159,9 +159,6 @@ var ATCORE_MAP_VIEW = (function() {
 	        }
 	    });
 
-        // TODO: Init layer labels
-        https://openlayers.org/en/latest/examples/vector-label-decluttering.html
-
         // Setup feature selection
 	    init_feature_selection();
     };
