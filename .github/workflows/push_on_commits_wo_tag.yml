@@ -31,6 +31,19 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  lint:
+    name: Lint with Flake8
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Flake8
+        run: pip install flake8
+      - name: Run Flake8
+        run: flake8 $GITHUB_WORKSPACE
+
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest

@@ -107,7 +107,8 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
             extent=[-1, -1, 1, 1],
             popup_title='A Foo',
             excluded_properties=['a', 'b'],
-            show_download=True
+            show_download=True,
+            label_options=None
         )
 
         self.instance.add_geojson_layer(**kwargs)

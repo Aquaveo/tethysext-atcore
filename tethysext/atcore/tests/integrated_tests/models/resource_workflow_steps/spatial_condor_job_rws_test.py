@@ -1,7 +1,7 @@
 from unittest import mock
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests,\
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 
 
@@ -49,6 +49,7 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
             'release_resource_lock_on_completion': True,
             'release_resource_lock_on_init': False,
             'geocode_enabled': False,
+            'label_options': None,
         }
 
         self.assertDictEqual(baseline, self.instance.default_options)
