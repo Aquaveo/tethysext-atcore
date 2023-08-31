@@ -160,7 +160,6 @@ class ManageResources(ResourceViewMixin):
                 resource_card['debugging']['id'] = str(resource.id)
                 resource_card['has_parents'] = len(resource.parents) > 0
                 resource_card['has_children'] = len(resource.children) > 0
-                resource_card['children'] = []
 
                 # Get resource action parameters
                 action_dict = self.get_resource_action(
@@ -175,9 +174,8 @@ class ManageResources(ResourceViewMixin):
                 resource_card['action_href'] = action_dict['href']
 
                 # Build child resources recursively
-                if self.enable_groups:
-                    resource_card['children'] = build_resource_cards(resource.children, level=level+1) \
-                        if resource.children else []
+                resource_card['children'] = build_resource_cards(resource.children, level=level+1) \
+                    if self.enable_groups and resource.children else []
 
                 # append resource to resource_cards
                 resource_cards.append(resource_card)
