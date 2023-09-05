@@ -4,6 +4,7 @@ import argparse
 def set_step_status(resource_db_session, step, status):
     """
     Sets the status on the provided step to the provided status.
+
     Args:
         resource_db_session(sqlalchemy.orm.Session): Session bound to the step.
         step(ResourceWorkflowStep): The step to modify
@@ -19,6 +20,7 @@ def set_step_status(resource_db_session, step, status):
 def parse_workflow_step_args():
     """
     Parses and validates command line arguments for workflow_step_job.
+
     Returns:
         argparse.Namespace: The parsed and validated arguments.
     """

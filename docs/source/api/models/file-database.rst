@@ -1,4 +1,4 @@
-.. _file-database-models:
+.. _services-file-database-models:
 
 File Database
 =============

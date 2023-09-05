@@ -20,6 +20,7 @@ extensions = [
 
 # Autodoc config
 autodoc_typehints = 'both'
+autodoc_mock_imports = ['plotly', 'tethys_gizmos']
 
 # Template config
 templates_path = ['_templates']

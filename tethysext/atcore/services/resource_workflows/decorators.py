@@ -25,6 +25,18 @@ log = logging.getLogger(f'tethys.{__name__}')
 
 
 def workflow_step_controller(is_rest_controller=False):
+    """Decorator for workflow step controllers. Manages database session and exception handling for the controller. Passes the following arguments to the decorated controller:
+
+        * **request** (HttpRequest): The request object.
+        * **session** (Session): The database session.
+        * **resource** (Resource): The resource.
+        * **workflow** (Workflow): The workflow.
+        * **current_step** (ResourceWorkflowStep): The current step.
+        * **back_url** (str): The url to redirect to if the controller fails.
+    
+    Args:
+        is_rest_controller (bool): If True, the controller is a REST controller and will return a JsonResponse instead of redirecting to the back_url.
+    """
     def decorator(controller_func):
         def _wrapped_controller(self, request, workflow_id, step_id, back_url=None, resource_id=None,
                                 resource=None, session=None, *args, **kwargs):
@@ -112,6 +124,23 @@ def workflow_step_controller(is_rest_controller=False):
 
 
 def workflow_step_job(job_func):
+    """Decorator for the main function called in a script run by a workflow job step. Manages the database session and boiler plate logic for workflow jobs. Passes the following arguments to the decoarted function:
+
+        * **resource_db_session** (Session): The resource database session.
+        * **model_db_session** (Session): The model database session.
+        * **resource** (Resource): The resource.
+        * **workflow** (Workflow): The workflow.
+        * **step** (ResourceWorkflowStep): The current step.
+        * **gs_private_url** (str): The private url for the GeoServer.
+        * **gs_public_url** (str): The public url for the GeoServer.
+        * **resource_class** (Resource): The resource class.
+        * **workflow_class** (Workflow): The workflow class.
+        * **params_json** (dict): The deserialized parameters for the job as read from the workflow.json file.
+        * **params_file** (str): The path to the workflow.json file.
+        * **cmd_args** (Namespace): The parsed command line arguments.
+        * **extra_args** (list): Any extra arguments passed to the job definition.
+
+    """
     def _wrapped():
         if job_func.__module__ == '__main__':
             args, unknown_args = parse_workflow_step_args()

@@ -96,6 +96,7 @@ class MapManagerBase(object):
     def compose_map(self, request, *args, **kwargs):
         """
         Compose the MapView object.
+
         Args:
             request(HttpRequest): A Django request object.
 
@@ -137,6 +138,7 @@ class MapManagerBase(object):
                             popup_title=None, excluded_properties=None, show_download=False):
         """
         Build an MVLayer object with supplied arguments.
+
         Args:
             geojson(dict): Python equivalent GeoJSON FeatureCollection.
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
@@ -189,6 +191,7 @@ class MapManagerBase(object):
                            popup_title=None, excluded_properties=None, show_download=False):
         """
         Build an MVLayer object with supplied arguments.
+
         Args:
             cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'.
             cesium_json(dict): Cesium dictionary to describe the layer.
@@ -242,6 +245,7 @@ class MapManagerBase(object):
                         popup_title=None, color_ramp_division_kwargs=None, times=None):
         """
         Build an WMS MVLayer object with supplied arguments.
+
         Args:
             endpoint(str): URL to GeoServer WMS interface.
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
@@ -331,6 +335,7 @@ class MapManagerBase(object):
                             popup_title=None):
         """
         Build an AcrGIS Map Server MVLayer object with supplied arguments.
+
         Args:
             endpoint(str): URL to GeoServer WMS interface.
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
@@ -388,6 +393,7 @@ class MapManagerBase(object):
                         show_download=False, times=None):
         """
         Build an MVLayer object with supplied arguments.
+
         Args:
             layer_source(str): OpenLayers Source to use for the MVLayer (e.g.: "TileWMS", "ImageWMS", "GeoJSON").
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
