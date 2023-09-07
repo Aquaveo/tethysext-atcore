@@ -189,6 +189,30 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 return_value=False)
     @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
                 return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv.generate_django_form')
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
+    def test_process_step_options_with_param_class(self, _, mock_params, mock_get_map_manager, mock_form, __, ___):
+        mock_params.return_value = {'geometry': 'shapes and such'}
+        map_view = MapView()
+        map_view.layers = []
+        mock_get_map_manager.return_value = map_view
+        mock_form.return_view = {}
+
+        resource = mock.MagicMock()
+        self.context['map_view'] = map_view
+        self.context['layer_groups'] = [{}]
+        self.step1.options['param_class'] = 'os.test_foo_param_class_doesnt_exist'
+
+        instance = SpatialInputMWV()
+        instance.map_type = 'tethys_map_view'
+        instance.process_step_options(self.request, self.session, self.context, resource, self.step1, None, self.step2)
+
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
     @mock.patch.object(MapView, 'get_map_manager')
     @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
     @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)

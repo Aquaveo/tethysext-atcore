@@ -76,6 +76,12 @@ class SpatialInputMWV(MapWorkflowView):
         """
         # Prepare attributes form
         attributes = current_step.options.get('attributes', None)
+        param_class = current_step.options.get('param_class', None)
+        if not attributes and param_class:
+            package, p_class = param_class.rsplit('.', 1)
+            mod = __import__(package, fromlist=[p_class])
+            ParamClass = getattr(mod, p_class, None)
+            attributes = ParamClass(request=request, session=session, resource=resource) if ParamClass else None
 
         if attributes is not None:
             attributes_form = generate_django_form(attributes)
