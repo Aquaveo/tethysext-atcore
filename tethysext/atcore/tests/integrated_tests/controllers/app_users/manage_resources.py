@@ -401,7 +401,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
                 'href': mock_reverse(),
             }, ret)
 
-    def test_get_resources(self):
+    def test_get_resources_groups_disabled(self):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_session = mock.MagicMock()
         mock_request_app_user = mock.MagicMock()
@@ -409,6 +409,22 @@ class ManageResourcesTests(SqlAlchemyTestCase):
             mock_get_resource_model.return_value = 'resource_type'
             # Call the method
             manage_resources = ManageResources()
+            manage_resources.enable_groups = False
+            manage_resources.get_resources(mock_session, mock_request, mock_request_app_user)
+
+        # Test the results
+        mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type',
+                                                               include_children=True)
+
+    def test_get_resources_groups_enabled(self):
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_session = mock.MagicMock()
+        mock_request_app_user = mock.MagicMock()
+        with mock.patch.object(ResourceViewMixin, 'get_resource_model') as mock_get_resource_model:
+            mock_get_resource_model.return_value = 'resource_type'
+            # Call the method
+            manage_resources = ManageResources()
+            manage_resources.enable_groups = True
             manage_resources.get_resources(mock_session, mock_request, mock_request_app_user)
 
         # Test the results

@@ -372,7 +372,9 @@ class ManageResources(ResourceViewMixin):
             list<Resources>: the list of resources to render on the manage_resources page.
         """
         _Resource = self.get_resource_model()
-        return request_app_user.get_resources(session, request, of_type=_Resource, include_children=False)
+        return request_app_user.get_resources(
+            session, request, of_type=_Resource, include_children=not self.enable_groups
+        )
 
     def perform_custom_delete_operations(self, session, request, resource):
         """
