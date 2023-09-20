@@ -21,9 +21,10 @@ requirements:
       - param
       - pyshp
       - requests
-      - sqlalchemy=1.3.*
+      - sqlalchemy<2
       - panel
   pip:
+    - django<3
     - django-datetime-widget
     - django-select2
     - django-taggit
