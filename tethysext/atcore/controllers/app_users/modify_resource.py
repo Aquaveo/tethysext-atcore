@@ -574,7 +574,7 @@ class ModifyResource(ResourceViewMixin):
         """
         pass
 
-    def handle_resource_finished_processing(self, session, request, request_app_user, resource, editing, context):
+    def handle_resource_finished_processing(self, session, request, request_app_user, resource, editing, context=None):
         """
         Hook to allow for post processing after the resource has finished being created or updated.
         Args:
