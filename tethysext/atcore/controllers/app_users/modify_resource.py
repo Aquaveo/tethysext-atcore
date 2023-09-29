@@ -170,7 +170,10 @@ class ModifyResource(ResourceViewMixin):
                     valid = False
                     resource_srid_error = self.srid_error
 
-                custom_valid, custom_fields_errors = self.validate_custom_fields(post_params, session, request, request_app_user)
+                custom_valid, custom_fields_errors = self.validate_custom_fields(post_params,
+                                                                                 session,
+                                                                                 request,
+                                                                                 request_app_user)
                 context.update(custom_fields_errors)
 
                 if valid and custom_valid:
