@@ -246,7 +246,9 @@ class ModifyResource(ResourceViewMixin):
                     session.commit()
 
                     # Call post processing hook
-                    self.handle_resource_finished_processing(session, request, request_app_user, resource, editing)
+                    self.handle_resource_finished_processing(
+                        session, request, request_app_user, resource, editing, context
+                    )
 
                     # Sessions are closed in the finally block
                     return redirect(reverse(next_controller))
@@ -389,7 +391,7 @@ class ModifyResource(ResourceViewMixin):
                     )
 
             # Initialize custom fields
-            custom_fields = self.initialize_custom_fields(session, request, resource, editing)
+            custom_fields = self.initialize_custom_fields(session, request, resource, editing, context)
             context.update(custom_fields)
 
         except Exception as e:
@@ -572,7 +574,7 @@ class ModifyResource(ResourceViewMixin):
         """
         pass
 
-    def handle_resource_finished_processing(self, session, request, request_app_user, resource, editing):
+    def handle_resource_finished_processing(self, session, request, request_app_user, resource, editing, context=None):
         """
         Hook to allow for post processing after the resource has finished being created or updated.
         Args:
@@ -581,10 +583,11 @@ class ModifyResource(ResourceViewMixin):
             request_app_user(AppUser): app user that is making the request.
             resource(Resource): The resource being edited or newly created.
             editing(bool): True if editing, False if creating a new resource.
+            contex(dict): Template context variables for the view.
         """
         pass
 
-    def initialize_custom_fields(self, session, request, resource, editing):
+    def initialize_custom_fields(self, session, request, resource, editing, context=None):
         """
         Hook to allow for initializing custom fields.
 
@@ -593,18 +596,22 @@ class ModifyResource(ResourceViewMixin):
             request(django.request): the Django request.
             resource(Resource): The resource being edited.
             editing(bool): True if rendering form for editing.
+            context(dict): Template context variables for the view.
 
         Returns:
-            dict: Template context variables for defining custom fields (i.e. gizmos, initial values, etc.).
+            dict: Template context variables for defining custom fields.
         """
         return dict()
 
-    def validate_custom_fields(self, params):
+    def validate_custom_fields(self, params, session=None, request=None, request_app_user=None):
         """
         Hook to allow for validating custom fields.
 
         Args:
             params: The request.POST object with values submitted by user.
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.request): the Django request.
+            request_app_user(AppUser): app user that is making the request.
 
         Returns:
             bool, dict: False if any custom fields invalid, Template context variables for validation feedback (i.e. error messages).

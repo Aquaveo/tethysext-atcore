@@ -15,7 +15,7 @@
       </div>
       {% endif %}
       {% if show_new_button and resources %}
-      <div class="btn-group">  
+      <div class="btn-group">
         <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><i class="bi bi-plus-lg"></i></a>
       </div>
       {% endif %}
@@ -89,8 +89,12 @@
             <tbody>
               {# RESOURCE ROWS #}
               {% for resource in resources %}
-                {# TOP LEVEL RESOURCES HAVE NO PARENTS #}
-                {% if not resource.has_parents %}
+                {% if enable_groups %}
+                  {# ONLY ADD TOP LEVEL RESOURCES FOR GROUPING #}
+                  {% if not resource.has_parents %}
+                    {% include "atcore/components/resource_row.html" with resource=resource %}
+                  {% endif %}
+                {% else %}
                   {% include "atcore/components/resource_row.html" with resource=resource %}
                 {% endif %}
               {% endfor %}
@@ -193,4 +197,3 @@
   <script src="{% static 'atcore/resources/group_resources.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/table_row_collapse.js' %}" type="text/javascript"></script>
 {% endblock %}
-
