@@ -175,6 +175,7 @@ var SPATIAL_INPUT_MWV = (function() {
         // Bind to various popup events
         bind_popup_shown_event();
         bind_popup_closed_event();
+
 	});
 
 	return m_public_interface;

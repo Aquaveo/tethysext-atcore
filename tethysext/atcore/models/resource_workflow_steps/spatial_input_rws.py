@@ -23,6 +23,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
         snapping_enabled(bool): Enabled snapping when drawing features. Defaults to True.
         snapping_layer(dict): Specify a layer to snap to. Create a 1-dict where the key is the dot-path to the layer attribute to use in comparison  and the value is the value to match (e.g. {'data.layer_id': 10}).
         snapping_options(dict): Supported options include edge, vertex, pixelTolerance. See: https://openlayers.org/en/latest/apidoc/module-ol_interaction_Snap.html
+        allow_image(bool): Allow reference image upload as spatial input.  Defaults to False.
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialInputMWV'
     TYPE = 'spatial_input_workflow_step'
@@ -43,6 +44,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
             'snapping_enabled': True,
             'snapping_layer': {},
             'snapping_options': {},
+            'allow_image': False,
             'attributes': None
         })
         return default_options
@@ -60,6 +62,11 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
                 'value': None,
                 'required': False
             },
+            'imagery': {
+                'help': 'GeoTiff background image input by user.',
+                'value': None,
+                'required': False
+            }
         }
 
     def validate(self):

@@ -119,11 +119,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     def test_get_step_specific_context_has_active_role(self, _, __, ___, ____):
         self.step1.active_roles = []
         self.step1.options['allow_shapefile'] = False
+        self.step1.options['allow_image'] = False
 
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': True}, ret)
+        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': True, 'allow_image': False}, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
@@ -133,11 +134,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_get_step_specific_context_no_active_role(self, _, __, ___, ____):
         self.step1.options['allow_shapefile'] = True
+        self.step1.options['allow_image'] = True
 
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': False}, ret)
+        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': False, 'allow_image': False}, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)

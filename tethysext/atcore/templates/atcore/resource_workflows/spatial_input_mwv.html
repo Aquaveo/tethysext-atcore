@@ -7,6 +7,11 @@
     Upload Shapefile
   </button>
   {% endif %}
+  {% if allow_image %}
+  <button type="button" class="btn btn-light btn-image" data-bs-toggle="modal" data-bs-target="#image-upload-modal">
+    Upload Image
+  </button>
+  {% endif %}
 
   {{ block.super }}
 {% endblock %}
@@ -44,6 +49,31 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-success" form="workflow-form">Upload Shapefile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if allow_image %}
+  {# Reference Image Modal #}
+  <div class="modal fade" id="image-upload-modal" tabindex="-1" role="dialog" aria-labelledby="image-upload-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="image-upload-modal-label">Upload Image</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Create or download a GeoTiff image to display. Then use the <b>Browse</b> button below to select the image.</p>
+          <div class="input-file-wrapper">
+            <input id="image-upload" name="image" class="file-input" type="file" accept=".tif" form="workflow-form">
+            <label for="image-upload" class="btn btn-outline-secondary btn-file-input">Browse</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success" form="workflow-form">Upload Image</button>
         </div>
       </div>
     </div>
