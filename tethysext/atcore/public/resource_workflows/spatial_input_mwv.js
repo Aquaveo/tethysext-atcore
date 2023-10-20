@@ -40,9 +40,10 @@ var SPATIAL_INPUT_MWV = (function() {
  	var reset;
 
  	var generate_attributes_form, initialize_attributes_form, bind_attributes_ok,
- 	    bind_popup_shown_event, bind_popup_closed_event, parse_allow_edit_attributes;
+ 	    bind_popup_shown_event, bind_popup_closed_event, parse_allow_edit_attributes, parse_imagery;
 
  	var process_attributes_form;
+ 	// var process_attributes_form, load_imagery_tiles;
 
  	reset = function() {
  	    m_current_feature = null;
@@ -106,6 +107,37 @@ var SPATIAL_INPUT_MWV = (function() {
         });
     };
 
+    // load_imagery_tiles = function() {
+    //     var imagery_list = parse_imagery();
+    //     console.log("*****DEBUG:  imagery_list = " + imagery_list);
+
+    //     if (imagery_list) {
+    //         imagery_list.forEach((cur_image) => {
+    //             console.log("*****DEBUG:  cur_image = " + cur_image);
+    //             console.log("*****DEBUG:  " + window.location.href + "?method=get-imagery&image-file=" + cur_image + "");
+    //             const source = new ol.source.GeoTIFF({
+    //                 sources: [
+    //                     {
+    //                         // url: window.location.href + "?method=get-imagery&image-file=" + cur_image + "",
+    //                         url: "https://openlayers.org/data/raster/no-overviews.tif",
+    //                     },
+    //                 ],
+    //             });
+    //             // Tile = assertion error, with no-overview.tif above
+    //             // WebGLTile = no error, but can't see with no-overview.tif above
+    //             // WebGLTile = AggregateError with image-file=... above
+    //             // const image_layer = new ol.layer.Tile({
+    //             // const image_layer = new ol.layer.WebGLTile.TileLayer({
+    //             // const image_layer = new ol.layer.WebGLTile({
+    //             //     source: source,
+    //             // });
+    //             // console.log("*****DEBUG:  image_layer = " + image_layer)
+    //             // TETHYS_MAP_VIEW.getMap().addLayer(image_layer);
+    //             // console.log("*****DEBUG:  called addLayer")
+    //         });
+    //     }
+    // };
+
     initialize_attributes_form = function() {
  	    // Bind to form buttons
  	    bind_attributes_ok();
@@ -137,6 +169,11 @@ var SPATIAL_INPUT_MWV = (function() {
     parse_allow_edit_attributes = function() {
         var $map_attributes = $('#atcore-spatial-input-attributes');
         return $map_attributes.data('allow-edit-attributes');
+    };
+
+    parse_imagery = function() {
+        var $map_attributes = $('#atcore-spatial-input-attributes');
+        return $map_attributes.data('imagery');
     };
 
 	/************************************************************************
@@ -176,6 +213,8 @@ var SPATIAL_INPUT_MWV = (function() {
         bind_popup_shown_event();
         bind_popup_closed_event();
 
+        // TESTING
+        // load_imagery_tiles();
 	});
 
 	return m_public_interface;

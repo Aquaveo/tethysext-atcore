@@ -227,6 +227,7 @@
        data-workspace="{{ workspace }}"
        data-enable-properties-popup="{% if enable_properties_popup %}true{% else %}false{% endif %}"
        data-map-type={{ map_type|jsonify }}
+       data-images="{{ imagery|jsonify }}"
        style="display: none;"
   ></div>
   <div id="atcore-map-permissions"
