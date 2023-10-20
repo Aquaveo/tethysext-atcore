@@ -7,7 +7,6 @@
 ********************************************************************************
 """
 import datetime
-import glob
 import json
 import os
 import zipfile
@@ -18,12 +17,11 @@ import tempfile
 import geojson
 import logging
 from django.shortcuts import redirect
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse
 from tethys_sdk.gizmos import MVDraw
 from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
-from tethysext.atcore.utilities import generate_geoserver_urls
 
 
 log = logging.getLogger(f'tethys.{__name__}')
@@ -151,6 +149,7 @@ class SpatialInputMWV(MapWorkflowView):
         layer_groups = context['layer_groups']
         current_imagery = current_step.get_attribute('imagery', [])
         if current_imagery:
+            gs_engine = self.get_app().get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             map_manager = self.get_map_manager(
                 request=request,
                 resource=resource,
@@ -158,38 +157,22 @@ class SpatialInputMWV(MapWorkflowView):
             for image in current_imagery:
                 if image:
                     layer = map_manager.build_wms_layer(
-                        endpoint=image['endpoint'],
+                        endpoint=gs_engine.get_wms_endpoint(),
                         layer_name=image['layer_name'],
                         layer_title=image['layer_title'],
                         layer_variable=image['layer_variable'],
                     )
                     imagery_layers.append(layer)
-        # Build the Layer Group for Imagery Layers
-        if imagery_layers:
-            imagery_layer_group = map_manager.build_layer_group(
-                id='reference_imagery',
-                display_name='Reference Imagery',
-                layer_control='checkbox',
-                layers=imagery_layers,
-            )
-            layer_groups = context['layer_groups']
-            layer_groups.append(imagery_layer_group)
-
-        # # If imagery is provided, add it to the map layers
-        # if current_imagery:
-        #     for i in current_imagery:
-        #         imagery_layer = MVLayer(
-        #             source='ImageWMS',
-        #             options={
-        #                 'url': '',
-        #                 'params': {
-        #                     'method': 'get-imagery',
-        #                     'image-file': i,
-        #                 }
-        #             },
-        #             legend_title=i,
-        #         )
-        #         map_view.layers.append(imagery_layer)
+            # Build the Layer Group for Imagery Layers
+            if imagery_layers:
+                imagery_layer_group = map_manager.build_layer_group(
+                    id='reference_imagery',
+                    display_name='Reference Imagery',
+                    layer_control='checkbox',
+                    layers=imagery_layers,
+                )
+                layer_groups = context['layer_groups']
+                layer_groups.append(imagery_layer_group)
 
         # Save changes to map view
         map_view.layers.extend(imagery_layers)
@@ -230,22 +213,6 @@ class SpatialInputMWV(MapWorkflowView):
         geometry = request.POST.get('geometry', None)
         shapefile = request.FILES.get('shapefile', None)
         ref_image = request.FILES.get('image', None)
-
-        # # Update image layers if present
-        # imagery_info = step.get_attribute('imagery', [])
-        # if imagery_info:
-        #     map_manager = self.get_map_manager(
-        #         request=request,
-        #         resource=resource,
-        #     )
-        #     for image in imagery_info:
-        #         if image:
-        #             ret = map_manager.build_wms_layer(
-        #                 endpoint=image['endpoint'],
-        #                 layer_name=image['layer_name'],
-        #                 layer_title=image['layer_title'],
-        #                 layer_variable=image['layer_variable'],
-        #             )
 
         # Validate input (need at least geometry or shapefile)
         if not geometry and not shapefile:
@@ -290,7 +257,7 @@ class SpatialInputMWV(MapWorkflowView):
             response = redirect(current_url)
         # If an image is given, reload current step to show user the image
         elif ref_image:
-            geotiff_file = self.store_imagery(request, step, ref_image)
+            _ = self.store_imagery(request, step, ref_image)
             session.commit()
             response = redirect(current_url)
 
@@ -595,28 +562,11 @@ class SpatialInputMWV(MapWorkflowView):
         """
         layer_id = None
         imagery_info = {}
-        # filename = None
-        # workdir = None
 
         if not in_memory_file:
             return None
 
         try:
-            # Write file to user workspace, in directory name of the step id
-            # user_workspace = self.get_app().get_user_workspace(request.user)
-            # workdir = os.path.join(user_workspace.path, step.id)
-            # app_workspace = self.get_app().get_app_workspace()
-            # workdir = os.path.join(app_workspace.path, str(step.id))
-
-            # if not os.path.isdir(workdir):
-            #     os.mkdir(workdir)
-
-            # Write in-memory file to disk
-            # filename = os.path.join(workdir, in_memory_file.name)
-            # with open(filename, 'wb') as f:
-            #     for chunk in in_memory_file.chunks():
-            #         f.write(chunk)
-
             # Write in-memory GeoTiff file to disk, as temp file
             _, tmp_tiff_path = tempfile.mkstemp(suffix='.tif')
             with open(tmp_tiff_path, 'wb') as tmp_tiff_file:
@@ -635,23 +585,19 @@ class SpatialInputMWV(MapWorkflowView):
                 tmp_zip_file.write(tmp_tiff_path, coverage_name + '.tif')
                 # tmp_zip_file.write(tmp_tiff_path, coverage_name)
                 # tmp_zip_file.write('/tmp/26912.prj', coverage_name + '.prj')  # DEBUGGING ONLY - UTM 12N
-                tmp_zip_file.write('/tmp/3857.prj', coverage_name + '.prj')  # DEBUGGING ONLY - Google
+                # tmp_zip_file.write('/tmp/3857.prj', coverage_name + '.prj')  # DEBUGGING ONLY - Google
                 # tmp_zip_file.write('/tmp/4326.prj', coverage_name + '.prj')  # DEBUGGING ONLY - WGS84
 
             # Get the GeoServer engine, and create a layer from the zip file
-            # map_manager = self.get_map_manager(request, None)
             gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             workspace = self._SpatialManager.WORKSPACE
-            layer_id=f"{workspace}:{coverage_name}"
+            layer_id = f"{workspace}:{coverage_name}"
 
             gs_engine.create_coverage_layer(
-                # layer_id=f"{workspace}:{coverage_name}",
                 layer_id=layer_id,
                 coverage_type=gs_engine.CT_GEOTIFF,
                 coverage_file=tmp_zip_path,
             )
-            # gs_private_url, gs_public_url = generate_geoserver_urls(gs_engine)
-            imagery_info['endpoint'] = gs_engine.get_wms_endpoint()
             imagery_info['layer_name'] = layer_id
             imagery_info['layer_title'] = name
             imagery_info['layer_variable'] = name.lower().replace(' ', '_')
@@ -666,56 +612,3 @@ class SpatialInputMWV(MapWorkflowView):
             step.set_attribute('imagery', imagery)
 
         return layer_id
-
-    # def get_step_imagery(self, request, session, resource, step_id, *args, **kwargs):
-    #     """
-    #     Handle feature attribute validation AJAX requests.
-    #     Args:
-    #         request(HttpRequest): The request.
-    #         session(sqlalchemy.orm.Session): Session bound to the steps.
-    #         resource(Resource): the resource for this request.
-    #         step_id(str): ID of the step to render.
-
-    #     Returns:
-    #         JsonResponse
-    #     """
-    #     # step = self.get_step(request, step_id, session=session)
-    #     # attributes = request.POST.dict()
-    #     # attributes.pop('csrfmiddlewaretoken', None)
-    #     # attributes.pop('method', None)
-    #     response = {'success': True}
-
-    #     try:
-    #         app_workspace = self.get_app().get_app_workspace()
-    #         workdir = os.path.join(app_workspace.path, step_id)
-
-    #         geotiff_files = glob.glob(os.path.join(workdir, "*.tif"))
-    #         response.update({
-    #             'imagery_list': geotiff_files,
-    #         })
-    #     except ValueError as e:
-    #         response.update({
-    #             'success': False,
-    #             'error': str(e)
-    #         })
-
-    #     return JsonResponse(response)
-
-    # def get_imagery(self, request, session, resource, step_id, *args, **kwargs):
-    #     """
-    #     Retrieve imagery that was previously uploaded (e.g. '?method=get-imagery&image-file=<filename>').
-
-    #     Args:
-    #         request(HttpRequest): The request.
-    #         session(sqlalchemy.orm.Session): Session bound to the steps.
-    #         resource(Resource): the resource for this request.
-    #         step_id(str): ID of the step to render.
-
-    #     Returns:
-    #         JsonResponse
-    #     """
-    #     image_file = request.GET.get('image-file', None)  #: e.g. "imagery.tif"
-    #     app_workspace = self.get_app().get_app_workspace()
-    #     workdir = os.path.join(app_workspace.path, step_id)
-    #     imagery_file = os.path.join(workdir, f'{image_file}')
-    #     return FileResponse(open(imagery_file, 'rb'))
