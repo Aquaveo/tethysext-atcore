@@ -172,6 +172,7 @@ class ManageResources(ResourceViewMixin):
                 resource_card['action'] = action_dict['action']
                 resource_card['action_title'] = action_dict['title']
                 resource_card['action_href'] = action_dict['href']
+                resource_card['info_href'] = self.get_info_url(request, resource)
 
                 # Build child resources recursively
                 resource_card['children'] = build_resource_cards(resource.children, level=level+1) \
@@ -325,6 +326,13 @@ class ManageResources(ResourceViewMixin):
         Get the URL for the Resource Error button.
         """
         return reverse(f'{self._app.url_namespace}:{resource.SLUG}_resource_details', args=[resource.id])
+
+    def get_info_url(self, request, resource):
+        """
+        Get the URL for the Resource name link and row click. Defaults 
+        """
+        # Default to the same as the launch url for backwards compatibility
+        return self.get_launch_url(request, resource)
 
     def get_resource_action(self, session, request, request_app_user, resource):
         """
