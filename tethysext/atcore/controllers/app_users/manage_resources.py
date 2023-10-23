@@ -32,6 +32,11 @@ class ManageResources(ResourceViewMixin):
     template_name = 'atcore/app_users/manage_resources.html'
     base_template = 'atcore/app_users/base.html'
     default_action_title = 'Launch'
+    default_action_icon = "bi-chevron-right"
+    error_action_title = "Error"
+    error_action_icon = "bi-x-lg"
+    working_action_title = "Processing"
+    working_action_icon = "bi-arrow-clockwise"
     http_method_names = ['get', 'post', 'delete']
     enable_groups = False
     collapse_groups = False
@@ -172,6 +177,7 @@ class ManageResources(ResourceViewMixin):
                 resource_card['action'] = action_dict['action']
                 resource_card['action_title'] = action_dict['title']
                 resource_card['action_href'] = action_dict['href']
+                resource_card['action_icon'] = action_dict['icon']
                 resource_card['info_href'] = self.get_info_url(request, resource)
 
                 # Build child resources recursively
@@ -329,7 +335,7 @@ class ManageResources(ResourceViewMixin):
 
     def get_info_url(self, request, resource):
         """
-        Get the URL for the Resource name link and row click. Defaults 
+        Get the URL for the Resource name link and row click.
         """
         # Default to the same as the launch url for backwards compatibility
         return self.get_launch_url(request, resource)
@@ -351,22 +357,25 @@ class ManageResources(ResourceViewMixin):
         if status in resource.ERROR_STATUSES:
             return {
                 'action': self.ACTION_ERROR,
-                'title': 'Error',
-                'href': self.get_error_url(request, resource)
+                'title': self.error_action_title,
+                'href': self.get_error_url(request, resource),
+                'icon': self.error_action_icon,
             }
 
         elif status in resource.WORKING_STATUSES:
             return {
                 'action': self.ACTION_PROCESSING,
-                'title': 'Processing',
-                'href': self.get_working_url(request, resource)
+                'title': self.working_action_title,
+                'href': self.get_working_url(request, resource),
+                'icon': self.working_action_icon,
             }
 
         else:
             return {
                 'action': self.ACTION_LAUNCH,
                 'title': self.default_action_title,
-                'href': self.get_launch_url(request, resource)
+                'href': self.get_launch_url(request, resource),
+                'icon': self.default_action_icon,
             }
 
     def get_resources(self, session, request, request_app_user):

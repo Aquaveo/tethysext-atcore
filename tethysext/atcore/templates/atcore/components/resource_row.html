@@ -72,11 +72,11 @@
         <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><span class="bi bi-trash"></span></a>
       {% endif %}
       {% if resource.action == 'processing' %}
-        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-arrow-clockwise"></span></a>
+        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi {{ resource.action_icon }}"></span></a>
       {% elif resource.action == 'error' %}
-        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-x-lg"></span></a>
+        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi {{ resource.action_icon }}"></span></a>
       {% else %}
-        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-chevron-right"></span></a>
+        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi {{ resource.action_icon }}"></span></a>
       {% endif %}
     </div>
   </td>
