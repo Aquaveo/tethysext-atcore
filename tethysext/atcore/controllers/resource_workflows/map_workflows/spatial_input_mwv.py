@@ -214,6 +214,12 @@ class SpatialInputMWV(MapWorkflowView):
         shapefile = request.FILES.get('shapefile', None)
         ref_image = request.FILES.get('image', None)
 
+        # Process imagery first (if there)
+        if ref_image:
+            _ = self.store_imagery(request, step, ref_image)
+            session.commit()
+            return redirect(current_url)
+
         # Validate input (need at least geometry or shapefile)
         if not geometry and not shapefile:
             # Don't require input to go back
@@ -254,11 +260,6 @@ class SpatialInputMWV(MapWorkflowView):
 
         # If shapefile is given, reload current step to show user the features loaded from the shapefile
         if shapefile:
-            response = redirect(current_url)
-        # If an image is given, reload current step to show user the image
-        elif ref_image:
-            _ = self.store_imagery(request, step, ref_image)
-            session.commit()
             response = redirect(current_url)
 
         # Otherwise, go to the next step
@@ -589,7 +590,7 @@ class SpatialInputMWV(MapWorkflowView):
                 # tmp_zip_file.write('/tmp/4326.prj', coverage_name + '.prj')  # DEBUGGING ONLY - WGS84
 
             # Get the GeoServer engine, and create a layer from the zip file
-            gs_engine = self._app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
+            gs_engine = self.get_app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             workspace = self._SpatialManager.WORKSPACE
             layer_id = f"{workspace}:{coverage_name}"
 
