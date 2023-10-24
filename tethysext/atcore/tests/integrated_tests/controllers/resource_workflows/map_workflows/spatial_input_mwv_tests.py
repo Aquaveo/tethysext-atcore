@@ -262,9 +262,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.step1.attributes = {'imagery': [image]}
         response = None
 
+        instance = SpatialInputMWV()
+        instance.map_type = 'tethys_map_view'
+
         try:
-            response = SpatialInputMWV().process_step_options(self.request, self.session, self.context, resource,
-                                                              self.step1, None, self.step2)
+            response = instance.process_step_options(self.request, self.session, self.context, resource,
+                                                     self.step1, None, self.step2)
         except RuntimeError as e:
             self.assertEqual('Invalid shapes defined: unknown_shape.', str(e))
         self.assertTrue(response is None)
