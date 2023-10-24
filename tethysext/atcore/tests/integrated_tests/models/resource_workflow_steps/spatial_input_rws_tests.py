@@ -48,6 +48,7 @@ class SpatialInputRWSTests(SqlAlchemyTestCase):
             'snapping_enabled': True,
             'snapping_layer': {},
             'snapping_options': {},
+            'allow_image': False,
             'attributes': None,
             'geocode_enabled': False,
             'label_options': None,
@@ -61,6 +62,11 @@ class SpatialInputRWSTests(SqlAlchemyTestCase):
                 'help': 'Valid GeoJSON representing geometry input by user.',
                 'value': None,
                 'required': False
+            },
+            'imagery': {
+                'help': 'GeoTiff background image input by user.',
+                'value': None,
+                'required': False,
             },
         }
         self.assertDictEqual(baseline, self.instance.init_parameters())

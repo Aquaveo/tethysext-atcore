@@ -13,6 +13,7 @@ import zipfile
 import uuid
 import shutil
 import shapefile as shp
+import tempfile
 import geojson
 import logging
 from django.shortcuts import redirect
@@ -54,12 +55,15 @@ class SpatialInputMWV(MapWorkflowView):
         if is_read_only:
             allow_shapefile_uploads = False
             allow_edit_attributes = False
+            allow_image_uploads = False
         else:
             allow_shapefile_uploads = current_step.options.get('allow_shapefile')
             allow_edit_attributes = True
+            allow_image_uploads = current_step.options.get('allow_image')
 
         return {'allow_shapefile': allow_shapefile_uploads,
-                'allow_edit_attributes': allow_edit_attributes}
+                'allow_edit_attributes': allow_edit_attributes,
+                'allow_image': allow_image_uploads}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
@@ -140,8 +144,39 @@ class SpatialInputMWV(MapWorkflowView):
         if draw_options is not None and 'map_view' in context:
             map_view.draw = draw_options
 
+        # Load the currently saved imagery, if any.
+        imagery_layers = []
+        layer_groups = context['layer_groups']
+        current_imagery = current_step.get_attribute('imagery', [])
+        if current_imagery:
+            gs_engine = self.get_app().get_spatial_dataset_service(self.geoserver_name, as_engine=True)
+            map_manager = self.get_map_manager(
+                request=request,
+                resource=resource,
+            )
+            for image in current_imagery:
+                if image:
+                    layer = map_manager.build_wms_layer(
+                        endpoint=gs_engine.get_wms_endpoint(),
+                        layer_name=image['layer_name'],
+                        layer_title=image['layer_title'],
+                        layer_variable=image['layer_variable'],
+                    )
+                    imagery_layers.append(layer)
+            # Build the Layer Group for Imagery Layers
+            if imagery_layers:
+                imagery_layer_group = map_manager.build_layer_group(
+                    id='reference_imagery',
+                    display_name='Reference Imagery',
+                    layer_control='checkbox',
+                    layers=imagery_layers,
+                )
+                layer_groups = context['layer_groups']
+                layer_groups.append(imagery_layer_group)
+
         # Save changes to map view
-        context.update({'map_view': map_view})
+        map_view.layers.extend(imagery_layers)
+        context.update({'map_view': map_view, 'imagery': current_imagery, 'layer_groups': layer_groups})
 
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
         super().process_step_options(
@@ -177,6 +212,13 @@ class SpatialInputMWV(MapWorkflowView):
         # Prepare POST parameters
         geometry = request.POST.get('geometry', None)
         shapefile = request.FILES.get('shapefile', None)
+        ref_image = request.FILES.get('image', None)
+
+        # Process imagery first (if there)
+        if ref_image:
+            _ = self.store_imagery(request, step, ref_image)
+            session.commit()
+            return redirect(current_url)
 
         # Validate input (need at least geometry or shapefile)
         if not geometry and not shapefile:
@@ -506,3 +548,68 @@ class SpatialInputMWV(MapWorkflowView):
             post_processed_geojson['features'].append(processed_feature)
 
         return post_processed_geojson
+
+    def store_imagery(self, request, step, in_memory_file):
+        """
+        Store imagery file on the geoserver.  Uses the step name and file name for the store id.
+
+        Args:
+            request(HttpRequest): The request.
+            step(ResourceWorkflowStep): The workflow step.
+            in_memory_file(InMemoryUploadedFile): A GeoTiff image that has been uploaded.
+
+        Returns:
+            str: The layer_id of the image stored.
+        """
+        layer_id = None
+        imagery_info = {}
+
+        if not in_memory_file:
+            return None
+
+        try:
+            # Write in-memory GeoTiff file to disk, as temp file
+            _, tmp_tiff_path = tempfile.mkstemp(suffix='.tif')
+            with open(tmp_tiff_path, 'wb') as tmp_tiff_file:
+                for chunk in in_memory_file.chunks():
+                    tmp_tiff_file.write(chunk)
+
+            coverage_parts = []
+            coverage_parts.append(str(step.id).replace('_', '-'))
+            name = os.path.splitext(in_memory_file.name)[0].replace('.', '-').replace(' ', '-')
+            coverage_parts.append(name)
+            coverage_name = '_'.join(coverage_parts)
+
+            # Zip GeoTiff file, as temp file
+            _, tmp_zip_path = tempfile.mkstemp(suffix='.zip')
+            with zipfile.ZipFile(tmp_zip_path, 'w') as tmp_zip_file:
+                tmp_zip_file.write(tmp_tiff_path, coverage_name + '.tif')
+                # tmp_zip_file.write(tmp_tiff_path, coverage_name)
+                # tmp_zip_file.write('/tmp/26912.prj', coverage_name + '.prj')  # DEBUGGING ONLY - UTM 12N
+                # tmp_zip_file.write('/tmp/3857.prj', coverage_name + '.prj')  # DEBUGGING ONLY - Google
+                # tmp_zip_file.write('/tmp/4326.prj', coverage_name + '.prj')  # DEBUGGING ONLY - WGS84
+
+            # Get the GeoServer engine, and create a layer from the zip file
+            gs_engine = self.get_app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
+            workspace = self._SpatialManager.WORKSPACE
+            layer_id = f"{workspace}:{coverage_name}"
+
+            gs_engine.create_coverage_layer(
+                layer_id=layer_id,
+                coverage_type=gs_engine.CT_GEOTIFF,
+                coverage_file=tmp_zip_path,
+            )
+            imagery_info['layer_name'] = layer_id
+            imagery_info['layer_title'] = name
+            imagery_info['layer_variable'] = name.lower().replace(' ', '_')
+
+        except Exception as e:
+            raise RuntimeError('An error has occurred while storing the GeoTiff: {}'.format(e))
+
+        # Update the parameter for imagery
+        if layer_id:
+            imagery = step.get_attribute('imagery', [])
+            imagery.append(imagery_info)
+            step.set_attribute('imagery', imagery)
+
+        return layer_id

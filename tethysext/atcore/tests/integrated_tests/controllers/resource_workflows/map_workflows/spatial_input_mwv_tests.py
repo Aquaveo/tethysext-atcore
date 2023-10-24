@@ -119,11 +119,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     def test_get_step_specific_context_has_active_role(self, _, __, ___, ____):
         self.step1.active_roles = []
         self.step1.options['allow_shapefile'] = False
+        self.step1.options['allow_image'] = False
 
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': True}, ret)
+        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': True, 'allow_image': False}, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
@@ -133,11 +134,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     def test_get_step_specific_context_no_active_role(self, _, __, ___, ____):
         self.step1.options['allow_shapefile'] = True
+        self.step1.options['allow_image'] = True
 
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': False}, ret)
+        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': False, 'allow_image': False}, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
@@ -235,6 +237,43 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             self.assertEqual('Invalid shapes defined: unknown_shape.', str(e))
         self.assertTrue(response is None)
 
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
+                return_value=False)
+    @mock.patch('tethysext.atcore.models.app_users.resource.Resource.is_locked_for_request_user',
+                return_value=False)
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch.object(ResourceWorkflowStep, 'get_parameter')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role', return_value=True)
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    def test_process_step_options_imagery(self, mock_get_app, _, mock_params, mock_get_map_manager, __, ___):
+        mock_params.return_value = {'geometry': 'shapes and such'}
+        # mock_get_map_manager.return_value = MapView()
+
+        resource = mock.MagicMock()
+        map_view = MapView()
+        map_view.layers = []
+        self.context['map_view'] = map_view
+        self.context['layer_groups'] = [{}]
+        image = {
+            'layer_name': 'test_layer_name',
+            'layer_title': 'test_layer_title',
+            'layer_variable': 'test_layer_variable',
+        }
+        self.step1.attributes = {'imagery': [image]}
+        response = None
+
+        instance = SpatialInputMWV()
+        instance.map_type = 'tethys_map_view'
+
+        try:
+            response = instance.process_step_options(self.request, self.session, self.context, resource,
+                                                     self.step1, None, self.step2)
+        except RuntimeError as e:
+            self.assertEqual('Invalid shapes defined: unknown_shape.', str(e))
+        self.assertTrue(response is None)
+        mock_get_map_manager.return_value.build_wms_layer.assert_called_once()
+        mock_get_map_manager.return_value.build_layer_group.assert_called_once()
+
     @mock.patch.object(ResourceWorkflowStep, 'set_parameter')
     @mock.patch.object(SpatialInputMWV, 'parse_drawn_geometry')
     @mock.patch.object(SpatialInputMWV, 'parse_shapefile')
@@ -298,6 +337,21 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             self.assertEqual({'geometry': {'value': None}}, self.step1._parameters)
             self.assertTrue(self.step1.dirty)
         self.assertTrue(response is None)
+
+    @mock.patch.object(ResourceWorkflowStep, 'set_parameter')
+    @mock.patch.object(SpatialInputMWV, 'store_imagery')
+    def test_process_step_data_imagery(self, mock_store_imagery, _):
+        test_image = 'foo.tif'
+        mock_resource = mock.MagicMock()
+        self.request.POST = {'geometry': None}
+        self.request.FILES = {'image': test_image}
+
+        response = SpatialInputMWV().process_step_data(self.request, self.session, self.step1, mock_resource,
+                                                       './current', './prev', './next')
+
+        self.assertIsInstance(response, HttpResponseRedirect)
+        self.assertEqual('./current', response.url)
+        mock_store_imagery.assert_called_once_with(self.request, self.step1, test_image)
 
     @mock.patch.object(WorkflowViewMixin, 'get_step')
     @mock.patch.object(SpatialInputRWS, 'validate_feature_attributes')
@@ -679,3 +733,46 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         self.assertIn('type', geojson['features'][0])
         self.assertIn('Date3', geojson['features'][0]['properties'])
         self.assertTrue(len(geojson['features'][0]['properties']['Date3']) > 0)
+
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    def test_store_imagery(self, mock_get_app):
+        layer_id = None
+        mock_sm = mock.MagicMock()
+        test_workspace_str = 'testing'
+        mock_sm.WORKSPACE = test_workspace_str
+        instance = SpatialInputMWV()
+
+        # Test for a missing in memory file
+        layer_id = instance.store_imagery(self.request, self.step1, None)
+        self.assertEqual(None, layer_id)
+
+        # Test for uploading a zip file to geoserver, as if it were an image, mocked
+        instance._SpatialManager = mock_sm
+        with open(self.BadProjection_zip, 'rb') as f:
+            test_file = InMemoryUploadedFile(
+                file=f,
+                field_name='shapefile',
+                name='BadProjection.zip',
+                content_type='application/zip',
+                size=955,
+                charset=None
+            )
+            layer_id = instance.store_imagery(self.request, self.step1, test_file)
+        self.assertTrue(layer_id.startswith(f'{test_workspace_str}:'))  # Starts with "<workspace name>:"
+        self.assertTrue(layer_id.endswith('BadProjection'))  # Ends with base name of file
+
+        # Test for an exception being raised
+        exc_str = 'test exception'
+        mock_get_app.get_spatial_dataset_service().create_coverage_layer.side_effect = [Exception(exc_str)]
+        with self.assertRaises(RuntimeError) as cm:
+            with open(self.BadProjection_zip, 'rb') as f:
+                test_file = InMemoryUploadedFile(
+                    file=f,
+                    field_name='shapefile',
+                    name='BadProjection.zip',
+                    content_type='application/zip',
+                    size=955,
+                    charset=None
+                )
+                layer_id = instance.store_imagery(self.request, self.step1, test_file)
+        self.assertEqual(f'An error has occurred while storing the GeoTiff: {exc_str}', str(cm.exception))
