@@ -13,7 +13,7 @@ requirements:
     packages:
       - django=3.2.*
       - django-select2
-      - django-taggit
+      - django-taggit<5
       - coverage
       - factory_boy
       - filelock
