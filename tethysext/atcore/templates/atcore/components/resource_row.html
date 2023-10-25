@@ -12,16 +12,16 @@
   <td class="name" data-id="{{ resource.name }}">
     {% if enable_groups and resource.has_parents %}<span style="display: inline-block; width: {% widthratio 25 1 resource.level %}px;" class="child-spacer level-{{ resource.level }}"></span>{% endif %}
     {% if enable_groups and resource.has_children %}<button {% if not collapse_groups %}class="expanded"{% endif %} data-ts-toggle="table-row-collapse" data-ts-target=".child-{{ resource.id }}" type="button"><i class="bi bi-chevron-right"></i></button> {% endif %}
-    <a href="{{ resource.action_href }}">{{ resource.name }}</a>
+    <a href="{{ resource.info_href }}">{{ resource.name }}</a>
   </td>
 
   {# DESCRIPTION VALUE #}
   {% if not resource.description %}
-  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
     <i><font color="#A8A8A8">No Description</font></i>
   </td>
   {% else %}
-  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="description" data-id="{{ resource.description }}" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
     <span>{{ resource.description }}</span>
   </td>
   {% endif %}
@@ -41,17 +41,17 @@
 
   {# CREATED BY VALUE #}
   {% if resource.created_by %}
-  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="created_by" data-id="{{ resource.created_by }}" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
     {% if resource.created_by == '_staff_user' %}staff{% else %}{{ resource.created_by }}{% endif %}
   </td>
   {% else %}
-  <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="created_by" data-id="Unknown" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
     <i><font color="#A8A8A8">Unknown</font></i>
   </td>
   {% endif %}
 
   {# DATE CREATED VALUE #}
-  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.action_href }}';" style="cursor: pointer;">
+  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
     {{ resource.date_created }} UTC
   </td>
 
@@ -72,11 +72,11 @@
         <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><span class="bi bi-trash"></span></a>
       {% endif %}
       {% if resource.action == 'processing' %}
-        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-arrow-clockwise"></span></a>
+        <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi {{ resource.action_icon }}"></span></a>
       {% elif resource.action == 'error' %}
-        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-x-lg"></span></a>
+        <a class="btn btn-s btn-error btn-flat btn-action btn-resource-error" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi {{ resource.action_icon }}"></span></a>
       {% else %}
-        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi bi-chevron-right"></span></a>
+        <a class="btn btn-s btn-primary btn-flat btn-action btn-resource-launch" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><span class="bi {{ resource.action_icon }}"></span></a>
       {% endif %}
     </div>
   </td>

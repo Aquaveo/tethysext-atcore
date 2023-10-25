@@ -97,6 +97,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         self.assertFalse(response_dict['success'])
         self.assertEqual('Invalid action: post', response_dict['error'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.hasattr')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.render')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.paginate')
@@ -110,7 +111,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,
                         mock_can_edit, mock_can_delete, mock_get_resource_action, mock_paginate, mock_render,
-                        mock_has_attr):
+                        mock_has_attr, mock_reverse):
 
         session = mock_session_maker()()
 
@@ -127,20 +128,23 @@ class ManageResourcesTests(SqlAlchemyTestCase):
 
         mock_can_delete.return_value = True
 
-        action_dcit = {
+        action_dict = {
             'action': 'test_action',
             'title': 'test_title',
-            'href': 'http://www.test.com'
+            'href': 'http://www.test.com',
+            'icon': 'bi-test',
         }
 
-        mock_get_resource_action.return_value = action_dcit
+        mock_get_resource_action.return_value = action_dict
 
         mock_has_attr.return_value = True
 
         mock_paginate.return_value = [mock.MagicMock(), mock.MagicMock()]
 
-        # Call the function
         manage_resources = ManageResources()
+        manage_resources._app = mock.MagicMock(url_namespace='foo')
+
+        # Call the function
         manage_resources._handle_get(mock_request)
 
         # test result
@@ -159,12 +163,15 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         mock_get_resource_action.assert_called_with(session=session, request=mock_request,
                                                     request_app_user=request_app_user, resource=self.resource)
 
+        mock_reverse.assert_called_with("foo:resources_resource_details", args=[self.resource.id])
+
         paginate_call_args = mock_paginate.call_args_list
 
         self.assertEqual('test_organization', paginate_call_args[0][1]['objects'][0]['name'])
         self.assertEqual('http://www.test.com', paginate_call_args[0][1]['objects'][0]['action_href'])
         self.assertEqual('test_title', paginate_call_args[0][1]['objects'][0]['action_title'])
         self.assertEqual('test_action', paginate_call_args[0][1]['objects'][0]['action'])
+        self.assertEqual('bi-test', paginate_call_args[0][1]['objects'][0]['action_icon'])
         self.assertEqual(15, paginate_call_args[0][1]['results_per_page'])
         self.assertEqual(1, paginate_call_args[0][1]['page'])
         self.assertEqual('date_created:', paginate_call_args[0][1]['sort_by_raw'])
@@ -179,6 +186,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         self.assertTrue(render_args[0][0][2]['show_new_button'])
         self.assertTrue(render_args[0][0][2]['show_users_link'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.hasattr')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.render')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.paginate')
@@ -192,7 +200,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test_handle_get_first_time(self, _, mock_app_user, __, mock_session_maker, mock_get_resources,
                                    mock_can_edit, mock_can_delete, mock_get_resource_action, mock_paginate, mock_render,
-                                   mock_has_attr):
+                                   mock_has_attr, mock_reverse):
 
         session = mock_session_maker()()
 
@@ -210,20 +218,23 @@ class ManageResourcesTests(SqlAlchemyTestCase):
 
         mock_can_delete.return_value = True
 
-        action_dcit = {
+        action_dict = {
             'action': 'test_action',
             'title': 'test_title',
-            'href': 'http://www.test.com'
+            'href': 'http://www.test.com',
+            'icon': 'bi-test',
         }
 
-        mock_get_resource_action.return_value = action_dcit
+        mock_get_resource_action.return_value = action_dict
 
         mock_has_attr.return_value = False
 
         mock_paginate.return_value = [mock.MagicMock(), mock.MagicMock()]
 
-        # Call the function
         manage_resources = ManageResources()
+        manage_resources._app = mock.MagicMock(url_namespace='foo')
+
+        # Call the function
         manage_resources._handle_get(mock_request)
 
         # test result
@@ -240,12 +251,15 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         mock_get_resource_action.assert_called_with(session=session, request=mock_request,
                                                     request_app_user=request_app_user, resource=self.resource)
 
+        mock_reverse.assert_called_with("foo:resources_resource_details", args=[self.resource.id])
+
         paginate_call_args = mock_paginate.call_args_list
 
         self.assertEqual('test_organization', paginate_call_args[0][1]['objects'][0]['name'])
         self.assertEqual('http://www.test.com', paginate_call_args[0][1]['objects'][0]['action_href'])
         self.assertEqual('test_title', paginate_call_args[0][1]['objects'][0]['action_title'])
         self.assertEqual('test_action', paginate_call_args[0][1]['objects'][0]['action'])
+        self.assertEqual('bi-test', paginate_call_args[0][1]['objects'][0]['action_icon'])
         self.assertEqual(10, paginate_call_args[0][1]['results_per_page'])
         self.assertEqual(1, paginate_call_args[0][1]['page'])
         self.assertEqual('date_created:reverse', paginate_call_args[0][1]['sort_by_raw'])
@@ -351,6 +365,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
                 'action': ManageResources.ACTION_ERROR,
                 'title': 'Error',
                 'href': mock_reverse(),
+                'icon': 'bi-x-lg',
             }, ret)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
@@ -375,7 +390,8 @@ class ManageResourcesTests(SqlAlchemyTestCase):
             {
                 'action': ManageResources.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': 'processing_url?r=12345'
+                'href': 'processing_url?r=12345',
+                'icon': 'bi-arrow-clockwise',
             }, ret)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.reverse')
@@ -399,6 +415,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
                 'action': ManageResources.ACTION_LAUNCH,
                 'title': ManageResources.default_action_title,
                 'href': mock_reverse(),
+                'icon': 'bi-chevron-right',
             }, ret)
 
     def test_get_resources_groups_disabled(self):
