@@ -763,7 +763,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
 
         # Test for an exception being raised
         exc_str = 'test exception'
-        mock_get_app.get_spatial_dataset_service().create_coverage_layer.side_effect = [Exception(exc_str)]
+        mock_get_app().get_spatial_dataset_service().create_coverage_layer.side_effect = [Exception(exc_str)]
         with self.assertRaises(RuntimeError) as cm:
             with open(self.BadProjection_zip, 'rb') as f:
                 test_file = InMemoryUploadedFile(

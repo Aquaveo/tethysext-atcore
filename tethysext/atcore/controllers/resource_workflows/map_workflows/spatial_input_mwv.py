@@ -590,7 +590,7 @@ class SpatialInputMWV(MapWorkflowView):
                 # tmp_zip_file.write('/tmp/4326.prj', coverage_name + '.prj')  # DEBUGGING ONLY - WGS84
 
             # Get the GeoServer engine, and create a layer from the zip file
-            gs_engine = self.get_app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)
+            gs_engine = self.get_app().get_spatial_dataset_service(self.geoserver_name, as_engine=True)
             workspace = self._SpatialManager.WORKSPACE
             layer_id = f"{workspace}:{coverage_name}"
 
