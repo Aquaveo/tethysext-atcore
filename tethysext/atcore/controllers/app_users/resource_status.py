@@ -80,7 +80,10 @@ class ResourceStatus(ResourceViewMixin):
             filtered_jobs = jobs
 
         # Job logs contain sensitive information, so only show them to staff and app admins
-        show_job_table_actions = app_user.is_staff() or app_user.get_role() == self._AppUser.ROLES.APP_ADMIN
+        show_job_table_actions = app_user.is_staff() or app_user.get_role() in [
+            self._AppUser.ROLES.APP_ADMIN,
+            self._AppUser.ROLES.ORG_ADMIN
+        ]
         session.close()
         jobs_table = JobsTable(
             jobs=filtered_jobs,
