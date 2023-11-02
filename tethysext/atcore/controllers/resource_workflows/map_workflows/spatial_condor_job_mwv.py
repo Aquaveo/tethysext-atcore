@@ -122,6 +122,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
             show_detailed_status=True,
             actions=['logs'],
             show_actions=show_job_table_actions,
+            refresh_interval=30000,
         )
 
         # Build step cards

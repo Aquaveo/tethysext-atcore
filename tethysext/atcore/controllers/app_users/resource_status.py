@@ -90,9 +90,10 @@ class ResourceStatus(ResourceViewMixin):
             bordered=False,
             condensed=False,
             show_status=True,
-            actions=['logs'],
+            actions=['logs', 'resubmit'],
             show_actions=show_job_table_actions,
-            show_detailed_status=self.show_detailed_status
+            show_detailed_status=self.show_detailed_status,
+            refresh_interval=30000,
         )
 
         context = {
