@@ -16,12 +16,17 @@ import shapefile as shp
 import tempfile
 import geojson
 import logging
+from osgeo import osr
 from django.shortcuts import redirect
 from django.http import JsonResponse
+from django.urls import reverse
+from tethys_apps.utilities import get_active_app
 from tethys_sdk.gizmos import MVDraw
 from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
+from tethysext.atcore.gizmos import SpatialReferenceSelect
 from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
+from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
 
 log = logging.getLogger(f'tethys.{__name__}')
@@ -60,10 +65,46 @@ class SpatialInputMWV(MapWorkflowView):
             allow_shapefile_uploads = current_step.options.get('allow_shapefile')
             allow_edit_attributes = True
             allow_image_uploads = current_step.options.get('allow_image')
+        
+        spatial_reference_select = None
+        spatial_reference_error = ''
+        show_srid = False
+        srid_initial = None
+        if allow_image_uploads:
+            # Get SRID from resource and set up spatial reference service/url
+            srs = SpatialReferenceService(session)
+            resource = context['resource']
+            resource_srid = resource.get_attribute('srid')
+            possible_srids = srs.get_spatial_reference_system_by_srid(resource_srid)['results']
+            srid_text = possible_srids[0]['text'] if len(possible_srids) > 0 else ''
+            srid_initial = (srid_text, resource_srid)
+            if not srid_initial:
+                spatial_reference_error = 'Spatial Reference is required'
+
+            active_app = get_active_app(request)
+            app_namespace = active_app.url_namespace
+            spatial_reference_controller = '{}:atcore_query_spatial_reference'.format(app_namespace)
+            spatial_reference_url = reverse(spatial_reference_controller)
+
+            # Spatial reference select gizmo
+            spatial_reference_select = SpatialReferenceSelect(
+                display_name='Spatial Reference System',
+                name='spatial-ref-select',
+                placeholder='Spatial Reference System',
+                min_length=2,
+                query_delay=500,
+                initial=srid_initial,
+                error=spatial_reference_error,
+                spatial_reference_service=spatial_reference_url,
+                classes='mb-3',
+            )
+            show_srid = True
 
         return {'allow_shapefile': allow_shapefile_uploads,
                 'allow_edit_attributes': allow_edit_attributes,
-                'allow_image': allow_image_uploads}
+                'allow_image': allow_image_uploads,
+                'spatial_reference_select': spatial_reference_select,
+                'show_srid_field': show_srid}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
@@ -213,10 +254,11 @@ class SpatialInputMWV(MapWorkflowView):
         geometry = request.POST.get('geometry', None)
         shapefile = request.FILES.get('shapefile', None)
         ref_image = request.FILES.get('image', None)
+        ref_image_srid = request.POST.get('spatial-ref-select', None)
 
         # Process imagery first (if there)
         if ref_image:
-            _ = self.store_imagery(request, step, ref_image)
+            _ = self.store_imagery(request, step, ref_image, ref_image_srid)
             session.commit()
             return redirect(current_url)
 
@@ -549,7 +591,7 @@ class SpatialInputMWV(MapWorkflowView):
 
         return post_processed_geojson
 
-    def store_imagery(self, request, step, in_memory_file):
+    def store_imagery(self, request, step, in_memory_file, srid):
         """
         Store imagery file on the geoserver.  Uses the step name and file name for the store id.
 
@@ -557,6 +599,7 @@ class SpatialInputMWV(MapWorkflowView):
             request(HttpRequest): The request.
             step(ResourceWorkflowStep): The workflow step.
             in_memory_file(InMemoryUploadedFile): A GeoTiff image that has been uploaded.
+            srid(int): The SRID for the GeoTiff.
 
         Returns:
             str: The layer_id of the image stored.
@@ -574,6 +617,14 @@ class SpatialInputMWV(MapWorkflowView):
                 for chunk in in_memory_file.chunks():
                     tmp_tiff_file.write(chunk)
 
+            # Write SRID projection to disk, as temp file
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(int(srid))
+            wkt = srs.ExportToWkt()
+            _, tmp_prj_path = tempfile.mkstemp(suffix='.prj')
+            with open(tmp_prj_path, 'w') as tmp_prj_file:
+                tmp_prj_file.write(wkt)
+
             coverage_parts = []
             coverage_parts.append(str(step.id).replace('_', '-'))
             name = os.path.splitext(in_memory_file.name)[0].replace('.', '-').replace(' ', '-')
@@ -584,10 +635,7 @@ class SpatialInputMWV(MapWorkflowView):
             _, tmp_zip_path = tempfile.mkstemp(suffix='.zip')
             with zipfile.ZipFile(tmp_zip_path, 'w') as tmp_zip_file:
                 tmp_zip_file.write(tmp_tiff_path, coverage_name + '.tif')
-                # tmp_zip_file.write(tmp_tiff_path, coverage_name)
-                # tmp_zip_file.write('/tmp/26912.prj', coverage_name + '.prj')  # DEBUGGING ONLY - UTM 12N
-                # tmp_zip_file.write('/tmp/3857.prj', coverage_name + '.prj')  # DEBUGGING ONLY - Google
-                # tmp_zip_file.write('/tmp/4326.prj', coverage_name + '.prj')  # DEBUGGING ONLY - WGS84
+                tmp_zip_file.write(tmp_prj_path, coverage_name + '.prj')
 
             # Get the GeoServer engine, and create a layer from the zip file
             gs_engine = self.get_app().get_spatial_dataset_service(self.geoserver_name, as_engine=True)

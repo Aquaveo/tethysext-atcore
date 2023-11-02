@@ -57,7 +57,10 @@
 
   {% if allow_image %}
   {# Reference Image Modal #}
-  <div class="modal fade" id="image-upload-modal" tabindex="-1" role="dialog" aria-labelledby="image-upload-modal-label">
+  {% comment %} <div class="modal fade" id="image-upload-modal" tabindex="-1" role="dialog" aria-labelledby="image-upload-modal-label"> {% endcomment %}
+  <div class="modal fade" id="image-upload-modal" role="dialog" aria-labelledby="image-upload-modal-label">
+  {% comment %} <div class="modal fade" id="image-upload-modal" style="overflow:hidden" role="dialog" aria-labelledby="image-upload-modal-label"> {% endcomment %}
+  {% comment %} <div class="modal fade" id="image-upload-modal" data-focus="false" role="dialog" aria-labelledby="image-upload-modal-label"> {% endcomment %}
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -69,7 +72,23 @@
           <div class="input-file-wrapper">
             <input id="image-upload" name="image" class="file-input" type="file" accept=".tif" form="workflow-form">
             <label for="image-upload" class="btn btn-outline-secondary btn-file-input">Browse</label>
+            {% if show_srid_field %}
+              {% gizmo spatial_reference_select %}
+            {% endif %}
+            {{ resource_srid_error }}
           </div>
+
+
+
+          <div class="col-sm-8" id="select">
+            <select type="text" class="form-control" id="helloselect" data-width="100%" name="helloselect">
+                <option>Hello</option>
+                <option>Hola</option>
+                <option>Hallo</option>
+            </select>
+          </div>
+
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -100,3 +119,60 @@
        style="display: none;"
   ></div>
 {% endblock %}
+
+<script>
+  {% comment %} $(document).ready(function() {
+    $("#spatial-ref-select").select2({
+      dropdownParent: $(".modal-body", "#image-upload-modal")
+    });
+  }); {% endcomment %}
+
+  {% comment %} $.fn.modal.Constructor.prototype._enforceFocus = function() {}; {% endcomment %}
+
+  {% comment %} $('spatial-ref-select').select2({
+    dropdownParent: $('#image-upload-modal')
+  }); {% endcomment %}
+
+  {% comment %} $('.select2').each(function() { 
+    $(this).select2({ dropdownParent: $(this).parent()});
+  }) {% endcomment %}
+
+  {% comment %} $('#image-upload-modal').select2({
+    dropdownParent: $('#image-upload-modal')
+ }); {% endcomment %}
+
+ {% comment %} $('#image-upload-modal .select2').each(function() {
+   var $p = $(this).parent();
+   $(this).select2({
+    dropdownParent: $p
+   });
+ }); {% endcomment %}
+
+ {% comment %} $('.modal').on('shown.bs.modal', function (e) {
+  $(this).find('.select2me').select2({
+      dropdownParent: $(this).find('.modal-content')
+  });
+}) {% endcomment %}
+
+{% comment %} $(function () {
+  $(".select2").select2({
+      dropdownParent: $('#image-upload-modal')
+  }); {% endcomment %}
+
+
+{% comment %} $('.modal').css('overflow-y','visible');
+$('.modal').css('overflow','visible'); {% endcomment %}
+
+{% comment %} $(document).ready(function() {
+  $('#spatial-ref-select').select2({
+      dropdownParent: $(".modal-content", "#image-upload-modal")
+  });
+});
+
+$('#spatial-ref-select').select2({
+  dropdownParent: $(".modal-content", "#image-upload-modal")
+}); {% endcomment %}
+
+$("#helloselect").select2({dropdownParent: $("#select")});
+
+</script>
