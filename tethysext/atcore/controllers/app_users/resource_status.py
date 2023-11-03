@@ -29,6 +29,7 @@ class ResourceStatus(ResourceViewMixin):
     base_template = 'atcore/app_users/base.html'
     http_method_names = ['get']
     show_detailed_status = True
+    jobs_table_refresh_interval = 30000  # ms
 
     def get(self, request, *args, **kwargs):
         """
@@ -96,7 +97,7 @@ class ResourceStatus(ResourceViewMixin):
             actions=['logs', 'resubmit'],
             show_actions=show_job_table_actions,
             show_detailed_status=self.show_detailed_status,
-            refresh_interval=30000,
+            refresh_interval=self.jobs_table_refresh_interval,
         )
 
         context = {
