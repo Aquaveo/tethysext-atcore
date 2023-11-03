@@ -2,3 +2,13 @@
     display: block;
     width: 100% !important;
 }
+
+/* For bootstrap modals */
+.select2-container--open .select2-dropdown--below {
+    z-index: 1100;
+}
+
+/* Fix 1px misalignment of select2 dropdown */
+.select2-container.select2-container--default.select2-container--open {
+    left: 0 !important;
+}

@@ -25,6 +25,7 @@ $(function() {
             minimumInputLength: min_length,
             placeholder: placeholder,
             allowClear: true,
+            dropdownParent: $(this).parent(),
         });
     });
 });
