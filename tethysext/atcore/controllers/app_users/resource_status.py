@@ -29,6 +29,7 @@ class ResourceStatus(ResourceViewMixin):
     base_template = 'atcore/app_users/base.html'
     http_method_names = ['get']
     show_detailed_status = True
+    jobs_table_refresh_interval = 30000  # ms
 
     def get(self, request, *args, **kwargs):
         """
@@ -80,7 +81,10 @@ class ResourceStatus(ResourceViewMixin):
             filtered_jobs = jobs
 
         # Job logs contain sensitive information, so only show them to staff and app admins
-        show_job_table_actions = app_user.is_staff() or app_user.get_role() == self._AppUser.ROLES.APP_ADMIN
+        show_job_table_actions = app_user.is_staff() or app_user.get_role() in [
+            self._AppUser.ROLES.APP_ADMIN,
+            self._AppUser.ROLES.ORG_ADMIN
+        ]
         session.close()
         jobs_table = JobsTable(
             jobs=filtered_jobs,
@@ -90,9 +94,10 @@ class ResourceStatus(ResourceViewMixin):
             bordered=False,
             condensed=False,
             show_status=True,
-            actions=['logs'],
+            actions=['logs', 'resubmit'],
             show_actions=show_job_table_actions,
-            show_detailed_status=self.show_detailed_status
+            show_detailed_status=self.show_detailed_status,
+            refresh_interval=self.jobs_table_refresh_interval,
         )
 
         context = {
