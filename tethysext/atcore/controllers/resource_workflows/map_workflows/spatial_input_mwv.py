@@ -65,7 +65,7 @@ class SpatialInputMWV(MapWorkflowView):
             allow_shapefile_uploads = current_step.options.get('allow_shapefile')
             allow_edit_attributes = True
             allow_image_uploads = current_step.options.get('allow_image')
-        
+
         spatial_reference_select = None
         spatial_reference_error = ''
         show_srid = False
