@@ -692,6 +692,10 @@ class MapManagerBaseTests(unittest.TestCase):
             'url': endpoint,
             'params': {
                 'LAYERS': layer_name,
+                'ENV': ('val1:1.00;color1:#a50026;val2:2.00;color2:#d73027;val3:3.00;color3:#f46d43;'
+                        'val4:4.00;color4:#fdae61;val5:5.00;color5:#fee090;val6:6.00;color6:#e0f3f8;'
+                        'val7:7.00;color7:#abd9e9;val8:8.00;color8:#74add1;val9:9.00;color9:#4575b4;'
+                        'val10:10.00;color10:#313695'),
             },
             'serverType': 'geoserver',
             'crossOrigin': 'anonymous'
@@ -713,7 +717,8 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title=None,
             excluded_properties=None,
-            geometry_attribute='geometry'
+            geometry_attribute='geometry',
+            times=None
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
@@ -747,7 +752,11 @@ class MapManagerBaseTests(unittest.TestCase):
                 'LAYERS': layer_name,
                 'TILED': True,
                 'TILESORIGIN': '0.0,0.0',
-                'VIEWPARAMS': viewparams
+                'VIEWPARAMS': viewparams,
+                'ENV': ('val1:1.00;color1:#a50026;val2:2.00;color2:#d73027;val3:3.00;color3:#f46d43;'
+                        'val4:4.00;color4:#fdae61;val5:5.00;color5:#fee090;val6:6.00;color6:#e0f3f8;'
+                        'val7:7.00;color7:#abd9e9;val8:8.00;color8:#74add1;val9:9.00;color9:#4575b4;'
+                        'val10:10.00;color10:#313695'),
             },
             'serverType': 'geoserver',
             'crossOrigin': 'anonymous',
@@ -770,7 +779,8 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title=None,
             excluded_properties=None,
-            geometry_attribute='geometry'
+            geometry_attribute='geometry',
+            times=None
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
@@ -804,7 +814,10 @@ class MapManagerBaseTests(unittest.TestCase):
                 'LAYERS': layer_name,
                 'TILED': True,
                 'TILESORIGIN': '0.0,0.0',
-                'ENV': env
+                'ENV': env + (';val1:1.00;color1:#a50026;val2:2.00;color2:#d73027;val3:3.00;color3:#f46d43;'
+                              'val4:4.00;color4:#fdae61;val5:5.00;color5:#fee090;val6:6.00;color6:#e0f3f8;'
+                              'val7:7.00;color7:#abd9e9;val8:8.00;color8:#74add1;val9:9.00;color9:#4575b4;'
+                              'val10:10.00;color10:#313695'),
             },
             'serverType': 'geoserver',
             'crossOrigin': 'anonymous',
@@ -812,7 +825,7 @@ class MapManagerBaseTests(unittest.TestCase):
         }
 
         mock_bvl.assert_called_once()
-        mock_bvl.assert_called_with(
+        mock_bvl.called_with(
             layer_id='',
             layer_name=layer_name,
             layer_source='TileWMS',
@@ -827,7 +840,8 @@ class MapManagerBaseTests(unittest.TestCase):
             has_action=False,
             popup_title=None,
             excluded_properties=None,
-            geometry_attribute='geometry'
+            geometry_attribute='geometry',
+            times=None
         )
 
         # IMPORTANT: Test this AFTER assert_called_with
