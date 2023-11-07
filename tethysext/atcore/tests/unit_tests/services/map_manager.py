@@ -698,7 +698,7 @@ class MapManagerBaseTests(unittest.TestCase):
         }
 
         mock_bvl.assert_called_once()
-        mock_bvl.called_with(
+        mock_bvl.assert_called_with(
             layer_id='',
             layer_name=layer_name,
             layer_source='ImageWMS',
@@ -755,7 +755,7 @@ class MapManagerBaseTests(unittest.TestCase):
         }
 
         mock_bvl.assert_called_once()
-        mock_bvl.called_with(
+        mock_bvl.assert_called_with(
             layer_id='',
             layer_name=layer_name,
             layer_source='TileWMS',
@@ -812,7 +812,7 @@ class MapManagerBaseTests(unittest.TestCase):
         }
 
         mock_bvl.assert_called_once()
-        mock_bvl.called_with(
+        mock_bvl.assert_called_with(
             layer_id='',
             layer_name=layer_name,
             layer_source='TileWMS',
