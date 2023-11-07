@@ -225,7 +225,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
                                                       self.current_url, self.prev_url, self.next_url)
 
         self.assertEqual(self.prev_url, ret.url)
-        self.assertDictContainsSubset({'Location': self.prev_url}, ret.headers)
+        self.assertTrue(set({'Location': self.prev_url}.items()).issubset(set(ret.headers.items())))
 
     def test_process_step_data_working(self):
         self.request.POST = {'next-submit': True}
