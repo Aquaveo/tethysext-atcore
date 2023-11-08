@@ -67,9 +67,12 @@ class ResourceWorkflowsTab(ResourceTab):
 
     @classmethod
     @abstractmethod
-    def get_workflow_types(cls):
+    def get_workflow_types(cls, request=None, context=None):
         """
         A hook that must be used to define a the ResourceWorkflows supported by this tab view. The list of available workflows in the New Workflow dialog is derived from this object.
+
+        request (HttpRequest): The requestion, optional.
+        context (dict): The context dictionary, optional.
 
         Returns:
             dict: mapping of ResourceWorkflow.TYPE to ResourceWorkflow classes (e.g. {MyResourceWorkflow.TYPE: MyResourceWorkflow} ).
@@ -108,7 +111,7 @@ class ResourceWorkflowsTab(ResourceTab):
         """
         Add context specific to the ResourceWorkflowsTab to the TabbedResourceDetails view.
         """
-        return {'workflow_types': cls.get_workflow_types()}
+        return {'workflow_types': cls.get_workflow_types(request, context)}
 
     def get_context(self, request, session, resource, context, *args, **kwargs):
         """
