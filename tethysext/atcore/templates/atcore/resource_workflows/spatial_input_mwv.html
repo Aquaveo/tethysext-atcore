@@ -70,12 +70,6 @@
             <input id="image-upload" name="image" class="file-input" type="file" accept=".tif" form="workflow-form">
             <label for="image-upload" class="btn btn-outline-secondary btn-file-input">Browse</label>
           </div>
-          <div class="srid-select-wrapper">
-            {% if show_srid_field %}
-              {% gizmo spatial_reference_select %}
-            {% endif %}
-            {{ resource_srid_error }}
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>

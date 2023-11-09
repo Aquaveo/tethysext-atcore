@@ -15,7 +15,6 @@ requirements:
       - django-select2
       - django-taggit<5
       - coverage
-      - gdal=3.5.*
       - factory_boy
       - filelock
       - geojson

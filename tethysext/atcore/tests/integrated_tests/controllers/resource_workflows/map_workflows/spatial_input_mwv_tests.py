@@ -128,8 +128,6 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             'allow_shapefile': False,
             'allow_edit_attributes': True,
             'allow_image': False,
-            'show_srid_field': False,
-            'spatial_reference_select': None,
         }
         self.assertEqual(expected, ret)
 
@@ -150,8 +148,6 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             'allow_shapefile': False,
             'allow_edit_attributes': False,
             'allow_image': False,
-            'show_srid_field': False,
-            'spatial_reference_select': None,
         }
         self.assertEqual(expected, ret)
 
@@ -365,7 +361,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
 
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertEqual('./current', response.url)
-        mock_store_imagery.assert_called_once_with(self.request, self.step1, test_image, None)
+        mock_store_imagery.assert_called_once_with(self.request, self.step1, test_image)
 
     @mock.patch.object(WorkflowViewMixin, 'get_step')
     @mock.patch.object(SpatialInputRWS, 'validate_feature_attributes')
@@ -757,7 +753,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         instance = SpatialInputMWV()
 
         # Test for a missing in memory file
-        layer_id = instance.store_imagery(self.request, self.step1, None, None)
+        layer_id = instance.store_imagery(self.request, self.step1, None)
         self.assertEqual(None, layer_id)
 
         # Test for uploading a zip file to geoserver, as if it were an image, mocked
@@ -771,7 +767,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                 size=955,
                 charset=None
             )
-            layer_id = instance.store_imagery(self.request, self.step1, test_file, None)
+            layer_id = instance.store_imagery(self.request, self.step1, test_file)
         self.assertTrue(layer_id.startswith(f'{test_workspace_str}:'))  # Starts with "<workspace name>:"
         self.assertTrue(layer_id.endswith('BadProjection'))  # Ends with base name of file
 
@@ -788,5 +784,5 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
                     size=955,
                     charset=None
                 )
-                layer_id = instance.store_imagery(self.request, self.step1, test_file, None)
+                layer_id = instance.store_imagery(self.request, self.step1, test_file)
         self.assertEqual(f'An error has occurred while storing the GeoTiff: {exc_str}', str(cm.exception))

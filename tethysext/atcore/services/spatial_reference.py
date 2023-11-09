@@ -53,6 +53,34 @@ class SpatialReferenceService:
         json = {'results': spatial_ref_list}
         return json
 
+    def get_wkt_by_srid(self, srid):
+        """"
+        Get well known text for spatial reference system based on an SRID.
+
+        Args:
+            srid(str): EPSG spatial reference id as a string (e.g. 3566).
+
+        Returns:
+            dict: JSON with the well known text for the spatial reference ID if found (else empty string)
+        """
+        wkt = ''
+
+        if not srid or srid == 'None':
+            json = {'results': wkt}
+            return json
+
+        # Retrieve a list of SRIDs from database
+        get_spatial_ref_list = "SELECT srtext FROM spatial_ref_sys WHERE ({0} = @srid)".format(srid)
+
+        spatial_ref_object_result = self.db_engine.execute(get_spatial_ref_list)
+
+        # Get the WKT
+        for spatial_reference in spatial_ref_object_result:
+            wkt = spatial_reference[0]
+        spatial_ref_object_result.close()
+        json = {'results': wkt}
+        return json
+
     def get_spatial_reference_system_by_query_string(self, query_words):
         """"
         Get a user friendly name for spatial reference system based on a query string.
