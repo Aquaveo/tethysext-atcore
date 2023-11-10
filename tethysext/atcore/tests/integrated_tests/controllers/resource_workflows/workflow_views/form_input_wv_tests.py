@@ -22,6 +22,11 @@ class TestParam(param.Parameterized):
     int_value = param.Integer()
     string_value = param.String()
 
+    def __init__(self, request=None, session=None, resource=None):
+        self.request = request
+        self.session = session
+        self.resource = resource
+
 
 def setUpModule():
     setup_module_for_sqlalchemy_tests()
