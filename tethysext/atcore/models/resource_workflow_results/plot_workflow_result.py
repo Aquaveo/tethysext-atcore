@@ -206,7 +206,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         else:
             # Set layout such as axis label for x and y axis.
             if renderer == 'bokeh':
-                plot_figure = figure(x_axis_type=x_axis_type, plot_width=900)
+                plot_figure = figure(x_axis_type=x_axis_type, width=900)
                 plot_figure.xaxis.axis_label = axis_labels[0]
                 plot_figure.yaxis.axis_label = axis_labels[1]
             elif renderer == 'plotly':

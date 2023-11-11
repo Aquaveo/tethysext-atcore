@@ -80,6 +80,44 @@ class QuerySpatialReferenceControllerTests(TethysTestCase):
         self.assertEqual(self.srid, content['results'][0]['id'])
         self.assertGreater(len(content['results'][0]['text']), 0)
 
+    def test_get_wkt(self):
+        request = self.request_factory.get('/foo/bar/', data={'wkt': self.srid})
+        request.user = self.user
+        mock_app = MockApp()
+        response = QuerySpatialReference.as_controller(_app=mock_app, _persistent_store_name='foo')(request)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.has_header('content-type'))
+        self.assertEqual('application/json', response.get('content-type'))
+        content = json.loads(response.content.decode('utf-8'))
+        self.assertIn('results', content)
+        self.assertGreater(len(content['results']), 700)
+        self.assertTrue(content['results'].startswith('PROJCS["NAD83 / Colorado Central (ftUS)"'))
+        self.assertTrue(content['results'].endswith('AUTHORITY["EPSG","2232"]]'))
+
+    def test_get_wkt_no_srid(self):
+        request = self.request_factory.get('/foo/bar/', data={'wkt': 'None'})  # SRID empty
+        request.user = self.user
+        mock_app = MockApp()
+        response = QuerySpatialReference.as_controller(_app=mock_app, _persistent_store_name='foo')(request)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.has_header('content-type'))
+        self.assertEqual('application/json', response.get('content-type'))
+        content = json.loads(response.content.decode('utf-8'))
+        self.assertIn('results', content)
+        self.assertEqual(len(content['results']), 0)
+
+    def test_get_wkt_bad_srid(self):
+        request = self.request_factory.get('/foo/bar/', data={'wkt': -987654321})  # Bad SRID
+        request.user = self.user
+        mock_app = MockApp()
+        response = QuerySpatialReference.as_controller(_app=mock_app, _persistent_store_name='foo')(request)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.has_header('content-type'))
+        self.assertEqual('application/json', response.get('content-type'))
+        content = json.loads(response.content.decode('utf-8'))
+        self.assertIn('results', content)
+        self.assertEqual(len(content['results']), 0)
+
     def test_get_none(self):
         request = self.request_factory.get('/foo/bar/')
         request.user = self.user
@@ -89,7 +127,7 @@ class QuerySpatialReferenceControllerTests(TethysTestCase):
         self.assertEqual('application/json', response.get('content-type'))
         content = json.loads(response.content.decode('utf-8'))
         self.assertIn('error', content)
-        self.assertEqual('BadRequest: must pass either "id" or "q" parameters.', content['error'])
+        self.assertEqual('BadRequest: must pass either "id", "q", or "wkt" parameters.', content['error'])
 
     def test_get_engine_no_app(self):
         request = self.request_factory.get('/foo/bar/', data={'id': self.srid})

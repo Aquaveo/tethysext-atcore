@@ -39,12 +39,12 @@ class SpatialInputMWV(MapWorkflowView):
         Hook for extending the view context.
 
         Args:
-           request(HttpRequest): The request.
-           session(sqlalchemy.orm.Session): Session bound to the steps.
-           context(dict): Context object for the map view template.
-           current_step(ResourceWorkflowStep): The current step to be rendered.
-           previous_step(ResourceWorkflowStep): The previous step.
-           next_step(ResourceWorkflowStep): The next step.
+            request(HttpRequest): The request.
+            session(sqlalchemy.orm.Session): Session bound to the steps.
+            context(dict): Context object for the map view template.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            previous_step(ResourceWorkflowStep): The previous step.
+            next_step(ResourceWorkflowStep): The next step.
 
         Returns:
             dict: key-value pairs to add to context.
@@ -584,10 +584,6 @@ class SpatialInputMWV(MapWorkflowView):
             _, tmp_zip_path = tempfile.mkstemp(suffix='.zip')
             with zipfile.ZipFile(tmp_zip_path, 'w') as tmp_zip_file:
                 tmp_zip_file.write(tmp_tiff_path, coverage_name + '.tif')
-                # tmp_zip_file.write(tmp_tiff_path, coverage_name)
-                # tmp_zip_file.write('/tmp/26912.prj', coverage_name + '.prj')  # DEBUGGING ONLY - UTM 12N
-                # tmp_zip_file.write('/tmp/3857.prj', coverage_name + '.prj')  # DEBUGGING ONLY - Google
-                # tmp_zip_file.write('/tmp/4326.prj', coverage_name + '.prj')  # DEBUGGING ONLY - WGS84
 
             # Get the GeoServer engine, and create a layer from the zip file
             gs_engine = self.get_app().get_spatial_dataset_service(self.geoserver_name, as_engine=True)

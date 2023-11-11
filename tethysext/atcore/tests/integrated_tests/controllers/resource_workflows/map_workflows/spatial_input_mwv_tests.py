@@ -124,7 +124,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': True, 'allow_image': False}, ret)
+        expected = {
+            'allow_shapefile': False,
+            'allow_edit_attributes': True,
+            'allow_image': False,
+        }
+        self.assertEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)
@@ -139,7 +144,12 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
         ret = SpatialInputMWV().get_step_specific_context(self.request, self.session, self.context, self.step1,
                                                           None, self.step2)
 
-        self.assertEqual({'allow_shapefile': False, 'allow_edit_attributes': False, 'allow_image': False}, ret)
+        expected = {
+            'allow_shapefile': False,
+            'allow_edit_attributes': False,
+            'allow_image': False,
+        }
+        self.assertEqual(expected, ret)
 
     @mock.patch('tethysext.atcore.models.app_users.resource_workflow.ResourceWorkflow.is_locked_for_request_user',
                 return_value=False)

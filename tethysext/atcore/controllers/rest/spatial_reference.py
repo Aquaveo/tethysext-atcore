@@ -29,8 +29,10 @@ class QuerySpatialReference(TethysController):
             return self.query_srid_by_id(request)
         elif request.GET.get('q', False):
             return self.query_srid_by_query(request)
+        elif request.GET.get('wkt', False):
+            return self.query_wkt_by_id(request)
 
-        return JsonResponse({'error': 'BadRequest: must pass either "id" or "q" parameters.'})
+        return JsonResponse({'error': 'BadRequest: must pass either "id", "q", or "wkt" parameters.'})
 
     def query_srid_by_id(self, request):
         """"
@@ -40,6 +42,16 @@ class QuerySpatialReference(TethysController):
         _engine = self.get_engine()
         srs = self._SpatialReferenceService(_engine)
         dict = srs.get_spatial_reference_system_by_srid(srid)
+        return JsonResponse(dict)
+
+    def query_wkt_by_id(self, request):
+        """"
+        This controller is normally called by the select2 Ajax for looking up SRIDs from the SQL database
+        """
+        srid = request.GET.get('wkt', '')
+        _engine = self.get_engine()
+        srs = self._SpatialReferenceService(_engine)
+        dict = srs.get_wkt_by_srid(srid)
         return JsonResponse(dict)
 
     def query_srid_by_query(self, request):
