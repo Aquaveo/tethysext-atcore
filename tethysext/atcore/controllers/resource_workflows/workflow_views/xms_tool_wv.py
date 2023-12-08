@@ -103,16 +103,6 @@ class XMSToolWV(FormInputWV):
         # Django Renderer
         if renderer == 'django':
             tool = XMSToolClass()
-            # if hasattr(tool, 'update_precedence'):
-            #     tool.update_precedence()
-            # for k, v in current_step.get_parameter('form-values').items():
-            #     tool.set_param(k, v)
-
-            # tool_arguments = tool.initial_arguments()
-            # parameterized_args = ParameterizedArgs(tool_arguments)
-            # parameterized_args.setup_parameterized_args()
-            # argument_params = parameterized_args.arguments_as_params
-
             form = generate_django_form_xmstool(tool, form_field_prefix='param-form-',
                                                 read_only=self.is_read_only(request, current_step))()
 
@@ -247,35 +237,18 @@ def generate_django_form_xmstool(xms_tool_class, form_field_prefix=None, read_on
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
-    # # Filter params based on precedence and constant state
-    # params = list(
-    #     filter(
-    #         lambda x: (x.precedence is None or x.precedence >= 0) and not x.constant,
-    #         parameterized_obj.param.params().values()
-    #     )
-    # )
-
     # Sort parameters based on precedence
-    # sorted_params = sorted(argument_params, key=lambda p: p.precedence or 9999)
-    # sorted_params = sorted(argument_params.values(), key=operator.attrgetter('precedence') or 9999)
     sorted_params = sorted(argument_params.items(), key=lambda p: p[1].precedence or 9999)
 
     for cur_p in sorted_params:
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
-        # p_name = p.name
         p_name = cur_p[0]
-
-        # DEBUG
-        # if cur_p[1].type not in  ['Integer', 'String']:
-        #     continue
-        # DEBUG
 
         # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        # form_class.base_fields[p_name] = widget_map[type(p)](parameterized_obj, p, p.name)
         form_class.base_fields[p_name] = xmstool_widget_map[cur_p[1].type](argument_params, cur_p[1], cur_p[0])
 
         # Set label with param label if set, otherwise derive from parameter name
