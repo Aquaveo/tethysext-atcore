@@ -49,7 +49,8 @@ xmstool_widget_map = {
             initial=p.value or p.default,
             widget=Select2Widget,
             # choices=p.get_range().items(),
-            choices=p.objects,
+            # choices=p.objects,
+            choices=list(enumerate(p.objects)),
         ),
     'Number':
         lambda po, p, name: forms.FloatField(
@@ -147,7 +148,6 @@ class XMSToolWV(FormInputWV):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
-        breakpoint()
         package, p_class = step.options['param_class'].rsplit('.', 1)
         mod = __import__(package, fromlist=[p_class])
         ParamClass = getattr(mod, p_class)
@@ -264,6 +264,11 @@ def generate_django_form_xmstool(xms_tool_class, form_field_prefix=None, read_on
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
         # p_name = p.name
         p_name = cur_p[0]
+
+        # DEBUG
+        # if cur_p[1].type not in  ['Integer', 'String']:
+        #     continue
+        # DEBUG
 
         # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
