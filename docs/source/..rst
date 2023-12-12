@@ -1,0 +1,25 @@
+.. _.:
+
+.
+-
+utilities.py
+############
+.. automodule:: tethysext.atcore...utilities
+    :members:
+    :private-members:
+    :special-members:
+
+ext.py
+######
+.. automodule:: tethysext.atcore...ext
+    :members:
+    :private-members:
+    :special-members:
+
+handlers.py
+###########
+.. automodule:: tethysext.atcore...handlers
+    :members:
+    :private-members:
+    :special-members:
+
