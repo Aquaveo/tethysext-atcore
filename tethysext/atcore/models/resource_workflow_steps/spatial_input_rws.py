@@ -15,14 +15,61 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
     Workflow step used for retrieving simple spatial user input (points, lines, polygons).
 
     Options:
-        shapes(list): The types of shapes to allow. Any combination of 'points', 'lines', 'polygons', and/or 'extents'.
-        singular_name(str): Name to use when referring to a single feature in other areas of the user interface (e.g. "Detention Basin"). 
-        plural_name(str): Name to use when referring to multiple features in other areas of the user interface (e.g. "Detention Basins").
-        allow_shapefile(bool): Allow shapfile upload as spatial input. Defaults to True.
-        allow_drawing(bool): Allow manually drawing shapes. Defaults to True.
-        snapping_enabled(bool): Enabled snapping when drawing features. Defaults to True.
-        snapping_layer(dict): Specify a layer to snap to. Create a 1-dict where the key is the dot-path to the layer attribute to use in comparison  and the value is the value to match (e.g. {'data.layer_id': 10}).
-        snapping_options(dict): Supported options include edge, vertex, pixelTolerance. See: https://openlayers.org/en/latest/apidoc/module-ol_interaction_Snap.html
+        * **shapes** (``list``): The types of shapes to allow. Any combination of ``'points'``, ``'lines'``, ``'polygons'``, and/or ``'extents'``.
+        * **singular_name** (``str``): Name to use when referring to a single feature in other areas of the user interface (e.g. ``"Detention Basin"``). 
+        * **plural_name** (``str``): Name to use when referring to multiple features in other areas of the user interface (e.g. ``"Detention Basins"``).
+        * **allow_shapefile** (``bool``): Allow shapfile upload as spatial input. Defaults to ``True``.
+        * **allow_drawing** (``bool``): Allow manually drawing shapes. Defaults to ``True``.
+        * **snapping_enabled** (``bool``): Enabled snapping when drawing features. Defaults to ``True``.
+        * **snapping_layer** (``dict``): Specify a layer to snap to. Create a 1-dict where the key is the dot-path to the layer attribute to use in comparison  and the value is the value to match (e.g. ``{'data.layer_id': 10}``).
+        * **snapping_options** (``dict``): Supported options include ``edge``, ``vertex``, ``pixelTolerance``. See: `OpenLayers | ol/interaction/Snap <https://openlayers.org/en/latest/apidoc/module-ol_interaction_Snap.html>`_
+
+    **Parameters**:
+        * **geometry** (``dict``): Valid GeoJSON ``FeatureCollection`` representing geometry input by user.
+
+    **Examples**:
+
+        .. code-block:: python
+
+            step = SpatialInputRWS(
+                name='Create Detention Basins',
+                order=10,
+                help='Use the Polygon or Box tool to draw detention basin boundaries or import a shapefile.',
+                options={
+                    'shapes': ['polygons', 'extents'],
+                    'singular_name': 'Detention Basin',
+                    'plural_name': 'Detention Basins',
+                    'allow_shapefile': True,
+                    'allow_drawing': True
+                },
+                geoserver_name=geoserver_name,
+                map_manager=map_manager,
+                spatial_manager=spatial_manager,
+                active_roles=[Roles.ORG_USER, Roles.ORG_ADMIN]
+            )
+
+    **Example Parameters**:
+
+        .. code-block:: python
+
+            >>> step.get_parameter('geometry')
+            {
+                'crs': {'properties': {'name': 'EPSG:4326'}, 'type': 'name'},
+                'features': [{
+                    'geometry': {
+                        'coordinates': [-111.487097, 40.64965],
+                        'type': 'Point'
+                    },
+                    'properties': {
+                        'id': 'drawing_layer.b5b054d5-9371-470b-b3a5-5ac805d68fd3',
+                        'point_name': 'Seasons Points'
+                    },
+                    'type': 'Feature'
+                }],
+                'properties': {'default_point': 'point'},
+                'type': 'FeatureCollection'
+            }
+
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialInputMWV'
     TYPE = 'spatial_input_workflow_step'

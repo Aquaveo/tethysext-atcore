@@ -19,7 +19,6 @@ from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
 
 log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
@@ -196,6 +195,8 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         Returns:
             dict: a dictionary with tabular data per step.
         """
+        from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
+
         if step not in self.steps:
             raise ValueError('Step {} does not belong to this workflow.'.format(step))
 

@@ -16,13 +16,49 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
     Workflow step used for setting dataset attributes on features.
 
     Options:
-        geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
-        dataset_title(str): Title of the dataset (e.g.: Hydrograph). Defaults to 'Dataset'.
-        template_dataset(pd.DataFrame): A Pandas dataset to use as a template for the dataset. Default is pd.DataFrame(columns=['X', 'Y'])
-        read_only_columns(tuple,list): Names of columns of the template dataset that are read only. All columns are editable by default.
-        plot_columns(Union[2-tuple, list of 2-tuple]): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given. Multiple series plotted if a list of 2-tuple given, ex: [(x1, y1), (x2, y2)].
-        max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
-        empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
+        * **geometry_source** (varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
+        * **dataset_title** (``str``): Title of the dataset (e.g.: Hydrograph). Defaults to 'Dataset'.
+        * **template_dataset** (``pd.DataFrame``): A Pandas dataset to use as a template for the dataset. Default is pd.DataFrame(columns=['X', 'Y'])
+        * **read_only_columns** (``tuple``, ``list``): Names of columns of the template dataset that are read only. All columns are editable by default.
+        * **plot_columns** (``Union[2-tuple, list<2-tuple>]``): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given. Multiple series plotted if a list of 2-tuple given, ex: [(x1, y1), (x2, y2)].
+        * **max_rows** (``int``): Maximum number of rows allowed in the dataset. No maximum if not given.
+        * **empty_rows** (``int``): The number of empty rows to generate if an no/empty template dataset is given.
+
+    **Parameters**:
+        * **datasets** (``dict``): Dictionary of datasets for each feature. Keys are feature ids, values are Pandas DataFrames.
+
+    **Examples**:
+
+        .. code-block:: python
+
+            step1 = SpatialInputRWS(
+                ...
+            )
+            workflow.steps.append(step1)
+
+            step2 = SpatialDatasetRWS(
+                name='Define Pre Basin Hydrographs',
+                order=20,
+                help='Select each detention basin outlet and define a pre-basin hydrograph to be applied.',
+                options={
+                    'geometry_source': {
+                        SpatialDatasetRWS.OPT_PARENT_STEP: {
+                            'match_attr': 'name',
+                            'match_value': step1.name,
+                            'parent_field': 'geometry'
+                        }
+                    },
+                    'dataset_title': 'Hydrograph',
+                    'template_dataset': pd.DataFrame(columns=['Time (min)', 'Discharge (cfs)']),
+                    'plot_columns': ('Time (min)', 'Discharge (cfs)'),
+                },
+                geoserver_name=geoserver_name,
+                map_manager=map_manager,
+                spatial_manager=spatial_manager,
+                active_roles=[Roles.ORG_USER, Roles.ORG_ADMIN]
+            )
+            step2.parents.append(step1)
+            workflow.steps.append(step2)
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialDatasetMWV'
     TYPE = 'spatial_dataset_workflow_step'

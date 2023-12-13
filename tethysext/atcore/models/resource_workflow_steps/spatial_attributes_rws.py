@@ -14,8 +14,11 @@ class SpatialAttributesRWS(SpatialResourceWorkflowStep):
     Workflow step used for setting simple valued attributes on features.
 
     Options:
-        geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
-        attributes(dict): Dictionary of param instances defining the attributes to be defined for each feature.
+        * **geometry_source** (varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
+        * **attributes** (``dict``): Dictionary of param instances defining the attributes to be defined for each feature.
+
+    **Parameters**:
+        * **attributed_geometry** (``dict``): GeoJSON representing geometry input by user.
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialAttributesMWV'
     TYPE = 'spatial_attributes_workflow_step'

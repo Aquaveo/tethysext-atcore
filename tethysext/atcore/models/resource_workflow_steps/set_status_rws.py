@@ -14,9 +14,36 @@ class SetStatusRWS(ResourceWorkflowStep):
     Workflow step that can be used to change the status of a workflow with the click of a button.
     
     Options:
-        form_title(str): Title to be displayed at the top of the form. Defaults to the name of the step.
-        status_label(str): Custom label for the status select form field. Defaults to "Status".
-        statuses(list<dicts<status,label>>): List of dictionaries with two keys: "status" and "label". The value of "status" must be a valid status from the StatusMixin as determined by the valid_statuses() method on the step. The value of the "label" will be what is displayed to the user. If "label" is None or not given, the value of "status" will be displayed to the user.
+        * **form_title** (``str``): Title to be displayed at the top of the form. Defaults to the name of the step.
+        * **status_label** (``str``): Custom label for the status select form field. Defaults to "Status".
+        * **statuses** (``list<dicts<status,label>>``): List of dictionaries with two keys: "status" and "label". The value of "status" must be a valid status from the StatusMixin as determined by the valid_statuses() method on the step. The value of the "label" will be what is displayed to the user. If "label" is None or not given, the value of "status" will be displayed to the user.
+
+    **Parameters**:
+        * **comments** (``str``): Comments on reason for changing status to this status.
+
+    **Examples**:
+
+        .. code-block:: python
+
+            step10 = SetStatusRWS(
+                name='Review Submission',
+                order=100,
+                help='Approve, reject, or request changes to this submission. Add comments if applicable.',
+                options={
+                    'status_label': 'Decision',
+                    'statuses': [
+                        {'status': SetStatusRWS.STATUS_REVIEWED,
+                        'label': 'Reviewed'},
+                        {'status': SetStatusRWS.STATUS_CHANGES_REQUESTED,
+                        'label': 'Request Changes'},
+                        {'status': SetStatusRWS.STATUS_REJECTED,
+                        'label': 'Reject'}
+                    ],
+                    'resource_lock_required': True,
+                    'release_resource_lock_on_completion': True
+                },
+                active_roles=[Roles.ORG_REVIEWER, Roles.ORG_ADMIN]
+            )
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.SetStatusWV'
     TYPE = 'set_status_workflow_step'
