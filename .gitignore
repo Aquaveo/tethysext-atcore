@@ -17,3 +17,4 @@ test_local.sh
 tethysext/atcore/tests/files/file_collection_client_tests/temp/*
 tethysext/atcore/tests/files/file_database_client_tests/temp/*
 docs/build
+docs/source/_autosummary
