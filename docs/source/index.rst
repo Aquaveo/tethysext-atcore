@@ -12,7 +12,15 @@ Welcome to ATCore's Documentation!
 
    api
 
+API Documentation
+=================
 
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
+
+   tethysext.atcore
 
 Indices and tables
 ==================
