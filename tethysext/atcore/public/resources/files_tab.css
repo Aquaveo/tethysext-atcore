@@ -1,15 +1,28 @@
+.btn {
+    margin: 0;
+}
+
 #hierarchy
 {
     font-family: "Courier New"!important;
 }
+
+.top-folder-container {
+    overflow: auto;
+    height: 545px;
+}
+
 .foldercontainer, .file, .noitems
 {
     display: block;
     padding-left: 20px;
+    text-wrap: nowrap;
 }
 
 .foldername {
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    text-wrap: nowrap;
+    pointer-events: none;
 }
 
 .folder[data-isselected="true"] {
@@ -18,10 +31,9 @@
 
 .folder
 {
-    height: 40px;
-    width: 100%;
-    padding-top: 10px;
-    padding-left: 10px;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 5px 10px;
     font-size: 15px;
 }
 .file
@@ -59,9 +71,6 @@
     border-right: 1px solid;
 }
 
-#modified_header {
-}
-
 #size_header {
     border-left: 1px solid;
 }
@@ -74,13 +83,11 @@
     border-left: 1px;
 }
 
-div#preview-col {
+#preview-col {
     border-left: 1px solid;
-    border-right: 1px solid;
-    border-bottom: 1px solid;
     border-color: lightgrey;
     height: 600px;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 #files {

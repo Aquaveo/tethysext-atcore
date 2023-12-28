@@ -1,6 +1,7 @@
 {% if node.type == 'folder' %}
 <div class="foldercontainer">
-    <span class="folder bi bi-folder2" data-isexpanded="false"
+    <span class="folder bi bi-folder2"
+          data-isexpanded="true"
           data-isselected="false"
           data-parentslug="{{ node.parent_slug }}"
           data-slug="{{ node.slug }}"
@@ -8,10 +9,10 @@
           data-parentpath="{{ node.parent_path }}">
         <span class="foldername">{{ node.name }}</span>
     </span>
-    {%for ch in node.children %}
-        {%with node=ch template_name="atcore/resources/tabs/tree_view_template.html" %}
-            {%include template_name%}
-        {%endwith%}
-    {%endfor%}
+    {% for ch in node.children %}
+        {% with node=ch template_name="atcore/resources/tabs/tree_view_template.html" %}
+            {% include template_name%}
+        {% endwith%}
+    {% endfor%}
 </div>
 {% endif %}
