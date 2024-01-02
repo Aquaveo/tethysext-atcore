@@ -8,7 +8,7 @@ function show_hide_files(slug, path) {
     }
     // Update the path text field to show the current path being viewed.
     path_input = document.getElementById("filepath_input")
-    path_input.placeholder = path;
+    path_input.value = path;
 }
 
 // A function to change the isselected data when a tree item is selected.
@@ -150,14 +150,19 @@ function files_tab_loaded() {
         }
     });
 
-    document.querySelectorAll('.folder').forEach(function(elem){
-        collapse_tree_elements(elem);
-    });
-
     data_table = $('#viewport-table').DataTable({
         "paging":   false,
         "searching":   false,
         "info":     false,
         "order": [[0, "asc"]]
     });
+
+    // Enable the tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Click on the first folder item in the tree to show the files in the viewport.
+    document.querySelector('.folder').click();
 }

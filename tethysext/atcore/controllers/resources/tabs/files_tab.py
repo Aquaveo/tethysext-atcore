@@ -41,7 +41,7 @@ class ResourceFilesTab(ResourceTab):
         'atcore/resources/files_tab.js',
     ]
     css_requirements = ResourceTab.css_requirements + [
-        x for x in gizmo_datatable_view.DataTableView.get_vendor_js()
+        x for x in gizmo_datatable_view.DataTableView.get_vendor_css()
     ] + [
         'atcore/resources/files_tab.css'
     ]
