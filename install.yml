@@ -20,11 +20,12 @@ requirements:
       - geojson
       - jinja2
       - pandas
-      - param
+      - param<2
       - pyshp
       - requests
       - sqlalchemy<2
       - panel
   pip:
     - django-datetime-widget2
+    - bokeh-django
 post:
