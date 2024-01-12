@@ -6,19 +6,17 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-from xms.tool_core import Argument, ParameterizedArgs, Tool, ToolError  # noqa I100,I201
-
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
+from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
-class XMSToolRWS(FormInputRWS):
+class XMSToolRWS(ResourceWorkflowStep):
     """
     Workflow step that can be used to get XMSTool input from a user.
 
     Options:
         form_title(str): Title to be displayed at the top of the form. Defaults to the name of the step.
         status_label(str): Custom label for the status select form field. Defaults to "Status".
-        param_class(dict): A param class to represent form fields.
+        xmstool_class(dict): xms tool class used on the form.
         renderer(str): Renderer option. Available values are 'django' and 'bokeh'. Defauls to 'django'. 
     """  # noqa: #501
 
@@ -35,7 +33,7 @@ class XMSToolRWS(FormInputRWS):
         default_options.update({
             'form_title': None,
             'status_label': None,
-            'param_class': {},
+            'xmstool_class': {},
             'renderer': 'django'
         })
         return default_options

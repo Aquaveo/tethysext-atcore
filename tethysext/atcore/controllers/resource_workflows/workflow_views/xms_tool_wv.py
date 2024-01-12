@@ -13,9 +13,8 @@ from django_select2.forms import Select2Widget
 
 from xms.tool_core import ParameterizedArgs  # noqa I100,I201
 
-from tethysext.atcore.controllers.resource_workflows.workflow_views import FormInputWV
+from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps.xms_tool_rws import XMSToolRWS
-from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 
 # from bokeh.embed import server_document
 
@@ -69,7 +68,8 @@ xmstool_widget_map = {
 }
 
 
-class XMSToolWV(FormInputWV):
+# class XMSToolWV(FormInputWV):
+class XMSToolWV(ResourceWorkflowView):
     """
     Controller for XMSToolRWS.
     """
@@ -91,7 +91,9 @@ class XMSToolWV(FormInputWV):
         """
         # Status style
         form_title = current_step.options.get('form_title', current_step.name) or current_step.name
+        form_values = current_step.get_parameter('form-values')
 
+        current_step.options.pop('param_class', None)
         package, p_class = current_step.options['xmstool_class'].rsplit('.', 1)
         mod = __import__(package, fromlist=[p_class])
         XMSToolClass = getattr(mod, p_class)
@@ -103,7 +105,7 @@ class XMSToolWV(FormInputWV):
         # Django Renderer
         if renderer == 'django':
             tool = XMSToolClass()
-            form = generate_django_form_xmstool(tool, form_field_prefix='param-form-',
+            form = generate_django_form_xmstool(tool, form_values, form_field_prefix='param-form-',
                                                 read_only=self.is_read_only(request, current_step))()
 
             # Save changes to map view and layer groups
@@ -112,15 +114,6 @@ class XMSToolWV(FormInputWV):
                 'form_title': form_title,
                 'form': form,
             })
-
-        # # Bokeh Renderer
-        # elif renderer == 'bokeh':
-        #     script = server_document(request.build_absolute_uri())
-        #     context.update({
-        #         'read_only': self.is_read_only(request, current_step),
-        #         'form_title': form_title,
-        #         'script': script
-        #     })
 
     def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
@@ -138,13 +131,15 @@ class XMSToolWV(FormInputWV):
         Returns:
             HttpResponse: A Django response.
         """  # noqa: E501
-        package, p_class = step.options['param_class'].rsplit('.', 1)
+        step.options.pop('param_class', None)
+        package, p_class = step.options['xmstool_class'].rsplit('.', 1)
         mod = __import__(package, fromlist=[p_class])
-        ParamClass = getattr(mod, p_class)
+        XMSToolClass = getattr(mod, p_class)
+        form_values = step.get_parameter('form-values')
         if step.options['renderer'] == 'django':
-            param_class_for_form = ParamClass(request=request, session=session, resource=resource)
-            form = generate_django_form(param_class_for_form, form_field_prefix='param-form-')(request.POST)
-            params = {}
+            tool = XMSToolClass()
+            form = generate_django_form_xmstool(tool, form_values, form_field_prefix='param-form-')(request.POST)
+            form_values = {}
 
             if not form.is_valid():
                 raise RuntimeError('form is invalid')
@@ -155,45 +150,14 @@ class XMSToolWV(FormInputWV):
                 if p.startswith('param-form-'):
                     try:
                         param_name = p[11:]
-                        params[param_name] = form.cleaned_data[p]
+                        form_values[param_name] = form.cleaned_data[p]
                     except ValueError as e:
                         raise RuntimeError('error setting param data: {}'.format(e))
 
-            # Get the param class and save the data from the form
-            # for the next time the form is loaded
-            param_class = ParamClass(request=request, session=session, resource=resource)
-            param_values = dict(param_class.param.get_param_values())
-            for k, v in params.items():
-                try:
-                    params[k] = type(param_values[k])(v)
-                except ValueError as e:
-                    raise ValueError('Invalid input to form: {}'.format(e))
-
             step.set_parameter('resource_name', step.workflow.resource.name)
-            step.set_parameter('form-values', params)
-
-        # elif step.options['renderer'] == 'bokeh':
-        #     # get document from the request here...
-        #     params = {}
-
-        #     for p in request.POST:
-        #         if p.startswith('param-form-'):
-        #             try:
-        #                 param_name = p[11:]
-        #                 params[param_name] = request.POST.get(p, None)
-        #             except ValueError as e:
-        #                 raise RuntimeError('error setting param data: {}'.format(e))
-
-        #     param_class = ParamClass(request=request, session=session, resource=resource)
-        #     param_values = dict(param_class.get_param_values())
-        #     for k, v in params.items():
-        #         try:
-        #             params[k] = type(param_values[k])(v)
-        #         except ValueError as e:
-        #             raise ValueError('Invalid input to form: {}'.format(e))
-
-        #     step.set_parameter('resource_name', step.workflow.resource.name)
-        #     step.set_parameter('form-values', params)
+            temp_values = step.get_parameter('form-values')
+            temp_values['value'] = form_values
+            step.set_parameter('form-values', temp_values)
 
         # Save parameters
         session.commit()
@@ -218,13 +182,15 @@ class XMSToolWV(FormInputWV):
         return response
 
 
-def generate_django_form_xmstool(xms_tool_class, form_field_prefix=None, read_only=False):
+def generate_django_form_xmstool(xms_tool_class, form_values, form_field_prefix=None, read_only=False):
     """
     Create a Django form from a Parameterized object.
 
     Args:
         xms_tool_class(class): the XMS tool class.
+        form_values(dict): dict of initial values to assign
         form_field_prefix(str): A prefix to prepend to form fields
+        read_only(bool): Read only flag
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
@@ -240,8 +206,15 @@ def generate_django_form_xmstool(xms_tool_class, form_field_prefix=None, read_on
     # Sort parameters based on precedence
     sorted_params = sorted(argument_params.items(), key=lambda p: p[1].precedence or 9999)
 
+    # Fill in form values if necessary
+    if form_values:
+        for form_value in form_values.items():
+            for param in sorted_params:
+                if param[0] in form_value[1]:
+                    param[1]._value = form_value[1][param[0]]
+            print(form_value)
+
     for cur_p in sorted_params:
-        # TODO: Pass p.__dict__ as second argument instead of arbitrary
         p_name = cur_p[0]
 
         # Prefix parameter name if prefix provided
