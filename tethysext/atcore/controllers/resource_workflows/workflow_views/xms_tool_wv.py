@@ -11,8 +11,6 @@ import logging
 from django import forms
 from django_select2.forms import Select2Widget
 
-from xms.tool_core import ParameterizedArgs  # noqa I100,I201
-
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.resource_workflow_steps.xms_tool_rws import XMSToolRWS
 
@@ -194,10 +192,33 @@ def generate_django_form_xmstool(xms_tool_class, form_values, form_field_prefix=
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
+    def _setup_parameterized_args(arguments):
+        """Takes the XMSToolArgument list and turns it into a dictionary of Param types.
+
+        Args:
+            arguments (List[Argument]): List of tool arguments.
+
+        Returns:
+            (Dict[str, Parameter]): List of Parameter objects.
+        """
+        arguments_dict = {}
+        argument_precedence = {}
+        precedence = 100
+        for argument in arguments:
+            arg_param = argument.get_param(precedence)
+            if argument.value is not None:
+                arg_param.value = argument.value
+            displayed = True
+            if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
+                displayed = False
+            if displayed:
+                argument_precedence[argument.name] = precedence
+                arguments_dict[argument.name] = arg_param
+                precedence += 1
+        return arguments_dict
+
     tool_arguments = xms_tool_class.initial_arguments()
-    parameterized_args = ParameterizedArgs(tool_arguments)
-    parameterized_args.setup_parameterized_args()
-    argument_params = parameterized_args.arguments_as_params
+    argument_params = _setup_parameterized_args(tool_arguments)
 
     # Create Django Form class dynamically
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
@@ -212,7 +233,6 @@ def generate_django_form_xmstool(xms_tool_class, form_values, form_field_prefix=
             for param in sorted_params:
                 if param[0] in form_value[1]:
                     param[1]._value = form_value[1][param[0]]
-            print(form_value)
 
     for cur_p in sorted_params:
         p_name = cur_p[0]
