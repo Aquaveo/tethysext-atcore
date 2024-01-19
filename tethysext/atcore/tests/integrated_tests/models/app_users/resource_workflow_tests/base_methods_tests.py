@@ -246,7 +246,7 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
         mock_get_parameter.return_value = {'existing_data': 'data_value'}
         ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session, resource)
 
-        expected_result = {'foo': {'Existing Data': 'data_name'}}
+        expected_result = {'foo': {'Existing Data': 'data_value'}}
         self.assertEqual(expected_result, ret)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_steps.form_input_rws.FormInputRWS.get_parameter')
