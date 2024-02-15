@@ -13,10 +13,24 @@ class XMSToolRWS(ResourceWorkflowStep):
     """
     Workflow step that can be used to get XMSTool input from a user.
 
+    Example argument mapping (provide options from the database, for input arguments):
+    (Look in Project.datasets, where a dataset_type is a raster, for the dataset description, which is then filtered)
+    'arg_mapping': {
+        'input_raster': {
+            'resource_class': 'my_project.resources.project.Project',
+            'source_attr': 'datasets',
+            'attr': 'dataset_type',
+            'valid_values': ['RASTER_ASCII', 'RASTER_GEOTIFF'],
+            'name_attr': 'description',
+            'name_attr_regex': r'"(.*?[^\\])"',
+        },
+    }
+
     Options:
         form_title(str): Title to be displayed at the top of the form. Defaults to the name of the step.
         status_label(str): Custom label for the status select form field. Defaults to "Status".
         xmstool_class(dict): xms tool class used on the form.
+        arg_mapping(dict): dict of lookup options to map arguments to existing data.
         renderer(str): Renderer option. Available values are 'django' and 'bokeh'. Defauls to 'django'. 
     """  # noqa: #501
 
@@ -34,6 +48,7 @@ class XMSToolRWS(ResourceWorkflowStep):
             'form_title': None,
             'status_label': None,
             'xmstool_class': {},
+            'arg_mapping': {},
             'renderer': 'django'
         })
         return default_options
