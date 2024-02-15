@@ -187,8 +187,8 @@ class XMSToolWV(ResourceWorkflowView):
         return response
 
 
-def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=None, form_field_prefix=None, read_only=False,
-                                 arg_mapping = {}):
+def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=None, form_field_prefix=None,
+                                 read_only=False, arg_mapping=None):
     """
     Create a Django form from a Parameterized object.
 
@@ -248,7 +248,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=
                     package, p_class = arg_atts['resource_class'].rsplit('.', 1)
                     mod = __import__(package, fromlist=[p_class])
                     resource_class = getattr(mod, p_class)
-                    
+
                     # Query on the resource, find the correct resource, and then look for the right arguments
                     resources = session.query(resource_class).all()
                     for r in resources:
