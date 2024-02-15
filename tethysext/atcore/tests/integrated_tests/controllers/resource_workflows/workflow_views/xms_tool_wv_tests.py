@@ -96,14 +96,14 @@ class XmsToolWVTests(WorkflowViewTestCase):
             'foo': {'foo': 2.0},
             'bar': {'bar': '3'},
         }
-        self.test_basic_form_from_param = generate_django_form_xmstool(self.test_basic_tool, form_values)
+        self.test_basic_form_from_param = generate_django_form_xmstool(self.test_basic_tool, form_values, None)
         self.xrws = XMSToolRWS(
             name='xrws',
             help='basic xmstool input step',
             order=1,
             options={
                 'xmstool_class': 'tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.'
-                                 'workflow_views.xms_tool_wv_tests.TestTool'
+                                 'workflow_views.xms_tool_wv_tests.TestTool',
             }
         )
 
