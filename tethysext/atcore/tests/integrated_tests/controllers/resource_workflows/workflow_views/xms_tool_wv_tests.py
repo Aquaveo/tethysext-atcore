@@ -282,22 +282,27 @@ class XmsToolWVTests(WorkflowViewTestCase):
             'foo': Parameter(type='Number', label='foo label2', default=4.4, precedence=2,
                              objects=None, doc='Arg 2', default_suffix=None, _value=None,
                              table_definition=None),
-            'bar': Parameter(type='ObjectSelector', label='bar label3', default='--None--',
+            'bar': Parameter(type='ObjectSelector', label='"bar label"3', default='--None--',
                              precedence=3, objects=[], doc='Arg 3', default_suffix=None,
                              _value=None, table_definition=None),
         }
         mock_dataset = mock.MagicMock()
         mock_dataset.dataset_type = 'ObjectSelector'
-        mock_dataset.description = 'obj description'
+        regex_base_description = 'choice description'
+        mock_dataset.description = f'"{regex_base_description}" plus extra for filtering out'
         mock_dataset.objects = ['a', 'b', 'c']
+        mock_dataset2 = mock.MagicMock()
+        mock_dataset2.dataset_type = 'ObjectSelector'
+        mock_dataset2.description = 'ds2 description'
+        mock_dataset.objects = ['d']
         mock_resource = mock.MagicMock()
-        mock_resource.datasets = [mock_dataset]
+        mock_resource.datasets = [mock_dataset, mock_dataset2]
         mock_session = mock.MagicMock()
         mock_session.query().all.return_value = [mock_resource]
 
         xmstool_class = TestTool()
         arg_mapping = {
-            'name': {
+            'bar': {
                 'resource_class': 'tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.'
                                   'workflow_views.xms_tool_wv_tests.TestResource',
                 'source_attr': 'datasets',
@@ -307,8 +312,15 @@ class XmsToolWVTests(WorkflowViewTestCase):
                 'name_attr_regex': r'"(.*?[^\\])"',
             },
         }
+
         form = generate_django_form_xmstool(xmstool_class, {}, mock_session, resource=mock_resource,
                                             arg_mapping=arg_mapping, setup_func=mock_setup_func)
+
         self.assertTrue('name' in form.base_fields)
         self.assertTrue('foo' in form.base_fields)
         self.assertTrue('bar' in form.base_fields)
+        self.assertEqual(len(form.base_fields['bar'].choices), 2)
+        self.assertEqual(len(form.base_fields['bar'].choices[0]), 2)
+        self.assertEqual(len(form.base_fields['bar'].choices[1]), 2)
+        self.assertEqual(regex_base_description, form.base_fields['bar'].choices[0][1])
+        self.assertEqual(mock_dataset2.description, form.base_fields['bar'].choices[1][1])
