@@ -307,5 +307,8 @@ class XmsToolWVTests(WorkflowViewTestCase):
                 'name_attr_regex': r'"(.*?[^\\])"',
             },
         }
-        generate_django_form_xmstool(xmstool_class, {}, mock_session, resource=mock_resource, arg_mapping=arg_mapping,
-                                     setup_func=mock_setup_func)
+        form = generate_django_form_xmstool(xmstool_class, {}, mock_session, resource=mock_resource,
+                                            arg_mapping=arg_mapping, setup_func=mock_setup_func)
+        self.assertTrue('name' in form.base_fields)
+        self.assertTrue('foo' in form.base_fields)
+        self.assertTrue('bar' in form.base_fields)
