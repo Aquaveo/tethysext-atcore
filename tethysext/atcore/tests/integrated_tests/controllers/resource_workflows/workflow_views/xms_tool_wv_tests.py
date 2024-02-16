@@ -31,7 +31,16 @@ class Parameter:
     doc: Optional[str] = None
     default_suffix: str = None
     _value: Any = None
+    value: Any = None
     table_definition: Any = None
+
+
+class TestResource:
+    def __init__(self):
+        self.foo = 'bar'
+
+    # def datasets(self):
+        # return ['abc', '123']
 
 
 class TestTool(param.Parameterized):
@@ -46,23 +55,30 @@ class TestTool(param.Parameterized):
     def initial_arguments(self):
         arguments = []
 
-        argument1 = mock.MagicMock(name='name', description='description', type='integer', value=1,
+        argument1 = mock.MagicMock(name='name', description='name description', type='integer', value=1,
                                    io_direction=1, precedence=1)
-        argument1.get_param.return_value = Parameter(type='Integer', label='description', default=1, precedence=1,
+        argument1.name = 'name'
+        argument1.io_direction = 1
+        argument1.get_param.return_value = Parameter(type='Integer', label='name label', default=1, precedence=1,
                                                      objects=None, doc='Arg 1', default_suffix=None, _value=None,
                                                      table_definition=None)
         arguments.append(argument1)
 
-        argument2 = mock.MagicMock(name='foo', description='bar', type='float', value=2.0,
+        argument2 = mock.MagicMock(name='foo', description='foo description', type='float', value=2.0,
                                    io_direction=1, precedence=1)
-        argument2.get_param.return_value = Parameter(type='Number', label='bar', default=2.0, precedence=2,
+        argument2.name = 'foo'
+        argument2.io_direction = 2
+        argument2.get_param.return_value = Parameter(type='Number', label='foo label', default=2.0, precedence=2,
                                                      objects=None, doc='Arg 2', default_suffix=None, _value=None,
                                                      table_definition=None)
         arguments.append(argument2)
 
-        argument3 = mock.MagicMock(name='bar', description='output', type='string', value='3',
-                                   io_direction=2, precedence=3)
-        argument3.get_param.return_value = Parameter(type='String', label='description', default='3', precedence=3,
+        argument3 = mock.MagicMock(name='bar', description='bar description', type='string', value='3',
+                                   io_direction=1, precedence=3)
+        argument3.name = 'bar'
+        argument3.io_direction = 1
+        argument3.objects = ['a', 'b', 'c']
+        argument3.get_param.return_value = Parameter(type='String', label='bar label', default='3', precedence=3,
                                                      objects=None, doc='Arg 3', default_suffix=None, _value=None,
                                                      table_definition=None)
         arguments.append(argument3)
@@ -256,3 +272,40 @@ class XmsToolWVTests(WorkflowViewTestCase):
                 previous_url=previous_url
             )
         self.assertEqual('error setting param data: foo_cd', str(cm.exception))
+
+    def test_arg_mapping(self):
+        mock_setup_func = mock.MagicMock()
+        mock_setup_func.return_value = {
+            'name': Parameter(type='Integer', label='name "description"', default=3, precedence=1,
+                              objects=None, doc='Arg 1', default_suffix=None, _value=None,
+                              table_definition=None),
+            'foo': Parameter(type='Number', label='foo label2', default=4.4, precedence=2,
+                             objects=None, doc='Arg 2', default_suffix=None, _value=None,
+                             table_definition=None),
+            'bar': Parameter(type='ObjectSelector', label='bar label3', default='--None--',
+                             precedence=3, objects=[], doc='Arg 3', default_suffix=None,
+                             _value=None, table_definition=None),
+        }
+        mock_dataset = mock.MagicMock()
+        mock_dataset.dataset_type = 'ObjectSelector'
+        mock_dataset.description = 'obj description'
+        mock_dataset.objects = ['a', 'b', 'c']
+        mock_resource = mock.MagicMock()
+        mock_resource.datasets = [mock_dataset]
+        mock_session = mock.MagicMock()
+        mock_session.query().all.return_value = [mock_resource]
+
+        xmstool_class = TestTool()
+        arg_mapping = {
+            'name': {
+                'resource_class': 'tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.'
+                                  'workflow_views.xms_tool_wv_tests.TestResource',
+                'source_attr': 'datasets',
+                'attr':  'dataset_type',
+                'valid_values': ['ObjectSelector'],
+                'name_attr': 'description',
+                'name_attr_regex': r'"(.*?[^\\])"',
+            },
+        }
+        generate_django_form_xmstool(xmstool_class, {}, mock_session, resource=mock_resource, arg_mapping=arg_mapping,
+                                     setup_func=mock_setup_func)

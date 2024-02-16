@@ -188,7 +188,7 @@ class XMSToolWV(ResourceWorkflowView):
 
 
 def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=None, form_field_prefix=None,
-                                 read_only=False, arg_mapping=None):
+                                 read_only=False, arg_mapping=None, setup_func=None):
     """
     Create a Django form from a Parameterized object.
 
@@ -227,8 +227,10 @@ def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=
                 precedence += 1
         return arguments_dict
 
+    if not setup_func:
+        setup_func = _setup_parameterized_args
     tool_arguments = xms_tool_class.initial_arguments()
-    argument_params = _setup_parameterized_args(tool_arguments)
+    argument_params = setup_func(tool_arguments)
 
     # Create Django Form class dynamically
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
@@ -251,9 +253,9 @@ def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=
 
                     # Query on the resource, find the correct resource, and then look for the right arguments
                     resources = session.query(resource_class).all()
-                    for r in resources:
-                        if r == resource:
-                            datasets = getattr(r, arg_atts['source_attr'])
+                    for res in resources:
+                        if res == resource:
+                            datasets = getattr(res, arg_atts['source_attr'])
                             for dataset in datasets:
                                 attr_value = getattr(dataset, arg_atts['attr'])
                                 if attr_value in arg_atts['valid_values']:
