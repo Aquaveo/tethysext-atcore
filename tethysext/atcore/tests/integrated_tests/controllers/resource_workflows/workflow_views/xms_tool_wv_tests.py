@@ -112,7 +112,7 @@ class XmsToolWVTests(WorkflowViewTestCase):
             'foo': {'foo': 2.0},
             'bar': {'bar': '3'},
         }
-        self.test_basic_form_from_param = generate_django_form_xmstool(self.test_basic_tool, form_values, None)
+        self.test_basic_form_from_param = generate_django_form_xmstool(self.test_basic_tool, form_values)
         self.xrws = XMSToolRWS(
             name='xrws',
             help='basic xmstool input step',
@@ -297,23 +297,19 @@ class XmsToolWVTests(WorkflowViewTestCase):
         mock_dataset.objects = ['d']
         mock_resource = mock.MagicMock()
         mock_resource.datasets = [mock_dataset, mock_dataset2]
-        mock_session = mock.MagicMock()
-        mock_session.query().all.return_value = [mock_resource]
 
         xmstool_class = TestTool()
         arg_mapping = {
             'bar': {
-                'resource_class': 'tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.'
-                                  'workflow_views.xms_tool_wv_tests.TestResource',
-                'source_attr': 'datasets',
-                'attr':  'dataset_type',
+                'resource_attr': 'datasets',
+                'filter_attr': 'dataset_type',
                 'valid_values': ['ObjectSelector'],
                 'name_attr': 'description',
                 'name_attr_regex': r'"(.*?[^\\])"',
             },
         }
 
-        form = generate_django_form_xmstool(xmstool_class, {}, mock_session, resource=mock_resource,
+        form = generate_django_form_xmstool(xmstool_class, {}, resource=mock_resource,
                                             arg_mapping=arg_mapping, setup_func=mock_setup_func)
 
         self.assertTrue('name' in form.base_fields)

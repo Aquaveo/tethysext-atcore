@@ -14,15 +14,14 @@ class XMSToolRWS(ResourceWorkflowStep):
     Workflow step that can be used to get XMSTool input from a user.
 
     Example argument mapping (provide options from the database, for input arguments):
-    (Look in Project.datasets, where a dataset_type is a raster, for the dataset description, which is then filtered)
+    (Look in resource.datasets, where a dataset_type is a raster, for the dataset description, which is then filtered)
     'arg_mapping': {
         'input_raster': {
-            'resource_class': 'my_project.resources.project.Project',
-            'source_attr': 'datasets',
-            'attr': 'dataset_type',
+            'resource_attr': 'datasets',
+            'filter_attr': 'dataset_type',
             'valid_values': ['RASTER_ASCII', 'RASTER_GEOTIFF'],
             'name_attr': 'description',
-            'name_attr_regex': r'"(.*?[^\\])"',
+            'name_attr_regex': r'"(.*?[^\\])"',  # optional regex expression on the name_attr value
         },
     }
 

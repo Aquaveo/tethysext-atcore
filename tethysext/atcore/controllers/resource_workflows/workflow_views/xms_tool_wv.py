@@ -105,7 +105,7 @@ class XMSToolWV(ResourceWorkflowView):
         # Django Renderer
         if renderer == 'django':
             tool = XMSToolClass()
-            form = generate_django_form_xmstool(tool, form_values, session, resource=resource,
+            form = generate_django_form_xmstool(tool, form_values, resource=resource,
                                                 form_field_prefix='param-form-',
                                                 read_only=self.is_read_only(request, current_step),
                                                 arg_mapping=arg_mapping)()
@@ -141,7 +141,7 @@ class XMSToolWV(ResourceWorkflowView):
         form_values = step.get_parameter('form-values')
         if step.options['renderer'] == 'django':
             tool = XMSToolClass()
-            form = generate_django_form_xmstool(tool, form_values, session, resource=resource,
+            form = generate_django_form_xmstool(tool, form_values, resource=resource,
                                                 form_field_prefix='param-form-',
                                                 arg_mapping=arg_mapping)(request.POST)
             form_values = {}
@@ -187,7 +187,7 @@ class XMSToolWV(ResourceWorkflowView):
         return response
 
 
-def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=None, form_field_prefix=None,
+def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, form_field_prefix=None,
                                  read_only=False, arg_mapping=None, setup_func=None):
     """
     Create a Django form from a Parameterized object.
@@ -195,7 +195,6 @@ def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=
     Args:
         xms_tool_class(class): the XMS tool class.
         form_values(dict): dict of initial values to assign
-        session(sqlalchemy.orm.Session): Session bound to the steps.
         form_field_prefix(str): A prefix to prepend to form fields
         read_only(bool): Read only flag
         arg_mapping(dict): Dictionary to map particular arguments to available resources
@@ -246,25 +245,18 @@ def generate_django_form_xmstool(xms_tool_class, form_values, session, resource=
                 if cur_p[0] == arg_name:
                     available_options = []
 
-                    # Get the resource class to query on
-                    package, p_class = arg_atts['resource_class'].rsplit('.', 1)
-                    mod = __import__(package, fromlist=[p_class])
-                    resource_class = getattr(mod, p_class)
-
-                    # Query on the resource, find the correct resource, and then look for the right arguments
-                    resources = session.query(resource_class).all()
-                    for res in resources:
-                        if res == resource:
-                            datasets = getattr(res, arg_atts['source_attr'])
-                            for dataset in datasets:
-                                attr_value = getattr(dataset, arg_atts['attr'])
-                                if attr_value in arg_atts['valid_values']:
-                                    name_attr = getattr(dataset, arg_atts['name_attr'])
-                                    if 'name_attr_regex' in arg_atts:
-                                        # Perform a regex on the name attribute to filter the name
-                                        name_attr_regex = re.findall(arg_atts['name_attr_regex'], name_attr)
-                                        name_attr = name_attr_regex[0] if name_attr_regex else name_attr
-                                    available_options.append(name_attr)
+                    # Use the resource attribute to read the possible resource data sources
+                    datasets = getattr(resource, arg_atts['resource_attr'])
+                    datasets = datasets if type(datasets) is list else [datasets]
+                    for dataset in datasets:
+                        filter_attr_value = getattr(dataset, arg_atts['filter_attr'])
+                        if filter_attr_value in arg_atts['valid_values']:
+                            name_attr = getattr(dataset, arg_atts['name_attr'])
+                            if 'name_attr_regex' in arg_atts:
+                                # Perform a regex on the name attribute to filter the name
+                                name_attr_regex = re.findall(arg_atts['name_attr_regex'], name_attr)
+                                name_attr = name_attr_regex[0] if name_attr_regex else name_attr
+                            available_options.append(name_attr)
 
                     # Store any initial options if found
                     if available_options:
