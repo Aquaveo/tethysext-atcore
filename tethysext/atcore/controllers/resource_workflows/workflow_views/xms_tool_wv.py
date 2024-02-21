@@ -1,9 +1,9 @@
 """
 ********************************************************************************
 * Name: xms_tool_wv.py
-* Author: mmlebaron, glarsen
-* Created On: October 18, 2019
-* Copyright: (c) Aquaveo 2019
+* Author: dgallup
+* Created On: December, 2023
+* Copyright: (c) Aquaveo 2023
 ********************************************************************************
 """
 import logging
@@ -28,7 +28,6 @@ xmstool_widget_map = {
     #     ),
     'Boolean':
         lambda po, p, name: forms.BooleanField(
-            # initial=po.param.inspect_value(name) or p.default, required=False
             initial=p.value or p.default,
             required=False,
         ),
@@ -38,21 +37,16 @@ xmstool_widget_map = {
     #     ),
     'String':
         lambda po, p, name: forms.CharField(
-            # initial=po.param.inspect_value(name) or p.default,
             initial=p.value or p.default,
         ),
     'ObjectSelector':
         lambda po, p, name: forms.ChoiceField(
-            # initial=po.param.inspect_value(name) or p.default,
             initial=p.value or p.default,
             widget=Select2Widget,
-            # choices=p.get_range().items(),
-            # choices=p.objects,
             choices=list(enumerate(p.objects)),
         ),
     'Number':
         lambda po, p, name: forms.FloatField(
-            # initial=po.param.inspect_value(name) or p.default,
             initial=p.value or p.default,
         ),
     # param.FileSelector:
@@ -61,13 +55,11 @@ xmstool_widget_map = {
     #     ),
     'Integer':
         lambda po, p, name: forms.IntegerField(
-            # initial=po.param.inspect_value(name) or p.default,
             initial=p.value or p.default,
         ),
 }
 
 
-# class XMSToolWV(FormInputWV):
 class XMSToolWV(ResourceWorkflowView):
     """
     Controller for XMSToolRWS.

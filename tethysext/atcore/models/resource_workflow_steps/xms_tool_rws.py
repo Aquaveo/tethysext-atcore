@@ -1,9 +1,9 @@
 """
 ********************************************************************************
 * Name: xms_tool_rws.py
-* Author: glarsen, mlebaron
-* Created On: October 17, 2019
-* Copyright: (c) Aquaveo 2019
+* Author: dgallup
+* Created On: December, 2023
+* Copyright: (c) Aquaveo 2023
 ********************************************************************************
 """
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
