@@ -6,7 +6,7 @@ from django.utils.functional import classproperty
 from sqlalchemy import Column, Boolean, DateTime, String
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types.guid import GUID
-from tethysext.atcore.mixins import StatusMixin, AttributesMixin, UserLockMixin
+from tethysext.atcore.mixins import StatusMixin, AttributesMixin, UserLockMixin, SerializeMixin
 
 from .app_user import AppUsersBase
 from .associations import organization_resource_association, resource_parent_child_association
@@ -14,7 +14,7 @@ from .associations import organization_resource_association, resource_parent_chi
 __all__ = ['Resource']
 
 
-class Resource(StatusMixin, AttributesMixin, UserLockMixin, AppUsersBase):
+class Resource(StatusMixin, AttributesMixin, UserLockMixin, SerializeMixin, AppUsersBase):
     """
     Definition for the resources table.
     """
