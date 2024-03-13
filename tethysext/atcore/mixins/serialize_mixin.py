@@ -4,6 +4,18 @@ from uuid import UUID
 
 
 class SerializeMixin:
+    def on_serialize(self, d: dict, format: str):
+        """Hook for subclasses to add additional serialization logic.
+
+        Args:
+            base: Base serialized Resource dictionary.
+            format: Format to serialize to. One of 'dict' or 'json'.
+
+        Returns:
+            dict: Serialized Resource.
+        """
+        return d
+
     def serialize_resource_props(self) -> dict:
         """Serialize the normal Resource properties into a dictionary.
 
@@ -44,3 +56,25 @@ class SerializeMixin:
             raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
         return json.dumps(d, default=json_default)
+
+    def serialize(self, format: str = 'dict'):
+        """Serialize this Resource.
+
+        Args:
+            format: Format to serialize to. One of 'dict' or 'json'.
+
+        Returns:
+            dict: Serialized Resource.
+        """
+        if format not in ['dict', 'json']:
+            raise ValueError(f'Invalid format: "{format}". Must be one of "dict" or "json".')
+        d = self.serialize_resource_props()
+        
+        # Call hook
+        d = self.on_serialize(d, format)
+
+        # Convert to json string if requested
+        if format == 'json':
+            return self.json_dumps(d)
+
+        return d
