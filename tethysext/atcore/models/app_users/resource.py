@@ -61,3 +61,26 @@ class Resource(StatusMixin, AttributesMixin, UserLockMixin, SerializeMixin, AppU
     @classproperty
     def SLUG(self):
         return slugify(self.DISPLAY_TYPE_PLURAL.lower()).replace("-", "_")
+
+
+    def serialize_base_fields(self, d: dict) -> dict:
+        """Hook for ATCore base classes to add their custom fields to serialization.
+
+        Args:
+            d: Base serialized Resource dictionary.
+
+        Returns:
+            Serialized Resource dictionary.
+        """
+        d.update({
+            'created_by': self.created_by,
+            'display_type_plural': self.DISPLAY_TYPE_PLURAL,
+            'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
+            'organizations': [{
+                'id': org.id,
+                'name': org.name
+            } for org in self.organizations],
+            'public': self.public,
+            'slug': self.SLUG,
+        })
+        return d

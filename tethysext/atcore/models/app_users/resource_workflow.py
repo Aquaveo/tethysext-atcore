@@ -16,7 +16,7 @@ from abc import abstractmethod
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
-from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin
+from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
@@ -25,7 +25,7 @@ log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
 
 
-class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixin):
+class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin):
     """
     Data model for storing information about resource workflows.
 
@@ -72,6 +72,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
     type = Column(String)
 
     name = Column(String)
+    description = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
     lock_when_finished = Column(Boolean, default=False)
     _attributes = Column(String)
@@ -288,3 +289,22 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         :return: key associated with the value
         """
         return list(dict_object.keys())[list(dict_object.values()).index(value)]
+
+    def serialize_base_fields(self, d: dict) -> dict:
+        """Hook for ATCore base classes to add their custom fields to serialization.
+
+        Args:
+            d: Base serialized Resource dictionary.
+
+        Returns:
+            Serialized Resource dictionary.
+        """
+        d.update({
+            'created_by': self.creator.username,
+            'display_type_plural': self.DISPLAY_TYPE_PLURAL,
+            'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
+            'results': [result.serialize(format='dict') for result in self.results],
+            'status': self.get_status(),
+            'steps': [step.to_dict() for step in self.steps],
+        })
+        return d

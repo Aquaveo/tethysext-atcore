@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
 from tethysext.atcore.models.types import GUID
-from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin
+from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.controller_metadata import ControllerMetadata
 
@@ -19,7 +19,7 @@ from tethysext.atcore.models.controller_metadata import ControllerMetadata
 __all__ = ['ResourceWorkflowResult']
 
 
-class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, OptionsMixin):
+class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, OptionsMixin, SerializeMixin):
     """
     Data model for storing information about resource workflow results.
     """
@@ -91,3 +91,20 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
         Resets result to initial state.
         """
         self._data = dict()
+
+    def serialize_base_fields(self, d: dict) -> dict:
+        """Hook for ATCore base classes to add their custom fields to serialization.
+
+        Args:
+            d: Base serialized Resource dictionary.
+
+        Returns:
+            Serialized Resource dictionary.
+        """
+        d.update({
+            'codename': self.codename,
+            'data': self.data,
+            'options': self.options,
+            'order': self.order,
+        })
+        return d

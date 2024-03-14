@@ -1,15 +1,25 @@
-import datetime
 import json
-from uuid import UUID
+
+from tethysext.atcore.utilities import json_serializer
 
 
 class SerializeMixin:
-    def on_serialize(self, d: dict, format: str):
-        """Hook for subclasses to add additional serialization logic.
+    def serialize_base_fields(self, d: dict) -> dict:
+        """Hook for ATCore base classes to add their custom fields to serialization.
+
+        Args:
+            d: Base serialized Resource dictionary.
+
+        Returns:
+            Serialized Resource dictionary.
+        """
+        return d
+
+    def serialize_custom_fields(self, d: dict):
+        """Hook for app-specific subclasses to add additional fields to serialization.
 
         Args:
             base: Base serialized Resource dictionary.
-            format: Format to serialize to. One of 'dict' or 'json'.
 
         Returns:
             dict: Serialized Resource.
@@ -22,25 +32,31 @@ class SerializeMixin:
         Returns:
             Serialized Resource dictionary.
         """
-        return {
+        from tethysext.atcore.mixins import UserLockMixin, AttributesMixin, StatusMixin
+        
+        d = {
             'id': self.id,
-            'attributes': self.attributes,
-            'created_by': self.created_by,
             'date_created': self.date_created,
             'description': self.description,
-            'display_type_plural': self.DISPLAY_TYPE_PLURAL,
-            'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
-            'locked': self.is_user_locked,
             'name': self.name,
-            'organizations': [{
-                'id': org.id,
-                'name': org.name
-            } for org in self.organizations],
-            'public': self.public,
-            'slug': self.SLUG,
-            'status': self.get_status(),
             'type': self.type,
         }
+
+        if isinstance(self, UserLockMixin):
+            d.update({
+                'locked': self.is_user_locked,
+            })
+
+        if isinstance(self, StatusMixin):
+            d.update({
+                'status': self.get_status(),
+            })
+
+        if isinstance(self, AttributesMixin):
+            d.update({
+                'attributes': self.attributes,
+            })
+        return d
 
     def json_dumps(self, d: dict) -> str:
         """Serialize this Resource to a json string.
@@ -48,14 +64,7 @@ class SerializeMixin:
         Returns:
             str: JSON string.
         """
-        def json_default(obj):
-            if isinstance(obj, datetime.datetime):
-                return obj.isoformat()
-            elif isinstance(obj, UUID):
-                return str(obj)
-            raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-        return json.dumps(d, default=json_default)
+        return json.dumps(d, default=json_serializer)
 
     def serialize(self, format: str = 'dict'):
         """Serialize this Resource.
@@ -69,9 +78,8 @@ class SerializeMixin:
         if format not in ['dict', 'json']:
             raise ValueError(f'Invalid format: "{format}". Must be one of "dict" or "json".')
         d = self.serialize_resource_props()
-        
-        # Call hook
-        d = self.on_serialize(d, format)
+        d = self.serialize_base_fields(d)
+        d = self.serialize_custom_fields(d)
 
         # Convert to json string if requested
         if format == 'json':
