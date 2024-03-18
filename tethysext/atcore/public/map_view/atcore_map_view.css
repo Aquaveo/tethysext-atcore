@@ -63,11 +63,11 @@
     display: inline-block;
 }
 
-.layers-context-menu .dropdown-menu li .glyphicon  {
+.layers-context-menu .dropdown-menu li .bi  {
     color: #666666;
 }
 
-.layers-context-menu .dropdown-menu li:hover .glyphicon  {
+.layers-context-menu .dropdown-menu li:hover .bi  {
     color: #ffffff;
 }
 

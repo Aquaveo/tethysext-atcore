@@ -4,7 +4,7 @@
 {% block app_content %}
   <div class="top-action-buttons float-end">
     {% if show_new_button %}
-    <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url tethys_app.namespace|add:':app_users_add_user' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><span class="bi bi-plus-lg"></span></a>
+    <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url tethys_app.namespace|add:':app_users_add_user' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><span class="bi bi-plus"></span></a>
     {% endif %}
     {% if show_add_existing_button %}
     <a class="btn btn-outline-secondary manage-action-btn btn-import" href="{% url tethys_app.namespace|add:':app_users_add_existing_user' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Existing"><span class="bi bi-file-plus"></span></a>
