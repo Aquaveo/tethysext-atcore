@@ -3,7 +3,7 @@
   text-align: center;
   /* The ghost, nudged to maintain perfect centering */
 }
-.center-parent:before {
+.center-parent::before {
   content: '';
   display: inline-block;
   height: 50%;
