@@ -13,6 +13,7 @@ import logging
 import datetime as dt
 from abc import abstractmethod
 
+from django.shortcuts import reverse
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
@@ -277,8 +278,16 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             step.reset()
 
     @abstractmethod
-    def get_url_name(self):
-        pass
+    def get_url_name(self) -> str:
+        """Override to specify the URL name for the workflow type."""
+        raise NotImplementedError('Must implement get_url_name().')
+
+    def get_url(self):
+        """Get the URL to the workflow. IMPORTANT: Must implement get_url_name()."""
+        return reverse(self.get_url_name(), kwargs={
+            'resource_id': self.resource_id,
+            'workflow_id': self.id,
+        })
 
     @staticmethod
     def get_key_from_value(dict_object, value):
@@ -300,11 +309,17 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             Serialized Resource dictionary.
         """
         d.update({
-            'created_by': self.creator.username,
+            'created_by': self.creator.username if self.creator else None,
             'display_type_plural': self.DISPLAY_TYPE_PLURAL,
             'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
             'results': [result.serialize(format='dict') for result in self.results],
             'status': self.get_status(),
             'steps': [step.to_dict() for step in self.steps],
+            'url': None,
         })
+        try:
+            url = self.get_url()
+            d['url'] = url
+        except NotImplementedError:
+            log.warning('get_url_name() not implemented for ResourceWorkflow subclass. URL will be None.')
         return d
