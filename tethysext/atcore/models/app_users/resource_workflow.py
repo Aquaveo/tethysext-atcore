@@ -73,7 +73,6 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
     type = Column(String)
 
     name = Column(String)
-    description = Column(String)
     date_created = Column(DateTime, default=dt.datetime.utcnow)
     lock_when_finished = Column(Boolean, default=False)
     _attributes = Column(String)
@@ -284,7 +283,8 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
 
     def get_url(self):
         """Get the URL to the workflow. IMPORTANT: Must implement get_url_name()."""
-        return reverse(self.get_url_name(), kwargs={
+        n = self.get_url_name()
+        return reverse(n, kwargs={
             'resource_id': self.resource_id,
             'workflow_id': self.id,
         })

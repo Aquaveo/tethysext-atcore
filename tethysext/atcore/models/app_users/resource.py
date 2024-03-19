@@ -74,6 +74,7 @@ class Resource(StatusMixin, AttributesMixin, UserLockMixin, SerializeMixin, AppU
         """
         d.update({
             'created_by': self.created_by,
+            'description': self.description,
             'display_type_plural': self.DISPLAY_TYPE_PLURAL,
             'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
             'organizations': [{
