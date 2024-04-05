@@ -16,7 +16,7 @@
       {% endif %}
       {% if show_new_button and resources %}
       <div class="btn-group">
-        <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><i class="bi bi-plus"></i></a>
+        <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url base_resource_href|add:'_new_resource' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><i class="bi bi-plus-lg"></i></a>
       </div>
       {% endif %}
     </div>
@@ -38,7 +38,7 @@
               <th>
                 <span class="sortable" data-sort-field="name">Name</span>
                 {% if 'name' in pagination_info.sort_by %}
-                <span class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                <i class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></i>
                 {% endif %}
               </th>
 
@@ -46,7 +46,7 @@
               <th>
                 <span class="sortable" data-sort-field="description">Description</span>
                 {% if 'description' in pagination_info.sort_by %}
-                <span class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                <i class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></i>
                 {% endif %}
               </th>
 
@@ -61,7 +61,7 @@
               <th>
               <span class="sortable" data-sort-field="created_by">Created By</span>
               {% if 'created_by' in pagination_info.sort_by %}
-              <span class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+              <i class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></i>
               {% endif %}
               </th>
 
@@ -69,7 +69,7 @@
               <th>
                 <span class="sortable" data-sort-field="date_created">Date Created</span>
                 {% if 'date_created' in pagination_info.sort_by %}
-                <span class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                <i class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></i>
                 {% endif %}
               </th>
 
@@ -78,7 +78,7 @@
               <th>
                 <span class="sortable" data-sort-field="location">Debugging</span>
                 {% if 'location' in pagination_info.sort_by %}
-                <span class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
+                <i class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></i>
                 {% endif %}
               </th>
               {% endif %}

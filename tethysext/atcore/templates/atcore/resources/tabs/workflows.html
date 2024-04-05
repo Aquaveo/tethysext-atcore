@@ -5,7 +5,7 @@
    data-original-title="New Workflow"
    data-bs-toggle="modal"
    data-bs-target="#new-workflow-modal">
-  <span class="bi bi-plus-lg"></span>
+  <i class="bi bi-plus-lg"></i>
 </a>
 
 {% if workflow_cards %}
@@ -43,7 +43,7 @@
                    data-id="{{ workflow_card.id }}"
                    data-bs-toggle="tooltip"
                    data-bs-placement="top"
-                   title="Delete"><span class="bi bi-trash"></span></a>
+                   title="Delete"><i class="bi bi-trash"></i></a>
                 {% endif %}
                 <a class="btn btn-flat btn-workflow btn-{{ workflow_card.status.style }} btn-workflow-{{ workflow_card.status.style }}"
                    href="{{ workflow_card.status.href }}">{{ workflow_card.status.title }}</a>
