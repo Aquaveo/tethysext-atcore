@@ -8,7 +8,7 @@ $(function () {
             var search = window.location.search;
             var new_search;
 
-            if (inner_html.indexOf('glyphicon') > -1 && inner_html.indexOf('-alt') === -1) {
+            if (inner_html.indexOf('bi') > -1 && inner_html.indexOf('-alt') === -1) {
                 val += ':reverse';
             }
 

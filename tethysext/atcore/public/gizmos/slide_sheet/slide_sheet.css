@@ -37,8 +37,8 @@
 }
 
 
-#app-content-wrapper #app-content.show-nav .slide-sheet .slide-sheet-content .close,
-#app-content-wrapper #app-content .slide-sheet .slide-sheet-content .close {
+#app-content-wrapper #app-content.show-nav .slide-sheet .slide-sheet-content .btn-close,
+#app-content-wrapper #app-content .slide-sheet .slide-sheet-content .btn-close {
   top: 0;
   right: 0px;
   width: 40px;

@@ -585,19 +585,19 @@ class MapViewTests(SqlAlchemyTestCase):
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
             '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
             '         aria-expanded="true">\n' \
-            '        <span class="bi bi-three-dots-vertical"></span>\n' \
+            '        <i class="bi bi-three-dots-vertical"></i>\n' \
             '      </a>\n' \
             '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
             '        \n' \
             '          <li><a class="rename-action" href="javascript:void(0);">' \
-                        '<span class="bi bi-pencil-fill"></span>' \
+                        '<i class="bi bi-pencil-fill"></i>' \
                         '<span class="command-name">Rename</span>' \
                         '</a></li>\n' \
             '        \n' \
             '        \n' \
             '        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
                         'data-layer-id="">' \
-                        '<span class="bi bi-x-lg"></span>' \
+                        '<i class="bi bi-x-lg"></i>' \
                         '<span class="command-name">Remove</span>' \
                         '</a></li>\n' \
             '        \n' \
@@ -613,20 +613,20 @@ class MapViewTests(SqlAlchemyTestCase):
             '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="bi bi-three-dots-vertical"></span>\n' \
+            '      <i class="bi bi-three-dots-vertical"></i>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" ' \
             'aria-labeledby="456--context-menu">\n' \
             '      \n' \
             '        <li><a class="rename-action" href="javascript:void(0);">' \
-            '<span class="bi bi-pencil-fill"></span>' \
+            '<i class="bi bi-pencil-fill"></i>' \
             '<span class="command-name">Rename</span>' \
             '</a></li>\n' \
             '      \n' \
             '      \n' \
             '      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
                     'data-layer-id="456">' \
-                    '<span class="bi bi-x-lg"></span>' \
+                    '<i class="bi bi-x-lg"></i>' \
                     '<span class="command-name">Remove</span>' \
                     '</a></li>'  # noqa: E127
 
@@ -637,19 +637,19 @@ class MapViewTests(SqlAlchemyTestCase):
             '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="bi bi-three-dots-vertical"></span>\n' \
+            '      <i class="bi bi-three-dots-vertical"></i>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="789--context-menu">\n' \
             '      \n' \
             '        <li><a class="rename-action" href="javascript:void(0);">' \
-                    '<span class="bi bi-pencil-fill"></span>' \
+                    '<i class="bi bi-pencil-fill"></i>' \
                     '<span class="command-name">Rename</span>' \
                     '</a></li>\n' \
             '      \n' \
             '      \n' \
             '      <li><a class="remove-action" href="javascript:void(0);" ' \
                     'data-remove-type="layer" data-layer-id="789">' \
-                    '<span class="bi bi-x-lg"></span>' \
+                    '<i class="bi bi-x-lg"></i>' \
                     '<span class="command-name">Remove</span>' \
                     '</a></li>'  # noqa: E127
 
@@ -659,12 +659,12 @@ class MapViewTests(SqlAlchemyTestCase):
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
             '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
             '         aria-expanded="true">\n' \
-            '        <span class="bi bi-three-dots-vertical"></span>\n' \
+            '        <i class="bi bi-three-dots-vertical"></i>\n' \
             '      </a>\n' \
             '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
             '        \n' \
             '          <li><a class="rename-action" href="javascript:void(0);">' \
-            '<span class="bi bi-pencil-fill"></span>' \
+            '<i class="bi bi-pencil-fill"></i>' \
             '<span class="command-name">Rename</span>' \
             '</a></li>\n' \
             '        \n' \
@@ -680,14 +680,14 @@ class MapViewTests(SqlAlchemyTestCase):
             '         class="btn btn-xs dropdown-toggle layers-btn"\n' \
             '         data-bs-toggle="dropdown" aria-haspopup="true"\n' \
             '         aria-expanded="true">\n' \
-            '        <span class="bi bi-three-dots-vertical"></span>\n' \
+            '        <i class="bi bi-three-dots-vertical"></i>\n' \
             '      </a>\n' \
             '      <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="123--context-menu">\n' \
             '        \n' \
             '        \n' \
             '        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" ' \
             'data-layer-id="">' \
-            '<span class="bi bi-x-lg"></span>' \
+            '<i class="bi bi-x-lg"></i>' \
             '<span class="command-name">Remove</span>' \
             '</a></li>\n' \
             '        \n' \
@@ -703,7 +703,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="bi bi-three-dots-vertical"></span>\n' \
+            '      <i class="bi bi-three-dots-vertical"></i>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="456--context-menu">\n'
 
@@ -714,7 +714,7 @@ class MapViewTests(SqlAlchemyTestCase):
             '       data-bs-toggle="dropdown"\n' \
             '       aria-haspopup="true"\n' \
             '       aria-expanded="true">\n' \
-            '      <span class="bi bi-three-dots-vertical"></span>\n' \
+            '      <i class="bi bi-three-dots-vertical"></i>\n' \
             '    </a>\n' \
             '    <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="789--context-menu">\n'
 
