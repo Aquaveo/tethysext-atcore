@@ -15,14 +15,14 @@
          class="btn btn-xs dropdown-toggle layers-btn"
          data-bs-toggle="dropdown" aria-haspopup="true"
          aria-expanded="true">
-        <span class="bi bi-three-dots-vertical"></span>
+        <i class="bi bi-three-dots-vertical"></i>
       </a>
       <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
         {% if show_rename %}
-          <li><a class="rename-action" href="javascript:void(0);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>
+          <li><a class="rename-action" href="javascript:void(0);"><i class="bi bi-pencil-fill"></i><span class="command-name">Rename</span></a></li>
         {% endif %}
         {% if show_remove %}
-        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>
+        <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><i class="bi bi-x-lg"></i><span class="command-name">Remove</span></a></li>
         {% endif %}
         {% if show_public_toggle %}
         <div class="form-group">
@@ -33,14 +33,14 @@
         {% endif %}
         {% if layer_group.id == 'custom_layers' %}
           <li role="separator" class="divider"></li>
-          <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="bi bi-plus"></span><span class="command-name">Add Layer</span></a></li>
+          <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><i class="bi bi-plus-lg"></i><span class="command-name">Add Layer</span></a></li>
         {% endif %}
       </ul>
     </div>
   {% endif %}
   <a id="{{ layer_group.id }}--collapse"
      class="collapse-action btn btn-xs layers-btn float-end" data-collapsed="false">
-    <span class="bi bi-chevron-down"></span>
+    <i class="bi bi-chevron-down"></i>
   </a>
 </li>
 

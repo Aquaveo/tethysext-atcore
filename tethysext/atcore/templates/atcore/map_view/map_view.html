@@ -79,18 +79,18 @@
                        class="btn btn-xs dropdown-toggle layers-btn"
                        data-bs-toggle="dropdown" aria-haspopup="true"
                        aria-expanded="true">
-                      <span class="bi bi-three-dots-vertical"></span>
+                      <i class="bi bi-three-dots-vertical"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer_group.id }}--context-menu">
                       {% if show_rename %}
-                        <li><a class="rename-action" href="javascript:void(0);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>
+                        <li><a class="rename-action" href="javascript:void(0);"><i class="bi bi-pencil-fill"></i><span class="command-name">Rename</span></a></li>
                       {% endif %}
                       {% if show_remove %}
-                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>
+                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_name }}"><i class="bi bi-x-lg"></i><span class="command-name">Remove</span></a></li>
                       {% endif %}
                       {% if layer_group.id == 'custom_layers' %}
                         <li role="separator" class="divider"></li>
-                        <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><span class="bi bi-plus"></span><span class="command-name">Add Layer</span></a></li>
+                        <li><a class="add-layer-to-layer-group" href="javascript:void(0);"><i class="bi bi-plus-lg"></i><span class="command-name">Add Layer</span></a></li>
                       {% endif %}
                     </ul>
                   </div>
@@ -98,7 +98,7 @@
 
                 <a id="{{ layer_group.id }}--collapse"
                    class="collapse-action btn btn-xs layers-btn float-end">
-                  <span class="bi bi-chevron-down"></span>
+                  <i class="bi bi-chevron-down"></i>
                 </a>
               </li>
 
@@ -124,28 +124,28 @@
                        data-bs-toggle="dropdown"
                        aria-haspopup="true"
                        aria-expanded="true">
-                      <span class="bi bi-three-dots-vertical"></span>
+                      <i class="bi bi-three-dots-vertical"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right" aria-labeledby="{{ layer.data.layer_id }}--context-menu">
                       {% if show_rename %}
-                        <li><a class="rename-action" href="javascript:void(0);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>
+                        <li><a class="rename-action" href="javascript:void(0);"><i class="bi bi-pencil-fill"></i><span class="command-name">Rename</span></a></li>
                       {% endif %}
                       {% if show_remove %}
-                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>
+                      <li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="{{ layer.data.layer_id }}"><i class="bi bi-x-lg"></i><span class="command-name">Remove</span></a></li>
                       {% endif %}
                       {% if show_public_toggle or show_remove or show_rename %}
                         <li role="separator" class="divider"></li>
                       {% endif %}
-                      <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><span class="bi bi-arrows-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>
+                      <li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="{{ layer.data.layer_id }}"><i class="bi bi-arrows-fullscreen"></i><span class="command-name">Zoom to Layer</span></a></li>
                       {% comment %}
                       {# TODO: Implement download layer action #}
                       <li role="separator" class="divider"></li>
-                      <li><a class="download-layer" href="javascript:void(0);"><span class="bi bi-cloud-download-fill"></span><span class="command-name">Download</span></a></li>
+                      <li><a class="download-layer" href="javascript:void(0);"><i class="bi bi-cloud-download-fill"></i><span class="command-name">Download</span></a></li>
                       {% endcomment %}
                       <li role="separator" class="divider"></li>
                       <li>
                         <div class="flat-slider-container">
-                          <label><span class="bi bi-circle-half"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
+                          <label><i class="bi bi-circle-half"></i><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>
                           <input type="range"
                                  class="flat-slider layer-opacity-control"
                                  min="0" max="100"
@@ -207,7 +207,7 @@
       <div class="col-sm-12">
         <div class="input-group">
           <select name="geocode_select" id="geocode_select" class="geocode-search" multiple></select>
-          <span class="input-group-addon"><span class="bi bi-search"></span></span>
+          <span class="input-group-addon"><i class="bi bi-search"></i></span>
         </div>
       </div>
     </div>

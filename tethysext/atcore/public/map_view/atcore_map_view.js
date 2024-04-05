@@ -129,7 +129,7 @@ var ATCORE_MAP_VIEW = (function() {
     setup_map = function() {
         // Change Extent Button from "E" to Extent Symbol
         let $extent_button = $('button[title="Fit to extent"]');
-        $extent_button.html('<span class="bi bi-house-door-fill"></span>');
+        $extent_button.html('<i class="bi bi-house-door-fill"></i>');
 
         // Get handle on map
 	    m_map = TETHYS_MAP_VIEW.getMap();
@@ -1005,16 +1005,16 @@ var ATCORE_MAP_VIEW = (function() {
                 html_content += '<span class="checkmark checkbox"></span></label>';
                 html_content += '<div class="dropdown layers-context-menu float-end">'
                 html_content += '<a id="' + uuid + '--context-menu" class="btn btn-xs dropdown-toggle layers-btn " data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="color: rgb(186, 12, 47);">';
-                html_content += '<span class="bi bi-three-dots-vertical"></span></a>';
+                html_content += '<i class="bi bi-three-dots-vertical"></i></a>';
                 html_content += '<ul class="dropdown-menu dropdown-menu-right" aria-labeledby="' + uuid + '--context-menu">';
-                html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><span class="bi bi-pencil-fill"></span><span class="command-name">Rename</span></a></li>';
-                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="bi bi-x-lg"></span><span class="command-name">Remove</span></a></li>';
+                html_content += '<li><a class="rename-action" href="javascript:void(0);" style="color: rgb(186, 12, 47);"><i class="bi bi-pencil-fill"></i><span class="command-name">Rename</span></a></li>';
+                html_content += '<li><a class="remove-action" href="javascript:void(0);" data-remove-type="layer" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><i class="bi bi-x-lg"></i><span class="command-name">Remove</span></a></li>';
                 html_content += '<li role="separator" class="divider"></li>';
-                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><span class="bi bi-arrows-fullscreen"></span><span class="command-name">Zoom to Layer</span></a></li>';
+                html_content += '<li><a class="zoom-to-layer-action" href="javascript:void(0);" data-layer-id="' + uuid + '" style="color: rgb(186, 12, 47);"><i class="bi bi-arrows-fullscreen"></i><span class="command-name">Zoom to Layer</span></a></li>';
                 html_content += '<li role="separator" class="divider"></li>';
                 html_content += '<li>';
                 html_content += '<div class="flat-slider-container">';
-                html_content += '<label><span class="bi bi-circle-half"></span><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>';
+                html_content += '<label><i class="bi bi-circle-half"></i><span class="command-name">Opacity: </span><span class="slider-value">100%</span></label>';
                 html_content += '<div class="flat-slider-container">';
                 html_content += '<input type="range" class="flat-slider layer-opacity-control" min="0" max="100" value="100" data-layer-id="' + uuid + '" data-layer-variable="">';
                 html_content += '</div>';
