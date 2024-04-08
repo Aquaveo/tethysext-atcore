@@ -283,5 +283,4 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
         )
 
     def test_get_url_name(self):
-        ret = self.step_1.workflow.get_url_name()
-        self.assertIsNone(ret)
+        self.assertRaises(NotImplementedError, self.workflow.get_url_name)
