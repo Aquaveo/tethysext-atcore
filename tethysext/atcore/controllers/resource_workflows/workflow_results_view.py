@@ -37,13 +37,14 @@ class WorkflowResultsView(ResourceWorkflowView, ResultViewMixin):
 
         # Call super class get_context first
         context = super().get_context(
+            *args,
             request=request,
             session=session,
             resource=resource,
             context=context,
             workflow_id=workflow_id,
             step_id=step_id,
-            *args, **kwargs
+            **kwargs
         )
 
         # Validate the result

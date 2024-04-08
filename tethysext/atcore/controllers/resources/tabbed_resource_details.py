@@ -57,19 +57,21 @@ class TabbedResourceDetails(ResourceDetails):
         tab_action = request.GET.get('tab_action', None)
         if tab_action:
             return self._handle_tab_action_request(
+                *args,
                 request=request,
                 resource=resource,
                 session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
-                *args, **kwargs
+                **kwargs
             )
 
         tabs = self.get_tabs(
+            *args,
             request=request,
             resource=resource,
             tab_slug=tab_slug,
-            *args, **kwargs
+            **kwargs
         )
 
         # Build list of unique CSS and JS requirements
@@ -103,12 +105,13 @@ class TabbedResourceDetails(ResourceDetails):
         tab_action = request.POST.get('tab_action', None)
         if tab_action:
             return self._handle_tab_action_request(
+                *args,
                 request=request,
                 resource=resource,
                 session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
-                *args, **kwargs
+                **kwargs
             )
 
         return HttpResponseNotAllowed(['GET'])
@@ -123,12 +126,13 @@ class TabbedResourceDetails(ResourceDetails):
         tab_action = request.GET.get('tab_action', None)
         if tab_action:
             return self._handle_tab_action_request(
+                *args,
                 request=request,
                 resource=resource,
                 session=session,
                 tab_slug=tab_slug,
                 tab_action=tab_action,
-                *args, **kwargs
+                **kwargs
             )
 
         return HttpResponseNotAllowed(['GET'])
@@ -147,10 +151,11 @@ class TabbedResourceDetails(ResourceDetails):
             HttpResponse: Response to action request.
         """
         TabView = self.get_tab_view(
+            *args,
             request=request,
             resource=resource,
             tab_slug=tab_slug,
-            *args, **kwargs
+            **kwargs
         )
 
         if not TabView:
@@ -221,10 +226,11 @@ class TabbedResourceDetails(ResourceDetails):
             ResourceTabView: The ResourceTabView class or None if not found.
         """
         tabs = self.get_tabs(
+            *args,
             request=request,
             resource=resource,
             tab_slug=tab_slug,
-            *args, **kwargs
+            **kwargs
         )
 
         for tab in tabs:
