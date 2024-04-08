@@ -1,7 +1,7 @@
 import json
 import uuid
 import datetime as dt
-from tethysext.atcore.models.app_users import Resource, ResourceWorkflow
+from tethysext.atcore.models.app_users import Resource, ResourceWorkflow, ResourceWorkflowResult, ResourceWorkflowStep
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
@@ -159,6 +159,18 @@ class SerializeMixinResourceWorkflowTests(SqlAlchemyTestCase):
             description='A test resource',
             created_by='test_user',
         )
+        self.step = ResourceWorkflowStep(
+            name='Test Step',
+            help='A test step',
+            order=1,
+        )
+        self.result = ResourceWorkflowResult(
+            name='Test Result',
+            codename='test_result',
+            order=1,
+        )
+        self.instance.steps.append(self.step)
+        self.instance.results.append(self.result)
         self.instance.set_status(ResourceWorkflow.STATUS_PENDING)
         self.instance.set_attribute('some_attr', 'baz')
 
@@ -179,11 +191,20 @@ class SerializeMixinResourceWorkflowTests(SqlAlchemyTestCase):
         self.assertEqual(d['type'], self.instance.type)
 
         # Verify Resource Workflow fields
+        self.assertEqual(d['created_by'], self.instance.created_by)
         self.assertEqual(d['locked'], self.instance.is_user_locked)
         self.assertEqual(d['status'], self.instance.get_status())
         self.assertDictEqual(d['attributes'], self.instance.attributes)
         self.assertEqual(d['display_type_plural'], self.instance.DISPLAY_TYPE_PLURAL)
         self.assertEqual(d['display_type_singular'], self.instance.DISPLAY_TYPE_SINGULAR)
+
+        # Verify steps
+        self.assertLen(d['steps'], 1)
+        self.dictEqual(d['steps'][0], {})
+
+        # Verify results
+        self.assertLen(d['results'], 1)
+        self.dictEqual(d['results'][0], {})
 
         # Verify custom fields
         self.assertEqual(d['some_field'], self.instance.some_field)

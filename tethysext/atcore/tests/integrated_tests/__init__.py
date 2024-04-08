@@ -46,7 +46,7 @@ from .mixins.attributes_mixin import AttributesMixinTests  # noqa: F401
 from .mixins.file_collection_mixin_tests import FileCollectionMixinTests  # noqa: F401
 from .mixins.user_lock_mixin_tests import UserLockMixinTests  # noqa: F401
 from .mixins.file_collections_controller_mixin_tests import FileCollectionsControllerMixinTests  # noqa: F401
-from .mixins.serialize_mixin_tests import SerializeMixinResourceTests  # noqa: F401
+from .mixins.serialize_mixin_tests import SerializeMixinResourceTests, SerializeMixinResourceWorkflowTests  # noqa: F401
 from .models.app_users.app_user_organization_tests import AppUserOrganizationTests  # noqa: F401
 from .models.app_users.app_user_tests import AppUserTests  # noqa: F401
 from .models.app_users.resource_workflow_result_tests import ResourceWorkflowResultTests  # noqa: F401
