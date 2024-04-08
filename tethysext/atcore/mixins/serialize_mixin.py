@@ -33,7 +33,7 @@ class SerializeMixin:
             Serialized Resource dictionary.
         """
         from tethysext.atcore.mixins import UserLockMixin, AttributesMixin, StatusMixin
-        
+
         d = {
             'id': self.id,
             'date_created': self.date_created,
