@@ -36,7 +36,6 @@ class SerializeMixin:
 
         d = {
             'id': self.id,
-            'date_created': self.date_created,
             'name': self.name,
             'type': self.type,
         }

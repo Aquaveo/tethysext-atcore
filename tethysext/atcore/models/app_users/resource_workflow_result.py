@@ -104,7 +104,6 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
         d.update({
             'codename': self.codename,
             'data': self.data,
-            'options': self.options,
             'order': self.order,
         })
         return d

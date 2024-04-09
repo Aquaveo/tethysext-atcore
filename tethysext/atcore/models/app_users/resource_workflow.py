@@ -20,7 +20,7 @@ from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, ResultsResourceWorkflowStep
 
 log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
@@ -308,11 +308,17 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         Returns:
             Serialized Resource dictionary.
         """
+        results = [r.serialize(format='dict') for r in self.results]
+        for step in self.steps:
+            if isinstance(step, ResultsResourceWorkflowStep):
+                results.extend([r.serialize(format='dict') for r in step.results])
+
         d.update({
             'created_by': self.creator.username if self.creator else None,
+            'date_created': self.date_created,
             'display_type_plural': self.DISPLAY_TYPE_PLURAL,
             'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
-            'results': [result.serialize(format='dict') for result in self.results],
+            'results': results,
             'status': self.get_status(),
             'steps': [step.to_dict() for step in self.steps],
             'url': None,
