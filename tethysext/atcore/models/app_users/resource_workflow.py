@@ -13,19 +13,20 @@ import logging
 import datetime as dt
 from abc import abstractmethod
 
+from django.shortcuts import reverse
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from tethysext.atcore.models.types import GUID
-from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin
+from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, ResultsResourceWorkflowStep
 
 log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
 
 
-class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixin):
+class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin):
     """
     Data model for storing information about resource workflows.
 
@@ -276,8 +277,17 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             step.reset()
 
     @abstractmethod
-    def get_url_name(self):
-        pass
+    def get_url_name(self) -> str:
+        """Override to specify the URL name for the workflow type."""
+        raise NotImplementedError('Must implement get_url_name().')
+
+    def get_url(self):
+        """Get the URL to the workflow. IMPORTANT: Must implement get_url_name()."""
+        n = self.get_url_name()
+        return reverse(n, kwargs={
+            'resource_id': self.resource_id,
+            'workflow_id': self.id,
+        })
 
     @staticmethod
     def get_key_from_value(dict_object, value):
@@ -288,3 +298,34 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
         :return: key associated with the value
         """
         return list(dict_object.keys())[list(dict_object.values()).index(value)]
+
+    def serialize_base_fields(self, d: dict) -> dict:
+        """Hook for ATCore base classes to add their custom fields to serialization.
+
+        Args:
+            d: Base serialized Resource dictionary.
+
+        Returns:
+            Serialized Resource dictionary.
+        """
+        results = [r.serialize(format='dict') for r in self.results]
+        for step in self.steps:
+            if isinstance(step, ResultsResourceWorkflowStep):
+                results.extend([r.serialize(format='dict') for r in step.results])
+
+        d.update({
+            'created_by': self.creator.username if self.creator else None,
+            'date_created': self.date_created,
+            'display_type_plural': self.DISPLAY_TYPE_PLURAL,
+            'display_type_singular': self.DISPLAY_TYPE_SINGULAR,
+            'results': results,
+            'status': self.get_status(),
+            'steps': [step.to_dict() for step in self.steps],
+            'url': None,
+        })
+        try:
+            url = self.get_url()
+            d['url'] = url
+        except NotImplementedError:
+            log.warning('get_url_name() not implemented for ResourceWorkflow subclass. URL will be None.')
+        return d

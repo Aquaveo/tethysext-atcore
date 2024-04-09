@@ -6,8 +6,10 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+import datetime
 import re
 from collections import namedtuple
+from uuid import UUID
 
 
 Url = namedtuple('Url', ['protocol', 'username', 'password', 'host', 'port', 'path', 'endpoint'])
@@ -154,6 +156,16 @@ def import_from_string(path):
     # Import the function or class
     obj = getattr(module, obj_name)
     return obj
+
+
+def json_serializer(obj):
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    elif isinstance(obj, UUID):
+        return str(obj)
+    raise TypeError(
+        f'Object of type "{obj.__class__.__name__}" is not JSON serializable'
+    )
 
 
 if __name__ == '__main__':

@@ -166,17 +166,19 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
 
         base_context = MapWorkflowView.get_context(
             self,
+            *args,
             request=request,
             session=session,
             resource=resource,
             context=context,
             workflow_id=workflow_id,
             step_id=step_id,
-            *args, **kwargs
+            **kwargs
         )
 
         result_workflow_context = WorkflowResultsView.get_context(
             self,
+            *args,
             request=request,
             session=session,
             resource=resource,
@@ -184,7 +186,7 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id,
-            *args, **kwargs
+            **kwargs
         )
 
         # Combine contexts

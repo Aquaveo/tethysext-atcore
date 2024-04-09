@@ -11,7 +11,11 @@ class CustomAppUser(AppUser):
 
 
 class CustomOrganization(Organization):
-    pass
+    TYPE = 'testing__custom_organziation_3__testing'
+    __mapper_args__ = {
+        'polymorphic_on': 'type',
+        'polymorphic_identity': TYPE
+    }
 
 
 class CustomResource(Resource):

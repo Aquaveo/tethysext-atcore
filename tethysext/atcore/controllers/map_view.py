@@ -78,17 +78,19 @@ class MapView(ResourceView):
 
         # Get Managers Hook
         map_manager = self.get_map_manager(
+            *args,
             request=request,
             resource=resource,
-            *args, **kwargs
+            **kwargs
         )
 
         # Render the Map
         map_view, model_extent, layer_groups = map_manager.compose_map(
+            *args,
             request=request,
             resource_id=resource_id,
             scenario_id=scenario_id,
-            *args, **kwargs
+            **kwargs
         )
 
         # Tweak map settings
@@ -308,9 +310,10 @@ class MapView(ResourceView):
         """
         # Get Managers Hook
         map_manager = self.get_map_manager(
+            *args,
             request=request,
             resource=resource,
-            *args, **kwargs
+            **kwargs
         )
         legend_div_id = json.loads(request.POST.get('div_id'))
         minimum = json.loads(request.POST.get('minimum'))
@@ -357,9 +360,10 @@ class MapView(ResourceView):
         """
         # Get Managers Hook
         map_manager = self.get_map_manager(
+            *args,
             request=request,
             resource=resource,
-            *args, **kwargs
+            **kwargs
         )
         status = request.POST.get('status', 'create')
         layer_group_name = request.POST.get('layer_group_name')

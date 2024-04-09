@@ -74,11 +74,12 @@ class ResourceView(ResourceViewMixin):
 
         # Context hook
         context = self.get_context(
+            *args,
             request=request,
             session=session,
             context=context,
             resource=resource,
-            *args, **kwargs
+            **kwargs
         )
 
         # Default Permissions
@@ -86,10 +87,11 @@ class ResourceView(ResourceViewMixin):
 
         # Permissions hook
         permissions = self.get_permissions(
+            *args,
             request=request,
             permissions=permissions,
             resource=resource,
-            *args, **kwargs
+            **kwargs
         )
 
         context.update(permissions)

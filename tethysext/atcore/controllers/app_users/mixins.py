@@ -76,8 +76,9 @@ class ResourceBackUrlViewMixin(AppUsersViewMixin):
         # Default to the resource details page
         if not self.back_url:
             self.back_url = self.default_back_url(
+                *args,
                 request=request,
-                *args, **kwargs
+                **kwargs
             )
         return super().dispatch(request, *args, **kwargs)
 

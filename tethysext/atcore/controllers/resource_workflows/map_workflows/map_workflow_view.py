@@ -40,25 +40,27 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             dict: modified context dictionary.
         """  # noqa: E501
         map_context = MapView.get_context(
-            self=self,
+            self,
+            *args,
             request=request,
             session=session,
             resource=resource,
             context=context,
             workflow_id=workflow_id,
             step_id=step_id,
-            *args, **kwargs
+            **kwargs
         )
 
         workflow_context = ResourceWorkflowView.get_context(
-            self=self,
+            self,
+            *args,
             request=request,
             session=session,
             resource=resource,
             context=context,
             workflow_id=workflow_id,
             step_id=step_id,
-            *args, **kwargs
+            **kwargs
         )
 
         # Combine contexts

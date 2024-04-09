@@ -42,6 +42,7 @@ class DatasetWorkflowResultView(WorkflowResultsView):
             dict: modified context dictionary.
         """  # noqa: E501
         base_context = super().get_context(
+            *args,
             request=request,
             session=session,
             resource=resource,
@@ -49,7 +50,7 @@ class DatasetWorkflowResultView(WorkflowResultsView):
             workflow_id=workflow_id,
             step_id=step_id,
             result_id=result_id,
-            *args, **kwargs
+            **kwargs
         )
 
         # Get the result

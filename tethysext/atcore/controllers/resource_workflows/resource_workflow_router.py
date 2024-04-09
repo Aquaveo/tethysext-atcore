@@ -166,21 +166,23 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
         """
         if result_id:
             response = self._route_to_result_controller(
+                *args,
                 request=request,
                 resource_id=resource_id,
                 workflow_id=workflow_id,
                 step_id=step_id,
                 result_id=result_id,
-                *args, **kwargs
+                **kwargs
             )
 
         else:
             response = self._route_to_step_controller(
+                *args,
                 request=request,
                 resource_id=resource_id,
                 workflow_id=workflow_id,
                 step_id=step_id,
-                *args, **kwargs
+                **kwargs
             )
         return response
 

@@ -18,7 +18,7 @@ from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users.associations import step_parent_child_association
 from tethysext.atcore.models.controller_metadata import ControllerMetadata
-
+from tethysext.atcore.utilities import json_serializer
 
 __all__ = ['ResourceWorkflowStep']
 
@@ -223,7 +223,7 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
         Returns:
             str: JSON string representation of ResourceWorkflowStep.
         """
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), default=json_serializer)
 
     def validate(self):
         """
