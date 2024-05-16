@@ -27,8 +27,8 @@ xmstool_widget_map = {
     #         path=p.search_paths,
     #     ),
     'Boolean':
-        lambda po, p, name: forms.BooleanField(
-            initial=p.value or p.default,
+        lambda po, interface_info, name: forms.BooleanField(
+            initial=interface_info['value'],
             required=False,
         ),
     # param.Filename:
@@ -36,26 +36,32 @@ xmstool_widget_map = {
     #         initial=po.param.inspect_value(name) or p.default,
     #     ),
     'String':
-        lambda po, p, name: forms.CharField(
-            initial=p.value or p.default,
+        lambda po, interface_info, name: forms.CharField(
+            initial=interface_info['value'],
         ),
     'ObjectSelector':
-        lambda po, p, name: forms.ChoiceField(
-            initial=p.value or p.default,
+        lambda po, d, name: forms.ChoiceField(
+            initial=d['value'],
             widget=Select2Widget,
-            choices=list(enumerate(p.objects)),
+            choices=list(enumerate(d['objects'])),
+        ),
+    'StringSelector':
+        lambda po, d, name: forms.ChoiceField(
+            initial=d['value'],
+            widget=Select2Widget,
+            choices=list(enumerate(d['choices'])),
         ),
     'Number':
-        lambda po, p, name: forms.FloatField(
-            initial=p.value or p.default,
+        lambda po, interface_info, name: forms.FloatField(
+            initial=interface_info['value'],
         ),
     # param.FileSelector:
     #     lambda po, p, name: forms.ChoiceField(
     #         initial=po.param.inspect_value(name) or p.default,
     #     ),
     'Integer':
-        lambda po, p, name: forms.IntegerField(
-            initial=p.value or p.default,
+        lambda po, interface_info, name: forms.IntegerField(
+            initial=interface_info['value'],
         ),
 }
 
@@ -206,15 +212,15 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
         argument_precedence = {}
         precedence = 100
         for argument in arguments:
-            arg_param = argument.get_param(precedence)
-            if argument.value is not None:
-                arg_param.value = argument.value
+            interface_info = argument.get_interface_info()
+            if interface_info['value'] is not None:
+                interface_info['value'] = argument.value
             displayed = True
             if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
                 displayed = False
             if displayed:
                 argument_precedence[argument.name] = precedence
-                arguments_dict[argument.name] = arg_param
+                arguments_dict[argument.name] = interface_info
                 precedence += 1
         return arguments_dict
 
@@ -228,7 +234,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
     # Sort parameters based on precedence
-    sorted_params = sorted(argument_params.items(), key=lambda p: p[1].precedence or 9999)
+    sorted_params = argument_params.items()
 
     initial_options = {}
     if resource and arg_mapping:
@@ -267,25 +273,25 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
         # Assign any initial arguments if found from argument mapping for input arguments
         for xms_arg in tool_arguments:
             if xms_arg.name == p_name and xms_arg.io_direction == 1 and p_name in initial_options:
-                cur_p[1].objects = initial_options[p_name]
+                cur_p[1]['choices'] = initial_options[p_name]
 
         # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        form_class.base_fields[p_name] = xmstool_widget_map[cur_p[1].type](argument_params, cur_p[1], cur_p[0])
+        form_class.base_fields[p_name] = xmstool_widget_map[cur_p[1]['type']](argument_params, cur_p[1], cur_p[0])
 
         # Set label with param label if set, otherwise derive from parameter name
-        label = cur_p[1].label
+        label = cur_p[1]['description']
         form_class.base_fields[p_name].label = cur_p[0].replace("_", " ").title() if not label else label
 
         # If form is read-only, set disabled attribute
         form_class.base_fields[p_name].widget.attrs.update({'disabled': read_only})
 
         # Help text displayed on hover over field
-        if cur_p[1].doc:
-            form_class.base_fields[p_name].widget.attrs.update({'title': cur_p[1].doc})
+        if 'doc' in cur_p[1] and cur_p[1]['doc']:
+            form_class.base_fields[p_name].widget.attrs.update({'title': cur_p[1]['doc']})
 
         # Set required state from allow_None
         # form_class.base_fields[p_name].required = cur_p.allow_None
