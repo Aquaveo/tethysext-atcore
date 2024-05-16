@@ -2,8 +2,6 @@ from unittest import mock
 
 import param
 from django.http import HttpRequest
-from typing import Any, Optional
-from dataclasses import dataclass
 
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
@@ -20,21 +18,6 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for
 from tethysext.atcore.controllers.resource_workflows.workflow_views import generate_django_form_xmstool, XMSToolWV
 
 
-@dataclass
-class Parameter:
-    """Argument data for UI."""
-    type: str
-    label: str
-    default: Any
-    precedence: int
-    objects: Optional[list[str]] = None
-    doc: Optional[str] = None
-    default_suffix: str = None
-    _value: Any = None
-    value: Any = None
-    table_definition: Any = None
-
-
 class TestResource:
     def __init__(self):
         self.foo = 'bar'
@@ -44,9 +27,6 @@ class TestResource:
 
 
 class TestTool(param.Parameterized):
-    int_value = param.Integer()
-    string_value = param.String()
-
     def __init__(self, request=None, session=None, resource=None):
         self.request = request
         self.session = session
@@ -59,28 +39,28 @@ class TestTool(param.Parameterized):
                                    io_direction=1, precedence=1)
         argument1.name = 'name'
         argument1.io_direction = 1
-        argument1.get_param.return_value = Parameter(type='Integer', label='name label', default=1, precedence=1,
-                                                     objects=None, doc='Arg 1', default_suffix=None, _value=None,
-                                                     table_definition=None)
+        argument1.get_interface_info.return_value = {'type': 'Integer', 'description': 'name label', 'default': 1,
+                                                     'precedence': 1, 'choices': None, 'doc': 'Arg 1',
+                                                     'default_suffix': None, 'value': None, 'table_definition': None}
         arguments.append(argument1)
 
         argument2 = mock.MagicMock(name='foo', description='foo description', type='float', value=2.0,
                                    io_direction=1, precedence=1)
         argument2.name = 'foo'
         argument2.io_direction = 2
-        argument2.get_param.return_value = Parameter(type='Number', label='foo label', default=2.0, precedence=2,
-                                                     objects=None, doc='Arg 2', default_suffix=None, _value=None,
-                                                     table_definition=None)
+        argument2.get_interface_info.return_value = {'type': 'Number', 'description': 'foo label', 'default': 2.0,
+                                                     'precedence': 2, 'choices': None, 'doc': 'Arg 2',
+                                                     'default_suffix': None, 'value': None, 'table_definition': None}
         arguments.append(argument2)
 
         argument3 = mock.MagicMock(name='bar', description='bar description', type='string', value='3',
                                    io_direction=1, precedence=3)
         argument3.name = 'bar'
         argument3.io_direction = 1
-        argument3.objects = ['a', 'b', 'c']
-        argument3.get_param.return_value = Parameter(type='String', label='bar label', default='3', precedence=3,
-                                                     objects=None, doc='Arg 3', default_suffix=None, _value=None,
-                                                     table_definition=None)
+        argument3.choices = ['a', 'b', 'c']
+        argument3.get_interface_info.return_value = {'type': 'String', 'description': 'bar label', 'default': '3',
+                                                     'precedence': 3, 'choices': None, 'doc': 'Arg 3',
+                                                     'default_suffix': None, 'value': None, 'table_definition': None}
         arguments.append(argument3)
 
         return arguments
@@ -276,25 +256,25 @@ class XmsToolWVTests(WorkflowViewTestCase):
     def test_arg_mapping(self):
         mock_setup_func = mock.MagicMock()
         mock_setup_func.return_value = {
-            'name': Parameter(type='Integer', label='name "description"', default=3, precedence=1,
-                              objects=None, doc='Arg 1', default_suffix=None, _value=None,
-                              table_definition=None),
-            'foo': Parameter(type='Number', label='foo label2', default=4.4, precedence=2,
-                             objects=None, doc='Arg 2', default_suffix=None, _value=None,
-                             table_definition=None),
-            'bar': Parameter(type='ObjectSelector', label='"bar label"3', default='--None--',
-                             precedence=3, objects=[], doc='Arg 3', default_suffix=None,
-                             _value=None, table_definition=None),
+            'name': {'type': 'Integer', 'description': 'name "description"', 'default': 3, 'precedence': 1,
+                     'choices': None, 'doc': 'Arg 1', 'default_suffix': None, 'value': None,
+                     'table_definition': None},
+            'foo': {'type': 'Number', 'description': 'foo label2', 'default': 4.4, 'precedence': 2,
+                    'choices': None, 'doc': 'Arg 2', 'default_suffix': None, 'value': None,
+                    'table_definition': None},
+            'bar': {'type': 'ObjectSelector', 'description': '"bar label"3', 'default': '--None--',
+                    'precedence': 3, 'choices': [], 'doc': 'Arg 3', 'default_suffix': None,
+                    'value': None, 'table_definition': None},
         }
         mock_dataset = mock.MagicMock()
         mock_dataset.dataset_type = 'ObjectSelector'
         regex_base_description = 'choice description'
         mock_dataset.description = f'"{regex_base_description}" plus extra for filtering out'
-        mock_dataset.objects = ['a', 'b', 'c']
+        mock_dataset.choices = ['a', 'b', 'c']
         mock_dataset2 = mock.MagicMock()
         mock_dataset2.dataset_type = 'ObjectSelector'
         mock_dataset2.description = 'ds2 description'
-        mock_dataset.objects = ['d']
+        mock_dataset.choices = ['d']
         mock_resource = mock.MagicMock()
         mock_resource.datasets = [mock_dataset, mock_dataset2]
 

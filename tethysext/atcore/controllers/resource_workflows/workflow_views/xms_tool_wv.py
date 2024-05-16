@@ -43,7 +43,7 @@ xmstool_widget_map = {
         lambda po, d, name: forms.ChoiceField(
             initial=d['value'],
             widget=Select2Widget,
-            choices=list(enumerate(d['objects'])),
+            choices=list(enumerate(d['choices'])),
         ),
     'StringSelector':
         lambda po, d, name: forms.ChoiceField(
@@ -265,7 +265,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
         for form_value in form_values.items():
             for param in sorted_params:
                 if param[0] in form_value[1]:
-                    param[1]._value = form_value[1][param[0]]
+                    param[1]['value'] = form_value[1][param[0]]
 
     for cur_p in sorted_params:
         p_name = cur_p[0]
