@@ -55,7 +55,7 @@ class TableInputMWV(ResourceWorkflowView):
 
         # If the template dataset is empty (no rows),
         # generate rows to match the smaller of the initial row count and the max rows
-        if dataset.empty:
+        if dataset is None or (isinstance(dataset, pd.DataFrame) and dataset.empty):
             empty_rows = current_step.options.get('empty_rows', current_step.DEFAULT_EMPTY_ROWS)
             initial_rows = max_rows if empty_rows > max_rows else empty_rows
             dataset = pd.DataFrame(columns=dataset.columns, index=range(initial_rows), dtype=np.float64)
