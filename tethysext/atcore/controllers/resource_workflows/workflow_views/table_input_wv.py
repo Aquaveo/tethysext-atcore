@@ -49,6 +49,10 @@ class TableInputMWV(ResourceWorkflowView):
         if inspect.isfunction(dataset):
             dataset = dataset(request, session, resource, current_step)
 
+        # If the dataset is a dictionary, convert it to a DataFrame
+        if isinstance(dataset, dict):
+            dataset = pd.DataFrame.from_dict(dataset, orient='columns')
+
         # If the template dataset is empty (no rows),
         # generate rows to match the smaller of the initial row count and the max rows
         if dataset.empty:
