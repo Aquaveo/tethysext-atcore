@@ -6,7 +6,6 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-import json
 import pandas as pd
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 

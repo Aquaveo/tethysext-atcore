@@ -15,4 +15,4 @@ from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import 
 from tethysext.atcore.models.resource_workflow_steps.spatial_condor_job_rws import SpatialCondorJobRWS  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.form_input_rws import FormInputRWS  # noqa: F401, E501
 from tethysext.atcore.models.resource_workflow_steps.xms_tool_rws import XMSToolRWS  # noqa: F401, E501
-from tethysext.atcore.models.resource_workflow_steps.table_input_rws import TableInputRWS # noqa: F401, E501
+from tethysext.atcore.models.resource_workflow_steps.table_input_rws import TableInputRWS  # noqa: F401, E501

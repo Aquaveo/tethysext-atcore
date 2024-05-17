@@ -77,7 +77,6 @@ class TableInputMWV(ResourceWorkflowView):
             'nodata_val': SPATIAL_DATASET_NODATA,
         })
 
-
     def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
         """
         Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
