@@ -40,6 +40,7 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
         self.request.method = 'method1'
         self.request.path = 'path'
         self.request.META = {}
+        self.request.user = mock.MagicMock(is_authenticated=True, is_active=True)
         self.back_url = './back'
         self.next_url = './next'
         self.current_url = './current'
