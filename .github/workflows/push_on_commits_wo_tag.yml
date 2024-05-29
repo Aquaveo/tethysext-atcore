@@ -53,7 +53,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set Env
       run: |
-        echo "KANIKO_CACHE_REGISTRY=aquaveollc/tethysext-atcore-cache" >> $GITHUB_ENV
+        # echo "KANIKO_CACHE_REGISTRY=aquaveollc/tethysext-atcore-cache" >> $GITHUB_ENV
         echo "KANIKO_IMAGE=aquaveollc/tethysext-atcore" >> $GITHUB_ENV
     - name: Set Tag
       run: |
@@ -80,7 +80,7 @@ jobs:
         # Image tag
         tag: ${{ env.TAG }}
         # Enables build cache
-        cache: true
+        # cache: true
         # Docker registry meant to be used as cache
         # cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
         # Dockerfile filename
@@ -139,7 +139,7 @@ jobs:
           - 5432:5432
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Docker login
       run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
