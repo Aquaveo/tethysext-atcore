@@ -82,7 +82,7 @@ jobs:
         # Enables build cache
         cache: true
         # Docker registry meant to be used as cache
-        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
+        # cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
         # Dockerfile filename
         build_file: Dockerfile
 
