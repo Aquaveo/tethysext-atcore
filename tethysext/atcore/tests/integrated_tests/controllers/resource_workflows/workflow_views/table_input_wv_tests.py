@@ -15,7 +15,7 @@ from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.work
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.controllers.resource_workflows.workflow_views import FormInputWV
-from tethysext.atcore.controllers.resource_workflows.workflow_views import TableInputWV
+# from tethysext.atcore.controllers.resource_workflows.workflow_views import TableInputWV
 from tethysext.atcore.forms.widgets.param_widgets import generate_django_form
 
 

@@ -1,8 +1,5 @@
 from unittest import mock
-import json
 import pandas as pd
-from .common import RWS_DEFAULT_OPTIONS
-from tethysext.atcore.models.resource_workflow_steps import SpatialDatasetRWS
 from tethysext.atcore.models.resource_workflow_steps import TableInputRWS
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -22,7 +19,7 @@ class TableInputRWSTests(SqlAlchemyTestCase):
         super().setUp()
         m = mock.MagicMock()
         m.__reduce__ = lambda self: (mock.MagicMock, ())
-        self.template_dataset = pd.DataFrame(columns=['A','B','C'])
+        self.template_dataset = pd.DataFrame(columns=['A', 'B', 'C'])
         self.instance = TableInputRWS(
             name='foo table',
             order=1,
