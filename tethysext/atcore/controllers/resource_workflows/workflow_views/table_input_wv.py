@@ -18,7 +18,7 @@ from tethysext.atcore.utilities import strip_list
 SPATIAL_DATASET_NODATA = -99999.9
 
 
-class TableInputMWV(ResourceWorkflowView):
+class TableInputWV(ResourceWorkflowView):
     """
     Controller for a workflow view for entering a 2D dataset in an spreadsheet-like table.
     """

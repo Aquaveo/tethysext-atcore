@@ -22,7 +22,7 @@ class TableInputRWS(ResourceWorkflowStep):
         max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
         empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
     """  # noqa: #501
-    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.table_input_wv.TableInputMWV'
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.table_input_wv.TableInputWV'
 
     TYPE = 'table_input_rws'
 
