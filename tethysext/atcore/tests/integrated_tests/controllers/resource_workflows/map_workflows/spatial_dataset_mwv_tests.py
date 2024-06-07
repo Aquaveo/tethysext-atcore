@@ -35,7 +35,7 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
 
     def setUp(self):
         super().setUp()
-        
+
         self.user = UserFactory()
         self.app_user = mock.MagicMock(
             username=self.user.username,
