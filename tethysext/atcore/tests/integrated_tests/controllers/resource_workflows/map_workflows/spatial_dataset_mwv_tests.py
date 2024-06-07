@@ -13,8 +13,10 @@ from tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_datas
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
+from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.models.app_users.resource import Resource
 from tethysext.atcore.services.model_database import ModelDatabase
+from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
     WorkflowViewTestCase
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
@@ -33,13 +35,22 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
 
     def setUp(self):
         super().setUp()
-
+        
+        self.user = UserFactory()
+        self.app_user = mock.MagicMock(
+            username=self.user.username,
+            role=AppUser.ROLES.ORG_USER,
+            is_active=True,
+            one=mock.MagicMock()
+        )
+        self.app_user.one.return_value = self.organization
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.GET = {'feature_id': 'feature1'}
         self.request.POST = QueryDict('next-submit')
         self.request.method = 'method1'
         self.request.path = 'path'
         self.request.META = {}
+        self.request.user = self.user
         self.back_url = './back'
         self.next_url = './next'
         self.current_url = './current'
