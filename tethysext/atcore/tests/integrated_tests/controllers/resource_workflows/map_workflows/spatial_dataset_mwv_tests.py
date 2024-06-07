@@ -36,17 +36,6 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
     def setUp(self):
         super().setUp()
 
-        self.organization = mock.MagicMock(
-            name='Aquaveo',
-            license='consultant',
-            consultant=mock.MagicMock(id=11111),
-            active=True,
-            resources=[
-                self.resource1,
-                self.resource2,
-            ]
-        )
-
         self.user = UserFactory()
         self.app_user = mock.MagicMock(
             username=self.user.username,
@@ -54,7 +43,6 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
             is_active=True,
             one=mock.MagicMock()
         )
-        self.app_user.one.return_value = self.organization
 
         self.request = mock.MagicMock(spec=HttpRequest)
         self.request.GET = {'feature_id': 'feature1'}
