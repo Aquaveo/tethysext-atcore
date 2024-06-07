@@ -1,6 +1,6 @@
 """
 ********************************************************************************
-* Name: form_input_rws.py
+* Name: dataset_input_rws.py
 * Author: glarsen, mlebaron
 * Created On: October 17, 2019
 * Copyright: (c) Aquaveo 2019
@@ -9,7 +9,7 @@
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 
 
-class FormInputRWS(ResourceWorkflowStep):
+class DatasetInputRWS(ResourceWorkflowStep):
     """
     Workflow step that can be used to get form input from a user.
 
@@ -20,7 +20,7 @@ class FormInputRWS(ResourceWorkflowStep):
         renderer(str): Renderer option. Available values are 'django' and 'bokeh'. Defauls to 'django'.
     """  # noqa: #501
 
-    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.FormInputWV'
+    CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.TableInputWV'
     TYPE = 'form_input_resource_workflow_step'
 
     __mapper_args__ = {
