@@ -52,6 +52,12 @@ class TableInputRWSTests(SqlAlchemyTestCase):
             'optional_columns': [],
             'max_rows': TableInputRWS.DEFAULT_MAX_ROWS,
             'empty_rows': TableInputRWS.DEFAULT_EMPTY_ROWS,
+            'release_resource_lock_on_completion': True,
+            'release_resource_lock_on_init': False,
+            'release_workflow_lock_on_completion': True,
+            'release_workflow_lock_on_init': False,
+            'resource_lock_required': False,
+            'workflow_lock_required': False,
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 
