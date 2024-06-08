@@ -71,7 +71,7 @@ from .models.resource_workflow_steps.spatial_condor_job_rws_test import SpatialC
 from .models.resource_workflow_steps.spatial_dataset_rws_tests import SpatialDatasetRWSTests  # noqa: F401
 from .models.resource_workflow_steps.spatial_input_rws_tests import SpatialInputRWSTests  # noqa: F401
 from .models.resource_workflow_steps.spatial_rws_tests import SpatialResourceWorkflowStepTests  # noqa: F401
-from .models.resource_workflow_steps.table_input_rws import TableInputRWSTests  # noqa: F401
+from .models.resource_workflow_steps.table_input_rws_tests import TableInputRWSTests  # noqa: F401
 from .models.resource_workflow_steps.set_status_rws_tests import SetStatusRWSTests  # noqa: F401
 from .permissions.app_users import PermissionsGeneratorTests  # noqa: F401
 from .services.app_users.decorators import ActiveUserRequiredDecoratorTests  # noqa: F401

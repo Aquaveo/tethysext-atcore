@@ -15,7 +15,7 @@ from tethysext.atcore.models.resource_workflow_steps import TableInputRWS
 from tethysext.atcore.utilities import strip_list
 
 
-SPATIAL_DATASET_NODATA = -99999.9
+TABLE_DATASET_NODATA = -99999.9
 
 
 class TableInputWV(ResourceWorkflowView):
@@ -49,7 +49,7 @@ class TableInputWV(ResourceWorkflowView):
         if inspect.isfunction(dataset):
             dataset = dataset(request, session, resource, current_step)
 
-        # If the dataset is a dictionary, convert it to a DataFrame
+        # If the dataset is a dictionary (i.e.: previously saved dataset parameter), convert it to a DataFrame
         if isinstance(dataset, dict):
             dataset = pd.DataFrame.from_dict(dataset, orient='columns')
 
@@ -78,7 +78,7 @@ class TableInputWV(ResourceWorkflowView):
             'plot_columns': current_step.options.get('plot_columns', []),
             'optional_columns': current_step.options.get('optional_columns', []),
             'max_rows': max_rows,
-            'nodata_val': SPATIAL_DATASET_NODATA,
+            'nodata_val': TABLE_DATASET_NODATA,
         })
 
     def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):
@@ -118,7 +118,7 @@ class TableInputWV(ResourceWorkflowView):
         optional_columns = step.options.get('optional_columns', [])
         for column in columns:
             if column in optional_columns and not data[column]:
-                c = [SPATIAL_DATASET_NODATA] * row_count
+                c = [TABLE_DATASET_NODATA] * row_count
                 data.update({column: c})
 
         # Save dataset as new pandas DataFrame
