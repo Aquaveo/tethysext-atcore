@@ -1,0 +1,7 @@
+.table.spatial-data-table>tbody {
+    max-height: 60vh;
+}
+
+thead, tbody, tfoot, tr, td, th {
+    border-style: inset;
+}
