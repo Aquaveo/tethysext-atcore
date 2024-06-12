@@ -41,6 +41,7 @@ widget_map = {
     param.Selector:
         lambda po, p, name: forms.ChoiceField(
             initial=po.param.inspect_value(name) or p.default,
+            choices=p.get_range().items()
         ),
     # param.HookList,
     # param.Action: ,
