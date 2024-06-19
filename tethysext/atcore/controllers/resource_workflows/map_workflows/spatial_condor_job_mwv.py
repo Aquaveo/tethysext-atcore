@@ -29,7 +29,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
     previous_steps_selectable = True
     jobs_table_refresh_interval = int(os.getenv('JOBS_TABLE_REFRESH_INTERVAL', 30000))  # ms
 
-
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
         Hook for processing step options (i.e.: modify map or context based on step options).
