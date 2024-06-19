@@ -7,6 +7,7 @@ FROM tethysplatform/tethys-core:dev
 ENV TETHYSAPP_DIR /var/www/tethys/apps
 ENV TETHYSEXT_DIR /var/www/tethys/exts
 ENV TETHYS_PUBLIC_HOST 'localhost'
+ENV JOBS_TABLE_REFRESH_INTERVAL 30000
 
 #########
 # SETUP #
