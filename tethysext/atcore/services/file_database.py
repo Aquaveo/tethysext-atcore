@@ -92,6 +92,13 @@ class FileDatabaseClient(MetaMixin):
             self._path = os.path.join(self.root_directory, str(self.instance.id))
         return self._path
 
+    def delete(self):
+        """Delete this FileDatabase"""
+        shutil.rmtree(self.path)
+        self._session.delete(self.instance)
+        self._session.commit()
+        self.__deleted = True
+
     def get_collection(self, collection_id: uuid.UUID) -> 'FileCollectionClient':
         """
         Get a FileCollectionClient owned by this FileDatabase by its collection_id
