@@ -239,7 +239,7 @@ class MapManagerBase(object):
 
         return mv_layer
 
-    def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None,
+    def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, style='', viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
                         popup_title=None, color_ramp_division_kwargs=None, times=None):
@@ -250,6 +250,7 @@ class MapManagerBase(object):
             layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+            style(str): Name of the Geoserver layer style
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
             viewparams(str): VIEWPARAMS string.
             env(str): ENV string.
@@ -277,6 +278,9 @@ class MapManagerBase(object):
                 'TILED': True,
                 'TILESORIGIN': '0.0,0.0'
             })
+
+        if style:
+            params['STYLES'] = style
 
         if viewparams:
             params['VIEWPARAMS'] = viewparams
