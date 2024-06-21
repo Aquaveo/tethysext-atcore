@@ -53,8 +53,7 @@ class FormInputWV(ResourceWorkflowView):
             p = ParamClass(request=request, session=session, resource=resource)
             if hasattr(p, 'update_precedence'):
                 p.update_precedence()
-            for k, v in current_step.get_parameter('form-values').items():
-                p.set_param(k, v)
+            p.param.update(current_step.get_parameter('form-values'))
             form = generate_django_form(p, form_field_prefix='param-form-',
                                         read_only=self.is_read_only(request, current_step))()
 
