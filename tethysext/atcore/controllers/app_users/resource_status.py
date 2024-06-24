@@ -6,6 +6,8 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+# Python
+import os
 # Django
 from django.shortcuts import render
 from django.urls import reverse
@@ -29,7 +31,7 @@ class ResourceStatus(ResourceViewMixin):
     base_template = 'atcore/app_users/base.html'
     http_method_names = ['get']
     show_detailed_status = True
-    jobs_table_refresh_interval = 30000  # ms
+    jobs_table_refresh_interval = int(os.getenv('JOBS_TABLE_REFRESH_INTERVAL', 30000))  # ms
 
     def get(self, request, *args, **kwargs):
         """
