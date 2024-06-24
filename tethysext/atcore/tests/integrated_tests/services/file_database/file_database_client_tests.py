@@ -71,7 +71,6 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_client = FileDatabaseClient.new(self.session, root_dir)
         self.assertTrue(self.session.query(FileDatabase).count() == 1)
         self.assertTrue(os.path.exists(database_client.path))
-        self.assertTrue(os.path.exists(database_client.path))
 
     def test_existing_file_database_client(self):
         """Test Generating a FileDatabaseClient from and existing FileDatabase."""
@@ -599,6 +598,19 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             self.session.query(FileCollection).filter_by(id=collection_id, file_database_id=database_id).count() == 0
         )
         self.assertFalse(os.path.exists(collection_path))
+
+    def test_delete(self):
+        """Test deleting the file database."""
+        self.assertTrue(self.session.query(FileDatabase).count() == 0)
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_database_client')
+        database_client = FileDatabaseClient.new(self.session, root_dir)
+        self.assertTrue(self.session.query(FileDatabase).count() == 1)
+        self.assertTrue(os.path.exists(database_client.path))
+
+        database_client.delete()
+
+        self.assertTrue(self.session.query(FileDatabase).count() == 0)
+        self.assertFalse(os.path.exists(database_client.path))
 
     def test_get_delete_does_not_exist(self):
         """Test deleting a file collection that doesn't exist."""
