@@ -155,6 +155,10 @@ class ManageResources(ResourceViewMixin):
         def build_resource_cards(resources, level=0):
             resource_cards = []
             for resource in resources:
+                # Skip resources that have "hidden" statuses
+                if resource.get_status(resource.ROOT_STATUS_KEY) in resource.HIDDEN_STATUSES:
+                    continue
+
                 resource_card = resource.__dict__ if getattr(resource, '__dict__', None) else dict()
                 resource_card['level'] = level
                 resource_card['slug'] = resource.SLUG
