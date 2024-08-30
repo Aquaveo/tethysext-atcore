@@ -11,7 +11,9 @@
 {% endblock %}
 
 {% block map %}
-  {{ block.super }}
+  {% if has_geometry_data %}
+    {{ block.super }}
+  {% endif %}
   {% if has_tabular_data %}
     <div class="tab-data">
       {% for tab_data_title, tab_data in tabular_data.items %}

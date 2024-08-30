@@ -114,6 +114,33 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             'layer_groups': layer_groups,
             'geocode_enabled': geocode_enabled_option,
         })
+    
+    @staticmethod
+    def get_step_geometry(step, steps_to_skip):
+        geometry = None
+        if not step.children:
+            # Get the geometry of the step if no children exist
+            if isinstance(step, SpatialResourceWorkflowStep):
+                geometry = step.to_geojson()
+        else:
+            for child in step.children:
+                # If step has a child, get geojson from the child,
+                # which will include the properties added by the child
+                if child is not None:
+                    # Child step must be a SpatialResourceWorkflowStep
+                    if not isinstance(child, SpatialResourceWorkflowStep):
+                        continue
+
+                    # Child geojson should include properties it adds to the features
+                    geometry = child.to_geojson()
+
+                    # Skip child step in the future to avoid adding it twice
+                    steps_to_skip.add(child)
+
+                # Otherwise, get the geojson from this step directly
+                else:
+                    geometry = step.to_geojson()
+        return geometry
 
     def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
         """
@@ -151,29 +178,7 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
                 continue
 
             # Get the geometry
-            geometry = None
-            if not step.children:
-                # Get the geometry of the step if no children exist
-                if isinstance(step, SpatialResourceWorkflowStep):
-                    geometry = step.to_geojson()
-            else:
-                for child in step.children:
-                    # If step has a child, get geojson from the child,
-                    # which will include the properties added by the child
-                    if child is not None:
-                        # Child step must be a SpatialResourceWorkflowStep
-                        if not isinstance(child, SpatialResourceWorkflowStep):
-                            continue
-
-                        # Child geojson should include properties it adds to the features
-                        geometry = child.to_geojson()
-
-                        # Skip child step in the future to avoid adding it twice
-                        steps_to_skip.add(child)
-
-                    # Otherwise, get the geojson from this step directly
-                    else:
-                        geometry = step.to_geojson()
+            geometry = self.get_step_geometry(step, steps_to_skip)
 
             if not geometry:
                 log.warning('Parameter "geometry" for {} was not defined.'.format(step))

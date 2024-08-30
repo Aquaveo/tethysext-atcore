@@ -54,11 +54,23 @@ class SpatialCondorJobMWV(MapWorkflowView):
                                                                                  resource)
 
         has_tabular_data = len(tabular_data) > 0
+        
+        # get geometry data for previous steps
+        previous_steps = current_step.workflow.get_previous_steps(current_step)
+        steps_to_skip = set()
+        geometry_data = []
+        for step in previous_steps:
+            geometry = MapWorkflowView.get_step_geometry(step, steps_to_skip)
+            if geometry:
+                geometry_data.append(geometry)
+        has_geometry_data = len(geometry_data) > 0
+        
         # Save changes to map view and layer groups
         context.update({
             'can_run_workflows': can_run_workflows,
             'has_tabular_data': has_tabular_data,
             'tabular_data': tabular_data,
+            'has_geometry_data': has_geometry_data
         })
 
         # Note: new layer created by super().process_step_options will have feature selection enabled by default
