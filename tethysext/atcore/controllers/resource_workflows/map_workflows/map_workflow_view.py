@@ -114,33 +114,51 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             'layer_groups': layer_groups,
             'geocode_enabled': geocode_enabled_option,
         })
-    
-    @staticmethod
-    def get_step_geometry(step, steps_to_skip):
-        geometry = None
-        if not step.children:
-            # Get the geometry of the step if no children exist
-            if isinstance(step, SpatialResourceWorkflowStep):
-                geometry = step.to_geojson()
-        else:
-            for child in step.children:
-                # If step has a child, get geojson from the child,
-                # which will include the properties added by the child
-                if child is not None:
-                    # Child step must be a SpatialResourceWorkflowStep
-                    if not isinstance(child, SpatialResourceWorkflowStep):
-                        continue
 
-                    # Child geojson should include properties it adds to the features
-                    geometry = child.to_geojson()
+    def get_geometry_data_for_previous_steps(self, current_step):
+        previous_steps = current_step.workflow.get_previous_steps(current_step)
+        mappable_step_types = (SpatialInputRWS,)
+        steps_to_skip = set()
+        step_geometry_data = []
+        
+        for step in previous_steps:
+            # Skip these steps
+            if step in steps_to_skip or not isinstance(step, mappable_step_types):
+                continue
 
-                    # Skip child step in the future to avoid adding it twice
-                    steps_to_skip.add(child)
-
-                # Otherwise, get the geojson from this step directly
-                else:
+            # Get the geometry
+            geometry = None
+            if not step.children:
+                # Get the geometry of the step if no children exist
+                if isinstance(step, SpatialResourceWorkflowStep):
                     geometry = step.to_geojson()
-        return geometry
+            else:
+                for child in step.children:
+                    # If step has a child, get geojson from the child,
+                    # which will include the properties added by the child
+                    if child is not None:
+                        # Child step must be a SpatialResourceWorkflowStep
+                        if not isinstance(child, SpatialResourceWorkflowStep):
+                            continue
+
+                        # Child geojson should include properties it adds to the features
+                        geometry = child.to_geojson()
+
+                        # Skip child step in the future to avoid adding it twice
+                        steps_to_skip.add(child)
+
+                    # Otherwise, get the geojson from this step directly
+                    else:
+                        geometry = step.to_geojson()
+
+            if not geometry:
+                log.warning('Parameter "geometry" for {} was not defined.'.format(step))
+                continue
+            
+            step_geometry_data.append({"step": step, "geometry": geometry})
+
+        return step_geometry_data
+        
 
     def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
         """
@@ -156,12 +174,6 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
         Returns:
             MapView, list<dict>: The updated MapView and layer groups.
         """
-        # Process each previous step
-        previous_steps = current_step.workflow.get_previous_steps(current_step)
-        workflow_layers = []
-        steps_to_skip = set()
-        mappable_step_types = (SpatialInputRWS,)
-
         # Get managers
         map_manager = self.get_map_manager(
             request=request,
@@ -172,18 +184,12 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
         if selectable is None:
             selectable = self.previous_steps_selectable
 
-        for step in previous_steps:
-            # Skip these steps
-            if step in steps_to_skip or not isinstance(step, mappable_step_types):
-                continue
-
-            # Get the geometry
-            geometry = self.get_step_geometry(step, steps_to_skip)
-
-            if not geometry:
-                log.warning('Parameter "geometry" for {} was not defined.'.format(step))
-                continue
-
+        # Get the step and geometry data for previous steps (if this step has geometry data)
+        step_geometry_data = self.get_geometry_data_for_previous_steps(current_step)
+        
+        workflow_layers = []
+        for step, geometry in step_geometry_data:
+        
             # Build the Layer
             workflow_layer = self._build_mv_layer(step, geometry, map_manager, selectable)
 

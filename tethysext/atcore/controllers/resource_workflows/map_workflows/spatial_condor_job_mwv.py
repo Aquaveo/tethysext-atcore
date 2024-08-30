@@ -54,17 +54,11 @@ class SpatialCondorJobMWV(MapWorkflowView):
                                                                                  resource)
 
         has_tabular_data = len(tabular_data) > 0
-        
+
         # get geometry data for previous steps
-        previous_steps = current_step.workflow.get_previous_steps(current_step)
-        steps_to_skip = set()
-        geometry_data = []
-        for step in previous_steps:
-            geometry = MapWorkflowView.get_step_geometry(step, steps_to_skip)
-            if geometry:
-                geometry_data.append(geometry)
+        geometry_data = self.get_geometry_data_for_previous_steps(current_step)
         has_geometry_data = len(geometry_data) > 0
-        
+
         # Save changes to map view and layer groups
         context.update({
             'can_run_workflows': can_run_workflows,
