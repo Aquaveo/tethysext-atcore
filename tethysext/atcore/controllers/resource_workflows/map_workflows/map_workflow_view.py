@@ -115,12 +115,13 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             'geocode_enabled': geocode_enabled_option,
         })
 
-    def get_geometry_data_for_previous_steps(self, current_step):
+    @staticmethod
+    def get_geometry_data_for_previous_steps(current_step):
         previous_steps = current_step.workflow.get_previous_steps(current_step)
         mappable_step_types = (SpatialInputRWS,)
         steps_to_skip = set()
         step_geometry_data = []
-        
+
         for step in previous_steps:
             # Skip these steps
             if step in steps_to_skip or not isinstance(step, mappable_step_types):
@@ -154,11 +155,10 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             if not geometry:
                 log.warning('Parameter "geometry" for {} was not defined.'.format(step))
                 continue
-            
-            step_geometry_data.append({"step": step, "geometry": geometry})
+
+            step_geometry_data.append((step, geometry))
 
         return step_geometry_data
-        
 
     def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
         """
@@ -185,11 +185,10 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             selectable = self.previous_steps_selectable
 
         # Get the step and geometry data for previous steps (if this step has geometry data)
-        step_geometry_data = self.get_geometry_data_for_previous_steps(current_step)
-        
+        step_geometry_data = MapWorkflowView.get_geometry_data_for_previous_steps(current_step)
+
         workflow_layers = []
         for step, geometry in step_geometry_data:
-        
             # Build the Layer
             workflow_layer = self._build_mv_layer(step, geometry, map_manager, selectable)
 

@@ -56,7 +56,7 @@ class SpatialCondorJobMWV(MapWorkflowView):
         has_tabular_data = len(tabular_data) > 0
 
         # get geometry data for previous steps
-        geometry_data = self.get_geometry_data_for_previous_steps(current_step)
+        geometry_data = MapWorkflowView.get_geometry_data_for_previous_steps(current_step)
         has_geometry_data = len(geometry_data) > 0
 
         # Save changes to map view and layer groups
