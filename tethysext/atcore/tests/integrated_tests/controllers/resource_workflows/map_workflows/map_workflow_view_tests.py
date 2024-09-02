@@ -320,3 +320,42 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         self.assertIn('visible', ret_layer_groups[0])
         self.assertIn('toggle_status', ret_layer_groups[0])
         self.assertEqual({}, ret_layer_groups[1])
+
+    def test_get_geometry_data_for_previous_steps_no_geometry(self):
+        tmp = MapWorkflowView.get_geometry_data_for_previous_steps(self.step3)
+        self.assertEqual([], tmp)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.to_geojson')
+    def test_get_geometry_data_for_previous_steps_with_geometry(self, mock_to_geojson):
+        mock_geometry = {
+            'features': [{
+                'properties': {'foo': 'bar'},
+                'geometry': {}
+            }]
+        }
+        # TODO How to assign geometry to a single step instead of all steps?
+        mock_to_geojson.return_value = mock_geometry
+        
+        workflow = ResourceWorkflow(name='foo')
+        step1 = SpatialInputRWS(
+            mock.MagicMock(),  # TODO what is this for?
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step1',
+            order=1
+        )
+        workflow.steps.append(step1)
+        
+        step2 = SpatialResourceWorkflowStep(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step2',
+            order=2
+        )
+        workflow.steps.append(step2)
+        
+        # TODO add more steps, add children
+        
+        tmp = MapWorkflowView.get_geometry_data_for_previous_steps(step2)
+        self.assertEqual([(step1, mock_geometry)], tmp)
