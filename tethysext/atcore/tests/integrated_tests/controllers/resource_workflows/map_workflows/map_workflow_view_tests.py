@@ -321,10 +321,6 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         self.assertIn('toggle_status', ret_layer_groups[0])
         self.assertEqual({}, ret_layer_groups[1])
 
-    def test_get_geometry_data_for_previous_steps_no_geometry(self):
-        tmp = MapWorkflowView.get_geometry_data_for_previous_steps(self.step3)
-        self.assertEqual([], tmp)
-
     @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.to_geojson')
     def test_get_geometry_data_for_previous_steps_with_geometry(self, mock_to_geojson):
         mock_geometry = {
@@ -333,12 +329,11 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
                 'geometry': {}
             }]
         }
-        # TODO How to assign geometry to a single step instead of all steps?
-        mock_to_geojson.return_value = mock_geometry
+        mock_to_geojson.side_effect = [{}, mock_geometry, {}]  # TODO default return value for to_geojson
 
         workflow = ResourceWorkflow(name='foo')
         step1 = SpatialInputRWS(
-            mock.MagicMock(),  # TODO what is this for?
+            mock.MagicMock(),
             mock.MagicMock(),
             mock.MagicMock(),
             name='step1',
@@ -346,7 +341,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         )
         workflow.steps.append(step1)
 
-        step2 = SpatialResourceWorkflowStep(
+        step2 = SpatialInputRWS(
             mock.MagicMock(),
             mock.MagicMock(),
             mock.MagicMock(),
@@ -354,8 +349,17 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             order=2
         )
         workflow.steps.append(step2)
+        
+        step3 = SpatialResourceWorkflowStep(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step3',
+            order=2
+        )
+        workflow.steps.append(step3)
 
         # TODO add more steps, add children
 
-        tmp = MapWorkflowView.get_geometry_data_for_previous_steps(step2)
-        self.assertEqual([(step1, mock_geometry)], tmp)
+        self.assertEqual([], MapWorkflowView.get_geometry_data_for_previous_steps(step2))
+        self.assertEqual([(step2, mock_geometry)], MapWorkflowView.get_geometry_data_for_previous_steps(step3))
