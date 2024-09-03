@@ -335,7 +335,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         }
         # TODO How to assign geometry to a single step instead of all steps?
         mock_to_geojson.return_value = mock_geometry
-        
+
         workflow = ResourceWorkflow(name='foo')
         step1 = SpatialInputRWS(
             mock.MagicMock(),  # TODO what is this for?
@@ -345,7 +345,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             order=1
         )
         workflow.steps.append(step1)
-        
+
         step2 = SpatialResourceWorkflowStep(
             mock.MagicMock(),
             mock.MagicMock(),
@@ -354,8 +354,8 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             order=2
         )
         workflow.steps.append(step2)
-        
+
         # TODO add more steps, add children
-        
+
         tmp = MapWorkflowView.get_geometry_data_for_previous_steps(step2)
         self.assertEqual([(step1, mock_geometry)], tmp)
