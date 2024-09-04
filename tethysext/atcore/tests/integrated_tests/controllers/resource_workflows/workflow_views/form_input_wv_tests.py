@@ -22,7 +22,8 @@ class TestParam(param.Parameterized):
     int_value = param.Integer()
     string_value = param.String()
 
-    def __init__(self, request=None, session=None, resource=None):
+    def __init__(self, *args, request=None, session=None, resource=None, **kwargs):
+        super().__init__(*args, **kwargs)
         self.request = request
         self.session = session
         self.resource = resource
