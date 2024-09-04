@@ -81,3 +81,8 @@
     overflow: auto;
     max-width: 100%;
 }
+
+/* read-only input style */
+input:read-only:hover {
+    cursor: default;
+}

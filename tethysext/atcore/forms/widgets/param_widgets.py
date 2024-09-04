@@ -41,6 +41,7 @@ widget_map = {
     param.Selector:
         lambda po, p, name: forms.ChoiceField(
             initial=po.param.inspect_value(name) or p.default,
+            choices=p.get_range().items()
         ),
     # param.HookList,
     # param.Action: ,
@@ -176,7 +177,6 @@ def generate_django_form(parameterized_obj, form_field_prefix=None, read_only=Fa
     for p in sorted_params:
         # TODO: Pass p.__dict__ as second argument instead of arbitrary
         p_name = p.name
-
         # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
@@ -195,6 +195,6 @@ def generate_django_form(parameterized_obj, form_field_prefix=None, read_only=Fa
             form_class.base_fields[p_name].widget.attrs.update({'title': p.doc})
 
         # Set required state from allow_None
-        form_class.base_fields[p_name].required = p.allow_None
+        form_class.base_fields[p_name].required = not p.allow_None
 
     return form_class
