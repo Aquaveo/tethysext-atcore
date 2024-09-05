@@ -349,7 +349,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
             order=2
         )
         workflow.steps.append(step2)
-        
+
         step3 = SpatialResourceWorkflowStep(
             mock.MagicMock(),
             mock.MagicMock(),

@@ -124,7 +124,8 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             current_step (ResourceWorkflowStep): the current workflow step for which geometry data is being retrieved.
 
         Returns:
-            list[(ResourceWorkflowStep, str)]: a list of tuples, where each tuple contains a previous step and its GeoJSON string
+            list[(ResourceWorkflowStep, str)]: a list of tuples, where each tuple contains a previous step and
+                                               its GeoJSON string
         """
         previous_steps = current_step.workflow.get_previous_steps(current_step)
         mappable_step_types = (SpatialInputRWS,)
