@@ -302,6 +302,15 @@ class FileCollectionClient(MetaMixin):
         self.export(duplicated_client.path)
         return duplicated_client
 
+    def has_item(self, item: str):
+        """
+        Check if an item is in the fil collection.
+
+        Args:
+            item: The path to the item to be checked.
+        """
+        return os.path.exists(os.path.join(self.path, item))
+
     def add_item(self, item: str, move: bool = False, relative_to: str = '') -> None:
         """
         Add an item to the file collection.
