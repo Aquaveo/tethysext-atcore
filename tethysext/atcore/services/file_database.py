@@ -304,7 +304,7 @@ class FileCollectionClient(MetaMixin):
 
     def has_item(self, item: str):
         """
-        Check if an item is in the fil collection.
+        Check if an item is in the file collection.
 
         Args:
             item: The path to the item to be checked.
