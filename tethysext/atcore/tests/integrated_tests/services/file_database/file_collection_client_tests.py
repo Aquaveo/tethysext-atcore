@@ -386,7 +386,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         """Test exporting a collection."""
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item')
+        base_files_root_dir = os.path.join(self.test_files_base, 'test_add_item')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item')
         files_dir = os.path.join(root_dir, 'files')
         if os.path.exists(root_dir):
@@ -405,7 +405,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         """Test exporting a collection."""
         database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
         collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
-        base_files_root_dir = os.path.join(self.test_files_base,  'test_add_item_dir')
+        base_files_root_dir = os.path.join(self.test_files_base, 'test_add_item_dir')
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item_dir')
         files_dir = os.path.join(root_dir, 'files')
         if os.path.exists(root_dir):
@@ -531,6 +531,25 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_client.add_item(os.path.join(files_dir, 'nested', 'file2.txt'), relative_to=files_dir, move=True)
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'nested', 'file2.txt')))
         self.assertFalse(os.path.exists(os.path.join(files_dir, 'nested', 'file2.txt')))
+
+    def test_has_item(self):
+        """Test checking if an item exists"""
+        database_id = uuid.UUID('{da37af40-8474-4025-9fe4-c689c93299c5}')
+        collection_id = uuid.UUID('{d6fa7e10-d8aa-4b3d-b08a-62384d3daca2}')
+        base_files_root_dir = os.path.join(self.test_files_base, 'test_add_item')
+        root_dir = os.path.join(self.test_files_base, 'temp', 'test_add_item')
+        files_dir = os.path.join(root_dir, 'files')
+        if os.path.exists(root_dir):
+            shutil.rmtree(root_dir)
+        shutil.copytree(base_files_root_dir, root_dir)
+        database_client, collection_instance = self.get_database_and_collection(
+            database_id=database_id, collection_id=collection_id,
+            root_directory=root_dir, database_meta={}, collection_meta={}
+        )
+        collection_client = FileCollectionClient(self.session, database_client, collection_id)
+        self.assertFalse(collection_client.has_item('file1.txt'))
+        collection_client.add_item(os.path.join(files_dir, 'file1.txt'))
+        self.assertTrue(collection_client.has_item('file1.txt'))
 
     def test_bad_collection_client(self):
         """Test Generating a FileCollectionClient from and existing FileCollection."""
