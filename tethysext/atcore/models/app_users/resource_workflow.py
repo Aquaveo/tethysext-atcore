@@ -21,7 +21,6 @@ from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, ResultsResourceWorkflowStep, TableInputRWS
-from tribs_adapter.workflow_steps import NDVIRWS, VegetationTypesRWS
 
 log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
@@ -202,14 +201,9 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             raise ValueError('Step {} does not belong to this workflow.'.format(step))
 
         previous_steps = self.get_previous_steps(step)
-        steps_to_skip = set()
-        mappable_tabular_step_types = (FormInputRWS, NDVIRWS, VegetationTypesRWS, TableInputRWS, )
+        mappable_tabular_step_types = (FormInputRWS, TableInputRWS, )
         step_data = {}
         for step in previous_steps:
-            # skip non form steps
-            if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
-                continue
-
             fixed_params = dict()
             if isinstance(step, FormInputRWS):
                 # Rebuild the param if param_class is in options
@@ -237,18 +231,19 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
                         step_value = value
                     step_name = key.replace('_', ' ').title()
                     fixed_params[step_name] = step_value
+            elif isinstance(step, TableInputRWS):
+                params = step.get_parameters()
+                data = params['dataset']['value']
+                headers = data.keys()
+                rows = list(zip(*data.values()))
+                fixed_params['table'] = {'headers': headers, 'rows': rows}
             else:
                 params = step.get_parameters()
-                if isinstance(step, TableInputRWS):
-                    data = params['dataset']['value']
-                    headers = data.keys()
-                    rows = zip(*data.values())
-                    fixed_params['table'] = {'headers': headers, 'rows': rows}
-                else:
-                    for key, value in params.items():
-                        fixed_params[key] = value['value']
-            step_data[step.name] = fixed_params
-
+                for param_name, values in params.items():
+                    if values.get('is_tabular', False):
+                        fixed_params[param_name] = values['value']
+            if isinstance(step, mappable_tabular_step_types) or fixed_params:
+                step_data[step.name] = fixed_params
         return step_data
 
     def get_next_steps(self, step):

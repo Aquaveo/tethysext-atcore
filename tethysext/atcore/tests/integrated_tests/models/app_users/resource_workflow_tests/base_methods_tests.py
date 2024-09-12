@@ -4,7 +4,7 @@ from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCa
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep, ResourceWorkflowResult
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, TableInputRWS
 
 
 def setUpModule():
@@ -249,18 +249,7 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
         expected_result = {'foo': {'Existing Data': 'data_value'}}
         self.assertEqual(expected_result, ret)
 
-    @mock.patch('tethysext.atcore.models.resource_workflow_steps.form_input_rws.FormInputRWS.get_parameter')
-    def test_get_tabular_data_for_previous_steps_no_key(self, mock_get_parameter):
-        request = mock.MagicMock()
-        session = mock.MagicMock()
-        resource = mock.MagicMock()
-        mock_get_parameter.return_value = {'existing_data1': 'data_value'}
-        ret = self.step_2.workflow.get_tabular_data_for_previous_steps(self.step_2, request, session, resource)
-
-        expected_result = {'foo': {'Existing Data1': 'data_value'}}
-        self.assertEqual(expected_result, ret)
-
-    def test_get_tabular_data_for_previous_steps_no_mappable(self):
+    def test_get_tabular_data_for_previous_steps_no_key(self):
         request = mock.MagicMock()
         session = mock.MagicMock()
         resource = mock.MagicMock()
@@ -281,6 +270,36 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
             session,
             resource
         )
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.table_input_rws.TableInputRWS.get_parameters')
+    def test_get_tabular_data_for_previous_steps_with_TableInputRWS(self, mock_get_parameters):
+        request = mock.MagicMock()
+        session = mock.MagicMock()
+        resource = mock.MagicMock()
+
+        mock_table = {'value': {'a': [0, 1, 2], 'b': [3, 4, 5]}}
+        mock_get_parameters.return_value = {'dataset': mock_table}
+        workflow = ResourceWorkflow(name='foo')
+        step1 = TableInputRWS(
+            name='step1',
+            order=1
+        )
+        workflow.steps.append(step1)
+
+        step2 = ResourceWorkflowStep(name='step2', order=2)
+        workflow.steps.append(step2)
+
+        expected_result = {
+            'step1': {
+                'table': {
+                    'headers': mock_table['value'].keys(),
+                    'rows': list(zip(*mock_table['value'].values()))
+                }
+            }
+        }
+
+        ret = step2.workflow.get_tabular_data_for_previous_steps(step2, request, session, resource)
+        self.assertEqual(expected_result, ret)
 
     def test_get_url_name(self):
         self.assertRaises(NotImplementedError, self.workflow.get_url_name)

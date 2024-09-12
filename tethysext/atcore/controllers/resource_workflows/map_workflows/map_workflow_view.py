@@ -115,6 +115,7 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             'geocode_enabled': geocode_enabled_option,
         })
 
+    # TODO maybe move this method to other class since it's a static method?
     @staticmethod
     def get_geometry_data_for_previous_steps(current_step):
         """
