@@ -351,7 +351,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         self.assertEqual([], MapWorkflowView.get_geometry_data_for_previous_steps(step2))
 
     @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.to_geojson')
-    def test_geometry_data_for_previous_steps_with_geometry_None_child(self, mock_to_geojson):
+    def test_get_geometry_data_for_previous_steps_with_geometry_None_child(self, mock_to_geojson):
         mock_geometry = {
             'features': [{
                 'properties': {'foo': 'bar'},
@@ -383,7 +383,7 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         self.assertEqual([(step1, mock_geometry)], MapWorkflowView.get_geometry_data_for_previous_steps(step2))
 
     @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_input_rws.SpatialInputRWS.to_geojson')
-    def test_geometry_data_for_previous_steps_with_child(self, mock_to_geojson):
+    def test_get_geometry_data_for_previous_steps_with_child(self, mock_to_geojson):
         mock_geometry = {
             'features': [{
                 'properties': {'foo': 'bar'},
