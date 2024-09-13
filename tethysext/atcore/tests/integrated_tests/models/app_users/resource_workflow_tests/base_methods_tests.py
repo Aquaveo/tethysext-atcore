@@ -301,14 +301,11 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
         ret = step2.workflow.get_tabular_data_for_previous_steps(step2, request, session, resource)
         self.assertEqual(expected_result, ret)
 
-    def test_get_url_name(self):
-        self.assertRaises(NotImplementedError, self.workflow.get_url_name)
-        
     def test_get_tabular_data_for_previous_steps_with_is_tabular(self):
         request = mock.MagicMock()
         session = mock.MagicMock()
         resource = mock.MagicMock()
-        
+
         mock_step = mock.MagicMock()
         mock_step.get_parameters.return_value = {'ndvi_threshold': {'value': 0.21, 'is_tabular': True}}
         mock_step.name = 'mock step'
@@ -323,3 +320,6 @@ class ResourceWorkflowBaseMethodsTests(SqlAlchemyTestCase):
 
         ret = step2.workflow.get_tabular_data_for_previous_steps(step2, request, session, resource)
         self.assertEqual(expected_result, ret)
+
+    def test_get_url_name(self):
+        self.assertRaises(NotImplementedError, self.workflow.get_url_name)
