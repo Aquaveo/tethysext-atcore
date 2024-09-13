@@ -115,35 +115,23 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
             'geocode_enabled': geocode_enabled_option,
         })
 
-    def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
+    # TODO maybe move this method to other class since it's a static method?
+    @staticmethod
+    def get_geometry_data_for_previous_steps(current_step):
         """
-        Create layers for previous steps that have a spatial component to them for review of the previous steps.
+        Retrieve geometry data from previous workflow steps
+
         Args:
-            request(HttpRequest): The request.
-            resource(Resource): the resource for this request.
-            current_step(ResourceWorkflowStep): The current step to be rendered.
-            map_view(MapView): The Tethys MapView object.
-            layer_groups(list<dict>): List of layer group dictionaries for new layers to add.
-            selectable(bool): Layers generated for previous steps are selectable when True.
+            current_step (ResourceWorkflowStep): the current workflow step for which geometry data is being retrieved.
 
         Returns:
-            MapView, list<dict>: The updated MapView and layer groups.
+            list[(ResourceWorkflowStep, str)]: a list of tuples, where each tuple contains a previous step and
+                                               its GeoJSON string
         """
-        # Process each previous step
         previous_steps = current_step.workflow.get_previous_steps(current_step)
-        workflow_layers = []
-        steps_to_skip = set()
         mappable_step_types = (SpatialInputRWS,)
-
-        # Get managers
-        map_manager = self.get_map_manager(
-            request=request,
-            resource=resource
-        )
-
-        # Check if previous steps are selectable
-        if selectable is None:
-            selectable = self.previous_steps_selectable
+        steps_to_skip = set()
+        step_geometry_data = []
 
         for step in previous_steps:
             # Skip these steps
@@ -179,6 +167,39 @@ class MapWorkflowView(MapView, ResourceWorkflowView):
                 log.warning('Parameter "geometry" for {} was not defined.'.format(step))
                 continue
 
+            step_geometry_data.append((step, geometry))
+
+        return step_geometry_data
+
+    def add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None):
+        """
+        Create layers for previous steps that have a spatial component to them for review of the previous steps.
+        Args:
+            request(HttpRequest): The request.
+            resource(Resource): the resource for this request.
+            current_step(ResourceWorkflowStep): The current step to be rendered.
+            map_view(MapView): The Tethys MapView object.
+            layer_groups(list<dict>): List of layer group dictionaries for new layers to add.
+            selectable(bool): Layers generated for previous steps are selectable when True.
+
+        Returns:
+            MapView, list<dict>: The updated MapView and layer groups.
+        """
+        # Get managers
+        map_manager = self.get_map_manager(
+            request=request,
+            resource=resource
+        )
+
+        # Check if previous steps are selectable
+        if selectable is None:
+            selectable = self.previous_steps_selectable
+
+        # Get the step and geometry data for previous steps (if this step has geometry data)
+        step_geometry_data = MapWorkflowView.get_geometry_data_for_previous_steps(current_step)
+
+        workflow_layers = []
+        for step, geometry in step_geometry_data:
             # Build the Layer
             workflow_layer = self._build_mv_layer(step, geometry, map_manager, selectable)
 

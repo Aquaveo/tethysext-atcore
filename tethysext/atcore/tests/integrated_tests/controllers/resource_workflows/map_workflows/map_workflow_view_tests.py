@@ -320,3 +320,105 @@ class MapWorkflowViewTests(WorkflowViewTestCase):
         self.assertIn('visible', ret_layer_groups[0])
         self.assertIn('toggle_status', ret_layer_groups[0])
         self.assertEqual({}, ret_layer_groups[1])
+
+    def test_get_geometry_data_for_previous_steps_no_geometry(self):
+        workflow = ResourceWorkflow(name='foo')
+        step1 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step1',
+            order=1
+        )
+        workflow.steps.append(step1)
+
+        step2 = ResourceWorkflowStep(
+            name='step2',
+            order=2
+        )
+        workflow.steps.append(step2)
+        step1.children.append(step2)
+
+        step3 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step3',
+            order=3
+        )
+        workflow.steps.append(step3)
+
+        self.assertEqual([], MapWorkflowView.get_geometry_data_for_previous_steps(step2))
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.to_geojson')
+    def test_get_geometry_data_for_previous_steps_with_geometry_None_child(self, mock_to_geojson):
+        mock_geometry = {
+            'features': [{
+                'properties': {'foo': 'bar'},
+                'geometry': {}
+            }]
+        }
+        mock_to_geojson.side_effect = [mock_geometry, {}]
+
+        workflow = ResourceWorkflow(name='foo')
+        step1 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step1',
+            order=1
+        )
+        workflow.steps.append(step1)
+        step1.children.append(None)
+
+        step2 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step2',
+            order=2
+        )
+        workflow.steps.append(step2)
+
+        self.assertEqual([(step1, mock_geometry)], MapWorkflowView.get_geometry_data_for_previous_steps(step2))
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_input_rws.SpatialInputRWS.to_geojson')
+    def test_get_geometry_data_for_previous_steps_with_child(self, mock_to_geojson):
+        mock_geometry = {
+            'features': [{
+                'properties': {'foo': 'bar'},
+                'geometry': {}
+            }]
+        }
+        mock_to_geojson.return_value = mock_geometry
+
+        workflow = ResourceWorkflow(name='foo')
+        step1 = SpatialResourceWorkflowStep(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step1',
+            order=1
+        )
+        workflow.steps.append(step1)
+
+        step2 = SpatialInputRWS(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step2',
+            order=2
+        )
+        workflow.steps.append(step2)
+        step1.children.append(step2)
+
+        step3 = SpatialResourceWorkflowStep(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            mock.MagicMock(),
+            name='step3',
+            order=3
+        )
+        workflow.steps.append(step3)
+
+        self.assertEqual([(step2, mock_geometry)], MapWorkflowView.get_geometry_data_for_previous_steps(step3))

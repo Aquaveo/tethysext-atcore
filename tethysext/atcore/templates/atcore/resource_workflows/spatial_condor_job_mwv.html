@@ -11,13 +11,36 @@
 {% endblock %}
 
 {% block map %}
-  {{ block.super }}
+  {% if has_geometry_data %}
+    {{ block.super }}
+  {% endif %}
   {% if has_tabular_data %}
     <div class="tab-data">
       {% for tab_data_title, tab_data in tabular_data.items %}
       <h2>{{ tab_data_title }}</h2>
       {% for k, v in tab_data.items %}
-      <p><b>{{ k|title }}:</b> {{ v }}</p>
+        {% if k == "table" %}
+        <table>
+          <thead>
+            <tr>
+              {% for header in v.headers %}
+                <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in v.rows %}
+              <tr>
+                {% for cell in row %}
+                  <td>{{ cell }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p><b>{{ k|title }}:</b> {{ v }}</p>
+        {% endif %}
       {% endfor %}
       {% endfor %}
     </div>
@@ -49,6 +72,17 @@
         padding-left: 25px;
         padding-top: 25px;
         display: block;
+      }
+      table {
+        border: 1px solid black;
+        margin-right: 10px;
+      }
+      tr {
+        border: 1px solid black;
+      }
+      th, td {
+        border: 1px solid black;
+        padding: 5px;
       }
     </style>
   {% endif %}

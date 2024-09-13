@@ -20,7 +20,7 @@ from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
-from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, ResultsResourceWorkflowStep
+from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, ResultsResourceWorkflowStep, TableInputRWS
 
 log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
@@ -201,42 +201,49 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
             raise ValueError('Step {} does not belong to this workflow.'.format(step))
 
         previous_steps = self.get_previous_steps(step)
-        steps_to_skip = set()
-        mappable_tabular_step_types = (FormInputRWS,)
+        mappable_tabular_step_types = (FormInputRWS, TableInputRWS, )
         step_data = {}
         for step in previous_steps:
-            # skip non form steps
-            if step in steps_to_skip or not isinstance(step, mappable_tabular_step_types):
-                continue
-
-            # Rebuild the param if param_class is in options
-            step_param_class = ''
-            if 'param_class' in step.options:
-                package, p_class = step.options['param_class'].rsplit('.', 1)
-                mod = __import__(package, fromlist=[p_class])
-                ParamClass = getattr(mod, p_class)
-                step_param_class = ParamClass(request=request, session=session, resource=resource)
-            step_params = step.get_parameter('form-values')
             fixed_params = dict()
-            for key, value in step_params.items():
-                # Return the available options of the object selector.
-                look_up_dictionary = dict()
-                # Check ParamClass is  initialize and if the param is an Object Selector.
-                try:
-                    if step_param_class and isinstance(step_param_class.param[key], param.ObjectSelector):
-                        look_up_dictionary = step_param_class.param[key].names
-                except KeyError:
-                    pass
-                # if the names is defined, it will return all the options as a dictionary for a given param.
-                # We need to look through the dictionary associated with the value and return its corresonding name.
-                if look_up_dictionary:
-                    step_value = self.get_key_from_value(look_up_dictionary, value)
-                else:
-                    step_value = value
-                step_name = key.replace('_', ' ').title()
-                fixed_params[step_name] = step_value
-            step_data[step.name] = fixed_params
-
+            if isinstance(step, FormInputRWS):
+                # Rebuild the param if param_class is in options
+                step_param_class = ''
+                if 'param_class' in step.options:
+                    package, p_class = step.options['param_class'].rsplit('.', 1)
+                    mod = __import__(package, fromlist=[p_class])
+                    ParamClass = getattr(mod, p_class)
+                    step_param_class = ParamClass(request=request, session=session, resource=resource)
+                step_params = step.get_parameter('form-values')
+                for key, value in step_params.items():
+                    # Return the available options of the object selector.
+                    look_up_dictionary = dict()
+                    # Check ParamClass is  initialize and if the param is an Object Selector.
+                    try:
+                        if step_param_class and isinstance(step_param_class.param[key], param.ObjectSelector):
+                            look_up_dictionary = step_param_class.param[key].names
+                    except KeyError:
+                        pass
+                    # if the names is defined, it will return all the options as a dictionary for a given param.
+                    # We need to look through the dictionary associated with the value and return its corresonding name.
+                    if look_up_dictionary:
+                        step_value = self.get_key_from_value(look_up_dictionary, value)
+                    else:
+                        step_value = value
+                    step_name = key.replace('_', ' ').title()
+                    fixed_params[step_name] = step_value
+            elif isinstance(step, TableInputRWS):
+                params = step.get_parameters()
+                data = params['dataset']['value']
+                headers = data.keys()
+                rows = list(zip(*data.values()))
+                fixed_params['table'] = {'headers': headers, 'rows': rows}
+            else:
+                params = step.get_parameters()
+                for param_name, values in params.items():
+                    if values.get('is_tabular', False):
+                        fixed_params[param_name] = values['value']
+            if isinstance(step, mappable_tabular_step_types) or fixed_params:
+                step_data[step.name] = fixed_params
         return step_data
 
     def get_next_steps(self, step):
