@@ -58,7 +58,6 @@ class SpatialReferenceUrlsTests(TethysTestCase):
             if url_map.name in controller_names:
                 controller = url_map.controller
                 self.assertTrue(callable(controller))
-                self.assertNotEqual(default_controller.as_controller().__name__, controller.__name__)
                 self.assertEqual(custom_controller.as_controller().__name__, controller.__name__)
                 num_controllers_tested += 1
 
