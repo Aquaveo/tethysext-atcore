@@ -55,6 +55,31 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
         has_tabular_data = len(tabular_data) > 0
 
+        # Preprocess tabular data
+        def format_as_html_list(data):
+            text = "<ul>"
+            for k, v in data.items():
+                if isinstance(v, dict):
+                    text += f'<li><b>{k}</b>:</li>'
+                    text += format_as_html_list(v)
+                else:  # this else block can be removed if you don't need it
+                    text += f'<li><b>{k}</b>: {v}</li>'
+            text += "</ul>"
+            return text
+
+        # Preprocess each parameter value as needed
+        for step_name, parameters in tabular_data.items():
+            if not isinstance(parameters, dict):
+                continue
+
+            for parameter, parameter_value in parameters.items():
+                # Tables handled in template
+                if parameter == 'table':
+                    continue
+                # Recursively format nested dictionaries as html lists
+                elif isinstance(parameter_value, dict):
+                    tabular_data[step_name][parameter] = format_as_html_list(parameter_value)
+
         # get geometry data for previous steps
         geometry_data = MapWorkflowView.get_geometry_data_for_previous_steps(current_step)
         has_geometry_data = len(geometry_data) > 0

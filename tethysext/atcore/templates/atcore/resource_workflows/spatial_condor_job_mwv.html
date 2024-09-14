@@ -39,7 +39,7 @@
           </tbody>
         </table>
         {% else %}
-          <p><b>{{ k|title }}:</b> {{ v }}</p>
+          <p><b>{{ k|title }}:</b> {{ v | safe }}</p>
         {% endif %}
       {% endfor %}
       {% endfor %}
