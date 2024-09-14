@@ -21,7 +21,7 @@ resource_files += find_resource_files('tethysext/' + ext_package + '/resources')
 
 setup(
     name=release_package,
-    version='1.1.2',
+    version='1.12.1',
     description='',
     long_description='',
     keywords='',
