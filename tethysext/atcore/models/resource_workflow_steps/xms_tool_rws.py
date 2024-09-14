@@ -57,7 +57,8 @@ class XMSToolRWS(ResourceWorkflowStep):
             'form-values': {
                 'help': 'Values from form',
                 'value': {},
-                'required': True
+                'required': True,
+                'is_tabular': True,
             },
             'resource_name': {
                 'help': 'The name of the resource',
