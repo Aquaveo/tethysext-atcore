@@ -25,7 +25,8 @@ var SPATIAL_DATASET_MWV = (function() {
     var NODATA_VALUE = -99999.9;
 
  	// Module variables
- 	var m_max_rows;                     // Maximum number of rows allowed
+ 	var m_max_rows,                     // Maximum number of rows allowed
+        m_fixed_rows;                   // If the number of rows are fixed
 
  	// Plot variables
  	var m_plot_columns,                 // Columns to plot (if any)
@@ -63,6 +64,7 @@ var SPATIAL_DATASET_MWV = (function() {
     parse_data = function() {
         m_max_rows = $(TABLE_SELECTOR).data('max-rows');
         m_plot_columns = $(TABLE_SELECTOR).data('plot-columns');
+        m_fixed_rows = $(TABLE_SELECTOR).data('fixed-rows');
     };
 
     get_num_table_rows = function() {
@@ -165,7 +167,6 @@ var SPATIAL_DATASET_MWV = (function() {
             var $paste_cell = $(this),
                 paste_table_id = $paste_cell.closest('table').attr('id'),
                 paste_table_body = '#' + paste_table_id + ' tbody',
-                all_rows = paste_table_body + ' tr',
                 last_row = paste_table_body + ' tr:last';
 
             $.each(e.originalEvent.clipboardData.items, function(i, clipboard_item) {
@@ -174,7 +175,6 @@ var SPATIAL_DATASET_MWV = (function() {
                         // Initialize
                         var paste_cell_i = $paste_cell.closest('td').index(),
                             paste_cell_j = $paste_cell.closest('tr').index(),
-                            num_table_rows = $(all_rows).length,
                             line_delimiter = ((text.indexOf('\r\n') === -1) ? '\n' : '\r\n'),
                             t_text = text.trim(line_delimiter),
                             data_rows = t_text.split(line_delimiter);
@@ -198,7 +198,11 @@ var SPATIAL_DATASET_MWV = (function() {
                             $.each(data_values, function(data_i, data_value) {
                                 var row_j = paste_cell_j + data_j,
                                     col_i = paste_cell_i + data_i,
-                                    input_at_row_col = 'tr:eq('+row_j+') td:eq('+col_i+') input';
+                                    input_at_row_col = 'tr:eq(' + row_j + ') td:eq(' + col_i + ') input';
+                                
+                                if (m_fixed_rows && row_j + 1 > get_num_table_rows()) {
+                                    return false;
+                                }
 
                                 // Change value of the input in the appropriate cell of the table
                                 var $input = $paste_cell.closest('table tbody')
@@ -208,8 +212,8 @@ var SPATIAL_DATASET_MWV = (function() {
                                 if ($input.length === 0) {
                                     var num_rows = get_num_table_rows();
 
-                                    // Stop pasting loop if maximum number of rows has been reached
-                                    if (num_rows == m_max_rows) {
+                                    // Stop pasting loop if maximum number of rows has been reached or the table size is fixed
+                                    if (num_rows == m_max_rows || m_fixed_rows) {
                                         return false;
                                     }
 

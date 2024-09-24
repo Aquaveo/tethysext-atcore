@@ -33,6 +33,7 @@ class TableInputRWS(ResourceWorkflowStep):
     DEFAULT_DATASET_TITLE = 'Dataset'
     DEFAULT_EMPTY_ROWS = 10
     DEFAULT_MAX_ROWS = 1000
+    DEFAULT_FIXED_ROWS = False
     DEFAULT_COLUMNS = ['X', 'Y']
     DEFAULT_DATASET = pd.DataFrame(columns=DEFAULT_COLUMNS)
 
@@ -46,7 +47,8 @@ class TableInputRWS(ResourceWorkflowStep):
             'plot_columns': [],
             'optional_columns': [],
             'max_rows': self.DEFAULT_MAX_ROWS,
-            'empty_rows': self.DEFAULT_EMPTY_ROWS
+            'empty_rows': self.DEFAULT_EMPTY_ROWS,
+            'fixed_rows': self.DEFAULT_FIXED_ROWS
         })
         return default_options
 
