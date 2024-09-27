@@ -78,7 +78,8 @@ class TableInputWV(ResourceWorkflowView):
             'plot_columns': current_step.options.get('plot_columns', []),
             'optional_columns': current_step.options.get('optional_columns', []),
             'max_rows': max_rows,
-            'fixed_rows': current_step.options.get('fixed_rows', False),
+            'fixed_rows': current_step.options.get('fixed_rows', TableInputRWS.DEFAULT_FIXED_ROWS),
+            'numeric_step': current_step.options.get('numeric_step', TableInputRWS.DEFAULT_NUMERIC_STEP),
             'nodata_val': TABLE_DATASET_NODATA,
         })
 

@@ -44,7 +44,7 @@
                         <td>
                             {% with is_numeric=column_is_numeric|return_item:column %}
                             <input {% if is_numeric %}type="number"{% else %}type="text"{% endif %}
-                                {% if is_numeric %}step="0.001"{% endif %}
+                                {% if is_numeric %}step="{{ numeric_step }}"{% endif %}
                                 class="form-field"
                                 name="{{ column }}"
                                 value="{% if val != nodata_val %}{{ val }}{% endif %}"
