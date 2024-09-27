@@ -106,7 +106,9 @@ var SPATIAL_DATASET_MWV = (function() {
         // Clear Table Button
         $('#spatial-dataset-clear-table-btn').on('click', function(){
             $(TABLE_FIELD_SELECTOR).each(function(index, elem) {
-                $(elem).val('');
+                if (!$(elem).prop('readonly')) {
+                    $(elem).val('');
+                }
             });
             update_plot();
         });
