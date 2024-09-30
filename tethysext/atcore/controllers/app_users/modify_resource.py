@@ -180,7 +180,6 @@ class ModifyResource(ResourceViewMixin):
                     # Look up existing resource
                     if editing:
                         resource = session.query(_Resource).get(resource_id)
-
                         if not resource:
                             raise ATCoreException('Unable to find {}'.format(
                                 _Resource.DISPLAY_TYPE_SINGULAR.lower()
@@ -189,11 +188,12 @@ class ModifyResource(ResourceViewMixin):
                         # Reset the organizations
                         resource.organizations = []
 
-                        # Reset the parents
-                        resource.parents = []
+                        if self.enable_relationship_fields:
+                            # Reset the parents
+                            resource.parents = []
 
-                        # Reset the children
-                        resource.children = []
+                            # Reset the children
+                            resource.children = []
 
                     # Otherwise create a new project
                     else:
