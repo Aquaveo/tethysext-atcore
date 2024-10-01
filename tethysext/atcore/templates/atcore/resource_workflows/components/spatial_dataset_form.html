@@ -6,12 +6,14 @@
 <div class="row" {% if plot_columns %}style="min-width:675px;"{% endif %}>
     <div class="{% if plot_columns %}col-sm-6{% else %}col{% endif %} pop-up-col table-col">
         <div class="clearfix">
+            {% if not fixed_rows %}
             <a id="spatial-dataset-add-row-btn" class="btn btn-sm btn-outline-secondary table-btn float-end" title="Add row">
                 <span class="bi bi-plus-lg"></span>
             </a>
             <a id="spatial-dataset-remove-row-btn" class="btn btn-sm btn-outline-secondary table-btn float-end" title="Remove row">
                 <span class="bi bi-dash-lg"></span>
             </a>
+            {% endif %}
             <a id="spatial-dataset-clear-table-btn" class="btn btn-sm btn-outline-secondary table-btn float-end" title="Clear table">
                 <span class="bi bi-trash"></span>
             </a>
@@ -23,6 +25,7 @@
             <table id="spatial-dataset-table"
                 class="table table-bordered table-striped table-hover spatial-data-table"
                 data-max-rows="{{ max_rows|jsonify }}"
+                data-fixed-rows="{{ fixed_rows|jsonify }}"
                 data-plot-columns="{{ plot_columns|jsonify }}">
                 <thead>
                     <tr>
@@ -41,6 +44,7 @@
                         <td>
                             {% with is_numeric=column_is_numeric|return_item:column %}
                             <input {% if is_numeric %}type="number"{% else %}type="text"{% endif %}
+                                {% if is_numeric %}step="{{ numeric_step }}"{% endif %}
                                 class="form-field"
                                 name="{{ column }}"
                                 value="{% if val != nodata_val %}{{ val }}{% endif %}"

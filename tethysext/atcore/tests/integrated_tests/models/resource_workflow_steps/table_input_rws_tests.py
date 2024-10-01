@@ -52,6 +52,8 @@ class TableInputRWSTests(SqlAlchemyTestCase):
             'optional_columns': [],
             'max_rows': TableInputRWS.DEFAULT_MAX_ROWS,
             'empty_rows': TableInputRWS.DEFAULT_EMPTY_ROWS,
+            'fixed_rows': TableInputRWS.DEFAULT_FIXED_ROWS,
+            'numeric_step': TableInputRWS.DEFAULT_NUMERIC_STEP,
             'release_resource_lock_on_completion': True,
             'release_resource_lock_on_init': False,
             'release_workflow_lock_on_completion': True,
