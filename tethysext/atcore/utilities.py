@@ -168,6 +168,13 @@ def json_serializer(obj):
     )
 
 
+def update_urlmap_index(urlmaps,app_index):
+    for urlmap in urlmaps:
+        if urlmap.name == app_index:
+            urlmap.url = "^$"
+    return urlmaps
+
+
 if __name__ == '__main__':
     import sys
     print(f'Parsing url: {sys.argv[1]}')

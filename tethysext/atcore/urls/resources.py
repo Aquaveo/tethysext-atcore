@@ -11,6 +11,7 @@ from tethys_sdk.base import TethysController
 from tethysext.atcore.controllers.app_users import ManageResources, ModifyResource, ResourceDetails, ResourceStatus
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
+from tethysext.atcore.utilities import update_urlmap_index
 
 
 def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html',
@@ -175,5 +176,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
             )
         )
     )
+
+    url_maps = update_urlmap_index(url_maps,app.index)
 
     return url_maps

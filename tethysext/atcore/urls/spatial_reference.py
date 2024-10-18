@@ -2,7 +2,7 @@ import inspect
 from tethys_sdk.base import TethysController
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 from tethysext.atcore.controllers.rest.spatial_reference import QuerySpatialReference
-
+from tethysext.atcore.utilities import update_urlmap_index
 
 def urls(url_map_maker, app, persistent_store_name, base_url_path='', custom_controllers=(), custom_services=()):
     """
@@ -67,5 +67,7 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', custom_con
             )
         ),
     )
+
+    url_maps = update_urlmap_index(url_maps,app.index)
 
     return url_maps

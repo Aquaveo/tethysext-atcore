@@ -12,6 +12,7 @@ from tethysext.atcore.controllers.resource_workflows import ResourceWorkflowRout
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource, ResourceWorkflow
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.handlers import panel_rws_handler
+from tethysext.atcore.utilities import update_urlmap_index
 
 DEFAULT_HANDLER = {
     'handler': panel_rws_handler,
@@ -158,5 +159,7 @@ def urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_pat
         ]
 
         url_maps.extend(workflow_url_maps)
+        
+    url_maps = update_urlmap_index(url_maps,app.index)
 
     return url_maps
