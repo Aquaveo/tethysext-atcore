@@ -281,6 +281,6 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 resource_model=_Resource
             ))
 
-    url_maps = update_urlmap_index(url_maps,app.index)
+    url_maps = update_urlmap_index(url_maps,app)
 
     return url_maps
