@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+
 from unittest import mock
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
@@ -31,9 +32,9 @@ class SpatialReferenceUrlsTests(TethysTestCase):
     def setUp(self):
         self.app = mock.MagicMock()
         self.app.index = "index_url"
-        self.base_url_path = 'foo/bar'
-        self.names = ['atcore_query_spatial_reference']
-        self.urls = ['rest/spatial-reference/query']
+        self.base_url_path = "foo/bar"
+        self.names = ["atcore_query_spatial_reference"]
+        self.urls = ["rest/spatial-reference/query"]
         self.num_urls = 1
 
     def tearDown(self):
@@ -46,7 +47,7 @@ class SpatialReferenceUrlsTests(TethysTestCase):
 
     def url_asserts(self, url_maps, with_base_url=False):
         if with_base_url:
-            compare_urls = [self.base_url_path + '/' + u for u in self.urls]
+            compare_urls = [self.base_url_path + "/" + u for u in self.urls]
         else:
             compare_urls = self.urls
 
@@ -54,14 +55,18 @@ class SpatialReferenceUrlsTests(TethysTestCase):
             url = url_map.url
             self.assertIn(url, compare_urls)
 
-    def controller_asserts(self, url_maps, controller_names, default_controller, custom_controller):
+    def controller_asserts(
+        self, url_maps, controller_names, default_controller, custom_controller
+    ):
         num_controllers_tested = 0
 
         for url_map in url_maps:
             if url_map.name in controller_names:
                 controller = url_map.controller
                 self.assertTrue(callable(controller))
-                self.assertEqual(custom_controller.as_controller().__name__, controller.__name__)
+                self.assertEqual(
+                    custom_controller.as_controller().__name__, controller.__name__
+                )
                 num_controllers_tested += 1
 
         self.assertEqual(len(controller_names), num_controllers_tested)
@@ -75,50 +80,97 @@ class SpatialReferenceUrlsTests(TethysTestCase):
         self.url_asserts(url_maps)
 
     def test_base_url_path(self):
-        url_maps = spatial_reference.urls(MockUrlMapMaker, self.app, None, base_url_path=self.base_url_path)
+        url_maps = spatial_reference.urls(
+            MockUrlMapMaker, self.app, None, base_url_path=self.base_url_path
+        )
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
 
     def test_base_url_path_startswith_slash(self):
-        startswith_path = '/' + self.base_url_path
-        url_maps = spatial_reference.urls(MockUrlMapMaker, self.app, None, base_url_path=startswith_path)
+        startswith_path = "/" + self.base_url_path
+        url_maps = spatial_reference.urls(
+            MockUrlMapMaker, self.app, None, base_url_path=startswith_path
+        )
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
 
     def test_base_url_path_endswith_slash(self):
-        endswith_path = self.base_url_path + '/'
-        url_maps = spatial_reference.urls(MockUrlMapMaker, self.app, None, base_url_path=endswith_path)
+        endswith_path = self.base_url_path + "/"
+        url_maps = spatial_reference.urls(
+            MockUrlMapMaker, self.app, None, base_url_path=endswith_path
+        )
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
 
     def test_custom_query_spatial_reference_controller(self):
-        url_maps = spatial_reference.urls(MockUrlMapMaker, self.app, None, custom_controllers=[CustomQuerySpatialReference])
+        url_maps = spatial_reference.urls(
+            MockUrlMapMaker,
+            self.app,
+            None,
+            custom_controllers=[CustomQuerySpatialReference],
+        )
         self.assertEqual(len(url_maps), self.num_urls)
-        self.controller_asserts(url_maps, ['atcore_query_spatial_reference'], QuerySpatialReference,
-                                CustomQuerySpatialReference)
+        self.controller_asserts(
+            url_maps,
+            ["atcore_query_spatial_reference"],
+            QuerySpatialReference,
+            CustomQuerySpatialReference,
+        )
 
     def test_invalid_controller_arg_class(self):
         mock_db_name = "foo"
-        self.assertRaises(ValueError, spatial_reference.urls, MockUrlMapMaker, self.app, mock_db_name,
-                          custom_controllers=[InvalidController])
+        self.assertRaises(
+            ValueError,
+            spatial_reference.urls,
+            MockUrlMapMaker,
+            self.app,
+            mock_db_name,
+            custom_controllers=[InvalidController],
+        )
 
     def test_invalid_controller_arg_not_class(self):
         mock_db_name = "foo"
-        self.assertRaises(ValueError, spatial_reference.urls, MockUrlMapMaker, self.app, mock_db_name,
-                          custom_controllers=['not-a-class'])
+        self.assertRaises(
+            ValueError,
+            spatial_reference.urls,
+            MockUrlMapMaker,
+            self.app,
+            mock_db_name,
+            custom_controllers=["not-a-class"],
+        )
 
     def test_custom_base_url_path_and_controllers(self):
         mock_db_name = "foo"
-        url_maps = spatial_reference.urls(MockUrlMapMaker, self.app, mock_db_name, base_url_path=self.base_url_path,
-                                          custom_controllers=[CustomQuerySpatialReference])
+        url_maps = spatial_reference.urls(
+            MockUrlMapMaker,
+            self.app,
+            mock_db_name,
+            base_url_path=self.base_url_path,
+            custom_controllers=[CustomQuerySpatialReference],
+        )
         self.assertEqual(len(url_maps), self.num_urls)
         self.url_asserts(url_maps, with_base_url=True)
-        self.controller_asserts(url_maps, ['atcore_query_spatial_reference'], QuerySpatialReference,
-                                CustomQuerySpatialReference)
+        self.controller_asserts(
+            url_maps,
+            ["atcore_query_spatial_reference"],
+            QuerySpatialReference,
+            CustomQuerySpatialReference,
+        )
 
     def test_custom_services(self):
         # NOTE: Don't know how to validate this... for not just test that it doesn't throw an error.
         mock_db_name = "foo"
-        spatial_reference.urls(MockUrlMapMaker, self.app, mock_db_name, custom_services=[CustomSpatialReferenceService])
-        self.assertRaises(ValueError, spatial_reference.urls, MockUrlMapMaker, self.app, mock_db_name,
-                          custom_services=['invalid-service'])
+        spatial_reference.urls(
+            MockUrlMapMaker,
+            self.app,
+            mock_db_name,
+            custom_services=[CustomSpatialReferenceService],
+        )
+        self.assertRaises(
+            ValueError,
+            spatial_reference.urls,
+            MockUrlMapMaker,
+            self.app,
+            mock_db_name,
+            custom_services=["invalid-service"],
+        )
