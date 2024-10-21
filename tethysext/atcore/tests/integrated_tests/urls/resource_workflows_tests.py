@@ -50,6 +50,7 @@ class ResourceWorkflowsTests(unittest.TestCase):
 
     def setUp(self):
         self.app = mock.MagicMock()
+        self.app.index = "index_url"
         self.persistent_store_name = 'some_store_name'
         self.workflow_pairs = [(ResourceWorkflow, ResourceWorkflowRouter)]
         self.base_url_name = 'foo/bar'
