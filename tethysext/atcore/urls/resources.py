@@ -6,15 +6,33 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
+
 import inspect
 from tethys_sdk.base import TethysController
-from tethysext.atcore.controllers.app_users import ManageResources, ModifyResource, ResourceDetails, ResourceStatus
+from tethysext.atcore.controllers.app_users import (
+    ManageResources,
+    ModifyResource,
+    ResourceDetails,
+    ResourceStatus,
+)
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
-from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
+from tethysext.atcore.services.app_users.permissions_manager import (
+    AppPermissionsManager,
+)
+from tethysext.atcore.utilities import update_urlmap_index
 
 
-def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html',
-         custom_controllers=(), custom_models=(), custom_permissions_manager=None, resource_model=Resource):
+def urls(
+    url_map_maker,
+    app,
+    persistent_store_name,
+    base_url_path="",
+    base_template="atcore/app_users/base.html",
+    custom_controllers=(),
+    custom_models=(),
+    custom_permissions_manager=None,
+    resource_model=Resource,
+):
     """
     Generate UrlMap objects for Resource Views. To link to pages provided by the Resource Views use the name of the url with your app namespace:
 
@@ -46,9 +64,9 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
     """  # noqa: F401, E501
     # Validate kwargs
     if base_url_path:
-        if base_url_path.startswith('/'):
+        if base_url_path.startswith("/"):
             base_url_path = base_url_path[1:]
-        if base_url_path.endswith('/'):
+        if base_url_path.endswith("/"):
             base_url_path = base_url_path[:-1]
 
     # Default controller classes
@@ -67,8 +85,12 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
 
     # Handle controller classes
     for custom_controller in custom_controllers:
-        if not inspect.isclass(custom_controller) or not issubclass(custom_controller, TethysController):
-            raise ValueError('custom_controllers must contain only valid TethysController sub classes.')
+        if not inspect.isclass(custom_controller) or not issubclass(
+            custom_controller, TethysController
+        ):
+            raise ValueError(
+                "custom_controllers must contain only valid TethysController sub classes."
+            )
         elif issubclass(custom_controller, ManageResources):
             _ManageResources = custom_controller
         elif issubclass(custom_controller, ModifyResource):
@@ -85,33 +107,42 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
         elif inspect.isclass(custom_model) and issubclass(custom_model, Organization):
             _Organization = custom_model
         else:
-            raise ValueError('custom_models must contain only subclasses of AppUser or Organization.')
+            raise ValueError(
+                "custom_models must contain only subclasses of AppUser or Organization."
+            )
 
     # Handle resource model
     if inspect.isclass(resource_model) and issubclass(resource_model, Resource):
         _Resource = resource_model
     else:
-        raise ValueError('resource_model must be a subclass of Resource.')
+        raise ValueError("resource_model must be a subclass of Resource.")
 
     # Handle custom permissions manager
     if custom_permissions_manager is not None:
-        if inspect.isclass(custom_permissions_manager) and \
-           issubclass(custom_permissions_manager, AppPermissionsManager):
+        if inspect.isclass(custom_permissions_manager) and issubclass(
+            custom_permissions_manager, AppPermissionsManager
+        ):
             _PermissionsManager = custom_permissions_manager
         else:
-            raise ValueError('custom_permissions_manager must be a subclass of AppPermissionsManager.')
+            raise ValueError(
+                "custom_permissions_manager must be a subclass of AppPermissionsManager."
+            )
 
     # Url Patterns
     manage_resources_url = resource_model.SLUG.replace("_", "-")
-    new_resource_url = manage_resources_url + '/new'
-    edit_resource_url = manage_resources_url + '/{resource_id}/edit'
-    resource_details_url = manage_resources_url + '/{resource_id}/details'
-    resource_status_url = manage_resources_url + '/status'
+    new_resource_url = manage_resources_url + "/new"
+    edit_resource_url = manage_resources_url + "/{resource_id}/edit"
+    resource_details_url = manage_resources_url + "/{resource_id}/details"
+    resource_status_url = manage_resources_url + "/status"
 
     url_maps = (
         url_map_maker(
-            name=f'{resource_model.SLUG}_manage_resources',
-            url='/'.join([base_url_path, manage_resources_url]) if base_url_path else manage_resources_url,
+            name=f"{resource_model.SLUG}_manage_resources",
+            url=(
+                "/".join([base_url_path, manage_resources_url])
+                if base_url_path
+                else manage_resources_url
+            ),
             controller=_ManageResources.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -119,12 +150,16 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource,
                 _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
+                base_template=base_template,
+            ),
         ),
         url_map_maker(
-            name=f'{resource_model.SLUG}_new_resource',
-            url='/'.join([base_url_path, new_resource_url]) if base_url_path else new_resource_url,
+            name=f"{resource_model.SLUG}_new_resource",
+            url=(
+                "/".join([base_url_path, new_resource_url])
+                if base_url_path
+                else new_resource_url
+            ),
             controller=_ModifyResource.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -132,12 +167,16 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource,
                 _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
+                base_template=base_template,
+            ),
         ),
         url_map_maker(
-            name=f'{resource_model.SLUG}_edit_resource',
-            url='/'.join([base_url_path, edit_resource_url]) if base_url_path else edit_resource_url,
+            name=f"{resource_model.SLUG}_edit_resource",
+            url=(
+                "/".join([base_url_path, edit_resource_url])
+                if base_url_path
+                else edit_resource_url
+            ),
             controller=_ModifyResource.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -145,12 +184,16 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource,
                 _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
+                base_template=base_template,
+            ),
         ),
         url_map_maker(
-            name=f'{resource_model.SLUG}_resource_details',
-            url='/'.join([base_url_path, resource_details_url]) if base_url_path else resource_details_url,
+            name=f"{resource_model.SLUG}_resource_details",
+            url=(
+                "/".join([base_url_path, resource_details_url])
+                if base_url_path
+                else resource_details_url
+            ),
             controller=_ResourceDetails.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -158,12 +201,16 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource,
                 _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
+                base_template=base_template,
+            ),
         ),
         url_map_maker(
-            name=f'{resource_model.SLUG}_resource_status',
-            url='/'.join([base_url_path, resource_status_url]) if base_url_path else resource_status_url,
+            name=f"{resource_model.SLUG}_resource_status",
+            url=(
+                "/".join([base_url_path, resource_status_url])
+                if base_url_path
+                else resource_status_url
+            ),
             controller=_ResourceStatus.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
@@ -171,9 +218,11 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', base_templ
                 _Organization=_Organization,
                 _Resource=_Resource,
                 _PermissionsManager=_PermissionsManager,
-                base_template=base_template
-            )
-        )
+                base_template=base_template,
+            ),
+        ),
     )
+
+    url_maps = update_urlmap_index(url_maps, app)
 
     return url_maps

@@ -2,9 +2,17 @@ import inspect
 from tethys_sdk.base import TethysController
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 from tethysext.atcore.controllers.rest.spatial_reference import QuerySpatialReference
+from tethysext.atcore.utilities import update_urlmap_index
 
 
-def urls(url_map_maker, app, persistent_store_name, base_url_path='', custom_controllers=(), custom_services=()):
+def urls(
+    url_map_maker,
+    app,
+    persistent_store_name,
+    base_url_path="",
+    custom_controllers=(),
+    custom_services=(),
+):
     """
     Generate UrlMap objects for spatial_reference_select gizmo.
 
@@ -29,9 +37,9 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', custom_con
     """  # noqa: F401, E501
     # Validate kwargs
     if base_url_path:
-        if base_url_path.startswith('/'):
+        if base_url_path.startswith("/"):
             base_url_path = base_url_path[1:]
-        if base_url_path.endswith('/'):
+        if base_url_path.endswith("/"):
             base_url_path = base_url_path[:-1]
 
     # Default controller classes
@@ -42,30 +50,43 @@ def urls(url_map_maker, app, persistent_store_name, base_url_path='', custom_con
 
     # Handle controller classes
     for custom_controller in custom_controllers:
-        if not inspect.isclass(custom_controller) or not issubclass(custom_controller, TethysController):
-            raise ValueError('custom_controllers must contain only valid TethysController sub classes.')
+        if not inspect.isclass(custom_controller) or not issubclass(
+            custom_controller, TethysController
+        ):
+            raise ValueError(
+                "custom_controllers must contain only valid TethysController sub classes."
+            )
         elif issubclass(custom_controller, QuerySpatialReference):
             _QuerySpatialReference = custom_controller
 
     for custom_service in custom_services:
-        if inspect.isclass(custom_service) and issubclass(custom_service, SpatialReferenceService):
+        if inspect.isclass(custom_service) and issubclass(
+            custom_service, SpatialReferenceService
+        ):
             _SpatialReferenceService = custom_service
         else:
-            raise ValueError('custom_servicess must contain only subclasses of SpatialReferenceService.')
-
+            raise ValueError(
+                "custom_servicess must contain only subclasses of SpatialReferenceService."
+            )
     # Url Patterns
-    query_srid_url = 'rest/spatial-reference/query'
+    query_srid_url = "rest/spatial-reference/query"
 
     url_maps = (
         url_map_maker(
-            name='atcore_query_spatial_reference',
-            url='/'.join([base_url_path, query_srid_url]) if base_url_path else query_srid_url,
+            name="atcore_query_spatial_reference",
+            url=(
+                "/".join([base_url_path, query_srid_url])
+                if base_url_path
+                else query_srid_url
+            ),
             controller=_QuerySpatialReference.as_controller(
                 _app=app,
                 _persistent_store_name=persistent_store_name,
-                _SpatialReferenceService=_SpatialReferenceService
-            )
+                _SpatialReferenceService=_SpatialReferenceService,
+            ),
         ),
     )
+
+    url_maps = update_urlmap_index(url_maps, app)
 
     return url_maps

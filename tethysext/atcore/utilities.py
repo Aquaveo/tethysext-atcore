@@ -6,13 +6,16 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+
 import datetime
 import re
 from collections import namedtuple
 from uuid import UUID
 
 
-Url = namedtuple('Url', ['protocol', 'username', 'password', 'host', 'port', 'path', 'endpoint'])
+Url = namedtuple(
+    "Url", ["protocol", "username", "password", "host", "port", "path", "endpoint"]
+)
 
 
 def parse_url(url):
@@ -20,35 +23,35 @@ def parse_url(url):
     Splits url into parts.
     e.g.: "http://admin:geoserver@localhost:8181/geoserver/rest"
     """
-    url_pattern = r'(?P<protocol>[\w]*)://(?P<username>[\w\-\.]*)' \
-                  r':(?P<password>[\w\~\`\!\@\#\$\%\^\&\*\(\)\-\_\+\=\[\]\{\}\|\:\;\<\>\,\.\?]*)' \
-                  r'@(?P<host>[\w\-\.]*):*(?P<port>[0-9]*)/(?P<path>[\w\-\./]*)'
+    url_pattern = (
+        r"(?P<protocol>[\w]*)://(?P<username>[\w\-\.]*)"
+        r":(?P<password>[\w\~\`\!\@\#\$\%\^\&\*\(\)\-\_\+\=\[\]\{\}\|\:\;\<\>\,\.\?]*)"
+        r"@(?P<host>[\w\-\.]*):*(?P<port>[0-9]*)/(?P<path>[\w\-\./]*)"
+    )
     result = re.match(url_pattern, url)
     if result:
-        if result.group('port'):
-            endpoint = '{}://{}:{}/{}'.format(
-                result.group('protocol'),
-                result.group('host'),
-                result.group('port'),
-                result.group('path')
+        if result.group("port"):
+            endpoint = "{}://{}:{}/{}".format(
+                result.group("protocol"),
+                result.group("host"),
+                result.group("port"),
+                result.group("path"),
             )
         else:
-            endpoint = '{}://{}/{}'.format(
-                result.group('protocol'),
-                result.group('host'),
-                result.group('path')
+            endpoint = "{}://{}/{}".format(
+                result.group("protocol"), result.group("host"), result.group("path")
             )
         return Url(
-            protocol=result.group('protocol'),
-            username=result.group('username'),
-            password=result.group('password'),
-            host=result.group('host'),
-            port=result.group('port'),
-            path=result.group('path'),
-            endpoint=endpoint
+            protocol=result.group("protocol"),
+            username=result.group("username"),
+            password=result.group("password"),
+            host=result.group("host"),
+            port=result.group("port"),
+            path=result.group("path"),
+            endpoint=endpoint,
         )
     else:
-        raise ValueError('Invalid url given: {}'.format(url))
+        raise ValueError("Invalid url given: {}".format(url))
 
 
 def generate_geoserver_urls(gs_engine):
@@ -57,24 +60,26 @@ def generate_geoserver_urls(gs_engine):
     endpoint = gs_engine.endpoint
     public_endpoint = gs_engine.public_endpoint
 
-    parts = endpoint.split('://')
+    parts = endpoint.split("://")
     if len(parts) > 1:
         protocol = parts[0]
         endpoint_no_protocol = parts[1]
     else:
-        protocol = ''
+        protocol = ""
         endpoint_no_protocol = parts[0]
 
-    public_parts = public_endpoint.split('://')
+    public_parts = public_endpoint.split("://")
     if len(public_parts) > 1:
         public_protocol = public_parts[0]
         public_endpoint_no_protocol = public_parts[1]
     else:
-        public_protocol = ''
+        public_protocol = ""
         public_endpoint_no_protocol = public_parts[0]
 
-    url = f'{protocol}://{username}:{password}@{endpoint_no_protocol}'
-    public_url = f'{public_protocol}://{username}:{password}@{public_endpoint_no_protocol}'
+    url = f"{protocol}://{username}:{password}@{endpoint_no_protocol}"
+    public_url = (
+        f"{public_protocol}://{username}:{password}@{public_endpoint_no_protocol}"
+    )
 
     return url, public_url
 
@@ -98,8 +103,8 @@ def clean_request(request):
     request.POST._mutable = True
 
     # Pop off the 'method' parameter
-    request.GET.pop('method', None)
-    request.POST.pop('method', None)
+    request.GET.pop("method", None)
+    request.POST.pop("method", None)
 
     # Restore mutability
     request.GET._mutable = get_mutable
@@ -116,7 +121,7 @@ def strip_list(the_list, *args):
         the_list(list): the list.
         *args: any number of values to strip from the end of the list.
     """
-    targets = ''
+    targets = ""
 
     if args:
         targets = args
@@ -136,7 +141,7 @@ def strip_list(the_list, *args):
 
 
 def grammatically_correct_join(strings, conjunction="and"):
-    join_strings = ', '.join(strings[:-2] + [f" {conjunction} ".join(strings[-2:])])
+    join_strings = ", ".join(strings[:-2] + [f" {conjunction} ".join(strings[-2:])])
     return join_strings
 
 
@@ -148,7 +153,7 @@ def import_from_string(path):
         path<str>: Dot-path to Class, Function or other object in a module (e.g. foo.bar.Klass).
     """
     # Split into parts and extract function name
-    module_path, obj_name = path.rsplit('.', 1)
+    module_path, obj_name = path.rsplit(".", 1)
 
     # Import module
     module = __import__(module_path, fromlist=[str(obj_name)])
@@ -168,8 +173,16 @@ def json_serializer(obj):
     )
 
 
-if __name__ == '__main__':
+def update_urlmap_index(urlmaps, app):
+    for urlmap in urlmaps:
+        if urlmap.name == app.index:
+            urlmap.url = "^$"
+    return urlmaps
+
+
+if __name__ == "__main__":
     import sys
-    print(f'Parsing url: {sys.argv[1]}')
+
+    print(f"Parsing url: {sys.argv[1]}")
     url = parse_url(sys.argv[1])
-    print(f'Url: {url}')
+    print(f"Url: {url}")
