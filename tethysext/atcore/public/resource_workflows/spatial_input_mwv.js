@@ -175,6 +175,12 @@ var SPATIAL_INPUT_MWV = (function() {
         // Bind to various popup events
         bind_popup_shown_event();
         bind_popup_closed_event();
+
+        let m_map = TETHYS_MAP_VIEW.getMap();
+        let m_scale = new ol.control.ScaleLine({
+            units: 'metric',
+        });
+        m_map.addControl(m_scale);
 	});
 
 	return m_public_interface;
