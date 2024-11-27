@@ -30,9 +30,7 @@ var ATCORE_MAP_VIEW = (function() {
  	    m_layer_groups,                 // Layer and layer group metadata
  	    m_workspace,                    // Workspace from SpatialManager
  	    m_extent,                       // Home extent for map
- 	    m_enable_properties_popup,      // Show properties pop-up
- 	    m_select_interaction,           // TethysMap select interaction for vector layers
- 	    m_drawing_layer;                // The drawing layer
+ 	    m_enable_properties_popup;      // Show properties pop-up
 
  	var m_geocode_objects,              // An array of the current items in the geocode select
         m_geocode_layer;                // Layer used to store geocode location
@@ -141,7 +139,6 @@ var ATCORE_MAP_VIEW = (function() {
 
 	    // Setup layer map
 	    m_layers = {};
-	    m_drawing_layer = null;
 
 	    // Get id from tethys_data attribute
 	    m_map.getLayers().forEach(function(layer, index, array) {
@@ -154,8 +151,7 @@ var ATCORE_MAP_VIEW = (function() {
 	        }
 	        // Handle drawing layer
 	        else if ('tethys_legend_title' in layer && layer.tethys_legend_title == 'Drawing Layer') {
-	            m_drawing_layer = layer;
-	            m_layers['drawing_layer'] = m_drawing_layer;
+	            m_layers['drawing_layer'] = layer;
 	        }
 	    });
 
@@ -167,7 +163,6 @@ var ATCORE_MAP_VIEW = (function() {
     sync_layer_visibility = function() {
         let layer_tab_panel = $('#layers-tab-panel');
         let layer_groups = layer_tab_panel.find('.layer-group-item');
-        let i;
         let check_status;
         $.each(layer_groups, function(index, content) {
             // Get Group check status
@@ -1455,7 +1450,7 @@ var ATCORE_MAP_VIEW = (function() {
         ];
     };
 
- 	  // Geocode Methods
+ 	// Geocode Methods
     init_geocode = function() {
         if (p_can_geocode) {
             // Add Geocode Control to OpenLayers controls container
