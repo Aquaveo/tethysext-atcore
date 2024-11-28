@@ -262,6 +262,7 @@ var SPATIAL_DATASET_MWV = (function() {
             modeBarButtonsToRemove: ['zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
                                      'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian',
                                      'toggleSpikelines', 'sendDataToCloud'],
+            plotlyServerURL: "https://chart-studio.plotly.com",
         };
         // Reset column names and selectors
         m_x_column = [];

@@ -271,7 +271,10 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         m_plot = 'map-plot';
-        m_plot_config = {scrollZoom: true};
+        m_plot_config = {
+            scrollZoom: true,
+            plotlyServerURL: "https://chart-studio.plotly.com",
+        };
 
         let data = [];
 
@@ -280,10 +283,14 @@ var ATCORE_MAP_VIEW = (function() {
             height: 415,
             margin: {l: 80, r: 80, t: 20, b: 80},
             xaxis:  {
-                title: 'X Axis Title',
+                title: {
+                    text: 'X Axis Title',
+                },
             },
             yaxis: {
-                title: 'Y Axis Title',
+                title: {
+                    text: 'Y Axis Title',
+                },
             }
         };
 

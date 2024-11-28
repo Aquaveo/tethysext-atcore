@@ -547,7 +547,10 @@ var ATCORE_MAP_VIEW = (function() {
         }
 
         m_plot = 'map-plot';
-        m_plot_config = {scrollZoom: true};
+        m_plot_config = {
+            scrollZoom: true,
+            plotlyServerURL: "https://chart-studio.plotly.com",
+        };
 
         let data = [];
 
