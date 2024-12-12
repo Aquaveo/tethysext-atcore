@@ -1,13 +1,17 @@
 # Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:dev-py3.12-dj3.2
+ARG TETHYS_VERSION=4.3.2
+ARG PYTHON_VERSION=3.12
+ARG DJANGO_VERSION=4.2
+
+FROM tethysplatform/tethys-core:${TETHYS_VERSION}-py${PYTHON_VERSION}-dj${DJANGO_VERSION}
 
 #####################
 # Default Variables #
 #####################
-ENV TETHYSAPP_DIR /var/www/tethys/apps
-ENV TETHYSEXT_DIR /var/www/tethys/exts
-ENV TETHYS_PUBLIC_HOST 'localhost'
-ENV JOBS_TABLE_REFRESH_INTERVAL 30000
+ENV TETHYSAPP_DIR=/var/www/tethys/apps
+ENV TETHYSEXT_DIR=/var/www/tethys/exts
+ENV TETHYS_PUBLIC_HOST='localhost'
+ENV JOBS_TABLE_REFRESH_INTERVAL=30000
 
 #########
 # SETUP #
