@@ -168,17 +168,20 @@ class AppUserTests(SqlAlchemyTestCase):
 
         self.staff_user_request = MockDjangoRequest(
             user_username="im_staff",
-            user_is_staff=True
+            user_is_staff=True,
+            user_is_anonymous=False
         )
 
         self.user_request = MockDjangoRequest(
             user_username=self.username,
-            user_is_staff=False
+            user_is_staff=False,
+            user_is_anonymous=False
         )
 
         self.app_admin_user_request = MockDjangoRequest(
             user_username=app_admin_username,
-            user_is_staff=False
+            user_is_staff=False,
+            user_is_anonymous=False
         )
 
     def test_create_user(self):
