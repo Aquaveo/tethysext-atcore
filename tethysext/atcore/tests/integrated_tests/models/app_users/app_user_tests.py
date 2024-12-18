@@ -93,7 +93,6 @@ class AppUserTests(SqlAlchemyTestCase):
             role=self.role,
             is_active=self.is_active
         )
-        self.anonymous_user.get_django_user().is_anonymous = True
 
         self.session.add(self.anonymous_user)
         self.session.add(self.user)
