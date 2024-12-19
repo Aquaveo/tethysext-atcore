@@ -112,7 +112,10 @@ class AppUser(AppUsersBase):
         Returns:
             AppUser: app user cooresponding with the request user or None if one does not exist and redirect is False.
         """
-        if request.user.is_staff:
+        from django.conf import settings
+        if request.user.is_anonymous:
+            username = getattr(settings, 'ANONYMOUS_USER_NAME', 'AnonymousUser')
+        elif request.user.is_staff:
             username = cls.STAFF_USERNAME
         else:
             username = request.user.username

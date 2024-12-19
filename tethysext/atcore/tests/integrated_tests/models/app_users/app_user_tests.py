@@ -88,7 +88,13 @@ class AppUserTests(SqlAlchemyTestCase):
             role=self.role,
             is_active=self.is_active,
         )
+        self.anonymous_user = AppUser(
+            username="AnonymousUser",
+            role=self.role,
+            is_active=self.is_active
+        )
 
+        self.session.add(self.anonymous_user)
         self.session.add(self.user)
         self.session.commit()
         self.user_id = self.user.id
@@ -168,17 +174,26 @@ class AppUserTests(SqlAlchemyTestCase):
 
         self.staff_user_request = MockDjangoRequest(
             user_username="im_staff",
-            user_is_staff=True
+            user_is_staff=True,
+            user_is_anonymous=False
         )
 
         self.user_request = MockDjangoRequest(
             user_username=self.username,
-            user_is_staff=False
+            user_is_staff=False,
+            user_is_anonymous=False
         )
 
         self.app_admin_user_request = MockDjangoRequest(
             user_username=app_admin_username,
-            user_is_staff=False
+            user_is_staff=False,
+            user_is_anonymous=False
+        )
+
+        self.anonymous_user_request = MockDjangoRequest(
+            user_username="",
+            user_is_staff=False,
+            user_is_anonymous=True
         )
 
     def test_create_user(self):
@@ -237,6 +252,13 @@ class AppUserTests(SqlAlchemyTestCase):
 
         self.assertIsNotNone(app_user)
         self.assertEqual(AppUser.STAFF_USERNAME, app_user.username)
+
+    def test_get_app_user_from_request_anonymous(self):
+        anonymous_username = "AnonymousUser"
+        app_user = AppUser.get_app_user_from_request(self.anonymous_user_request, self.session)
+
+        self.assertIsNotNone(app_user)
+        self.assertEqual(anonymous_username, app_user.username)
 
     def test_get_organization_model_default(self):
         organization_model = AppUser.get_organization_model()

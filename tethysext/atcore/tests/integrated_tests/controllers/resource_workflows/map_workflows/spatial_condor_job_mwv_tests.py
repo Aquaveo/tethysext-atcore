@@ -156,6 +156,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         active_app.url_namespace = 'app_namespace'
         mock_get_active_app.return_value = active_app
 
+        self.request.user.is_anonymous = False
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
 
         SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.session, self.resource, self.workflow,
@@ -195,6 +196,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         active_app.url_namespace = 'app_namespace'
         mock_get_active_app.return_value = active_app
 
+        self.request.user.is_anonymous = False
         self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
 
         SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.session, self.resource, self.workflow,

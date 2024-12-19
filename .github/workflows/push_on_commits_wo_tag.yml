@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - '*'
+  pull_request:
+    branches:
+      - '*'
 
 env:
   TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
