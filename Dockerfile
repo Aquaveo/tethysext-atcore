@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:dev-py3.12-dj3.2
+FROM tethysplatform/tethys-core:4.3.5-py3.12-dj3.2
 
 #####################
 # Default Variables #
@@ -31,6 +31,7 @@ ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
+RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
 RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV_NAME} tethys install -N"
 
 #########
