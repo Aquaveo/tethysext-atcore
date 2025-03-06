@@ -12,7 +12,7 @@ requirements:
       - conda-forge
     packages:
       - django=3.2.*
-      - django-select2
+      - django-select2<8.3.0
       - django-taggit<5
       - coverage
       - factory_boy
