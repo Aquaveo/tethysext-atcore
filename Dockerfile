@@ -1,5 +1,5 @@
 # Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:4.3.5-py3.12-dj3.2
+FROM tethysplatform/tethys-core:4.3.6-py3.12-dj3.2
 
 #####################
 # Default Variables #
