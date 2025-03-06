@@ -31,6 +31,7 @@ class ManageResources(ResourceViewMixin):
     """
     template_name = 'atcore/app_users/manage_resources.html'
     base_template = 'atcore/app_users/base.html'
+    row_template = 'atcore/components/resource_row.html'
     default_action_title = 'Launch'
     default_action_icon = "bi-chevron-right"
     error_action_title = "Error"
@@ -165,8 +166,8 @@ class ManageResources(ResourceViewMixin):
                 resource_card['editable'] = self.can_edit_resource(session, request, resource)
                 resource_card['deletable'] = self.can_delete_resource(session, request, resource)
                 resource_card['organizations'] = resource.organizations
-                resource_card['debugging'] = resource.attributes
-                resource_card['debugging']['id'] = str(resource.id)
+                resource_card['attributes'] = resource.attributes
+                resource_card['attributes']['id'] = str(resource.id)
                 resource_card['has_parents'] = len(resource.parents) > 0
                 resource_card['has_children'] = len(resource.children) > 0
 
@@ -222,6 +223,7 @@ class ManageResources(ResourceViewMixin):
             'type_singular': _Resource.DISPLAY_TYPE_SINGULAR,
             'resource_slug': _Resource.SLUG,
             'base_template': self.base_template,
+            'row_template': self.row_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
             'show_select_column': self.enable_groups and has_permission(request, 'create_resource'),
@@ -229,7 +231,7 @@ class ManageResources(ResourceViewMixin):
             'enable_groups': self.enable_groups,
             'show_new_group_button': self.enable_groups and has_permission(request, 'create_resource'),
             'show_new_button': has_permission(request, 'create_resource'),
-            'show_debugging_info': request_app_user.is_staff(),
+            'show_attributes': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),
             'show_links_to_organizations': has_permission(request, 'edit_organizations'),
             'show_users_link': has_permission(request, 'modify_users'),
