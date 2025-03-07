@@ -9,11 +9,13 @@
   {% endif %}
 
   {# NAME VALUE #}
+  {% block name_td %}
   <td class="name" data-id="{{ resource.name }}">
     {% if enable_groups and resource.has_parents %}<span style="display: inline-block; width: {% widthratio 25 1 resource.level %}px;" class="child-spacer level-{{ resource.level }}"></span>{% endif %}
     {% if enable_groups and resource.has_children %}<button {% if not collapse_groups %}class="expanded"{% endif %} data-ts-toggle="table-row-collapse" data-ts-target=".child-{{ resource.id }}" type="button"><i class="bi bi-chevron-right"></i></button> {% endif %}
     <a href="{{ resource.info_href }}">{{ resource.name }}</a>
   </td>
+  {% endblock %}
 
   {# DESCRIPTION VALUE #}
   {% if not resource.description %}
@@ -56,13 +58,14 @@
   </td>
 
   {# DEBUGGING FIELDS #}
-  {% if show_debugging_info %}
+  {% if show_attributes %}
   <td class="location" style="cursor: pointer; max-width: 200px; overflow: auto;" nowrap>
-    {{ resource.debugging }}
+    {{ resource.attributes }}
   </td>
   {% endif %}
 
   {# BUTTONS #}
+  {% block buttons_td %}
   <td class="btn-td">
     <div class="btn-toolbar float-end">
       {% if resource.editable %}
@@ -80,9 +83,10 @@
       {% endif %}
     </div>
   </td>
+  {% endblock%}
 </tr>
 {% if resource.children %}
   {% for child in resource.children %}
-    {% include "atcore/components/resource_row.html" with resource=child parent=resource %}
+    {% include row_template with resource=child parent=resource row_template=row_template%}
   {% endfor %}
 {% endif %}

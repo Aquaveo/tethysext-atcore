@@ -8,24 +8,26 @@ function get_selected_resources() {
 
 document.addEventListener('DOMContentLoaded', function() {
     let new_from_selected_button = document.getElementById("btn-group-resource");
-    new_from_selected_button.addEventListener("click", function(event) {
-        let resources = get_selected_resources();
-    
-        // Remove all select options
-        for (const option of [...document.querySelectorAll('#new-group-resources-select option')]) {
-            option.remove();
-        }
-    
-        // Add select options from selected resources
-        let resources_select = document.getElementById('new-group-resources-select');
-        resources.forEach((resource, idx) => {
-            resources_select.options.add(new Option(resource.name, resource.id, true, true));
+    if (new_from_selected_button) {
+        new_from_selected_button.addEventListener("click", function(event) {
+            let resources = get_selected_resources();
+        
+            // Remove all select options
+            for (const option of [...document.querySelectorAll('#new-group-resources-select option')]) {
+                option.remove();
+            }
+        
+            // Add select options from selected resources
+            let resources_select = document.getElementById('new-group-resources-select');
+            resources.forEach((resource, idx) => {
+                resources_select.options.add(new Option(resource.name, resource.id, true, true));
+            });
+        
+            // Show the modal
+            let modal = new bootstrap.Modal(document.getElementById('new-group-modal'));
+            modal.show();
         });
-    
-        // Show the modal
-        let modal = new bootstrap.Modal(document.getElementById('new-group-modal'));
-        modal.show();
-    });
+    }
 
     let modal_new_group_button = document.getElementById("modal-new-group-button");
     modal_new_group_button.addEventListener("click", function(event) {
