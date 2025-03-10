@@ -4,6 +4,7 @@
 
 {% block app_content %}
   {% with tethys_app.namespace|add:':'|add:resource_slug as base_resource_href %}
+    {% block buttons %}
     <div class="btn-toolbar top-action-btns float-end" role="toolbar" aria-label="Manage resources toolbar">
       {% if show_group_buttons and resources %}
       <div class="btn-group me-1">
@@ -20,6 +21,7 @@
       </div>
       {% endif %}
     </div>
+    {% endblock %}
 
     <h1>{{ page_title }}</h1>
 
@@ -74,9 +76,9 @@
               </th>
 
               {# DEBUGGING FIELDS #}
-              {% if show_debugging_info %}
+              {% if show_attributes %}
               <th>
-                <span class="sortable" data-sort-field="location">Debugging</span>
+                <span class="sortable" data-sort-field="location">Attributes</span>
                 {% if 'location' in pagination_info.sort_by %}
                 <span class="bi bi-sort-down{% if pagination_info.sort_reversed %}-alt{% endif %}"></span>
                 {% endif %}
@@ -92,10 +94,10 @@
                 {% if enable_groups %}
                   {# ONLY ADD TOP LEVEL RESOURCES FOR GROUPING #}
                   {% if not resource.has_parents %}
-                    {% include "atcore/components/resource_row.html" with resource=resource %}
+                    {% include row_template with resource=resource row_template=row_template %}
                   {% endif %}
                 {% else %}
-                  {% include "atcore/components/resource_row.html" with resource=resource %}
+                  {% include row_template with resource=resource row_template=row_template %}
                 {% endif %}
               {% endfor %}
             </tbody>
@@ -105,12 +107,14 @@
       {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
     {% else %}
       {% if show_new_button %}
-      <div class="new-resource center-parent">
-        <div class="centered">
-          <h4>No {{ type_plural }} Found</h4>
-          <a class="btn btn-primary btn-huge" href="{% url base_resource_href|add:'_new_resource' %}">Upload New {{ type_singular }}</a>
-        </div>
-      </div>
+        {% block add_new_resource%}
+          <div class="new-resource center-parent">
+            <div class="centered">
+              <h4>No {{ type_plural }} Found</h4>
+              <a class="btn btn-primary btn-huge" href="{% url base_resource_href|add:'_new_resource' %}">Upload New {{ type_singular }}</a>
+            </div>
+          </div>
+        {% endblock %}
       {% else %}
       <div class="new-resource center-parent">
         <h4 class="centered">No {{ type_plural }} Available</h4>
