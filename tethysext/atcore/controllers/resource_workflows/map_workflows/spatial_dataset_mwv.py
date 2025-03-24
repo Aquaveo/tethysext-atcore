@@ -81,6 +81,8 @@ class SpatialDatasetMWV(SpatialDataMWV):
             'optional_columns': step.options.get('optional_columns', []),
             'max_rows': max_rows,
             'nodata_val': SPATIAL_DATASET_NODATA,
+            'fixed_rows': step.options.get('fixed_rows', SpatialDatasetRWS.DEFAULT_FIXED_ROWS),
+            'numeric_step': step.options.get('numeric_step', SpatialDatasetRWS.DEFAULT_NUMERIC_STEP),
         }
 
         return render(request, 'atcore/resource_workflows/components/spatial_dataset_form.html', context)
