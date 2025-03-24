@@ -23,6 +23,8 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
         plot_columns(Union[2-tuple, list of 2-tuple]): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given. Multiple series plotted if a list of 2-tuple given, ex: [(x1, y1), (x2, y2)].
         max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
         empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
+        fixed_rows(bool): Indicates whether the number of rows in the table is fixed.
+        numeric_step(float): The step increment for numeric columns.
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.map_workflows.SpatialDatasetMWV'
     TYPE = 'spatial_dataset_workflow_step'
@@ -34,8 +36,10 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
     DEFAULT_DATASET_TITLE = 'Dataset'
     DEFAULT_EMPTY_ROWS = 10
     DEFAULT_MAX_ROWS = 1000
+    DEFAULT_FIXED_ROWS = False
     DEFAULT_COLUMNS = ['X', 'Y']
     DEFAULT_DATASET = pd.DataFrame(columns=DEFAULT_COLUMNS)
+    DEFAULT_NUMERIC_STEP = 0.001
 
     @property
     def default_options(self):
@@ -48,7 +52,9 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
             'plot_columns': [],
             'optional_columns': [],
             'max_rows': self.DEFAULT_MAX_ROWS,
-            'empty_rows': self.DEFAULT_EMPTY_ROWS
+            'empty_rows': self.DEFAULT_EMPTY_ROWS,
+            'fixed_rows': self.DEFAULT_FIXED_ROWS,
+            'numeric_step': self.DEFAULT_NUMERIC_STEP
         })
         return default_options
 

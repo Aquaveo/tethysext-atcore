@@ -53,6 +53,8 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             'optional_columns': [],
             'max_rows': self.instance.DEFAULT_MAX_ROWS,
             'empty_rows': self.instance.DEFAULT_EMPTY_ROWS,
+            'fixed_rows': SpatialDatasetRWS.DEFAULT_FIXED_ROWS,
+            'numeric_step': SpatialDatasetRWS.DEFAULT_NUMERIC_STEP,
             'geocode_enabled': False,
             'label_options': None,
             **RWS_DEFAULT_OPTIONS
