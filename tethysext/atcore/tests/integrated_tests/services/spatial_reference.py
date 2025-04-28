@@ -13,7 +13,7 @@ from tethysext.atcore.services.spatial_reference import SpatialReferenceService
 
 
 def setUpModule():
-    global transaction, connection, engine
+    global engine
 
     # Connect to the database and create the schema within a transaction
     engine = create_engine(TEST_DB_URL)
