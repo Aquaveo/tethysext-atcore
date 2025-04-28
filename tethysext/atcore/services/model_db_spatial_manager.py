@@ -124,15 +124,18 @@ class ModelDBSpatialManager(BaseSpatialManager):
             reload_config(bool): Reload the geoserver node configuration and catalog before returning if True.
         """
         db_url = model_db.db_url_obj
+        store_id = f"{self.WORKSPACE}:{model_db.get_id()}"
+        response = self.gs_engine.get_store(store_id)
 
-        self.gs_engine.create_postgis_store(
-            store_id=f"{self.WORKSPACE}:{model_db.get_id()}",
-            host=db_url.host,
-            port=db_url.port,
-            database=db_url.database,
-            username=db_url.username,
-            password=db_url.password
-        )
+        if not response['success']:
+            self.gs_engine.create_postgis_store(
+                store_id=store_id,
+                host=db_url.host,
+                port=db_url.port,
+                database=db_url.database,
+                username=db_url.username,
+                password=db_url.password
+            )
 
         if reload_config:
             self.reload(ports=self.GEOSERVER_CLUSTER_PORTS, public_endpoint=False)
