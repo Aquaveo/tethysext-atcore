@@ -4,10 +4,10 @@ FROM tethysplatform/tethys-core:4.3.6-py3.12-dj3.2
 #####################
 # Default Variables #
 #####################
-ENV TETHYSAPP_DIR /var/www/tethys/apps
-ENV TETHYSEXT_DIR /var/www/tethys/exts
-ENV TETHYS_PUBLIC_HOST 'localhost'
-ENV JOBS_TABLE_REFRESH_INTERVAL 30000
+ENV TETHYSAPP_DIR=/var/www/tethys/apps
+ENV TETHYSEXT_DIR=/var/www/tethys/exts
+ENV TETHYS_PUBLIC_HOST='localhost'
+ENV JOBS_TABLE_REFRESH_INTERVAL=30000
 
 #########
 # SETUP #
