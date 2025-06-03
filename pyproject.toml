@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "atcore"
-version = "1.12.2"
+name = "tethysext-atcore"
+version = "1.12.3"
 description = ""
 readme = "README.md"
 keywords = []
