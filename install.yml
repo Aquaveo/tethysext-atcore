@@ -11,7 +11,7 @@ requirements:
     channels:
       - conda-forge
     packages:
-      - django=5.2.*
+      - django>=3.2,<6
       - django-select2<8.3.0
       - django-taggit<5
       - coverage
