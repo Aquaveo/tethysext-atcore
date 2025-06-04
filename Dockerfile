@@ -1,11 +1,5 @@
-ARG PYTHON_VERSION=3.12
-ARG DJANGO_VERSION=3.2
-ARG TETHYS_VERSION=4.3.7
-ARG BASE_IMAGE_TAG="${TETHYS_VERSION}-py${PYTHON_VERSION}-dj${DJANGO_VERSION}"
-ARG BASE_IMAGE="tethysplatform/tethys-core"
-
-# Use our Tethys Core base docker image as a parent image
-FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
+# Use our Tethyscore base docker image as a parent image
+FROM tethysplatform/tethys-core:dev-py3.12-dj5.2
 
 #####################
 # Default Variables #
@@ -33,7 +27,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
 ###########
 ADD tethysext ${TETHYSEXT_DIR}/tethysext-atcore/tethysext
 ADD *.ini ${TETHYSEXT_DIR}/tethysext-atcore/
-ADD *.py ${TETHYSEXT_DIR}/tethysext-atcore/
+ADD pyproject.toml ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
