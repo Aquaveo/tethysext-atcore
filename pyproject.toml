@@ -23,11 +23,11 @@ atcore = "tethysext.atcore.cli:atcore_command"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["*"]
-exclude = ["ez_setup", "examples", "docker", ".github", "docs", "helm", "tethysexxt/atcore/tests", "tethysexxt/atcore/tests.*"]
+exclude = ["ez_setup", "examples", "docker", ".github", "docs", "helm", "tethysext/atcore/tests", "tethysext/atcore/tests.*"]
 
 [tool.setuptools.package-data]
 "*" = [
-    "tethysapp/epanet/templates/**/*",
-    "tethysapp/epanet/public/**/*",
-    "tethysapp/epanet/resources/**/*",
+    "tethysext/atcore/templates/**/*",
+    "tethysext/atcore/public/**/*",
+    "tethysext/atcore/resources/**/*",
 ]
