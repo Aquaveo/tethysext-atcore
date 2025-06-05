@@ -11,9 +11,9 @@ requirements:
     channels:
       - conda-forge
     packages:
-      - django=3.2.*
+      - django>=3.2,<6
       - django-select2<8.3.0
-      - django-taggit<5
+      - django-taggit
       - coverage
       - factory_boy
       - filelock
@@ -27,4 +27,5 @@ requirements:
       - panel
   pip:
     - django-datetime-widget2
+    - geoserver-restconfig>=2.0.10
 post:
