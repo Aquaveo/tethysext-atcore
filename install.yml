@@ -27,4 +27,5 @@ requirements:
       - panel
   pip:
     - django-datetime-widget2
+    - geoserver-restconfig>=2.0.10
 post:
