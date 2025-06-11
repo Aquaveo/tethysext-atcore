@@ -1,5 +1,11 @@
-# Use our Tethyscore base docker image as a parent image
-FROM tethysplatform/tethys-core:4.3.6-py3.12-dj3.2
+ARG PYTHON_VERSION=3.12
+ARG DJANGO_VERSION=3.2
+ARG TETHYS_VERSION=4.3.7
+ARG BASE_IMAGE_TAG="${TETHYS_VERSION}-py${PYTHON_VERSION}-dj${DJANGO_VERSION}"
+ARG BASE_IMAGE="tethysplatform/tethys-core"
+
+# Use our Tethys Core base docker image as a parent image
+FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 #####################
 # Default Variables #
@@ -32,7 +38,7 @@ ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
-RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV_NAME} tethys install -N"
+RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV_NAME} tethys install -N -q"
 
 #########
 # CHOWN #
@@ -52,6 +58,8 @@ EXPOSE 80
 # COPY IN SALT #
 ################
 ADD docker/salt/ /srv/salt/
+
+RUN bash ${TETHYS_HOME}/build-checks.sh
 
 #######
 # RUN #
