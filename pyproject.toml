@@ -26,8 +26,8 @@ include = ["*"]
 exclude = ["ez_setup", "examples", "docker", ".github", "docs", "helm", "tethysext/atcore/tests", "tethysext/atcore/tests.*"]
 
 [tool.setuptools.package-data]
-"*" = [
-    "tethysext/atcore/templates/**/*",
-    "tethysext/atcore/public/**/*",
-    "tethysext/atcore/resources/**/*",
+"tethysext/atcore" = [
+    "templates/**/*",
+    "public/**/*",
+    "resources/**/*",
 ]
