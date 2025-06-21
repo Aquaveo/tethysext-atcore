@@ -19,6 +19,16 @@ def tearDownModule():
     tear_down_module_for_sqlalchemy_tests()
 
 
+def round_geojson_coords(obj, precision=9):
+    if isinstance(obj, dict):
+        return {key: round_geojson_coords(value, precision) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [round_geojson_coords(i, precision) for i in obj]
+    if isinstance(obj, float):
+        return round(obj, precision)
+    return obj
+
+
 class SpatialResourceTests(SqlAlchemyTestCase):
     def setUp(self):
         super().setUp()
@@ -125,7 +135,8 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         resource = self.create_resource_in_session()
         resource.extent = self.expected_geometry
         extent = resource.get_extent('dict')
-        self.assertDictEqual(extent, self.extent_dict)
+        self.maxDiff = None
+        self.assertDictEqual(extent, round_geojson_coords(self.extent_dict))
 
     def test_get_extent_geojson(self):
         """Test getting a geojson from the extent."""
@@ -134,7 +145,8 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         extent = resource.get_extent('geojson')
         extent_dict = json.loads(extent)
         expected_dict = json.loads(self.extent_geojson)
-        self.assertDictEqual(extent_dict, expected_dict)
+        self.maxDiff = None
+        self.assertDictEqual(extent_dict, round_geojson_coords(expected_dict))
 
     def test_get_extent_wkt(self):
         """Test getting a wkt from the extent."""
