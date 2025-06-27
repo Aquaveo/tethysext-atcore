@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tethysext-atcore"
+version = "1.12.3"
+description = ""
+readme = "README.md"
+keywords = []
+classifiers = [
+    "Framework :: Django",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+repository = "https://github.com/Aquaveo/tethysext-atcore"
+
+[project.scripts]
+atcore = "tethysext.atcore.cli:atcore_command"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*"]
+exclude = ["ez_setup", "examples", "docker", ".github", "docs", "helm", "tethysext/atcore/tests", "tethysext/atcore/tests.*"]
+
+[tool.setuptools.package-data]
+"tethysext.atcore" = [
+    "templates/**/*",
+    "public/**/*",
+    "resources/**/*",
+]

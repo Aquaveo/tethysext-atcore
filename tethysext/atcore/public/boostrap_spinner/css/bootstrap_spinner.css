@@ -36,15 +36,15 @@
 .input-group-btn-vertical > .btn:last-child {
   border-bottom-right-radius: 4px;
 }
-.input-group-btn-vertical .glyphicon {
+.input-group-btn-vertical .bi {
   font-size: 10px;
   vertical-align: top;
   top: 3px
 }
-.input-group-btn-vertical > .btn:first-child .glyphicon {
+.input-group-btn-vertical > .btn:first-child .bi {
   left: .5px;
 }
-.input-group-btn-vertical > .btn:last-child .glyphicon {
+.input-group-btn-vertical > .btn:last-child .bi {
 
 }
 
