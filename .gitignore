@@ -16,3 +16,4 @@ working_dir
 test_local.sh
 tethysext/atcore/tests/files/file_collection_client_tests/temp/*
 tethysext/atcore/tests/files/file_database_client_tests/temp/*
+tethysext/atcore/tests/files/model_file_database/*
