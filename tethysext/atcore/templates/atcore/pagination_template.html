@@ -25,7 +25,7 @@ Requires a variable (whatever it may be called) that is an dictionary of the fol
         {% if not x.hide_buttons %}
         <div>
             <a role="button" href="?page={{ x.previous_page }}&show={{ x.show }}{% if x.sort_by %}&sort_by={{ x.sort_by }}{% endif %}" class="btn btn-outline-secondary{% if not x.enable_previous_button %} disabled {% endif %}">
-                <span class="bi bi-chevron-left"></span> Previous
+                <i class="bi bi-chevron-left"></i> Previous
             </a>
         </div>
         {% endif %}
@@ -52,7 +52,7 @@ Requires a variable (whatever it may be called) that is an dictionary of the fol
         {% if not x.hide_buttons %}
         <div>
             <a role="button" href="?page={{ x.next_page }}&show={{ x.show }}{% if x.sort_by %}&sort_by={{ x.sort_by }}{% endif %}" class="btn btn-outline-secondary{% if not x.enable_next_button %} disabled {% endif %}">
-                Next <span class="bi bi-chevron-right"></span>
+                Next <i class="bi bi-chevron-right"></i>
             </a>
         </div>
         {% endif %}
