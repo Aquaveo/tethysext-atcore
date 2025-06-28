@@ -1,6 +1,7 @@
 {% set TETHYS_PUBLIC_HOST = salt['environ.get']('TETHYS_PUBLIC_HOST') %}
 {% set TETHYS_PERSIST = salt['environ.get']('TETHYS_PERSIST') %}
 {% set TETHYSEXT_DIR = salt['environ.get']('TETHYSEXT_DIR') %}
+{% set CSRF_TRUSTED_ORIGINS = salt['environ.get']('CSRF_TRUSTED_ORIGINS') %}
 
 Edit_Tethys_Portal_Config_Settings_File_Atcore:
   cmd.run:
@@ -10,6 +11,7 @@ Edit_Tethys_Portal_Config_Settings_File_Atcore:
         --set INSTALLED_APPS "[datetimewidget, django_select2, taggit]"
         --set DATA_UPLOAD_MAX_MEMORY_SIZE 104800000
         --set CHANNEL_LAYERS.default.BACKEND 'channels.layers.InMemoryChannelLayer'
+        --set CSRF_TRUSTED_ORIGINS {{ CSRF_TRUSTED_ORIGINS }}
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/atcore_setup_complete" ];"
 
