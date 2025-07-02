@@ -195,7 +195,7 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
         mock_get_step.return_value = optional_step1
         mock_get_param.return_value = {self.request.GET['feature_id']: None}
 
-        ret = SpatialDatasetMWV().get_popup_form(self.request, self.workflow.id, self.step1.id,
+        ret = SpatialDatasetMWV().get_popup_form(self.request, self.workflow.id, optional_step1.id,
                                                  back_url=self.back_url, resource=self.resource, session=self.session)
 
         self.assertIsInstance(ret, HttpResponse)
@@ -203,3 +203,10 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
         self.assertIn(search_bytes, ret.content)
         search_bytes = b"[[&quot;Time (min)&quot;, &quot;Discharge (cfs)&quot;]]"
         self.assertIn(search_bytes, ret.content)
+
+        ret = SpatialDatasetMWV().save_spatial_data(self.request, self.workflow.id, optional_step1.id,
+                                                    back_url=self.back_url, resource=self.resource,
+                                                    session=self.session)
+
+        self.assertIsInstance(ret, JsonResponse)
+        self.assertEqual([b'{"success": true}'], ret.__dict__['_container'])
