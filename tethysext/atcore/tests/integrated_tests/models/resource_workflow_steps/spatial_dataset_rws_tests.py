@@ -305,6 +305,8 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
                 'dataset_title': 'Hydrograph',
                 'template_dataset': _dataset_callback,
                 'plot_columns': _columns_callback,
+                'read_only_columns': _columns_callback,
+                'optional_columns': _columns_callback,
             },
             geoserver_name='',
             map_manager=m,
@@ -347,3 +349,6 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
         }
         baseline = json.dumps(baseline)
         self.assertEqual(baseline, ret)
+        self.assertEqual(callback_version.options['plot_columns'], _columns_callback)
+        self.assertEqual(callback_version.options['read_only_columns'], _columns_callback)
+        self.assertEqual(callback_version.options['optional_columns'], _columns_callback)
