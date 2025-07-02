@@ -142,6 +142,9 @@ class SpatialDatasetMWV(SpatialDataMWV):
             row_count = max(row_count, len(c))
 
         optional_columns = step.options.get('optional_columns', [])
+        if inspect.isfunction(optional_columns):
+            # If the optional columns are a callback function, call it to get the columns
+            optional_columns = optional_columns(workflow)
         for column in columns:
             if column in optional_columns and not data[column]:
                 c = [SPATIAL_DATASET_NODATA] * row_count
