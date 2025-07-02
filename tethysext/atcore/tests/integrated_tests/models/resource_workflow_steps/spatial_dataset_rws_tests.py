@@ -251,3 +251,99 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
         }
         baseline = json.dumps(baseline)
         self.assertEqual(baseline, ret)
+
+    def test_dataset_callback(self):
+        def _dataset_callback(_):
+            return pd.DataFrame(columns=['Time (min)', 'Discharge (cfs)'])
+
+        def _columns_callback(_):
+            return ('Time (min)', 'Discharge (cfs)'),
+
+        geojson_dict = {
+            'type': 'FeatureCollection',
+            'crs': {'type': 'name', 'properties': {'name': 'EPSG:4326'}},
+            'features': [{
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [
+                        [[-87.90161132812499, 30.66072872520222], [-87.89594650268555, 30.662943651723793],
+                         [-87.89457321166992, 30.655117350832413], [-87.90023803710938, 30.658070746371095],
+                         [-87.90161132812499, 30.66072872520222]]]},
+                'properties': {
+                    'id': 1
+                }
+            }]
+        }
+
+        serialized_step = {
+            'name': 'Define Hydrographs',
+            'resource_workflow_id': '8d49392b-8b2e-4136-bbd5-da1514cb2031',
+            'child_id': 'None',
+            'id': 'f0eacad1-a707-4ee2-8a2a-8c6869474769',
+            'help': 'Define hydrographs for each of the new detention basins.',
+            'type': 'spatial_dataset_workflow_step',
+            'parameters': {
+                'datasets': {
+                    '1': {
+                        'Time (min)': [0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0, 540.0, 600.0, 660.0,
+                                       720.0, 780.0, 840.0, 900.0, 960.0, 1020.0],
+                        'Discharge (cfs)': [0.0, 1.0, 2.0, 5.0, 10.0, 15.0, 30.0, 42.0, 56.0, 70.0, 62.0, 53.0, 36.0,
+                                            18.0, 12.0, 6.0, 3.0, 0.0]}
+                }
+            }
+        }
+
+        m = mock.MagicMock()
+        m.__reduce__ = lambda self: (mock.MagicMock, ())
+        callback_version = SpatialDatasetRWS(
+            name='foo',
+            order=1,
+            help='Lorem Ipsum',
+            options={
+                'geometry_source': {SpatialDatasetRWS.OPT_PARENT_STEP: 'geometry'},
+                'dataset_title': 'Hydrograph',
+                'template_dataset': _dataset_callback,
+                'plot_columns': _columns_callback,
+            },
+            geoserver_name='',
+            map_manager=m,
+            spatial_manager=m
+        )
+
+        callback_version.resolve_option = mock.MagicMock(return_value=geojson_dict)
+        callback_version.to_dict = mock.MagicMock(return_value=serialized_step)
+        ret = callback_version.to_geojson(as_str=True)
+
+        baseline = {
+            'type': 'FeatureCollection',
+            'crs': {'type': 'name', 'properties': {'name': 'EPSG:4326'}},
+            'features': [{
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [
+                        [[-87.90161132812499, 30.66072872520222],
+                         [-87.89594650268555, 30.662943651723793],
+                         [-87.89457321166992, 30.655117350832413],
+                         [-87.90023803710938, 30.658070746371095],
+                         [-87.90161132812499, 30.66072872520222]]]},
+                'properties': {
+                    'id': 1,
+                    'hydrograph': {
+                        'type': 'dataset',
+                        'value': {
+                            'Time (min)': [0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0, 540.0,
+                                           600.0, 660.0, 720.0, 780.0, 840.0, 900.0, 960.0, 1020.0],
+                            'Discharge (cfs)': [0.0, 1.0, 2.0, 5.0, 10.0, 15.0, 30.0, 42.0, 56.0, 70.0, 62.0, 53.0,
+                                                36.0, 18.0, 12.0, 6.0, 3.0, 0.0],
+                            'meta': {
+                                'columns': ['Time (min)', 'Discharge (cfs)'],
+                                'length': 18}
+                        }
+                    }
+                }
+            }]
+        }
+        baseline = json.dumps(baseline)
+        self.assertEqual(baseline, ret)
