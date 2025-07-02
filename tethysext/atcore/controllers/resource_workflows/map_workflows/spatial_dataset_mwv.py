@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import inspect
 import pandas as pd
 import numpy as np
 from pandas.api.types import is_numeric_dtype
@@ -53,6 +54,9 @@ class SpatialDatasetMWV(SpatialDataMWV):
         # If not previously saved dataset, get the template dataset
         if dataset is None:
             dataset = step.options.get('template_dataset', step.DEFAULT_DATASET)
+        if inspect.isfunction(dataset):
+            # If the template dataset is a callback function, call it to get the dataset
+            dataset = dataset(workflow)
 
         # If the template dataset is empty (no rows),
         # generate rows to match the smaller of the initial row count and the max rows
@@ -70,15 +74,29 @@ class SpatialDatasetMWV(SpatialDataMWV):
             is_numeric = is_numeric_dtype(dataset[column])
             column_is_numeric.update({column: is_numeric})
 
+        # Handle plot columns when they are a callback function
+        plot_columns = step.options.get('plot_columns', [])
+        if inspect.isfunction(plot_columns):
+            # If the plot columns are a callback function, call it to get the columns
+            plot_columns = plot_columns(workflow)
+        read_only_columns = step.options.get('read_only_columns', [])
+        if inspect.isfunction(read_only_columns):
+            # If the read only columns are a callback function, call it to get the columns
+            read_only_columns = read_only_columns(workflow)
+        optional_columns = step.options.get('optional_columns', [])
+        if inspect.isfunction(optional_columns):
+            # If the optional columns are a callback function, call it to get the columns
+            optional_columns = optional_columns(workflow)
+
         context = {
             'feature_id': feature_id,
             'dataset_title': step.options.get('dataset_title', 'Dataset'),
             'columns': dataset.columns,
             'column_is_numeric': column_is_numeric,
             'rows': rows,
-            'read_only_columns': step.options.get('read_only_columns', []),
-            'plot_columns': step.options.get('plot_columns', []),
-            'optional_columns': step.options.get('optional_columns', []),
+            'read_only_columns': read_only_columns,
+            'plot_columns': plot_columns,
+            'optional_columns': optional_columns,
             'max_rows': max_rows,
             'nodata_val': SPATIAL_DATASET_NODATA,
             'fixed_rows': step.options.get('fixed_rows', SpatialDatasetRWS.DEFAULT_FIXED_ROWS),
@@ -110,7 +128,11 @@ class SpatialDatasetMWV(SpatialDataMWV):
 
         # Post process the dataset
         data = {}
-        columns = step.options.get('template_dataset').columns
+        template_dataset = step.options.get('template_dataset')
+        if inspect.isfunction(template_dataset):
+            # If the template dataset is a function, call it to get the dataset
+            template_dataset = template_dataset(workflow)
+        columns = template_dataset.columns
 
         row_count = 0
         for column in columns:
