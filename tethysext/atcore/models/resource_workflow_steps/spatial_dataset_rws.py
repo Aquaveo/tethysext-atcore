@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
+import inspect
 import json
 import pandas as pd
 from tethysext.atcore.models.resource_workflow_steps import SpatialResourceWorkflowStep
@@ -152,7 +153,10 @@ class SpatialDatasetRWS(SpatialResourceWorkflowStep):
 
                 # Add some metadata to the dataset object
                 dataset = serialized_datasets[feature_id]
-                columns = self.options.get('template_dataset').columns.to_list()
+                template_dataset = self.options.get('template_dataset')
+                if inspect.isfunction(template_dataset):
+                    template_dataset = template_dataset(self.workflow)
+                columns = template_dataset.columns.to_list()
                 length = len(dataset[columns[0]])
 
                 dataset['meta'] = {
