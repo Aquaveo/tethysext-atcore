@@ -161,3 +161,45 @@ class SpatialDatasetMwvTests(WorkflowViewTestCase):
 
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.next_url, ret.url)
+
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch.object(SpatialDatasetMWV, 'get_step')
+    @mock.patch.object(SpatialDatasetMWV, 'get_workflow')
+    @mock.patch.object(ResourceWorkflowView, 'user_has_active_role')
+    @mock.patch('tethysext.atcore.models.app_users.resource_workflow_step.ResourceWorkflowStep.get_parameter')
+    def test_option_callbacks(self, mock_get_param, mock_user_role, mock_get_workflow, mock_get_step, _):
+        def _dataset_callback(_):
+            return pd.DataFrame(columns=['Time (min)', 'Discharge (cfs)'])
+
+        def _columns_callback(_):
+            return ('Time (min)', 'Discharge (cfs)'),
+
+        optional_step1 = SpatialDatasetRWS(
+            geoserver_name='geo_server',
+            map_manager=mock.MagicMock(),
+            spatial_manager=mock.MagicMock(),
+            name='name1_optional',
+            help='help1_optional',
+            order=1,
+            options={
+                'max_rows': 1000,
+                'template_dataset': _dataset_callback,
+                'column': [],
+                'plot_columns': _columns_callback,
+                'optional_columns': _columns_callback,
+                'read_only_columns': _columns_callback,
+            }
+        )
+        mock_user_role.return_value = True
+        mock_get_workflow.return_value = self.workflow
+        mock_get_step.return_value = optional_step1
+        mock_get_param.return_value = {self.request.GET['feature_id']: None}
+
+        ret = SpatialDatasetMWV().get_popup_form(self.request, self.workflow.id, self.step1.id,
+                                                 back_url=self.back_url, resource=self.resource, session=self.session)
+
+        self.assertIsInstance(ret, HttpResponse)
+        search_bytes = b"data-plot-columns"
+        self.assertIn(search_bytes, ret.content)
+        search_bytes = b"[[&quot;Time (min)&quot;, &quot;Discharge (cfs)&quot;]]"
+        self.assertIn(search_bytes, ret.content)
