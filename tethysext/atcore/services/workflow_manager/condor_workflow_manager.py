@@ -328,7 +328,7 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
 
     def validate_jobs(self, jobs):
         """
-        Validates that the jobs are defined (not empty) and are a CondorWorkflowJobNode or equivalent dicaiontry.
+        Validates that the jobs are defined (not empty) and are a CondorWorkflowJobNode or equivalent dictionary.
 
         Args:
             jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.

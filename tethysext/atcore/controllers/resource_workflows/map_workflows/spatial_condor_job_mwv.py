@@ -305,7 +305,10 @@ class SpatialCondorJobMWV(MapWorkflowView):
         condor_job_manager.input_files.append(params_file_path)
 
         # Prepare the job
-        job_id = condor_job_manager.prepare()
+        try:
+            job_id = condor_job_manager.prepare()
+        except Exception as e:
+            print(e)
 
         # Deal with locking
         self.handle_on_submit_locking(request, session, resource, step)
