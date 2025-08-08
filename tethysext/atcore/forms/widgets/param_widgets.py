@@ -136,6 +136,8 @@ widget_map = {
     param.Integer:
         lambda po, p, name: forms.IntegerField(
             initial=po.param.inspect_value(name) or p.default,
+            max_value=p.bounds[1] if p.bounds else None,
+            min_value=p.bounds[0] if p.bounds else None
         ),
     # TODO: Implement DataFrameField someday...
     # param.DataFrame:
