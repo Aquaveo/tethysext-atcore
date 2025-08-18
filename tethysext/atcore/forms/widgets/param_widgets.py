@@ -164,11 +164,10 @@ def generate_django_form(parameterized_obj, form_field_prefix=None, read_only=Fa
     # Create Django Form class dynamically
     class_name = '{}Form'.format(parameterized_obj.name.title())
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
-
     # Filter params based on precedence and constant state
     params = list(
         filter(
-            lambda x: (x.precedence is None or x.precedence >= 0) and not x.constant,
+            lambda x: (x.precedence is None or x.precedence >= 0) and (not x.constant or x.readonly),
             parameterized_obj.param.params().values()
         )
     )
@@ -184,19 +183,25 @@ def generate_django_form(parameterized_obj, form_field_prefix=None, read_only=Fa
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        form_class.base_fields[p_name] = widget_map[type(p)](parameterized_obj, p, p.name)
+        field = widget_map[type(p)](parameterized_obj, p, p.name)
 
         # Set label with param label if set, otherwise derive from parameter name
-        form_class.base_fields[p_name].label = p.name.replace("_", " ").title() if not p.label else p.label
+        field.label = p.name.replace("_", " ").title() if not p.label else p.label
 
         # If form is read-only, set disabled attribute
-        form_class.base_fields[p_name].widget.attrs.update({'disabled': read_only})
+        field.widget.attrs.update({'disabled': read_only})
 
         # Help text displayed on hover over field
         if p.doc:
-            form_class.base_fields[p_name].widget.attrs.update({'title': p.doc})
+            field.widget.attrs.update({'title': p.doc})
 
         # Set required state from allow_None
-        form_class.base_fields[p_name].required = not p.allow_None
+        field.required = not p.allow_None
+
+        if p.readonly:
+            field.widget.attrs.update({'disabled': True})
+            field.help_text = p.doc
+
+        form_class.base_fields[p_name] = field
 
     return form_class
