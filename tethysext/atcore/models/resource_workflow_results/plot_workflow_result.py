@@ -26,7 +26,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         renderer (str): bokeh or plotly
         axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
         axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
-        plot_type (str): lines or scatter
+        plot_type (str): lines, scatter, or bar
         line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
         x_axis_type (str): type of x axis. Available options are 'linear' or 'datetime'
     """
@@ -196,96 +196,99 @@ class PlotWorkflowResult(ResourceWorkflowResult):
         axis_labels = options.get('axis_labels', ['x', 'y'])
         line_shape = options.get('line_shape', 'linear')
         x_axis_type = options.get('x_axis_type', 'linear')
-        plot_figure = None
 
         # Handle the case where the user just provide a plotly object.
         if isinstance(plot_object, dict):
             if 'plot_object' in plot_object.keys():
                 # Only support Plotly for now because we can't serialize bokeh plot.
-                plot_figure = plot_object['plot_object']
-        else:
-            # Set layout such as axis label for x and y axis.
-            if renderer == 'bokeh':
-                plot_figure = figure(x_axis_type=x_axis_type, width=900)
-                plot_figure.xaxis.axis_label = axis_labels[0]
-                plot_figure.yaxis.axis_label = axis_labels[1]
-            elif renderer == 'plotly':
-                plot_figure = go.Figure(layout=go.Layout(xaxis={'title': {'text': axis_labels[0]}},
-                                                         yaxis={'title': {'text': axis_labels[1]}},
-                                                         legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02,
-                                                                 'xanchor': 'right', 'x': 1},
-                                                         margin={'r': 0},
-                                                         height=600))
+                return plot_object['plot_object']
 
-            # Plot count variable to keep track of the series color in bokeh.
-            plot_count = 0
+        plot_figure = None
+        # Set layout such as axis label for x and y axis.
+        if renderer == 'bokeh':
+            plot_figure = figure(x_axis_type=x_axis_type, width=900)
+            plot_figure.xaxis.axis_label = axis_labels[0]
+            plot_figure.yaxis.axis_label = axis_labels[1]
+        elif renderer == 'plotly':
+            plot_figure = go.Figure(layout=go.Layout(xaxis={'title': {'text': axis_labels[0]}},
+                                                     yaxis={'title': {'text': axis_labels[1]}},
+                                                     legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02,
+                                                             'xanchor': 'right', 'x': 1},
+                                                     margin={'r': 0},
+                                                     height=600))
 
-            # label count variable to keep track of default variable number.
-            label_count = 1
-            for ds in datasets:
-                series_axes = [('x', 'y')]
-                # series_labels is for panda frame with multiple columns representing multiple series.
-                series_labels = ''
-                if 'title' in ds.keys():
-                    series_label = ds['title']
+        # Plot count variable to keep track of the series color in bokeh.
+        plot_count = 0
+        # label count variable to keep track of default variable number.
+        label_count = 1
+        for ds in datasets:
+            series_axes = [('x', 'y')]
+            # series_labels is for panda frame with multiple columns representing multiple series.
+            series_labels = ''
+            if 'title' in ds.keys():
+                series_label = ds['title']
 
-                # Handle panda dataframe with multiple columns. If panda dataframe has multiple columns and has no
-                # series_axes, we'll assume the first one is x and the rest are ys.
-                if 'series_axes' in ds.keys():
-                    series_axes = ds['series_axes']
-                    if not series_axes:
-                        column_names = ds['dataset'].columns.to_list()
-                        for col in column_names[1:]:
-                            # Assume 1st column is x and the rest is y
-                            series_axes.append((column_names[0], col))
+            # Handle panda dataframe with multiple columns. If panda dataframe has multiple columns and has no
+            # series_axes, we'll assume the first one is x and the rest are ys.
+            if 'series_axes' in ds.keys():
+                series_axes = ds['series_axes']
+                if not series_axes:
+                    column_names = ds['dataset'].columns.to_list()
+                    series_axes.extend((column_names[0], col) for col in column_names[1:])
 
-                # Create default series label for panda dataframe with multiple columns.
-                if 'series_labels' in ds.keys():
-                    series_labels = ds['series_labels']
-                    if not series_labels:
-                        for _i in range(len(series_axes)):
-                            series_labels.append(f"Data Series {label_count}")
-                            label_count += 1
-                if 'dataset' in ds.keys():
-                    if series_axes:
-                        plot_data = ds['dataset']
-                        if renderer == 'bokeh':
-                            for i, axis in enumerate(series_axes):
-                                if isinstance(plot_data, pd.DataFrame):
-                                    x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
-                                    y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
-                                    data = {'x': plot_data[x_axis].to_list(), 'y': plot_data[y_axis].to_list()}
+            # Create default series label for panda dataframe with multiple columns.
+            if 'series_labels' in ds.keys():
+                series_labels = ds['series_labels']
+                if not series_labels:
+                    for _i in range(len(series_axes)):
+                        series_labels.append(f"Data Series {label_count}")
+                        label_count += 1
+            if 'dataset' in ds.keys():
+                plot_data = ds['dataset']
+                if renderer == 'bokeh':
+                    for i, axis in enumerate(series_axes):
+                        if isinstance(plot_data, pd.DataFrame):
+                            x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
+                            y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
+                            data = {'x': plot_data[x_axis].to_list(), 'y': plot_data[y_axis].to_list()}
 
-                                elif isinstance(plot_data, list):
-                                    data = {'x': plot_data[0], 'y': plot_data[1]}
+                        elif isinstance(plot_data, list):
+                            data = {'x': plot_data[0], 'y': plot_data[1]}
 
-                                # Handle panda dataframe with multiple columns
-                                if isinstance(series_labels, list):
-                                    series_label = series_labels[i]
+                        # Handle panda dataframe with multiple columns
+                        if isinstance(series_labels, list):
+                            series_label = series_labels[i]
 
-                                if plot_type == 'lines':
-                                    plot_figure.line("x", "y", source=ColumnDataSource(data), legend_label=series_label,
-                                                     color=Category10[10][plot_count % 10])
-                                    plot_count += 1
-                                else:
-                                    plot_figure.scatter("x", "y", source=ColumnDataSource(data),
-                                                        legend_label=series_label,
-                                                        color=Category10[10][plot_count % 10])
-                                    plot_count += 1
+                        if plot_type == 'lines':
+                            plot_figure.line("x", "y", source=ColumnDataSource(data), legend_label=series_label,
+                                             color=Category10[10][plot_count % 10])
+                        elif plot_type == 'scatter':
+                            plot_figure.scatter("x", "y", source=ColumnDataSource(data), legend_label=series_label,
+                                                color=Category10[10][plot_count % 10])
+                        elif plot_type == 'bar':
+                            plot_figure.vbar(x="x", y="y", source=ColumnDataSource(data), legend_label=series_label,
+                                             color=Category10[10][plot_count % 10])
+                        plot_count += 1
+                else:
+                    for i, axis in enumerate(series_axes):
+                        # Handle panda dataframe with multiple columns
+                        if isinstance(series_labels, list):
+                            series_label = series_labels[i]
+
+                        if isinstance(plot_data, pd.DataFrame):
+                            x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
+                            y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
+                            x = plot_data[x_axis].to_list()
+                            y = plot_data[y_axis].to_list()
+                        else:
+                            x = plot_data[0]
+                            y = plot_data[1]
+
+                        if plot_type == 'bar':
+                            plot_figure.add_trace(go.Bar(x=x, y=y, name=series_label))
                         else:
                             plot_mode = 'lines' if plot_type == 'lines' else 'markers'
-                            for i, axis in enumerate(series_axes):
-                                # Handle panda dataframe with multiple columns
-                                if isinstance(series_labels, list):
-                                    series_label = series_labels[i]
-                                if isinstance(plot_data, pd.DataFrame):
-                                    x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
-                                    y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
-                                    plot_figure.add_trace(go.Scatter(x=plot_data[x_axis].to_list(),
-                                                                     y=plot_data[y_axis].to_list(), name=series_label,
-                                                                     mode=plot_mode, line_shape=line_shape))
-                                else:
-                                    plot_figure.add_trace(go.Scatter(x=plot_data[0], y=plot_data[1], name=series_label,
-                                                                     mode=plot_mode, line_shape=line_shape))
+                            plot_figure.add_trace(go.Scatter(x=x, y=y, name=series_label,
+                                                             mode=plot_mode, line_shape=line_shape))
 
         return plot_figure
