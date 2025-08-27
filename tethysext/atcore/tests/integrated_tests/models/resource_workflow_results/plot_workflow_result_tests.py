@@ -187,8 +187,35 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
         self.assertEqual(ret_plot, mock_bokeh_plot)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.figure')
+    def test_get_plot_object_bokeh_bar(self, mock_bokeh_figure, mock_options):
+        mock_bokeh_plot = mock.MagicMock(
+            spec=figure, xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
+            vbar=mock.MagicMock(return_value='test bar type')
+        )
+        mock_bokeh_figure.return_value = mock_bokeh_plot
+        mock_dataframe = pd.DataFrame(
+            {'x': [dt(2020, 1, 2), dt(2020, 1, 3), dt(2020, 1, 4)], 'y': [2, 3, 4]},
+            columns=['x', 'y']
+        )
+        mock_datasets = [{
+            'title': 'Test Title',
+            'series_axes': [],
+            'series_labels': [],
+            'dataset': mock_dataframe
+        }]
+        mock_options.get = mock.MagicMock(side_effect=['bokeh', 'bar', ['x', 'y'], 'linear', 'linear'])
+
+        self.instance.plot = mock_bokeh_plot
+        self.instance.datasets = mock_datasets
+
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_bokeh_plot)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Figure')
-    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Scatter')
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Bar')
     def test_get_plot_object_plotly_line(self, mock_scatter_plot, mock_plotly_figure, mock_options):
         mock_plotly_plot = mock.MagicMock(
             xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
@@ -217,8 +244,7 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Figure')
     @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Scatter')
-    def test_get_plot_object_plotly_list_dataset(self, mock_scatter_plot, mock_plotly_figure,
-                                                 mock_options):
+    def test_get_plot_object_plotly_scatter(self, mock_scatter_plot, mock_plotly_figure, mock_options):
         mock_plotly_plot = mock.MagicMock(
             xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
             add_trace=mock.MagicMock(return_value=mock_scatter_plot)
@@ -235,6 +261,34 @@ class PlotWorkflowResultTests(SqlAlchemyTestCase):
             'dataset': mock_dataset
         }]
         mock_options.get = mock.MagicMock(side_effect=['plotly', 'scatter', ['x', 'y'], 'linear', 'linear'])
+
+        self.instance.plot = mock_plotly_plot
+        self.instance.datasets = mock_datasets
+
+        ret_plot = self.instance.get_plot_object()
+
+        self.assertEqual(ret_plot, mock_plotly_plot)
+
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.PlotWorkflowResult.options')
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Figure')
+    @mock.patch('tethysext.atcore.models.resource_workflow_results.plot_workflow_result.go.Scatter')
+    def test_get_plot_object_plotly_bar(self, mock_bar_plot, mock_plotly_figure, mock_options):
+        mock_plotly_plot = mock.MagicMock(
+            xaxis=mock.MagicMock(axis_label='x'), yaxis=mock.MagicMock(axis_label='y'),
+            add_trace=mock.MagicMock(return_value=mock_bar_plot)
+        )
+        mock_plotly_figure.return_value = mock_plotly_plot
+        mock_dataframe = pd.DataFrame({
+            'x': [dt(2020, 1, 2), dt(2020, 1, 3), dt(2020, 1, 4), dt(2020, 1, 5), dt(2020, 1, 6), dt(2020, 1, 7)],
+            'y': [2, 3, 4, 5, 6, 7]
+        })
+        mock_datasets = [{
+            'title': 'Test Title',
+            'series_axes': [('x', 'y')],
+            'series_labels': ['test_label'],
+            'dataset': mock_dataframe
+        }]
+        mock_options.get = mock.MagicMock(side_effect=['plotly', 'bar', ['x', 'y'], 'linear', 'linear'])
 
         self.instance.plot = mock_plotly_plot
         self.instance.datasets = mock_datasets
