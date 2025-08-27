@@ -251,7 +251,6 @@ class PlotWorkflowResult(ResourceWorkflowResult):
                             x_axis = axis[0] if axis[0] == plot_data.columns[0] else plot_data.columns[0]
                             y_axis = axis[1] if axis[1] == plot_data.columns[1] else plot_data.columns[1]
                             data = {'x': plot_data[x_axis].to_list(), 'y': plot_data[y_axis].to_list()}
-
                         elif isinstance(plot_data, list):
                             data = {'x': plot_data[0], 'y': plot_data[1]}
 
@@ -286,6 +285,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
 
                         if plot_type == 'bar':
                             plot_figure.add_trace(go.Bar(x=x, y=y, name=series_label))
+                            plot_figure.update_layout(xaxis=dict(type="category"))
                         else:
                             plot_mode = 'lines' if plot_type == 'lines' else 'markers'
                             plot_figure.add_trace(go.Scatter(x=x, y=y, name=series_label,
