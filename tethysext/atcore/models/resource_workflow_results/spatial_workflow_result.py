@@ -147,7 +147,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
     def add_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, layer_id='', viewparams=None, env=None,
                       visible=True, public=True, tiled=True, selectable=False, plottable=False, has_action=False,
                       extent=None, popup_title=None, excluded_properties=None, geometry_attribute='geometry',
-                      color_ramp_division_kwargs=None, times=None):
+                      use_geoserver_legend=False, color_ramp_division_kwargs=None, times=None):
         """
         Add a wms layer to display on the map of this result view.
 
@@ -169,6 +169,8 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+            use_geoserver_legend(bool): If True, the legend will be retrieved directly from Geoserver. If False,
+                a legend will be generated locally using the parameter `color_ramp_division_kwargs`.
             color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
             times (list): List of time steps if layer is time-enabled. Times should be represented as strings in ISO 8601 format (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"]). Currently only supported in CesiumMapView.
         """  # noqa: E501
@@ -180,6 +182,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
             'layer_variable': layer_variable,
             'viewparams': viewparams,
             'env': env,
+            'use_geoserver_legend': use_geoserver_legend,
             'color_ramp_division_kwargs': color_ramp_division_kwargs,
             'layer_id': layer_id,
             'visible': visible,

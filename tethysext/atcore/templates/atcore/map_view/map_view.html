@@ -167,26 +167,34 @@
           {% endblock %}
         </div>
 
-
         {# LEGEND TAB PANEL #}
         {% if show_legends %}
           {% block legend_panel %}
             {% if legends %}
-            <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
-              {% block legend_items %}
-              {% for legend, legend_select_input in legends %}
-                <div id="legend-{{ legend.legend_id }}" class="d-none">
-                    <li class="legend-group-item">
-                      <label class="flatmark"><span class="display-name">{{ legend.title|title }}{% if legend.units %} ({{ legend.units }}){% endif %}</span></label>
-                    </li>
-                    {% gizmo legend_select_input %}
-                    <div id="color-ramp-component-{{ legend.legend_id }}">
-                      {% include "atcore/map_view/color_ramp_component.html" %}
+              <div role="tabpanel" class="tab-pane{% block disable_legend_tab_panel %}{% endblock %}" id="legend-tab-panel">
+                {% block legend_items %}
+                {% for legend, legend_select_input in legends %}
+                  {% if legend.is_geoserver_legend %}
+                    <div id="legend-{{ legend.legend_id }}" class="d-none">
+                      <li class="legend-group-item">
+                        <label class="flatmark"><span class="display-name">{{ legend.title|title }}{% if legend.units %} ({{ legend.units }}){% endif %}</span></label>
+                      </li>
+                      <img class="flatmark" src="{{ legend.legend_url }}">
                     </div>
-                </div>
-              {% endfor %}
-              {% endblock %}
-            </div>
+                  {% elif legend.is_geoserver_legend is False%}
+                    <div id="legend-{{ legend.legend_id }}" class="d-none">
+                      <li class="legend-group-item">
+                        <label class="flatmark"><span class="display-name">{{ legend.title|title }}{% if legend.units %} ({{ legend.units }}){% endif %}</span></label>
+                      </li>
+                      {% gizmo legend_select_input %}
+                      <div id="color-ramp-component-{{ legend.legend_id }}">
+                        {% include "atcore/map_view/color_ramp_component.html" %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+                {% endblock %}
+              </div>
             {% endif %}
           {% endblock %}
         {% endif %}
