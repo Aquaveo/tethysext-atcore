@@ -589,7 +589,7 @@ class MapManagerBase(object):
         if layer.get('use_geoserver_legend', False):
             endpoint = layer.get('endpoint')
             layer_name = layer.get('layer_name')
-            layer_title = layer.get('layer_title', '')
+            layer_title = layer.get('layer_title').replace("_", " ")
             legend_url = (
                 f'{endpoint}?service=WMS&version=1.1.0&request=GetLegendGraphic'
                 f'&layer={layer_name}&format=image/png&legend_options=hideEmptyRules:true'
