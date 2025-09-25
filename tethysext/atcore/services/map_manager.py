@@ -592,7 +592,7 @@ class MapManagerBase(object):
             layer_title = layer.get('layer_title').replace("_", " ")
             legend_url = (
                 f'{endpoint}?service=WMS&version=1.1.0&request=GetLegendGraphic'
-                f'&layer={layer_name}&format=image/png&legend_options=hideEmptyRules:true'
+                f'&layer={layer_name}&format=image/png&legend_options=hideEmptyRules:true&transparent=true'
             )
             return {
                 'is_geoserver_legend': True,
