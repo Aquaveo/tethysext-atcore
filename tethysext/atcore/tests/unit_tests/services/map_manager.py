@@ -1461,7 +1461,7 @@ class MapManagerBaseTests(unittest.TestCase):
             'title': 'Test Title',
             'legend_url': (
                 'http://localhost:8181/geoserver/wms?service=WMS&version=1.1.0&request=GetLegendGraphic'
-                '&layer=test:layer_name&format=image/png&legend_options=hideEmptyRules:true'
+                '&layer=test:layer_name&format=image/png&legend_options=hideEmptyRules:true&transparent=true'
             )
         }
 
