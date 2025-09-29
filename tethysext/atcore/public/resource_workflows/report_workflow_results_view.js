@@ -52,7 +52,7 @@ $(function() {
         let layer_extent = '';
         let map_data = $(obj).data('map-layer-variables');
         let map_id = obj.id.match(/\d+/)[0];
-        map_data.forEach(function(data) {
+        map_data.slice().reverse().forEach(function(data) {
             if (data['source'] == 'TileWMS' || data['source'] == 'ImageWMS') {
                 layers.push(new ol.layer.Image({
                                 source: new ol.source.ImageWMS({
@@ -75,7 +75,7 @@ $(function() {
                 );
             }
             layer_extent = layer_extent || data.legend_extent;
-        })        
+        })
 
         maps[i] = new ol.Map({
             controls: ol.control.defaults().extend([
