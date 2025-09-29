@@ -49,8 +49,9 @@ $(function() {
 
     $('.resultType-map').each(function(i, obj) {
         layers = [...base_layers];
-        var layer_extent = '';
-        var map_data = $(obj).data('map-layer-variables');
+        let layer_extent = '';
+        let map_data = $(obj).data('map-layer-variables');
+        let map_id = obj.id.match(/\d+/)[0];
         map_data.forEach(function(data) {
             if (data['source'] == 'TileWMS' || data['source'] == 'ImageWMS') {
                 layers.push(new ol.layer.Image({
@@ -74,7 +75,7 @@ $(function() {
                 );
             }
             layer_extent = layer_extent || data.legend_extent;
-        })
+        })        
 
         maps[i] = new ol.Map({
             controls: ol.control.defaults().extend([
@@ -90,7 +91,7 @@ $(function() {
                 }),
             ]),
             layers: layers,
-            target: `openLayerMap${i+1}`,
+            target: `openLayerMap${map_id}`,
             view: new ol.View({
                 center: ol.proj.fromLonLat([(layer_extent[0] + layer_extent[2])/2, (layer_extent[1] + layer_extent[3])/2]),
                 zoom: 12,

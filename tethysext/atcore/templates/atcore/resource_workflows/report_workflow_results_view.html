@@ -47,37 +47,37 @@
       {% for type, value in result.items %}
         {% if type == 'map' %}
           <div id="resultType-map-{{ forloop.parentloop.counter }}" class="resultType-map" data-map-layer-variables="{{ value.map|jsonify }}">
-          <h3>{{ value.name }}</h3>
-          {% if value.description %}
-            <h4>Description: {{ value.description }}</h4>
-          {% endif %}
-          <div class="container-fluid">
-            <div class="row">
-              <div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.parentloop.counter }}" class='map-view-result' style="width: 100%, height: 400px;"></div>
-              {% if value.legend %}
-                <div class="col-xs-4" id="legend-{{ value.legend.legend_id }}" style="width:220px;">
-                  <li class="legend-group-item" style="list-style-type:none;">
-                    <label class="flatmark">
-                      <span class="display-name">
-                        {{ value.legend.title|title }}{% if value.legend.units %} ({{value.legend.units}}){% endif %}
-                      </span>
-                    </label>
-                  </li>
-                  <ul class="legend-list" data-collapsed="false">
-                    {% for division, color in value.legend.divisions.items  %}
-                      <div class="legend-item">
-                        <li class="legend-list-item">
-                          <p>{{ division }} </p>
-                          <div class="color-box" style="background-color: {{ color }} !important;"></div>
-                        </li>
-                      </div>
-                    {% endfor %}
-                  </ul>
-                </div>
-              {% endif %}
+            <h3>{{ value.name }}</h3>
+            {% if value.description %}
+              <h4>Description: {{ value.description }}</h4>
+            {% endif %}
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-xs-8 nopadding" id="openLayerMap{{ forloop.parentloop.counter }}" class='map-view-result' style="width: 100%; height: 400px;"></div>
+                {% if value.legend %}
+                  <div class="col-xs-4" id="legend-{{ value.legend.legend_id }}" style="width:220px;">
+                    <li class="legend-group-item" style="list-style-type:none;">
+                      <label class="flatmark">
+                        <span class="display-name">
+                          {{ value.legend.title|title }}{% if value.legend.units %} ({{value.legend.units}}){% endif %}
+                        </span>
+                      </label>
+                    </li>
+                    <ul class="legend-list" data-collapsed="false">
+                      {% for division, color in value.legend.divisions.items  %}
+                        <div class="legend-item">
+                          <li class="legend-list-item">
+                            <p>{{ division }} </p>
+                            <div class="color-box" style="background-color: {{ color }} !important;"></div>
+                          </li>
+                        </div>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+              </div>
             </div>
-          </div>
-          <div contentEditable=true class="add-border" data-ph="Map Note"></div>
+            <div contentEditable=true class="add-border" data-ph="Map Note"></div>
           </div>
         {% elif type == 'dataset' %}
           <div id="resultType-table-{{ forloop.counter }}">

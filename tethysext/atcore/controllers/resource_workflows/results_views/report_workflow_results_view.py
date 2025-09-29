@@ -200,7 +200,9 @@ class ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
         link: 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/'
         :return: 'http://192.168.99.163:8181/geoserver/wms/'
         """
-        start_remove_index = link.find('//') + 2
         end_remove_index = link.find('@') + 1
+        if end_remove_index == 0:
+            return link
+        start_remove_index = link.find('//') + 2
         link = link[:start_remove_index] + link[end_remove_index:]
         return link
