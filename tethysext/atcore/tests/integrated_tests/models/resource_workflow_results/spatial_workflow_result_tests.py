@@ -126,6 +126,8 @@ class SpatialWorkflowResultTests(SqlAlchemyTestCase):
             layer_variable='foos',
             layer_id='1',
             viewparams='foo:bar,goo:jar',
+            use_geoserver_legend=False,
+            geoserver_legend_params=None,
             color_ramp_division_kwargs="{'color_ramp': 'Blue', 'min_value':0.1, 'max_value': 10}",
             env='a:b,c:d',
             visible=False,

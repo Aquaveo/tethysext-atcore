@@ -117,18 +117,23 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             legend = map_manager.build_legend(layer, units=result.options.get('units', ''))
 
             if legend:
-                legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
-                legend_attrs = {"onchange": f"ATCORE_MAP_VIEW.reload_legend( this, {legend['min_value']}, "
-                                            f"{legend['max_value']}, '{legend['prefix']}', '{legend['color_prefix']}', "
-                                            f"{legend['first_division']}, '{legend['layer_id']}' )"}
+                legend_select_input = []
+                if not legend.get('is_geoserver_legend', True):
+                    legend_input_options = [(color_ramp, color_ramp) for color_ramp in legend['color_list']]
+                    legend_attrs = {
+                        "onchange": (
+                            f"ATCORE_MAP_VIEW.reload_legend( this, {legend['min_value']}, "
+                            f"{legend['max_value']}, '{legend['prefix']}', '{legend['color_prefix']}', "
+                            f"{legend['first_division']}, '{legend['layer_id']}' )"
+                        )
+                    }
 
-                legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
-                                                  options=legend_input_options,
-                                                  initial=[legend['color_ramp']],
-                                                  attributes=legend_attrs)
-
+                    legend_select_input = SelectInput(name=f"tethys-color-ramp-picker-{legend['legend_id']}",
+                                                      options=legend_input_options,
+                                                      initial=[legend['color_ramp']],
+                                                      attributes=legend_attrs)
                 legends_select_inputs.append(legend_select_input)
-            legends.append(legend)
+                legends.append(legend)
 
             if result_layer:
                 results_layers.append(result_layer)
@@ -152,7 +157,6 @@ class MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView):
             map_view.primitives = primitives + map_view.primitives
         else:
             map_view.layers = results_layers + map_view.layers
-
         base_context.update({
             'legends': list(zip(legends, legends_select_inputs)),
         })

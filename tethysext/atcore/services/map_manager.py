@@ -242,7 +242,8 @@ class MapManagerBase(object):
     def build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, style='', viewparams=None, env=None,
                         visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None,
                         public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None,
-                        popup_title=None, color_ramp_division_kwargs=None, times=None):
+                        popup_title=None, use_geoserver_legend=True, geoserver_legend_params=None,
+                        color_ramp_division_kwargs=None, times=None):
         """
         Build an WMS MVLayer object with supplied arguments.
         Args:
@@ -264,6 +265,16 @@ class MapManagerBase(object):
             popup_title(str): Title to display on feature popups. Defaults to layer title.
             excluded_properties(list): List of properties to exclude from feature popups.
             geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+            use_geoserver_legend(bool): If True, the legend will be retrieved directly from Geoserver. If False,
+                a legend will be generated locally using the parameter `color_ramp_division_kwargs`.
+            geoserver_legend_params: Dictionary of additional GeoServer GetLegendGraphic request parameters.
+                Both standard WMS parameters (e.g. "transparent", "format") and legend-specific options ("legend_options") can be included.
+                Example:
+                {
+                    "transparent": "true",
+                    "format": "image/png",
+                    "legend_options": "hideEmptyRules:true;fontSize:12"
+                }
             color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
             times (list): List of time steps if layer is time-enabled. Times should be represented as strings in ISO 8601 format (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"]). Currently only supported in CesiumMapView.
         Returns:
@@ -581,12 +592,29 @@ class MapManagerBase(object):
         Returns:
             Legend data associate with the layer.
         """
-        legend_info = ""
+        legend_key = layer['layer_variable']
+        if ":" in legend_key:
+            legend_key = legend_key.replace(":", "_")
+        if layer.get('use_geoserver_legend', False):
+            endpoint = layer.get('endpoint')
+            layer_name = layer.get('layer_name')
+            layer_title = layer.get('layer_title').replace("_", " ")
+            legend_url = (
+                f'{endpoint}?service=WMS&version=1.1.0&request=GetLegendGraphic'
+                f'&layer={layer_name}'
+            )
+            legend_params = layer.get('geoserver_legend_params', {})
+            legend_params.setdefault('format', 'image/png')
+            for k, v in legend_params.items():
+                legend_url += f'&{k}={v}'
+            return {
+                'is_geoserver_legend': True,
+                'legend_id': legend_key,
+                'title': layer_title,
+                'legend_url': legend_url
+            }
         if layer.get('color_ramp_division_kwargs') is not None:
-            legend_key = layer['layer_variable']
             layer_id = layer['layer_id'] if layer['layer_id'] else layer['layer_name']
-            if ":" in legend_key:
-                legend_key = legend_key.replace(":", "_")
 
             div_kwargs = layer['color_ramp_division_kwargs']
             min_value = div_kwargs['min_value']
@@ -597,6 +625,7 @@ class MapManagerBase(object):
             first_division = div_kwargs['first_division'] if 'first_division' in div_kwargs.keys() else 1
 
             legend_info = {
+                'is_geoserver_legend': False,
                 'legend_id': legend_key,
                 'title': layer['layer_title'].replace("_", " "),
                 'divisions': dict(),
@@ -619,8 +648,8 @@ class MapManagerBase(object):
             legend_info['divisions'] = collections.OrderedDict(
                 sorted(legend_info['divisions'].items())
             )
-
-        return legend_info
+            return legend_info
+        return ''
 
     def generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2,
                                              first_division=1, top_offset=0, bottom_offset=0, prefix='val',

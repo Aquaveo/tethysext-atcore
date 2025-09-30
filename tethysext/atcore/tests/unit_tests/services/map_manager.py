@@ -1390,6 +1390,7 @@ class MapManagerBaseTests(unittest.TestCase):
         }
 
         expected = {
+            'is_geoserver_legend': False,
             'legend_id': 'test_layer_variable',
             'title': 'Test Title',
             'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
@@ -1424,6 +1425,7 @@ class MapManagerBaseTests(unittest.TestCase):
         }
 
         expected = {
+            'is_geoserver_legend': False,
             'legend_id': 'test_layer_variable',
             'title': 'Test Title',
             'divisions': OrderedDict([(100.0, '#fff100'), (200.0, '#ff8c00')]),
@@ -1436,6 +1438,35 @@ class MapManagerBaseTests(unittest.TestCase):
             'color_prefix': 'color',
             'first_division': 1,
             'units': 'Ft',
+        }
+
+        map_manager = _MapManager(
+            spatial_manager=self.spatial_manager,
+            resource=self.resource
+        )
+
+        ret = map_manager.build_legend(mock_layer, units='Ft')
+        self.assertEqual(ret, expected)
+
+    def test_build_legend_with_use_geoserver_legend(self):
+        mock_layer = {
+            'use_geoserver_legend': True, 'endpoint': 'http://localhost:8181/geoserver/wms', 'layer_id': '',
+            'layer_name': 'test:layer_name', 'layer_title': 'Test_Title', 'layer_variable': 'test:layer_variable',
+            'geoserver_legend_params': {
+                'format': 'image/png',
+                'legend_options': 'hideEmptyRules:true',
+                'transparent': 'true'
+            }
+        }
+
+        expected = {
+            'is_geoserver_legend': True,
+            'legend_id': 'test_layer_variable',
+            'title': 'Test Title',
+            'legend_url': (
+                'http://localhost:8181/geoserver/wms?service=WMS&version=1.1.0&request=GetLegendGraphic'
+                '&layer=test:layer_name&format=image/png&legend_options=hideEmptyRules:true&transparent=true'
+            )
         }
 
         map_manager = _MapManager(
