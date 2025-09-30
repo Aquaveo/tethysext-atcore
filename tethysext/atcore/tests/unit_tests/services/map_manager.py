@@ -1450,9 +1450,13 @@ class MapManagerBaseTests(unittest.TestCase):
 
     def test_build_legend_with_use_geoserver_legend(self):
         mock_layer = {
-            'use_geoserver_legend': True, 'endpoint': 'http://localhost:8181/geoserver/wms',
+            'use_geoserver_legend': True, 'endpoint': 'http://localhost:8181/geoserver/wms', 'layer_id': '',
             'layer_name': 'test:layer_name', 'layer_title': 'Test_Title', 'layer_variable': 'test:layer_variable',
-            'layer_id': ''
+            'geoserver_legend_params': {
+                'format': 'image/png',
+                'legend_options': 'hideEmptyRules:true',
+                'transparent': 'true'
+            }
         }
 
         expected = {
