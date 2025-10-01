@@ -3,9 +3,6 @@ name: push_commits_no_tag
 
 # Push to docker hub if tag has been created.
 on:
-  push:
-    branches:
-      - '*'
   pull_request:
     branches:
       - '*'
