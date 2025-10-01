@@ -39,7 +39,9 @@ ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
-RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore ; micromamba run -n ${ENV_NAME} tethys install -N -q"
+RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore \
+  ; sed -i '' "s|^[[:space:]]*- django.*|      - django=$DJANGO_VERSION|"" install.yml \
+  ; micromamba run -n ${ENV_NAME} tethys install -N -q"
 
 #########
 # CHOWN #
