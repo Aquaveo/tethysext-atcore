@@ -1,5 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-name: push_commits_no_tag
+name: Commits without Tag
 
 # Push to docker hub if tag has been created.
 on:
@@ -73,7 +72,7 @@ jobs:
     - name: Test Tag
       run: |
         echo $TAG
-    - name: build and push tag
+    - name: Build and Push Dev
       uses: aevea/action-kaniko@v0.14.0
       with:
         # Docker registry where the image will be pushed
@@ -94,7 +93,6 @@ jobs:
         build_file: Dockerfile
         # Extra kaniko args
         extra_args: --build-arg TETHYS_VERSION=${{ matrix.tethys-version }} --build-arg PYTHON_VERSION=${{ matrix.python-version }} --build-arg DJANGO_VERSION=${{ matrix.django-version }}
-
   startup_test:
     needs: [build]
     name: Startup Test (${{ matrix.platform }}, ty${{ matrix.tethys-version }}, dj${{ matrix.django-version }}, py${{ matrix.python-version }})
@@ -144,7 +142,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [ubuntu-latest]
-        tethys-version: ["4.3.2"]
+        tethys-version: ["4.3.8"]
         python-version: ["3.10", "3.11", "3.12"]
         django-version: ["3.2", "4.2", "5.1"]
     services:
