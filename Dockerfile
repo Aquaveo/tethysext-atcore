@@ -50,7 +50,7 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
 RUN cd ${TETHYSEXT_DIR}/tethysext-atcore \
   ; sed -i "s|^[[:space:]]*- django[^-].*|    - django=${DJANGO_VERSION}|" install.yml \
-  ; if [ "${DJANGO_VERSION}" = "3.2" ]; then sed -i 's|^[[:space:]]*- django-taggit.*|    - django-taggit<6|' install.yml; fi \
+  ; if [ "${DJANGO_VERSION}" = "3.2" ]; then sed -i 's|^[[:space:]]*- django-taggit.*|    - django-taggit<5|' install.yml; fi \
   ; cat install.yml \
   ; micromamba run -n ${ENV_NAME} tethys install -N -q
 
