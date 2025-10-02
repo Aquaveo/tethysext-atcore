@@ -2,9 +2,12 @@ name: Commits without Tag
 
 # Push to docker hub if tag has been created.
 on:
+  push:
+    branches:
+    - "master"
   pull_request:
     branches:
-      - '*'
+    - "*"
 
 env:
   DOCKER_HUB_ORG: aquaveollc
