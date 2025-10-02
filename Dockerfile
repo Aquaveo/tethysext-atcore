@@ -13,6 +13,10 @@ ARG PYTHON_VERSION
 ARG DJANGO_VERSION
 ARG TETHYS_VERSION
 
+RUN echo "Python version ${PYTHON_VERSION}" \
+  ; echo "Django version ${DJANGO_VERSION}" \
+  ; echo "Tethys version ${TETHYS_VERSION}"
+
 #####################
 # Default Variables #
 #####################
@@ -43,13 +47,10 @@ ADD pyproject.toml ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
-RUN echo "Django version set to ${DJANGO_VERSION}" \
-  ; echo "Tethys version set to ${TETHYS_VERSION}" \
-  ; echo "Python version set to ${PYTHON_VERSION}"
 RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
-RUN echo "DJANGO_VERSION is: ${DJANGO_VERSION}" \
-  ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
+RUN cd ${TETHYSEXT_DIR}/tethysext-atcore \
   ; sed -i "s|^[[:space:]]*- django[^-].*|    - django=${DJANGO_VERSION}|" install.yml \
+  ; if [ "${DJANGO_VERSION}" = "3.2" ]; then sed -i 's|^[[:space:]]*- django-taggit.*|    - django-taggit<6|' install.yml; fi \
   ; cat install.yml \
   ; micromamba run -n ${ENV_NAME} tethys install -N -q
 
