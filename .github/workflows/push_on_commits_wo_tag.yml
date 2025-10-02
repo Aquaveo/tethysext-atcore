@@ -1,20 +1,15 @@
-# This is a basic workflow to help you get started with Actions
-name: push_commits_no_tag
+name: Commits without Tag
 
 # Push to docker hub if tag has been created.
 on:
-  push:
-    branches:
-      - '*'
   pull_request:
     branches:
       - '*'
 
 env:
-  TEST_IMAGE: aquaveollc/tethysext-atcore:dev_${GITHUB_SHA}
-  IMAGE_TAG: dev_${GITHUB_SHA}
   DOCKER_HUB_ORG: aquaveollc
   DOCKER_REPO: tethysext-atcore
+  DOCKER_URL: aquaveollc/tethysext-atcore
   MAX_NUMBER_IMAGE: 5
   POSTGRES_DB: tethys_postgis
   POSTGRES_PASSWORD: please_dont_use_default_passwords
@@ -39,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install Flake8
@@ -48,19 +43,27 @@ jobs:
         run: flake8 $GITHUB_WORKSPACE
 
   build:
+    name: Docker Build (${{ matrix.platform }}, ty${{ matrix.tethys-version }}, dj${{ matrix.django-version }}, py${{ matrix.python-version }})
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest]
+        tethys-version: ["4.3.8"]
+        python-version: ["3.10", "3.11", "3.12"]
+        django-version: ["3.2", "4.2", "5.2"]
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set Env
       run: |
         echo "KANIKO_CACHE_REGISTRY=aquaveollc/tethysext-atcore-cache" >> $GITHUB_ENV
         echo "KANIKO_IMAGE=aquaveollc/tethysext-atcore" >> $GITHUB_ENV
     - name: Set Tag
       run: |
-        echo "TAG=dev_${GITHUB_SHA}" >> $GITHUB_ENV
+        echo "TAG=dev${GITHUB_SHA::8}-ty${{ matrix.tethys-version }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}" >> $GITHUB_ENV
       # If the branch is stable, we'll overwrite the TAG to include stable.
     - name: Set Stable Tag
       if: endsWith(github.ref, '/stable')
@@ -69,8 +72,8 @@ jobs:
     - name: Test Tag
       run: |
         echo $TAG
-    - name: build and push tag
-      uses: aevea/action-kaniko@v0.12.0
+    - name: Build and Push Dev
+      uses: aevea/action-kaniko@v0.14.0
       with:
         # Docker registry where the image will be pushed
         registry: docker.io
@@ -88,10 +91,19 @@ jobs:
         cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
         # Dockerfile filename
         build_file: Dockerfile
-
+        # Extra kaniko args
+        extra_args: --build-arg TETHYS_VERSION=${{ matrix.tethys-version }} --build-arg PYTHON_VERSION=${{ matrix.python-version }} --build-arg DJANGO_VERSION=${{ matrix.django-version }}
   startup_test:
     needs: [build]
-    runs-on: ubuntu-latest
+    name: Startup Test (${{ matrix.platform }}, ty${{ matrix.tethys-version }}, dj${{ matrix.django-version }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest]
+        tethys-version: ["4.3.8"]
+        python-version: ["3.10", "3.11", "3.12"]
+        django-version: ["3.2", "4.2", "5.2"]
     services:
       postgis:
         image: postgis/postgis:17-3.5
@@ -109,22 +121,30 @@ jobs:
           - 5432:5432
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Docker login
       run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
 
     - name: Pull Docker Image
       run: |
-        docker pull ${{ env.TEST_IMAGE }}
+        docker pull ${{ env.DOCKER_URL }}:dev${GITHUB_SHA::8}-ty${{ matrix.tethys-version }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}
 
     - name: Run Salt Test
       run: |
-        docker run --rm --name tethys_atcore --network ${{ job.services.postgis.network }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }} /bin/bash -c "cd /usr/lib/tethys && source ./run.sh --test"
+        docker run --rm --name tethys_atcore --network ${{ job.services.postgis.network }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.DOCKER_URL }}:dev${GITHUB_SHA::8}-ty${{ matrix.tethys-version }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }} /bin/bash -c "cd /usr/lib/tethys && source ./run.sh --test"
 
   unit_tests:
+    name: Unit Tests (${{ matrix.platform }}, ty${{ matrix.tethys-version }}, dj${{ matrix.django-version }}, py${{ matrix.python-version }})
     needs: [build]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest]
+        tethys-version: ["4.3.8"]
+        python-version: ["3.10", "3.11", "3.12"]
+        django-version: ["3.2", "4.2", "5.2"]
     services:
       postgis:
         image: postgis/postgis:17-3.5
@@ -142,18 +162,18 @@ jobs:
           - 5432:5432
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Docker login
       run: docker login -u ${{ secrets.DOCKER_BUILDER_USERNAME }} -p ${{ secrets.DOCKER_BUILDER_TOKEN }}
 
     - name: Pull Docker Image
       run: |
-        docker pull ${{ env.TEST_IMAGE }}
+        docker pull ${{ env.DOCKER_URL }}:dev${GITHUB_SHA::8}-ty${{ matrix.tethys-version }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}
 
     - name: Run Docker Image
       run: |
-        docker run -d --name tethys_atcore --network ${{ job.services.postgis.network }} -e ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.TEST_IMAGE }}
+        docker run -d --name tethys_atcore --network ${{ job.services.postgis.network }} -e ATCORE_TEST_DATABASE=${{ env.ATCORE_TEST_DATABASE }} -e POSTGRES_DB=${{ env.POSTGRES_DB }} -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} -e POSTGRES_PORT=${{ env.POSTGRES_PORT }} -e TETHYS_PUBLIC_HOST='${{ env.TETHYS_PUBLIC_HOST }}' -e TETHYS_DB_HOST='${{ env.TETHYS_DB_HOST }}' -e TETHYS_DB_PORT=${{ env.TETHYS_DB_PORT }} -e TETHYS_DB_USERNAME=${{ env.TETHYS_DB_USERNAME }} -e TETHYS_DB_PASSWORD=${{ env.TETHYS_DB_PASSWORD }} -e TETHYS_DB_SUPERUSER=${{ env.TETHYS_DB_SUPERUSER }} -e TETHYS_DB_SUPERUSER_PASS=${{ env.TETHYS_DB_SUPERUSER_PASS }} -e APP_DB_HOST=${{ env.APP_DB_HOST }} -e APP_DB_USERNAME=${{ env.APP_DB_USERNAME }} -e APP_DB_PASSWORD=${{ env.APP_DB_PASSWORD }} ${{ env.DOCKER_URL }}:dev${GITHUB_SHA::8}-ty${{ matrix.tethys-version }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}
         sleep 120s
         docker logs tethys_atcore
 
@@ -176,10 +196,10 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: only keeps the first 5 image
         run: |
-          echo "TAG=dev_${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "TAG=dev_${GITHUB_SHA::8}" >> $GITHUB_ENV
           echo $TAG
           . .github/scripts/clean_up_docker_hub.sh '${{ secrets.DOCKER_BUILDER_USERNAME }}' '${{ secrets.DOCKER_BUILDER_PASSWORD }}' '${{ env.DOCKER_HUB_ORG }}' '${{ env.DOCKER_REPO }}' '${{ env.MAX_NUMBER_IMAGE }}'
 

@@ -9,23 +9,23 @@ requirements:
   skip: false
   conda:
     channels:
-      - conda-forge
+    - conda-forge
     packages:
-      - django>=3.2,<6
-      - django-select2<8.3.0
-      - django-taggit
-      - coverage
-      - factory_boy
-      - filelock
-      - geojson
-      - jinja2
-      - pandas
-      - param
-      - pyshp
-      - requests
-      - sqlalchemy<2
-      - panel
+    - django>=3.2,<6
+    - django-select2<8.3.0
+    - django-taggit
+    - coverage
+    - factory_boy
+    - filelock
+    - geojson
+    - jinja2
+    - pandas
+    - param
+    - pyshp
+    - requests
+    - sqlalchemy<2
+    - panel
   pip:
-    - django-datetime-widget2
-    - geoserver-restconfig>=2.0.10
+  - django-datetime-widget2
+  - geoserver-restconfig>=2.0.10
 post:

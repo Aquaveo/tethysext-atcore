@@ -1,5 +1,5 @@
 # This is a basic workflow to help you get started with Actions
-name: push_on_tag
+name: Release on Tag
 
 # Push to docker hub if tag has been created.
 on:
@@ -11,25 +11,30 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    name: Docker Build (${{ matrix.platform }}, ty${{ matrix.tethys-version }}, dj${{ matrix.django-version }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest]
+        tethys-version: ["4.3.8"]
+        python-version: ["3.10", "3.11", "3.12"]
+        django-version: ["3.2", "4.2", "5.2"]
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set Env
       run: |
         echo "KANIKO_CACHE_REGISTRY=aquaveollc/tethysext-atcore-cache" >> $GITHUB_ENV
         echo "KANIKO_IMAGE=aquaveollc/tethysext-atcore" >> $GITHUB_ENV
     - name: Set Tag
       run: |
-        echo "TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
-        echo "TAG_LATEST=latest" >> $GITHUB_ENV
+        echo "TAG=${GITHUB_REF:10}-ty${{ matrix.tethys-version }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}" >> $GITHUB_ENV
     - name: Test Tag
       run: |
         echo $TAG
-    - name: build and push tag
-      uses: aevea/action-kaniko@v0.12.0
+    - name: Build and Push Tag
+      uses: aevea/action-kaniko@v0.14.0
       with:
         # Docker registry where the image will be pushed
         registry: docker.io
@@ -47,22 +52,6 @@ jobs:
         cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
         # Dockerfile filename
         build_file: Dockerfile
-    - name: build and push latest
-      uses: aevea/action-kaniko@v0.12.0
-      with:
-        # Docker registry where the image will be pushed
-        registry: docker.io
-        # Username used for authentication to the Docker registry
-        username: ${{ secrets.DOCKER_BUILDER_USERNAME }}
-        # Password used for authentication to the Docker registry
-        password: ${{ secrets.DOCKER_BUILDER_TOKEN }}
-        # Image name
-        image: ${{ env.KANIKO_IMAGE }}
-        # Image tag
-        tag: ${{ env.TAG_LATEST }}
-        # Enables build cache
-        cache: true
-        # Docker registry meant to be used as cache
-        cache_registry: ${{ env.KANIKO_CACHE_REGISTRY }}
-        # Dockerfile filename
-        build_file: Dockerfile
+        # Extra kaniko args
+        extra_args: --build-arg TETHYS_VERSION=${{ matrix.tethys-version }} --build-arg PYTHON_VERSION=${{ matrix.python-version }} --build-arg DJANGO_VERSION=${{ matrix.django-version }}
+
