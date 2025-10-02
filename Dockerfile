@@ -8,6 +8,11 @@ ARG BASE_IMAGE="tethysplatform/tethys-core"
 # Use our Tethys Core base docker image as a parent image
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
+# This is necessary for the ARG variables to be available in the rest of the Dockerfile
+ARG PYTHON_VERSION
+ARG DJANGO_VERSION
+ARG TETHYS_VERSION
+
 #####################
 # Default Variables #
 #####################
@@ -38,11 +43,15 @@ ADD pyproject.toml ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD *.sh ${TETHYSEXT_DIR}/tethysext-atcore/
 ADD install.yml ${TETHYSEXT_DIR}/tethysext-atcore/
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
+RUN echo "Django version set to ${DJANGO_VERSION}" \
+  ; echo "Tethys version set to ${TETHYS_VERSION}" \
+  ; echo "Python version set to ${PYTHON_VERSION}"
 RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
-RUN /bin/bash -c "cd ${TETHYSEXT_DIR}/tethysext-atcore \
-  ; sed -i '' \"s|^[[:space:]]*- django[^-].*|    - django=${DJANGO_VERSION}|\" install.yml \
+RUN echo "DJANGO_VERSION is: ${DJANGO_VERSION}" \
+  ; cd ${TETHYSEXT_DIR}/tethysext-atcore \
+  ; sed -i "s|^[[:space:]]*- django[^-].*|    - django=${DJANGO_VERSION}|" install.yml \
   ; cat install.yml \
-  ; micromamba run -n ${ENV_NAME} tethys install -N -q"
+  ; micromamba run -n ${ENV_NAME} tethys install -N -q
 
 #########
 # CHOWN #
