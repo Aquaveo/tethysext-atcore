@@ -5,9 +5,17 @@ on:
   push:
     branches:
     - "master"
+    tags-ignore:
+    - '**' # Ignore all tags
   pull_request:
     branches:
     - "*"
+  schedule:
+  - cron: "0 0 * * 0" # weekly
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   DOCKER_HUB_ORG: aquaveollc
