@@ -18,7 +18,7 @@ class ModelDatabaseConnection(ModelDatabaseConnectionBase):
     Represents a Model Database.
     """
 
-    def __init__(self, db_url, engine_args={}, db_app_namespace=None):
+    def __init__(self, db_url, db_app_namespace=None, engine_args=None):
         """
         Constructor
 
@@ -30,7 +30,11 @@ class ModelDatabaseConnection(ModelDatabaseConnectionBase):
         self.db_url = db_url
         self.db_url_obj = make_url(self.db_url)
         self.db_name = self.db_url_obj.database
-        self.engine_args = engine_args
+
+        if engine_args is None:
+            self.engine_args = {}
+        else:
+            self.engine_args = engine_args
 
         if db_app_namespace:
             self.db_id = self.db_name.replace(db_app_namespace + '_', '')

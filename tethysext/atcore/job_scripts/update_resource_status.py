@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from tethysext.atcore.models.app_users import Resource
 
 
-def run(resource_db_url: str, resource_id: str, resource_class_path: str, status_keys: list, engine_args: dict = {}):
+def run(resource_db_url: str, resource_id: str, resource_class_path: str, status_keys: list, engine_args: dict = None):
     """
     Update the root status of a resource based ont he status of one or more other statuses of the same resource.
 
@@ -23,6 +23,10 @@ def run(resource_db_url: str, resource_id: str, resource_class_path: str, status
 
     resource_module = __import__(resource_module_path, fromlist=[resource_class_name])
     resource_class = getattr(resource_module, resource_class_name)
+    if engine_args is None:
+        engine_args = {}
+    else:
+        engine_args = engine_args
 
     try:
         # Get resource
