@@ -18,22 +18,19 @@ class ModelDatabaseConnection(ModelDatabaseConnectionBase):
     Represents a Model Database.
     """
 
-    def __init__(self, db_url, engine_args=None, db_app_namespace=None):
+    def __init__(self, db_url, engine_args={}, db_app_namespace=None):
         """
         Constructor
 
         Args:
             db_url(str): SQLAlchemy url connection string.
             db_app_namespace(str): namespace prepended by persistent store API if applicable.
+            engine_args(dict): Optional arguments to pass to SQLAlchemy create_engine method.
         """
         self.db_url = db_url
         self.db_url_obj = make_url(self.db_url)
         self.db_name = self.db_url_obj.database
-
-        if engine_args is None:
-            self.engine_args = {}
-        else:
-            self.engine_args = engine_args
+        self.engine_args = engine_args
 
         if db_app_namespace:
             self.db_id = self.db_name.replace(db_app_namespace + '_', '')
