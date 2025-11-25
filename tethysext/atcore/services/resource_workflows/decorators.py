@@ -2,6 +2,7 @@ import sys
 import json
 import logging
 import traceback
+from importlib import import_module
 from pprint import pprint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -127,13 +128,16 @@ def workflow_step_job(job_func):
             ret_val = None
 
             try:
+                job_module = import_module(job_func.__module__)
+                module_engine_kwargs = getattr(job_module, "ENGINE_ARGS", {})
+
                 # Get the resource database session
-                resource_db_engine = create_engine(args.resource_db_url)
+                resource_db_engine = create_engine(args.resource_db_url, **module_engine_kwargs)
                 make_resource_db_session = sessionmaker(bind=resource_db_engine)
                 resource_db_session = make_resource_db_session()
 
                 try:
-                    model_db_engine = create_engine(args.model_db_url)
+                    model_db_engine = create_engine(args.model_db_url, **module_engine_kwargs)
                     make_model_db_session = sessionmaker(bind=model_db_engine)
                     model_db_session = make_model_db_session()
                 except ArgumentError:
