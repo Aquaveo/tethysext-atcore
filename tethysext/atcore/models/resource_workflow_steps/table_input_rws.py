@@ -23,6 +23,7 @@ class TableInputRWS(ResourceWorkflowStep):
         empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
         fixed_rows(bool): Indicates whether the number of rows in the table is fixed.
         numeric_step(float): The step increment for numeric columns.
+        column_bounds(dict): A dictionary defining min and/or max bounds for numeric columns. For example: {'Column1': {'min': 0, 'max': 100}, 'Column2': {'min': -50}. Defaults to {}.
     """  # noqa: #501
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.table_input_wv.TableInputWV'
 
@@ -53,7 +54,7 @@ class TableInputRWS(ResourceWorkflowStep):
             'empty_rows': self.DEFAULT_EMPTY_ROWS,
             'fixed_rows': self.DEFAULT_FIXED_ROWS,
             'numeric_step': self.DEFAULT_NUMERIC_STEP,
-            'column_bounds': {}  # e.g. {'Column1': {'min': 0, 'max': 100}, 'Column2': {'min': -50}
+            'column_bounds': {}
         })
         return default_options
 
