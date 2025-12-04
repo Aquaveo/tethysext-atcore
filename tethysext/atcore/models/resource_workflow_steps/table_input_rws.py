@@ -52,7 +52,8 @@ class TableInputRWS(ResourceWorkflowStep):
             'max_rows': self.DEFAULT_MAX_ROWS,
             'empty_rows': self.DEFAULT_EMPTY_ROWS,
             'fixed_rows': self.DEFAULT_FIXED_ROWS,
-            'numeric_step': self.DEFAULT_NUMERIC_STEP
+            'numeric_step': self.DEFAULT_NUMERIC_STEP,
+            'column_bounds': {}  # e.g. {'Column1': {'min': 0, 'max': 100}, 'Column2': {'min': -50}
         })
         return default_options
 
