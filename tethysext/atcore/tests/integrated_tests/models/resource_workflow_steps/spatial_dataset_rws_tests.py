@@ -34,7 +34,6 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             geoserver_name='',
             map_manager=m,
             spatial_manager=m
-
         )
 
     def test_query(self):
@@ -57,6 +56,7 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
             'numeric_step': SpatialDatasetRWS.DEFAULT_NUMERIC_STEP,
             'geocode_enabled': False,
             'label_options': None,
+            'column_bounds': {},
             **RWS_DEFAULT_OPTIONS
         }
         self.assertDictEqual(baseline, self.instance.default_options)
