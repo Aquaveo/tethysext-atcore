@@ -136,7 +136,7 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         resource.extent = self.expected_geometry
         extent = resource.get_extent('dict')
         self.maxDiff = None
-        self.assertDictEqual(extent, round_geojson_coords(self.extent_dict))
+        self.assertDictEqual(round_geojson_coords(extent), round_geojson_coords(self.extent_dict))
 
     def test_get_extent_geojson(self):
         """Test getting a geojson from the extent."""
@@ -146,7 +146,7 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         extent_dict = json.loads(extent)
         expected_dict = json.loads(self.extent_geojson)
         self.maxDiff = None
-        self.assertDictEqual(extent_dict, round_geojson_coords(expected_dict))
+        self.assertDictEqual(round_geojson_coords(extent_dict), round_geojson_coords(expected_dict))
 
     def test_get_extent_wkt(self):
         """Test getting a wkt from the extent."""

@@ -116,8 +116,7 @@ class SpatialInputRWS(SpatialResourceWorkflowStep):
         # Skip if no attributes definition provided
         if attributes_definition is None:
             return True
-
-        all_defined_attributes = attributes_definition.param.params()
+        all_defined_attributes = attributes_definition.param.objects()
         null_equivalents = ['']
         validation_errors = []
 
