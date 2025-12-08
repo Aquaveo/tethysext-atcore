@@ -60,6 +60,7 @@ class TableInputRWSTests(SqlAlchemyTestCase):
             'release_workflow_lock_on_init': False,
             'resource_lock_required': False,
             'workflow_lock_required': False,
+            'column_bounds': {}
         }
         self.assertDictEqual(baseline, self.instance.default_options)
 
