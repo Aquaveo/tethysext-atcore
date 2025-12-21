@@ -2,7 +2,6 @@ import sys
 import json
 import logging
 import traceback
-from importlib import import_module
 from pprint import pprint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -112,7 +111,7 @@ def workflow_step_controller(is_rest_controller=False):
     return decorator
 
 
-def workflow_step_job(job_func):
+def workflow_step_job(job_func, engine_args=None):
     def _wrapped():
         if job_func.__module__ == '__main__':
             args, unknown_args = parse_workflow_step_args()
@@ -126,12 +125,10 @@ def workflow_step_job(job_func):
             model_db_session = None
             resource_db_session = None
             ret_val = None
-
+        
             try:
-                job_module = import_module(job_func.__module__)
-                module_engine_kwargs = getattr(job_module, "ENGINE_ARGS", {})
-
                 # Get the resource database session
+                module_engine_kwargs = engine_args if engine_args else {}
                 resource_db_engine = create_engine(args.resource_db_url, **module_engine_kwargs)
                 make_resource_db_session = sessionmaker(bind=resource_db_engine)
                 resource_db_session = make_resource_db_session()
