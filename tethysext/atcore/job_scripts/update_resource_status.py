@@ -7,7 +7,12 @@ from sqlalchemy.orm import sessionmaker
 from tethysext.atcore.models.app_users import Resource
 
 
-def run(resource_db_url: str, resource_id: str, resource_class_path: str, status_keys: list, db_engine_kwargs: dict = None):
+def run(resource_db_url: str,
+        resource_id: str,
+        resource_class_path: str,
+        status_keys: list,
+        db_engine_kwargs: dict = None
+        ):
     """
     Update the root status of a resource based ont he status of one or more other statuses of the same resource.
 

@@ -125,7 +125,7 @@ def workflow_step_job(job_func, db_engine_kwargs=None):
             model_db_session = None
             resource_db_session = None
             ret_val = None
-        
+
             try:
                 # Get the resource database session
                 engine_kwargs = db_engine_kwargs if db_engine_kwargs else {}
