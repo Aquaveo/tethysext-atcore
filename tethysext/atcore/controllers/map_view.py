@@ -617,30 +617,41 @@ class MapView(ResourceView):
         """
         credit to:
         https://github.com/TipsForGIS/geoJSONToShpFile/blob/master/geoJ.py
+        Updated for pyshp 3.x compatibility.
+
         Args:
             request(HttpRequest): The request.
             session(sqlalchemy.Session): The database session.
             resource(Resource): The resource.
 
         Returns:
-            JsonResponse: success.
+            HttpResponse: Zip file containing shapefile.
         """
         json_data = json.loads(request.POST.get('data', ''))
         layer_id = request.POST.get('id', '0')
         json_type = json_data['features'][0]['geometry']['type']
+
+        # Create shapefile with path (pyshp 3.x compatible)
+        shp_file = layer_id + "_" + json_type
+
+        # Set shape type based on geometry type
         if json_type == 'Polygon':
-            shpfile_obj = shapefile.Writer(shapefile.POLYGON)
+            shpfile_obj = shapefile.Writer(shp_file, shapeType=shapefile.POLYGON)
         elif json_type == 'Point':
-            shpfile_obj = shapefile.Writer(shapefile.POINT)
+            shpfile_obj = shapefile.Writer(shp_file, shapeType=shapefile.POINT)
         elif json_type == 'LineString':
-            shpfile_obj = shapefile.Writer(shapefile.POLYLINE)
+            shpfile_obj = shapefile.Writer(shp_file, shapeType=shapefile.POLYLINE)
+        else:
+            raise ValueError(f"Unsupported geometry type: {json_type}")
 
         shpfile_obj.autoBalance = 1
 
+        # Define fields
         columns_list = json_data['features'][0]['properties'].keys()
         for i in columns_list:
             shpfile_obj.field(str(i), 'C', '50')
 
+        # Extract geometries and attributes
         geometries = list()
         attributes = list()
         for feature in json_data['features']:
@@ -651,26 +662,30 @@ class MapView(ResourceView):
                 attributes_per_feature.append(str(feature['properties'][str(attribute_feature)]))
             attributes.append(attributes_per_feature)
 
+        # Write geometries
         for geo in geometries:
             if json_type == 'Polygon':
-                shpfile_obj.poly(parts=geo)
+                shpfile_obj.poly(geo)
             elif json_type == 'Point':
                 shpfile_obj.point(geo[0], geo[1])
             elif json_type == 'LineString':
-                shpfile_obj.line(parts=[geo])
+                shpfile_obj.line([geo])
 
+        # Write attributes
         for attr in attributes:
             shpfile_obj.record(*attr)
 
-        # write shapefile
-        shp_file = layer_id + "_" + json_type
+        # Close the writer to finalize files
+        shpfile_obj.close()
+
+        # Create .prj file
         prj_file = open(shp_file + '.prj', 'w')
         prj_str = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],' \
                   'PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]'
         prj_file.write(prj_str)
         prj_file.close()
-        shpfile_obj.save(shp_file)
 
+        # Create zip file in memory
         in_memory = BytesIO()
         shp_file_ext = ['prj', 'shp', 'dbf', 'shx']
 
@@ -678,11 +693,12 @@ class MapView(ResourceView):
             for ext in shp_file_ext:
                 my_zip.write(shp_file + "." + ext)
 
-        # Clean up
+        # Clean up temporary files
         for ext in shp_file_ext:
             if os.path.exists(shp_file + "." + ext):
                 os.remove(shp_file + "." + ext)
 
+        # Prepare HTTP response
         response = HttpResponse(content_type='application/zip')
         response['Content-Disposition'] = 'attachment; filename="' + shp_file + '.zip' + '"'
 
