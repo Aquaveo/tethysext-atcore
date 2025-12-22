@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from tethysext.atcore.models.app_users import Resource
 
 
-def run(resource_db_url: str, resource_id: str, resource_class_path: str, status_keys: list, engine_args: dict = None):
+def run(resource_db_url: str, resource_id: str, resource_class_path: str, status_keys: list, db_engine_kwargs: dict = None):
     """
     Update the root status of a resource based ont he status of one or more other statuses of the same resource.
 
@@ -16,6 +16,7 @@ def run(resource_db_url: str, resource_id: str, resource_class_path: str, status
         resource_id (str): The resource ID.
         resource_class_path (str): Path to the class module.
         status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
+        db_engine_kwargs (dict): Optional arguments to pass to SQLAlchemy create_engine method.
     """  # noqa: E501
     resource_db_session = None
     resource_module_path = resource_class_path.rsplit('.', 1)[0]
@@ -23,14 +24,14 @@ def run(resource_db_url: str, resource_id: str, resource_class_path: str, status
 
     resource_module = __import__(resource_module_path, fromlist=[resource_class_name])
     resource_class = getattr(resource_module, resource_class_name)
-    if engine_args is None:
-        engine_args = {}
+    if db_engine_kwargs is None:
+        db_engine_kwargs = {}
     else:
-        engine_args = engine_args
+        db_engine_kwargs = db_engine_kwargs
 
     try:
         # Get resource
-        resource_db_engine = create_engine(resource_db_url, **engine_args)
+        resource_db_engine = create_engine(resource_db_url, **db_engine_kwargs)
         make_resource_db_session = sessionmaker(bind=resource_db_engine)
         resource_db_session = make_resource_db_session()
         resource = resource_db_session.query(resource_class).get(resource_id)

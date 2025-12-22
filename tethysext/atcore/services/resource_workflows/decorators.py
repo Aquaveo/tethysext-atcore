@@ -111,7 +111,7 @@ def workflow_step_controller(is_rest_controller=False):
     return decorator
 
 
-def workflow_step_job(job_func, engine_args=None):
+def workflow_step_job(job_func, db_engine_kwargs=None):
     def _wrapped():
         if job_func.__module__ == '__main__':
             args, unknown_args = parse_workflow_step_args()
@@ -128,7 +128,7 @@ def workflow_step_job(job_func, engine_args=None):
         
             try:
                 # Get the resource database session
-                module_engine_kwargs = engine_args if engine_args else {}
+                module_engine_kwargs = db_engine_kwargs if db_engine_kwargs else {}
                 resource_db_engine = create_engine(args.resource_db_url, **module_engine_kwargs)
                 make_resource_db_session = sessionmaker(bind=resource_db_engine)
                 resource_db_session = make_resource_db_session()
