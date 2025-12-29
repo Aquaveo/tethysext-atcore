@@ -19,7 +19,7 @@ class ResourceCondorWorkflow(object):
     Helper class that prepares and submits the new project upload jobs and workflow.
     """
     def __init__(self, app, user, workflow_name, workspace_path, resource_db_url, resource,
-                 scheduler, job_manager, status_keys=None, **kwargs):
+                 scheduler, job_manager, status_keys=None, db_engine_kwargs=None, **kwargs):
         """
         Constructor.
 
@@ -33,6 +33,7 @@ class ResourceCondorWorkflow(object):
             scheduler (Scheduler): The condor scheduler for the application
             job_manager (JobManger): The condor job manager for the application.
             status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
+            db_engine_kwargs (dict): Optional arguments to pass to SQLAlchemy create_engine method.
         """  # noqa: E501
         self.app = app
         self.user = user
@@ -46,6 +47,11 @@ class ResourceCondorWorkflow(object):
         self.scheduler = scheduler
         self.job_manager = job_manager
         self.status_keys = status_keys
+
+        if db_engine_kwargs is None:
+            self.db_engine_kwargs = {}
+        else:
+            self.db_engine_kwargs = db_engine_kwargs
 
         for kwarg, value in kwargs.items():
             setattr(self, kwarg, value)
@@ -119,7 +125,7 @@ class ResourceCondorWorkflow(object):
         resource_db_session = None
 
         try:
-            resource_db_engine = create_engine(self.resource_db_url)
+            resource_db_engine = create_engine(self.resource_db_url, **self.db_engine_kwargs)
             make_resource_db_session = sessionmaker(bind=resource_db_engine)
             resource_db_session = make_resource_db_session()
             resource = resource_db_session.query(Resource).get(self.resource_id)

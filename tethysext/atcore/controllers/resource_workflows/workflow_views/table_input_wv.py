@@ -81,6 +81,7 @@ class TableInputWV(ResourceWorkflowView):
             'fixed_rows': current_step.options.get('fixed_rows', TableInputRWS.DEFAULT_FIXED_ROWS),
             'numeric_step': current_step.options.get('numeric_step', TableInputRWS.DEFAULT_NUMERIC_STEP),
             'nodata_val': TABLE_DATASET_NODATA,
+            'column_bounds': current_step.options.get('column_bounds', {})
         })
 
     def process_step_data(self, request, session, step, resource, current_url, previous_url, next_url):

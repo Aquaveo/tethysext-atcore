@@ -21,7 +21,7 @@ requirements:
     - jinja2
     - pandas
     - param
-    - pyshp
+    - pyshp>=3.0.0
     - requests
     - sqlalchemy<2
     - panel
