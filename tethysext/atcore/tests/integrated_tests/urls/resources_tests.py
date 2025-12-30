@@ -68,15 +68,17 @@ class ResourceUrlsTests(TethysTestCase):
             "resources_edit_resource",
             "resources_resource_details",
             "resources_resource_status",
+            "resources_resource_status_list",
         ]
         self.urls = [
             Resource.SLUG.replace("_", "-"),
             Resource.SLUG.replace("_", "-") + "/new",
             Resource.SLUG.replace("_", "-") + "/{resource_id}/edit",
             Resource.SLUG.replace("_", "-") + "/{resource_id}/details",
+            Resource.SLUG.replace("_", "-") + "/status/{resource_id}",
             Resource.SLUG.replace("_", "-") + "/status",
         ]
-        self.num_urls = 5
+        self.num_urls = 6
 
     def tearDown(self):
         pass
@@ -216,7 +218,7 @@ class ResourceUrlsTests(TethysTestCase):
         self.assertEqual(len(url_maps), self.num_urls)
         self.controller_asserts(
             url_maps,
-            ["resources_resource_status"],
+            ["resources_resource_status", "resources_resource_status_list"],
             ResourceStatus,
             CustomResourceStatus,
         )
@@ -322,7 +324,7 @@ class ResourceUrlsTests(TethysTestCase):
         )
         self.controller_asserts(
             url_maps,
-            ["resources_resource_status"],
+            ["resources_resource_status", "resources_resource_status_list"],
             ResourceStatus,
             CustomResourceStatus,
         )

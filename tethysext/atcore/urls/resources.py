@@ -57,7 +57,8 @@ def urls(
         <resource_slug>_new_resource
         <resource_slug>_edit_resource <resource_id>
         <resource_slug>_resource_details <resource_id>
-        <resource_slug>_resource_status ?[r=<resource_id>]
+        <resource_slug>_resource_status <resource_id>
+        <resource_slug>_resource_status_list
 
     Returns:
         tuple: UrlMap objects for the Resource Views.
@@ -133,7 +134,8 @@ def urls(
     new_resource_url = manage_resources_url + "/new"
     edit_resource_url = manage_resources_url + "/{resource_id}/edit"
     resource_details_url = manage_resources_url + "/{resource_id}/details"
-    resource_status_url = manage_resources_url + "/status"
+    resource_status_list_url = manage_resources_url + "/status"
+    resource_status_url = manage_resources_url + "/status" + "/{resource_id}"
 
     url_maps = (
         url_map_maker(
@@ -210,6 +212,23 @@ def urls(
                 "/".join([base_url_path, resource_status_url])
                 if base_url_path
                 else resource_status_url
+            ),
+            controller=_ResourceStatus.as_controller(
+                _app=app,
+                _persistent_store_name=persistent_store_name,
+                _AppUser=_AppUser,
+                _Organization=_Organization,
+                _Resource=_Resource,
+                _PermissionsManager=_PermissionsManager,
+                base_template=base_template,
+            ),
+        ),
+        url_map_maker(
+            name=f"{resource_model.SLUG}_resource_status_list",
+            url=(
+                "/".join([base_url_path, resource_status_list_url])
+                if base_url_path
+                else resource_status_list_url
             ),
             controller=_ResourceStatus.as_controller(
                 _app=app,
