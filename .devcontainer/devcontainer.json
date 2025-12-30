@@ -1,0 +1,26 @@
+{
+  "name": "tethysext-atcore",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "dev",
+  "workspaceFolder": "/workspaces/tethysext-atcore",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "micromamba run -n tethys pip -V && micromamba run -n tethys tethys --version || true",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/conda/envs/tethys/bin/python",
+        "python.analysis.extraPaths": [
+          "/workspaces/tethysext-atcore"
+        ]
+      }
+    }
+  }
+}

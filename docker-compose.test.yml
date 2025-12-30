@@ -1,0 +1,83 @@
+services:
+  postgis:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_PASSWORD: please_dont_use_default_passwords
+      POSTGRES_DB: tethys_postgis
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  atcore:
+    build: .
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+    environment:
+      POSTGRES_DB: tethys_postgis
+      POSTGRES_PASSWORD: please_dont_use_default_passwords
+      POSTGRES_PORT: "5432"
+
+      TETHYS_PUBLIC_HOST: postgis
+      TETHYS_DB_HOST: postgis
+      TETHYS_DB_PORT: "5432"
+      TETHYS_DB_USERNAME: tethys_super
+      TETHYS_DB_PASSWORD: please_dont_use_default_passwords
+      TETHYS_DB_SUPERUSER: tethys_super
+      TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
+
+      APP_DB_HOST: postgis
+      APP_DB_PORT: "5432"
+      APP_DB_USERNAME: tethys_super
+      APP_DB_PASSWORD: please_dont_use_default_passwords
+
+      ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@postgis:5432/tethys_postgis
+
+    # Best dev UX: mount the whole repo so edits anywhere reflect immediately
+    volumes:
+      - ./:/var/www/tethys/exts/tethysext-atcore:rw
+
+    working_dir: /var/www/tethys/exts/tethysext-atcore
+
+    command:
+      - bash
+      - -lc
+      - |
+          set -euo pipefail
+
+          micromamba run -n tethys tethys db configure
+          micromamba run -n tethys tethys install -d -q -w
+
+          touch tethysext/atcore/tests/files/arc_grid/precip30min.*
+
+          # IMPORTANT: escape $ as $$ so compose doesn't substitute it
+          MANAGE="$${TETHYS_MANAGE:-}"
+          if [ -z "$$MANAGE" ] || [ ! -f "$$MANAGE" ]; then
+            for p in \
+              /usr/lib/tethys/manage.py \
+              /usr/lib/tethys/tethys_portal/manage.py \
+              /var/lib/tethys/tethys_portal/manage.py \
+              /var/lib/tethys/tethys/tethys_portal/manage.py \
+              /var/www/tethys/tethys_portal/manage.py
+            do
+              if [ -f "$$p" ]; then
+                MANAGE="$$p"
+                break
+              fi
+            done
+          fi
+
+          # final fallback: search (in case image layout differs)
+          if [ -z "$$MANAGE" ] || [ ! -f "$$MANAGE" ]; then
+            MANAGE="$$(find /usr/lib/tethys /var/lib/tethys /var/www/tethys -type f -name manage.py 2>/dev/null | head -n 1 || true)"
+          fi
+
+          echo "Using manage.py: $$MANAGE"
+          test -f "$$MANAGE"
+
+          source ci-test.sh "$$MANAGE"
