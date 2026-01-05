@@ -46,15 +46,18 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
 # INSTALL #
 ###########
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
-COPY ../.devcontainer/dev_environment.yml ${TETHYS_HOME}/
+COPY .devcontainer/dev_environment.yml ${TETHYS_HOME}/
 
 RUN /bin/bash -c "micromamba run -n ${ENV_NAME} python --version; which python"
 
-RUN sed -i "s|^[[:space:]]*- django[^-].*|    - django=${DJANGO_VERSION}|" ${TETHYS_HOME}/dev_environment.yml \
-  ; if [ "${DJANGO_VERSION}" = "3.2" ]; then sed -i 's|^[[:space:]]*- django-taggit.*|    - django-taggit<5|' ${TETHYS_HOME}/dev_environment.yml; fi \
-  ; micromamba install -n ${ENV_NAME} -f ${TETHYS_HOME}/dev_environment.yml --yes \ 
-  ; pip install --yes django-datetime-widget2 \
-  ; pip install --yes geoserver-restconfig>=2.0.10
+RUN sed -i "s|^[[:space:]]*- django[^-].*|- django=${DJANGO_VERSION}|" ${TETHYS_HOME}/dev_environment.yml \
+ && if [ "${DJANGO_VERSION}" = "3.2" ]; then \
+      sed -i "s|^[[:space:]]*- django-taggit.*|- django-taggit<5|" ${TETHYS_HOME}/dev_environment.yml; \
+    fi
+
+RUN micromamba install -n ${ENV_NAME} -f ${TETHYS_HOME}/dev_environment.yml --yes \
+  && pip install django-datetime-widget2 \
+  && pip install geoserver-restconfig>=2.0.10
 
 #########################
 # CONFIGURE ENVIRONMENT #
@@ -68,7 +71,6 @@ EXPOSE 8000
 COPY ../docker/salt/ /srv/salt/
 COPY .devcontainer/salt/ /srv/salt/
 COPY .devcontainer/run.sh ${TETHYS_HOME}/
-
 
 RUN bash ${TETHYS_HOME}/build-checks.sh
 
