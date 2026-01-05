@@ -9,7 +9,7 @@
 3. Once it boots, run:
 
 ```bash
-bash .devcontainer/run-tests.sh
+bash ./test.sh "$TETHYS_MANAGE"
 ```
 
 ## CLI (optional)
@@ -18,7 +18,7 @@ If you use devcontainer CLI:
 
 ```bash
 devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . bash .devcontainer/run-tests.sh
+devcontainer exec --workspace-folder . sh -lc './test.sh "$TETHYS_MANAGE"'
 ```
 
 ## Udpate the content
@@ -28,7 +28,7 @@ devcontainer exec --workspace-folder . bash .devcontainer/run-tests.sh
 2. Run
 
 ```bash
-bash .devcontainer/run-tests.sh
+devcontainer exec --workspace-folder . sh -lc './test.sh "$TETHYS_MANAGE"'
 ```
 
 3. See results immediately
