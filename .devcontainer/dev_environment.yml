@@ -1,0 +1,23 @@
+name: tethys
+
+channels:
+- conda-forge
+
+dependencies:
+- alembic
+- flake8
+- coverage
+- django>=3.2,<6
+- django-select2<8.3.0
+- django-taggit
+- coverage
+- factory_boy
+- filelock
+- geojson
+- jinja2
+- pandas
+- param
+- pyshp>=3.0.0
+- requests
+- sqlalchemy<2
+- panel

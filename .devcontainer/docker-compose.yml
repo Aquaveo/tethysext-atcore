@@ -1,9 +1,8 @@
 services:
-  postgis:
+  db:
     image: postgis/postgis:17-3.5
-    environment:
-      POSTGRES_PASSWORD: please_dont_use_default_passwords
-      POSTGRES_DB: tethys_postgis
+    env_file:
+      - ./env/db.env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -11,47 +10,34 @@ services:
       retries: 20
     ports:
       - "5432:5432"
-
-  dev:
+    networks:
+      - "internal"
+  atcore:
     # Use the same image you already built:
     # image: atcore:local
-
-    # Or build it here instead:
+    image: tethysdev/tethysext-atcore-devcontainer
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: .devcontainer/Dockerfile.devcontainer
       args:
         TETHYS_VERSION: "4.3.8"
         PYTHON_VERSION: "3.11"
         DJANGO_VERSION: "4.2"
 
     depends_on:
-      postgis:
+      db:
         condition: service_healthy
-
-    environment:
-      POSTGRES_DB: tethys_postgis
-      POSTGRES_PASSWORD: please_dont_use_default_passwords
-      POSTGRES_PORT: "5432"
-
-      TETHYS_PUBLIC_HOST: postgis
-      TETHYS_DB_HOST: postgis
-      TETHYS_DB_PORT: "5432"
-      TETHYS_DB_USERNAME: tethys_super
-      TETHYS_DB_PASSWORD: please_dont_use_default_passwords
-      TETHYS_DB_SUPERUSER: tethys_super
-      TETHYS_DB_SUPERUSER_PASS: please_dont_use_default_passwords
-
-      APP_DB_HOST: postgis
-      APP_DB_PORT: "5432"
-      APP_DB_USERNAME: tethys_super
-      APP_DB_PASSWORD: please_dont_use_default_passwords
-
-      ATCORE_TEST_DATABASE: postgresql://postgres:please_dont_use_default_passwords@postgis:5432/tethys_postgis
-
-    # Devcontainer expects this to keep running
-    command: sleep infinity
-
-    # Devcontainers auto-mount the repo; this is optional/explicit:
+    networks:
+      - "internal"
+      - "external"
+    ports:
+      - "8000:8000"  
+    env_file:
+      - ./env/atcore.env
     volumes:
-      - ..:/workspaces/tethysext-atcore:cached
+      - ..:/var/www/tethys/exts/tethysext-atcore:cached
+
+networks:
+  internal:
+    internal: true
+  external:
