@@ -111,90 +111,93 @@ def workflow_step_controller(is_rest_controller=False):
     return decorator
 
 
-def workflow_step_job(job_func, db_engine_kwargs=None):
-    def _wrapped():
-        if job_func.__module__ == '__main__':
-            args, unknown_args = parse_workflow_step_args()
-
-            print('Given Arguments:')
-            print(str(args))
-
-            # Session vars
-            step = None
-            model_db_engine = None
-            model_db_session = None
-            resource_db_session = None
-            ret_val = None
-
-            try:
-                # Get the resource database session
-                engine_kwargs = db_engine_kwargs if db_engine_kwargs else {}
-                resource_db_engine = create_engine(args.resource_db_url, **engine_kwargs)
-                make_resource_db_session = sessionmaker(bind=resource_db_engine)
-                resource_db_session = make_resource_db_session()
-
+def workflow_step_job(db_engine_kwargs=None):
+    def decorator(job_func):
+        def _wrapped():
+            if job_func.__module__ == '__main__':
+                args, unknown_args = parse_workflow_step_args()
+    
+                print('Given Arguments:')
+                print(str(args))
+    
+                # Session vars
+                step = None
+                model_db_engine = None
+                model_db_session = None
+                resource_db_session = None
+                ret_val = None
+    
                 try:
-                    model_db_engine = create_engine(args.model_db_url, **engine_kwargs)
-                    make_model_db_session = sessionmaker(bind=model_db_engine)
-                    model_db_session = make_model_db_session()
-                except ArgumentError:
-                    sys.stderr.write(repr('invalid model_db_url'))
+                    # Get the resource database session
+                    engine_kwargs = db_engine_kwargs if db_engine_kwargs else {}
+                    resource_db_engine = create_engine(args.resource_db_url, **engine_kwargs)
+                    make_resource_db_session = sessionmaker(bind=resource_db_engine)
+                    resource_db_session = make_resource_db_session()
+    
+                    try:
+                        model_db_engine = create_engine(args.model_db_url, **engine_kwargs)
+                        make_model_db_session = sessionmaker(bind=model_db_engine)
+                        model_db_session = make_model_db_session()
+                    except ArgumentError:
+                        sys.stderr.write(repr('invalid model_db_url'))
+    
+                    # Import Resource and Workflow Classes
+                    ResourceClass = import_from_string(args.resource_class)
+                    WorkflowClass = import_from_string(args.workflow_class)
+    
+                    # Get the step
+                    # NOTE: if you get an error related to polymorphic_identity not being found, it may be caused by import
+                    # errors with a subclass of the ResourceWorkflowStep. It could also be caused indirectly if the subclass
+                    # has Pickle typed columns with values that import things.
+                    step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
+    
+                    # IMPORTANT: External Resource classes need to be imported at the top of the job file to
+                    # allow sqlalchemy to resolve the polymorphic identity.
+                    resource = resource_db_session.query(ResourceClass).get(args.resource_id)
+    
+                    # Process parameters from workflow steps
+                    with open(args.workflow_params_file, 'r') as p:
+                        params_json = json.loads(p.read())
+    
+                    print('Workflow Parameters:')
+                    pprint(params_json)
+    
+                    ret_val = job_func(
+                        resource_db_session=resource_db_session,
+                        model_db_session=model_db_session,
+                        resource=resource,
+                        workflow=step.workflow,
+                        step=step,
+                        gs_private_url=args.gs_private_url,
+                        gs_public_url=args.gs_public_url,
+                        resource_class=ResourceClass,
+                        workflow_class=WorkflowClass,
+                        params_json=params_json,
+                        params_file=args.workflow_params_file,
+                        cmd_args=args,
+                        extra_args=unknown_args
+                    )
+    
+                    # Update step status
+                    print('Updating status...')
+                    set_step_status(resource_db_session, step, step.STATUS_COMPLETE)
+    
+                except Exception as e:
+                    if step and resource_db_session:
+                        set_step_status(resource_db_session, step, step.STATUS_FAILED)
+                    sys.stderr.write('Error processing {0}'.format(args.resource_workflow_step_id))
+                    traceback.print_exc(file=sys.stderr)
+                    sys.stderr.write(repr(e))
+                    sys.stderr.write(str(e))
+    
+                finally:
+                    print('Closing sessions...')
+                    model_db_session and model_db_session.close()
+                    resource_db_session and resource_db_session.close()
+    
+                print('Processing Complete')
+                return ret_val
+    
+        return _wrapped()
 
-                # Import Resource and Workflow Classes
-                ResourceClass = import_from_string(args.resource_class)
-                WorkflowClass = import_from_string(args.workflow_class)
-
-                # Get the step
-                # NOTE: if you get an error related to polymorphic_identity not being found, it may be caused by import
-                # errors with a subclass of the ResourceWorkflowStep. It could also be caused indirectly if the subclass
-                # has Pickle typed columns with values that import things.
-                step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
-
-                # IMPORTANT: External Resource classes need to be imported at the top of the job file to
-                # allow sqlalchemy to resolve the polymorphic identity.
-                resource = resource_db_session.query(ResourceClass).get(args.resource_id)
-
-                # Process parameters from workflow steps
-                with open(args.workflow_params_file, 'r') as p:
-                    params_json = json.loads(p.read())
-
-                print('Workflow Parameters:')
-                pprint(params_json)
-
-                ret_val = job_func(
-                    resource_db_session=resource_db_session,
-                    model_db_session=model_db_session,
-                    resource=resource,
-                    workflow=step.workflow,
-                    step=step,
-                    gs_private_url=args.gs_private_url,
-                    gs_public_url=args.gs_public_url,
-                    resource_class=ResourceClass,
-                    workflow_class=WorkflowClass,
-                    params_json=params_json,
-                    params_file=args.workflow_params_file,
-                    cmd_args=args,
-                    extra_args=unknown_args
-                )
-
-                # Update step status
-                print('Updating status...')
-                set_step_status(resource_db_session, step, step.STATUS_COMPLETE)
-
-            except Exception as e:
-                if step and resource_db_session:
-                    set_step_status(resource_db_session, step, step.STATUS_FAILED)
-                sys.stderr.write('Error processing {0}'.format(args.resource_workflow_step_id))
-                traceback.print_exc(file=sys.stderr)
-                sys.stderr.write(repr(e))
-                sys.stderr.write(str(e))
-
-            finally:
-                print('Closing sessions...')
-                model_db_session and model_db_session.close()
-                resource_db_session and resource_db_session.close()
-
-            print('Processing Complete')
-            return ret_val
-
-    return _wrapped()
+    return decorator
