@@ -111,10 +111,10 @@ def workflow_step_controller(is_rest_controller=False):
     return decorator
 
 
-def workflow_step_job(db_engine_kwargs=None):
-    def decorator(job_func):
+def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
+    def decorator(inner_job_func):
         def _wrapped():
-            if job_func.__module__ == '__main__':
+            if inner_job_func.__module__ == '__main__':
                 args, unknown_args = parse_workflow_step_args()
     
                 print('Given Arguments:')
@@ -162,7 +162,7 @@ def workflow_step_job(db_engine_kwargs=None):
                     print('Workflow Parameters:')
                     pprint(params_json)
     
-                    ret_val = job_func(
+                    ret_val = inner_job_func(
                         resource_db_session=resource_db_session,
                         model_db_session=model_db_session,
                         resource=resource,
@@ -199,5 +199,7 @@ def workflow_step_job(db_engine_kwargs=None):
                 return ret_val
     
         return _wrapped()
-
+    # Support usage with and without parentheses: @workflow_step_job and @workflow_step_job(...)
+    if callable(job_func):
+        return decorator(job_func)
     return decorator
