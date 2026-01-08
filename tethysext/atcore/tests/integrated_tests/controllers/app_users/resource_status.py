@@ -89,7 +89,7 @@ class ResourceStatusControllerTests(TethysTestCase):
     @mock.patch('tethys_apps.decorators.has_permission', return_value=True)
     @mock.patch.object(ResourceStatus, 'get_resource')
     def test_handle_get_resource_is_http(self, mock_get_resource, _):
-        mock_request = self.request_factory.get('/foo/bar/status/{}'.format(self.resource_id))
+        mock_request = self.request_factory.get('/foo/bar/{}/status'.format(self.resource_id))
         mock_request.user = self.user
         mock_app = mock.MagicMock()
         controller = ResourceStatus.as_controller(_app=mock_app)
@@ -104,7 +104,7 @@ class ResourceStatusControllerTests(TethysTestCase):
     @mock.patch('tethysext.atcore.controllers.app_users.resource_status.get_active_app')
     def test_default_back_url(self, mock_ga, mock_reverse):
         resource_id = self.resource_id
-        mock_request = self.request_factory.get('/foo/bar/status/{}'.format(self.resource_id))
+        mock_request = self.request_factory.get('/foo/bar/{}/status'.format(self.resource_id))
 
         mock_app = mock.MagicMock()
         mock_ga().url_namespace = 'test_namespace'

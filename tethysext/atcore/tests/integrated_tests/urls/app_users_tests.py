@@ -88,7 +88,7 @@ class AppUserUrlsTests(TethysTestCase):
                      Resource.SLUG.replace("_", "-"), Resource.SLUG.replace("_", "-") + '/new',
                      Resource.SLUG.replace("_", "-") + '/{resource_id}/edit',
                      Resource.SLUG.replace("_", "-") + '/{resource_id}/details',
-                     Resource.SLUG.replace("_", "-") + '/status/{resource_id}',
+                     Resource.SLUG.replace("_", "-") + '/{resource_id}/status',
                      Resource.SLUG.replace("_", "-") + '/status']
         self.num_urls = 15
 
