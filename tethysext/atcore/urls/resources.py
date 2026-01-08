@@ -135,7 +135,7 @@ def urls(
     edit_resource_url = manage_resources_url + "/{resource_id}/edit"
     resource_details_url = manage_resources_url + "/{resource_id}/details"
     resource_status_list_url = manage_resources_url + "/status"
-    resource_status_url = manage_resources_url + "/status" + "/{resource_id}"
+    resource_status_url = manage_resources_url + "/{resource_id}/status" 
 
     url_maps = (
         url_map_maker(
