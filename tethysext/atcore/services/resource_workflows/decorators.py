@@ -146,9 +146,9 @@ def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
                     WorkflowClass = import_from_string(args.workflow_class)
 
                     # Get the step
-                    # NOTE: if you get an error related to polymorphic_identity 
+                    # NOTE: if you get an error related to polymorphic_identity
                     # not being found, it may be caused by import
-                    # errors with a subclass of the ResourceWorkflowStep. 
+                    # errors with a subclass of the ResourceWorkflowStep.
                     # It could also be caused indirectly if the subclass
                     # has Pickle typed columns with values that import things.
                     step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
