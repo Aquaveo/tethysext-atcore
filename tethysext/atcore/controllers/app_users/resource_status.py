@@ -46,8 +46,7 @@ class ResourceStatus(ResourceViewMixin):
         """
         Handle get requests.
         """
-        params = request.GET
-        resource_id = params.get('r', None)
+        resource_id = None
         if isinstance(resource, HttpResponse):
             return resource
         if not resource_id:
@@ -67,10 +66,9 @@ class ResourceStatus(ResourceViewMixin):
         # Filter by resource
         filtered_jobs = []
 
-        if resource_id:
+        if resource is not None:
             # This checks for existence of the resource and access permissions
-            if resource is None:
-                resource = self.get_resource(request, resource_id, session=session)
+            resource = self.get_resource(request, resource_id, session=session)
 
             # TODO: Move permissions check into decorator
             if isinstance(resource, HttpResponse):
