@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    env_file:
+      - ./env/db.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "5432:5432"
+    networks:
+      - "internal"
+  atcore:
+    # Use the same image you already built:
+    # image: atcore:local
+    image: tethysdev/tethysext-atcore-devcontainer
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.devcontainer
+      args:
+        TETHYS_VERSION: "4.3.8"
+        PYTHON_VERSION: "3.11"
+        DJANGO_VERSION: "4.2"
+
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - "internal"
+      - "external"
+    ports:
+      - "8000:8000"  
+    env_file:
+      - ./env/atcore.env
+    volumes:
+      - ..:/var/www/tethys/exts/tethysext-atcore:cached
+
+networks:
+  internal:
+    internal: true
+  external:

@@ -72,7 +72,8 @@ def urls(
         <resource_slug>_new_resource
         <resource_slug>_edit_resource <resource_id>
         <resource_slug>_resource_details <resource_id>
-        <resource_slug>_resource_status ?[r=<resource_id>]
+        <resource_slug>_resource_status <resource_id>
+        <resource_slug>_resource_status_list
 
     Returns:
         tuple: UrlMap objects for the app_users extension.
