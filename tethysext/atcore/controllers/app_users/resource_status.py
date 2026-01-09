@@ -49,15 +49,6 @@ class ResourceStatus(ResourceViewMixin):
         resource_id = None
         if isinstance(resource, HttpResponse):
             return resource
-        if not resource_id:
-            resolver_match = getattr(request, 'resolver_match', None)
-            if resolver_match and resolver_match.kwargs:
-                resource_id = resolver_match.kwargs.get('resource_id')
-        if not resource_id and resource:
-            resource_id = str(resource.id)
-        if resource_id is not None:
-            resource_id = str(resource_id)
-
         app = self.get_app()
         job_manager = app.get_job_manager()
         jobs = job_manager.list_jobs()
@@ -68,8 +59,7 @@ class ResourceStatus(ResourceViewMixin):
 
         if resource is not None:
             # This checks for existence of the resource and access permissions
-            resource = self.get_resource(request, resource_id, session=session)
-
+            resource_id = str(resource.id)
             # TODO: Move permissions check into decorator
             if isinstance(resource, HttpResponse):
                 return resource
