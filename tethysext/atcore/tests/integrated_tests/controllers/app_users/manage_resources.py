@@ -384,13 +384,14 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         ret = manage_resources.get_resource_action('', '', '', mock_resource)
 
         mock_reverse.assert_called_with(
-            f'{manage_resources._app.url_namespace}:{mock_resource.SLUG}_resource_status'
+            f'{manage_resources._app.url_namespace}:{mock_resource.SLUG}_resource_status',
+            args=[mock_resource.id]
         )
         self.assertDictEqual(
             {
                 'action': ManageResources.ACTION_PROCESSING,
                 'title': 'Processing',
-                'href': 'processing_url?r=12345',
+                'href': 'processing_url',
                 'icon': 'bi-arrow-clockwise',
             }, ret)
 

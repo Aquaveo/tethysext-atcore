@@ -1,0 +1,15 @@
+{
+  "name": "tethysext-atcore",
+  "dockerComposeFile": ["./docker-compose.devcontainer.yml"],
+  "service": "atcore",
+  "workspaceFolder": "/var/www/tethys/exts/tethysext-atcore",
+  "customizations": {
+    "vscode": {
+        "extensions": [
+            "donjayamanne.python-extension-pack",
+            "donjayamanne.git-extension-pack"
+        ]
+    }
+  },
+  "shutdownAction": "stopCompose"
+}
