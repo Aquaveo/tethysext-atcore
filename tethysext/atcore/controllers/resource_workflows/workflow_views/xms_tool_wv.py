@@ -43,13 +43,13 @@ xmstool_widget_map = {
         lambda po, d, name: forms.ChoiceField(
             initial=d['value'],
             widget=Select2Widget,
-            choices=[(c, c) for c in d['choices']],
+            choices=[c for c in d['choices']],
         ),
     'StringSelector':
         lambda po, d, name: forms.ChoiceField(
             initial=d['value'],
             widget=Select2Widget,
-            choices=[(c, c) for c in d['choices']],
+            choices=[c for c in d['choices']],
         ),
     'Number':
         lambda po, interface_info, name: forms.FloatField(
@@ -254,7 +254,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
                                 # Perform a regex on the name attribute to filter the name
                                 name_attr_regex = re.findall(arg_atts['name_attr_regex'], name_attr)
                                 name_attr = name_attr_regex[0] if name_attr_regex else name_attr
-                            available_options.append(f'{name_attr}:{dataset.id}')
+                            available_options.append((str(dataset.id), name_attr))  # (value, label)
 
                     # Store any initial options if found
                     if available_options:
