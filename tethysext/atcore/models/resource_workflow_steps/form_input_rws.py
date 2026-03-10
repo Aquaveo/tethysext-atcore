@@ -86,9 +86,8 @@ class FormInputRWS(ResourceWorkflowStep):
 
     def validate(self):
         super().validate()
-        params = self._parameters
-        form_values = params['form-values']['value']
-        validators = self.options['validators']
+        form_values = self._parameters['form-values']['value']
+        validators = self.options.get('validators', {})
         for param, validator in validators.items():
             if isinstance(param, str):
                 param = (param,)
