@@ -1,7 +1,7 @@
 """
 ********************************************************************************
 * Name: xms_tool_rws.py
-* Author: dgallup
+* Author: dgallup, ysun
 * Created On: December, 2023
 * Copyright: (c) Aquaveo 2023
 ********************************************************************************
@@ -22,6 +22,10 @@ class XMSToolRWS(ResourceWorkflowStep):
             'valid_values': ['RASTER_ASCII', 'RASTER_GEOTIFF'],
             'name_attr': 'description',
             'name_attr_regex': r'"(.*?[^\\])"',  # optional regex expression on the name_attr value
+            'validators': {
+                param_1: validator_func_1,
+                (param_2a, param_2b): validator_func_2
+            }  # optional validators to check the value before running the tool
         },
     }
 
@@ -48,7 +52,8 @@ class XMSToolRWS(ResourceWorkflowStep):
             'status_label': None,
             'xmstool_class': {},
             'arg_mapping': {},
-            'renderer': 'django'
+            'renderer': 'django',
+            'validators': {}
         })
         return default_options
 
@@ -66,3 +71,24 @@ class XMSToolRWS(ResourceWorkflowStep):
                 'required': True
             }
         }
+
+    def validate(self):
+        super().validate()
+        params = self._parameters
+        form_values = params['form-values']['value']['value']
+        validators = self.options['validators']
+        for param, validator in validators.items():
+            if isinstance(param, str):
+                param = (param,)
+
+            values = []
+            for p in param:
+                if p not in form_values:
+                    raise ValueError(f'Missing required parameter: {p}')
+                values.append(form_values[p])
+
+            try:
+                validator(*values)
+            except ValueError as e:
+                raise ValueError(f'Invalid parameter {param}: {str(e)}')
+        return True

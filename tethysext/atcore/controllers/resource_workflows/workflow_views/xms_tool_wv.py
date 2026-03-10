@@ -43,13 +43,13 @@ xmstool_widget_map = {
         lambda po, d, name: forms.ChoiceField(
             initial=d['value'],
             widget=Select2Widget,
-            choices=list(enumerate(d['choices'])),
+            choices=[c for c in d['choices']],
         ),
     'StringSelector':
         lambda po, d, name: forms.ChoiceField(
             initial=d['value'],
             widget=Select2Widget,
-            choices=list(enumerate(d['choices'])),
+            choices=[c for c in d['choices']],
         ),
     'Number':
         lambda po, interface_info, name: forms.FloatField(
@@ -239,8 +239,8 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     initial_options = {}
     if resource and arg_mapping:
         for arg_name, arg_atts in arg_mapping.items():
-            for cur_p in sorted_params:
-                if cur_p[0] == arg_name:
+            for param in sorted_params:
+                if param[0] == arg_name:
                     available_options = []
 
                     # Use the resource attribute to read the possible resource data sources
@@ -254,7 +254,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
                                 # Perform a regex on the name attribute to filter the name
                                 name_attr_regex = re.findall(arg_atts['name_attr_regex'], name_attr)
                                 name_attr = name_attr_regex[0] if name_attr_regex else name_attr
-                            available_options.append(name_attr)
+                            available_options.append((str(dataset.id), name_attr))  # (value, label)
 
                     # Store any initial options if found
                     if available_options:
@@ -267,33 +267,30 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
                 if param[0] in form_value[1]:
                     param[1]['value'] = form_value[1][param[0]]
 
-    for cur_p in sorted_params:
-        p_name = cur_p[0]
+    for param in sorted_params:
+        p_name, p_info = param[0], param[1]
 
         # Assign any initial arguments if found from argument mapping for input arguments
         for xms_arg in tool_arguments:
             if xms_arg.name == p_name and xms_arg.io_direction == 1 and p_name in initial_options:
-                cur_p[1]['choices'] = initial_options[p_name]
+                p_info['choices'] = initial_options[p_name]
 
         # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        form_class.base_fields[p_name] = xmstool_widget_map[cur_p[1]['type']](argument_params, cur_p[1], cur_p[0])
+        form_class.base_fields[p_name] = xmstool_widget_map[p_info['type']](argument_params, p_info, p_name)
 
         # Set label with param label if set, otherwise derive from parameter name
-        label = cur_p[1]['description']
-        form_class.base_fields[p_name].label = cur_p[0].replace("_", " ").title() if not label else label
+        label = p_info['description']
+        form_class.base_fields[p_name].label = p_name.replace("_", " ").title() if not label else label
 
         # If form is read-only, set disabled attribute
         form_class.base_fields[p_name].widget.attrs.update({'disabled': read_only})
 
         # Help text displayed on hover over field
-        if 'doc' in cur_p[1] and cur_p[1]['doc']:
-            form_class.base_fields[p_name].widget.attrs.update({'title': cur_p[1]['doc']})
-
-        # Set required state from allow_None
-        # form_class.base_fields[p_name].required = cur_p.allow_None
+        if 'doc' in p_info and p_info['doc']:
+            form_class.base_fields[p_name].widget.attrs.update({'title': p_info['doc']})
 
     return form_class
