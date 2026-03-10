@@ -24,7 +24,7 @@ class FormInputRWS(ResourceWorkflowStep):
             
                 {
                     'param_name': validator_func,            # Single parameter
-                    ('param1', 'param2'): validator_func   # Multiple parameters
+                    ('param_name_1', 'param_name_2'): validator_func   # Multiple parameters
                 }
 
             Where `validator_func` is a callable that receives the parameter value(s) and raises a `ValueError`
