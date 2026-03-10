@@ -22,10 +22,6 @@ class XMSToolRWS(ResourceWorkflowStep):
             'valid_values': ['RASTER_ASCII', 'RASTER_GEOTIFF'],
             'name_attr': 'description',
             'name_attr_regex': r'"(.*?[^\\])"',  # optional regex expression on the name_attr value
-            'validators': {
-                param_1: validator_func_1,
-                (param_2a, param_2b): validator_func_2
-            }  # optional validators to check the value before running the tool
         },
     }
 
@@ -34,7 +30,38 @@ class XMSToolRWS(ResourceWorkflowStep):
         status_label(str): Custom label for the status select form field. Defaults to "Status".
         xmstool_class(dict): xms tool class used on the form.
         arg_mapping(dict): dict of lookup options to map arguments to existing data.
-        renderer(str): Renderer option. Available values are 'django' and 'bokeh'. Defauls to 'django'. 
+        renderer(str): Renderer option. Available values are 'django' and 'bokeh'. Defauls to 'django'.
+        validators (dict, optional): A dictionary of validator functions to check parameter values
+            before running the tool. Validators are called automatically when a parameter is set.
+            The structure can be:
+            
+                {
+                    'param_name': validator_func,            # Single parameter
+                    ('param_name_1', 'param_name_2'): validator_func   # Multiple parameters
+                }
+
+            Where `validator_func` is a callable that receives the parameter value(s) and raises a `ValueError`
+            if the value is invalid.
+
+            Examples:
+
+                # Validate a single parameter
+                def validate_start(value):
+                    if value < 0:
+                        raise ValueError("Start value must be non-negative")
+
+                validators = {
+                    'start_time': validate_start
+                }
+
+                # Validate multiple parameters together
+                def validate_range(start, end):
+                    if start >= end:
+                        raise ValueError("Start must be earlier than end")
+
+                validators = {
+                    ('start_time', 'end_time'): validate_range
+                }
     """  # noqa: #501
 
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_views.XMSToolWV'
@@ -74,9 +101,8 @@ class XMSToolRWS(ResourceWorkflowStep):
 
     def validate(self):
         super().validate()
-        params = self._parameters
-        form_values = params['form-values']['value']['value']
-        validators = self.options['validators']
+        form_values = self._parameters['form-values']['value']['value']
+        validators = self.options.get('validators', {})
         for param, validator in validators.items():
             if isinstance(param, str):
                 param = (param,)
