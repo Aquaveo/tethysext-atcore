@@ -1,7 +1,7 @@
 """
 ********************************************************************************
 * Name: xms_tool_rws.py
-* Author: dgallup
+* Author: dgallup, ysun
 * Created On: December, 2023
 * Copyright: (c) Aquaveo 2023
 ********************************************************************************
@@ -22,6 +22,7 @@ class XMSToolRWS(ResourceWorkflowStep):
             'valid_values': ['RASTER_ASCII', 'RASTER_GEOTIFF'],
             'name_attr': 'description',
             'name_attr_regex': r'"(.*?[^\\])"',  # optional regex expression on the name_attr value
+            'validators': {param_name: validator_func}  # optional validators to check the value before running the tool
         },
     }
 
@@ -48,7 +49,8 @@ class XMSToolRWS(ResourceWorkflowStep):
             'status_label': None,
             'xmstool_class': {},
             'arg_mapping': {},
-            'renderer': 'django'
+            'renderer': 'django',
+            'validators': {}
         })
         return default_options
 
@@ -66,3 +68,17 @@ class XMSToolRWS(ResourceWorkflowStep):
                 'required': True
             }
         }
+
+    def validate(self):
+        super().validate()
+        params = self._parameters
+        form_values = params['form-values']['value']['value']
+        validators = self.options['validators']
+        for param_name, validator in validators.items():
+            if param_name in form_values:
+                param_value = form_values[param_name]
+                try:
+                    validator(param_value)
+                except ValueError as e:
+                    raise ValueError(f'Invalid parameter {param_name}: {str(e)}')
+        return True
