@@ -20,7 +20,7 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile.devcontainer
       args:
-        TETHYS_VERSION: "4.3.8"
+        TETHYS_VERSION: "4.4.3"
         PYTHON_VERSION: "3.11"
         DJANGO_VERSION: "4.2"
 
