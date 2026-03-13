@@ -67,6 +67,9 @@ widget_map = {
     param.Number:
         lambda po, p, name: forms.FloatField(
             initial=po.param.inspect_value(name) or p.default,
+            max_value=p.bounds[1] if p.bounds else None,
+            min_value=p.bounds[0] if p.bounds else None,
+            step_size=p.step if p.step else 1
         ),
     param.Range:
         lambda po, p, name: forms.MultiValueField(
