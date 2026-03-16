@@ -45,7 +45,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
 
         self.get_user_workspace_patch = mock.patch(
             'tethys_compute.job_manager.get_user_workspace',
-            return_value='path/to/user/workspace'
+            return_value=mock.MagicMock(path='path/to/user/workspace')
         )
         self.get_user_workspace_patch.start()
 
