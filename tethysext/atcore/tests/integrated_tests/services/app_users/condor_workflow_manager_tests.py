@@ -43,6 +43,12 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
     def setUp(self):
         super().setUp()
 
+        self.get_user_workspace_patch = mock.patch(
+            'tethys_compute.job_manager.get_user_workspace',
+            return_value=mock.MagicMock(path='path/to/user/workspace')
+        )
+        self.get_user_workspace_patch.start()
+
         tests_dir = pl.Path(__file__).parents[3]
         self.key_path = tests_dir / 'files' / 'keys' / 'testkey'
 
@@ -133,6 +139,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         ]
 
     def tearDown(self):
+        self.get_user_workspace_patch.stop()
         super().tearDown()
 
     def test_init(self):
