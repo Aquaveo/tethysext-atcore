@@ -72,9 +72,13 @@ class DatasetWorkflowResultView(WorkflowResultsView):
             # Check if the export options is there
             dom_attribute = ""
             if 'show_export_button' in ds.keys():
-                if ds['show_export_button'] and can_export_datatable:
-                    # B stands for button.
-                    dom_attribute = "Bfrtip"
+                if ds['show_export_button']:
+                    if can_export_datatable:
+                        # B stands for button.
+                        dom_attribute = "Bfrtip"
+                    else:
+                        # Show pagination/filtering but not export buttons.
+                        dom_attribute = "frtip"
 
             data_table = DataTableView(
                 column_names=ds['dataset'].columns,
