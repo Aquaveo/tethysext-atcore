@@ -97,7 +97,8 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.has_permission')  # noqa: E501
     @mock.patch.object(DatasetWorkflowResultView, 'get_result')
     @mock.patch.object(WorkflowResultsView, 'get_context')
-    def test_get_context_export_button_without_permission(self, mock_sup_get_context, mock_get_result, mock_permission, mock_datatable):
+    def test_get_context_export_button_without_permission(self, mock_sup_get_context, mock_get_result, mock_permission,
+                                                          mock_datatable):
         """Test that dom_attribute is set to 'frtip' when user lacks export permission."""
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
