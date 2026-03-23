@@ -93,10 +93,11 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
 
         self.assertDictEqual(baseline, ret)
 
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.DataTableView')  # noqa: E501
     @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.has_permission')  # noqa: E501
     @mock.patch.object(DatasetWorkflowResultView, 'get_result')
     @mock.patch.object(WorkflowResultsView, 'get_context')
-    def test_get_context_export_button_without_permission(self, mock_sup_get_context, mock_get_result, mock_permission):
+    def test_get_context_export_button_without_permission(self, mock_sup_get_context, mock_get_result, mock_permission, mock_datatable):
         """Test that dom_attribute is set to 'frtip' when user lacks export permission."""
         mock_resource = mock.MagicMock()
         mock_request = mock.MagicMock()
@@ -145,7 +146,9 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
 
         # Verify the DataTableView was created with dom="frtip" (pagination/filtering without export)
         # This tests the else branch at lines 79-80
-        self.assertEqual(mock_result.datasets[0]['data_table'].dom, 'frtip')
+        mock_datatable.assert_called_once()
+        call_kwargs = mock_datatable.call_args[1]
+        self.assertEqual(call_kwargs['dom'], 'frtip')
 
         # Test all things were called here
         mock_sup_get_context.assert_called_with(
