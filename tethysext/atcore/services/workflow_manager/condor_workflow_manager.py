@@ -200,8 +200,11 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
             self.validate_jobs(cur_jobs)  # Validate again (needed if self.jobs was a callback function)
         else:
             cur_jobs = self.jobs
+
+        use_atcore_args = {}
         if isinstance(cur_jobs[0], dict):
-            # Jobs are dicts
+            for job in cur_jobs:
+                use_atcore_args[job['name']] = job.pop('use_atcore_args', True)
             cur_jobs = self._build_job_nodes(cur_jobs)
         self.jobs = cur_jobs
 
@@ -215,11 +218,10 @@ class ResourceWorkflowCondorJobManager(BaseWorkflowManager):
         # Parametrize each job
         for job in self.jobs:
             # Set arguments for each job
-            existing_job_args = job.get_attribute('arguments')
-            if existing_job_args:
-                existing_job_args = existing_job_args.split()
-            current_job_args = self.job_args + (existing_job_args if existing_job_args else [])
-            job.set_attribute('arguments', current_job_args)
+            args = job.get_attribute('arguments')
+            if use_atcore_args.get(job.name, True):
+                existing_job_args = args.split() if args else []
+                job.set_attribute('arguments', self.job_args + existing_job_args)
 
             # Add input files to transfer input files
             transfer_input_files_str = job.get_attribute('transfer_input_files') or ''
