@@ -21,22 +21,21 @@ log = logging.getLogger(f'tethys.{__name__}')
 
 
 xmstool_widget_map = {
-    # param.Foldername:
-    #     lambda po, p, name: forms.FilePathField(
-    #         initial=po.param.inspect_value(name) or p.default,
-    #         path=p.search_paths,
-    #     ),
     'Boolean':
         lambda po, interface_info, name: forms.BooleanField(
             initial=interface_info['value'],
             required=False,
         ),
-    # param.Filename:
-    #     lambda po, p, name: forms.FileField(
-    #         initial=po.param.inspect_value(name) or p.default,
-    #     ),
     'String':
         lambda po, interface_info, name: forms.CharField(
+            initial=interface_info['value'],
+        ),
+    'Number':
+        lambda po, interface_info, name: forms.FloatField(
+            initial=interface_info['value'],
+        ),
+    'Integer':
+        lambda po, interface_info, name: forms.IntegerField(
             initial=interface_info['value'],
         ),
     'ObjectSelector':
@@ -51,17 +50,17 @@ xmstool_widget_map = {
             widget=Select2Widget,
             choices=[c for c in d['choices']],
         ),
-    'Number':
-        lambda po, interface_info, name: forms.FloatField(
-            initial=interface_info['value'],
+    'TreeSelectorRaster':
+        lambda po, d, name: forms.ChoiceField(
+            initial=d['value'],
+            widget=Select2Widget,
+            choices=[c for c in d['choices']],
         ),
-    # param.FileSelector:
-    #     lambda po, p, name: forms.ChoiceField(
-    #         initial=po.param.inspect_value(name) or p.default,
-    #     ),
-    'Integer':
-        lambda po, interface_info, name: forms.IntegerField(
-            initial=interface_info['value'],
+    'TreeSelectorCoverage':
+        lambda po, d, name: forms.ChoiceField(
+            initial=d['value'],
+            widget=Select2Widget,
+            choices=[c for c in d['choices']],
         ),
 }
 
@@ -280,7 +279,11 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        form_class.base_fields[p_name] = xmstool_widget_map[p_info['type']](argument_params, p_info, p_name)
+        if p_info['type'] == 'TreeSelectorRaster' or p_info['type'] == 'TreeSelectorCoverage':
+            # Use the ObjectSelector widget for TreeSelectorRaster and TreeSelectorCoverage types
+            form_class.base_fields[p_name] = xmstool_widget_map['ObjectSelector'](argument_params, p_info, p_name)
+        else:
+            form_class.base_fields[p_name] = xmstool_widget_map[p_info['type']](argument_params, p_info, p_name)
 
         # Set label with param label if set, otherwise derive from parameter name
         label = p_info['description']
