@@ -2,6 +2,7 @@ name: tethys
 
 channels:
 - conda-forge
+- nodefaults
 
 dependencies:
 - alembic
