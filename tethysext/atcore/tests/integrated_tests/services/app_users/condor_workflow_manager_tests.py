@@ -113,7 +113,9 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
                     'gssha_files',
                     'detention_basin_ohl_series.json'
                 ],
+                'arguments': ['extra1', 'extra2']
             },
+            'use_atcore_args': True
         }
 
         post_process_job = {
@@ -129,7 +131,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
                 ],
                 'arguments': ['extra1', 'extra2'],
             },
-            'parents': [base_job['name'], dt_job['name']]
+            'parents': [base_job['name'], dt_job['name']],
+            'use_atcore_args': False
         }
 
         self.jobs = [
@@ -231,13 +234,11 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual(None, manager._workspace_path)
 
     def test_init_no_jobs(self):
-        try:
-            Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
-                    self.scheduler_name, jobs=None)
-            self.assertTrue(False)  # This line should not be reached
-        except ValueError as e:
-            self.assertEqual('Given "jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode '
-                             'or equivalent dictionary.', str(e))
+        with self.assertRaises(ValueError) as cm:
+            Manager(self.session, self.model_db, self.step, self.user,
+                    self.working_directory, self.app, self.scheduler_name, jobs=None)
+            self.assertEqual('Given "jobs" is not defined or empty. Must provide at least one CondorWorkflowJobNode ',
+                             'or equivalent dictionary.', str(cm.exception))
 
     def test_workspace_no_path(self):
         manager = Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
@@ -254,60 +255,6 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         manager = Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
                           self.scheduler_name, jobs=self.jobs, input_files=[str(self.key_path)])
 
-        id = manager.prepare()
-
-        # Job 1
-        self.assertEqual(self.jobs[0]['name'], manager.jobs[0].name)
-        self.assertEqual(1, manager.jobs[0].workflow.id)
-        self.assertEqual(1, manager.jobs[0].workflow_id)
-        self.assertEqual(self.jobs[0]['name'], manager.jobs[0]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[0]._attributes['universe'])
-        self.assertEqual('run_base_scenario.py', manager.jobs[0]._attributes['executable'])
-        expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
-            f'{self.workflow.id} {self.step.id}   {manager._get_class_path(self.workflow.resource)} ' \
-            f'{manager._get_class_path(self.workflow)} testkey'
-        self.assertEqual(expected_args, manager.jobs[0]._attributes['arguments'])
-        self.assertEqual(', ../testkey', manager.jobs[0]._attributes['transfer_input_files'])
-        self.assertEqual('gssha_files, base_ohl_series.json', manager.jobs[0]._attributes['transfer_output_files'])
-
-        # Job 2
-        self.assertEqual(self.jobs[1]['name'], manager.jobs[1].name)
-        self.assertEqual(1, manager.jobs[1].workflow.id)
-        self.assertEqual(1, manager.jobs[1].workflow_id)
-        self.assertEqual(self.jobs[1]['name'], manager.jobs[1]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[1]._attributes['universe'])
-        self.assertEqual('run_detention_basin_scenario.py', manager.jobs[1]._attributes['executable'])
-        self.assertEqual(expected_args, manager.jobs[1]._attributes['arguments'])
-        self.assertEqual(', ../testkey', manager.jobs[1]._attributes['transfer_input_files'])
-        self.assertEqual('gssha_files, detention_basin_ohl_series.json',
-                         manager.jobs[1]._attributes['transfer_output_files'])
-
-        # Job 3
-        self.assertEqual(self.jobs[2]['name'], manager.jobs[2].name)
-        self.assertEqual(1, manager.jobs[2].workflow.id)
-        self.assertEqual(1, manager.jobs[2].workflow_id)
-        self.assertEqual(self.jobs[2]['name'], manager.jobs[2]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[2]._attributes['universe'])
-        self.assertEqual('post_process.py', manager.jobs[2]._attributes['executable'])
-        self.assertEqual(expected_args + ' extra1 extra2', manager.jobs[2]._attributes['arguments'])
-        self.assertEqual('../base_scenario/base_ohl_series.json,  '
-                         '../detention_basin_scenario/detention_basin_ohl_series.json, ../testkey',
-                         manager.jobs[2]._attributes['transfer_input_files'])
-        self.assertEqual('', manager.jobs[2]._attributes['transfer_output_files'])
-
-        # Job 4
-        self.assertEqual('finalize', manager.jobs[3].name)
-        self.assertEqual(1, manager.jobs[3].workflow.id)
-        self.assertEqual(1, manager.jobs[3].workflow_id)
-        self.assertEqual('finalize', manager.jobs[3]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[3]._attributes['universe'])
-        self.assertEqual('update_status.py', manager.jobs[3]._attributes['executable'])
-        self.assertEqual(expected_args, manager.jobs[3]._attributes['arguments'])
-        self.assertEqual('../workflow_params.json', manager.jobs[3]._attributes['transfer_input_files'])
-        self.assertEqual('', manager.jobs[3]._attributes['transfer_output_files'])
-
-        self.assertEqual(1, id)
-        self.assertIsInstance(manager.workflow, CondorWorkflow)
         expected_job_args = [
             self.session.get_bind().url,
             self.model_db.db_url,
@@ -320,8 +267,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             str(manager._get_class_path(self.workflow)),
             'testkey'
         ]
-        self.assertEqual(expected_job_args, manager.job_args)
-        self.assertTrue(manager.prepared)
+
+        self._assert_prepared_jobs(manager, 1, expected_job_args)
 
     @mock.patch('tethys_compute.models.tethys_job.TethysJob.execute')
     def test_run_job_prepared(self, _):
@@ -342,60 +289,6 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         manager = Manager(self.session, self.model_db, self.step, self.user, self.working_directory, self.app,
                           self.scheduler_name, jobs=callback_func, input_files=[str(self.key_path)])
 
-        id = manager.prepare()
-
-        # Job 1
-        self.assertEqual(self.jobs[0]['name'], manager.jobs[0].name)
-        self.assertEqual(3, manager.jobs[0].workflow.id)
-        self.assertEqual(3, manager.jobs[0].workflow_id)
-        self.assertEqual(self.jobs[0]['name'], manager.jobs[0]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[0]._attributes['universe'])
-        self.assertEqual('run_base_scenario.py', manager.jobs[0]._attributes['executable'])
-        expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
-            f'{self.workflow.id} {self.step.id}   {manager._get_class_path(self.workflow.resource)} ' \
-            f'{manager._get_class_path(self.workflow)} testkey'
-        self.assertEqual(expected_args, manager.jobs[0]._attributes['arguments'])
-        self.assertEqual(', ../testkey', manager.jobs[0]._attributes['transfer_input_files'])
-        self.assertEqual('gssha_files, base_ohl_series.json', manager.jobs[0]._attributes['transfer_output_files'])
-
-        # Job 2
-        self.assertEqual(self.jobs[1]['name'], manager.jobs[1].name)
-        self.assertEqual(3, manager.jobs[1].workflow.id)
-        self.assertEqual(3, manager.jobs[1].workflow_id)
-        self.assertEqual(self.jobs[1]['name'], manager.jobs[1]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[1]._attributes['universe'])
-        self.assertEqual('run_detention_basin_scenario.py', manager.jobs[1]._attributes['executable'])
-        self.assertEqual(expected_args, manager.jobs[1]._attributes['arguments'])
-        self.assertEqual(', ../testkey', manager.jobs[1]._attributes['transfer_input_files'])
-        self.assertEqual('gssha_files, detention_basin_ohl_series.json',
-                         manager.jobs[1]._attributes['transfer_output_files'])
-
-        # Job 3
-        self.assertEqual(self.jobs[2]['name'], manager.jobs[2].name)
-        self.assertEqual(3, manager.jobs[2].workflow.id)
-        self.assertEqual(3, manager.jobs[2].workflow_id)
-        self.assertEqual(self.jobs[2]['name'], manager.jobs[2]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[2]._attributes['universe'])
-        self.assertEqual('post_process.py', manager.jobs[2]._attributes['executable'])
-        self.assertEqual(expected_args + ' extra1 extra2', manager.jobs[2]._attributes['arguments'])
-        self.assertEqual('../base_scenario/base_ohl_series.json,  '
-                         '../detention_basin_scenario/detention_basin_ohl_series.json, ../testkey',
-                         manager.jobs[2]._attributes['transfer_input_files'])
-        self.assertEqual('', manager.jobs[2]._attributes['transfer_output_files'])
-
-        # Job 4
-        self.assertEqual('finalize', manager.jobs[3].name)
-        self.assertEqual(3, manager.jobs[3].workflow.id)
-        self.assertEqual(3, manager.jobs[3].workflow_id)
-        self.assertEqual('finalize', manager.jobs[3]._attributes['job_name'])
-        self.assertEqual('vanilla', manager.jobs[3]._attributes['universe'])
-        self.assertEqual('update_status.py', manager.jobs[3]._attributes['executable'])
-        self.assertEqual(expected_args, manager.jobs[3]._attributes['arguments'])
-        self.assertEqual('../workflow_params.json', manager.jobs[3]._attributes['transfer_input_files'])
-        self.assertEqual('', manager.jobs[3]._attributes['transfer_output_files'])
-
-        self.assertEqual(3, id)
-        self.assertIsInstance(manager.workflow, CondorWorkflow)
         expected_job_args = [
             self.session.get_bind().url,
             self.model_db.db_url,
@@ -408,5 +301,63 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             str(manager._get_class_path(self.workflow)),
             'testkey'
         ]
+
+        self._assert_prepared_jobs(manager, 3, expected_job_args)
+
+    def _assert_prepared_jobs(self, manager, expected_workflow_id, expected_job_args):
+        id = manager.prepare()
+
+        # Job 1 (use_atcore_args is not specified, defaults to True)
+        self.assertEqual(self.jobs[0]['name'], manager.jobs[0].name)
+        self.assertEqual(expected_workflow_id, manager.jobs[0].workflow.id)
+        self.assertEqual(expected_workflow_id, manager.jobs[0].workflow_id)
+        self.assertEqual(self.jobs[0]['name'], manager.jobs[0]._attributes['job_name'])
+        self.assertEqual('vanilla', manager.jobs[0]._attributes['universe'])
+        self.assertEqual('run_base_scenario.py', manager.jobs[0]._attributes['executable'])
+        expected_args = f'{self.session.get_bind().url} {self.model_db.db_url} {self.workflow.resource.id} ' \
+            f'{self.workflow.id} {self.step.id}   {manager._get_class_path(self.workflow.resource)} ' \
+            f'{manager._get_class_path(self.workflow)} testkey'
+        self.assertEqual(expected_args, manager.jobs[0]._attributes['arguments'])
+        self.assertEqual(', ../testkey', manager.jobs[0]._attributes['transfer_input_files'])
+        self.assertEqual('gssha_files, base_ohl_series.json', manager.jobs[0]._attributes['transfer_output_files'])
+
+        # Job 2 (use_atcore_args is True)
+        self.assertEqual(self.jobs[1]['name'], manager.jobs[1].name)
+        self.assertEqual(expected_workflow_id, manager.jobs[1].workflow.id)
+        self.assertEqual(expected_workflow_id, manager.jobs[1].workflow_id)
+        self.assertEqual(self.jobs[1]['name'], manager.jobs[1]._attributes['job_name'])
+        self.assertEqual('vanilla', manager.jobs[1]._attributes['universe'])
+        self.assertEqual('run_detention_basin_scenario.py', manager.jobs[1]._attributes['executable'])
+        self.assertEqual(expected_args + ' extra1 extra2', manager.jobs[1]._attributes['arguments'])
+        self.assertEqual(', ../testkey', manager.jobs[1]._attributes['transfer_input_files'])
+        self.assertEqual('gssha_files, detention_basin_ohl_series.json',
+                         manager.jobs[1]._attributes['transfer_output_files'])
+
+        # Job 3 (use_atcore_args is False)
+        self.assertEqual(self.jobs[2]['name'], manager.jobs[2].name)
+        self.assertEqual(expected_workflow_id, manager.jobs[2].workflow.id)
+        self.assertEqual(expected_workflow_id, manager.jobs[2].workflow_id)
+        self.assertEqual(self.jobs[2]['name'], manager.jobs[2]._attributes['job_name'])
+        self.assertEqual('vanilla', manager.jobs[2]._attributes['universe'])
+        self.assertEqual('post_process.py', manager.jobs[2]._attributes['executable'])
+        self.assertEqual('extra1 extra2', manager.jobs[2]._attributes['arguments'])
+        self.assertEqual('../base_scenario/base_ohl_series.json,  '
+                         '../detention_basin_scenario/detention_basin_ohl_series.json, ../testkey',
+                         manager.jobs[2]._attributes['transfer_input_files'])
+        self.assertEqual('', manager.jobs[2]._attributes['transfer_output_files'])
+
+        # Job 4 (finalize job, use_atcore_args is not specified, defaults to True)
+        self.assertEqual('finalize', manager.jobs[3].name)
+        self.assertEqual(expected_workflow_id, manager.jobs[3].workflow.id)
+        self.assertEqual(expected_workflow_id, manager.jobs[3].workflow_id)
+        self.assertEqual('finalize', manager.jobs[3]._attributes['job_name'])
+        self.assertEqual('vanilla', manager.jobs[3]._attributes['universe'])
+        self.assertEqual('update_status.py', manager.jobs[3]._attributes['executable'])
+        self.assertEqual(expected_args, manager.jobs[3]._attributes['arguments'])
+        self.assertEqual('../workflow_params.json', manager.jobs[3]._attributes['transfer_input_files'])
+        self.assertEqual('', manager.jobs[3]._attributes['transfer_output_files'])
+
+        self.assertEqual(expected_workflow_id, id)
+        self.assertIsInstance(manager.workflow, CondorWorkflow)
         self.assertEqual(expected_job_args, manager.job_args)
         self.assertTrue(manager.prepared)
