@@ -279,11 +279,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        if p_info['type'] == 'TreeSelectorRaster' or p_info['type'] == 'TreeSelectorCoverage':
-            # Use the ObjectSelector widget for TreeSelectorRaster and TreeSelectorCoverage types
-            form_class.base_fields[p_name] = xmstool_widget_map['ObjectSelector'](argument_params, p_info, p_name)
-        else:
-            form_class.base_fields[p_name] = xmstool_widget_map[p_info['type']](argument_params, p_info, p_name)
+        form_class.base_fields[p_name] = xmstool_widget_map[p_info['type']](argument_params, p_info, p_name)
 
         # Set label with param label if set, otherwise derive from parameter name
         label = p_info['description']
