@@ -50,18 +50,6 @@ xmstool_widget_map = {
             widget=Select2Widget,
             choices=[c for c in d['choices']],
         ),
-    'TreeSelectorRaster':
-        lambda po, d, name: forms.ChoiceField(
-            initial=d['value'],
-            widget=Select2Widget,
-            choices=[c for c in d['choices']],
-        ),
-    'TreeSelectorCoverage':
-        lambda po, d, name: forms.ChoiceField(
-            initial=d['value'],
-            widget=Select2Widget,
-            choices=[c for c in d['choices']],
-        ),
 }
 
 
@@ -279,7 +267,10 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
             p_name = form_field_prefix + p_name
 
         # Get appropriate Django field/widget based on param type
-        form_class.base_fields[p_name] = xmstool_widget_map[p_info['type']](argument_params, p_info, p_name)
+        param_type = p_info['type']
+        if param_type not in xmstool_widget_map:
+            param_type = 'StringSelector'  # Default to StringSelector if type is not found
+        form_class.base_fields[p_name] = xmstool_widget_map[param_type](argument_params, p_info, p_name)
 
         # Set label with param label if set, otherwise derive from parameter name
         label = p_info['description']
