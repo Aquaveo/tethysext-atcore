@@ -22,7 +22,8 @@ jobs:
         uses: upsidr/merge-gatekeeper@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          self: 'merge-gatekeeper'
           # Check interval (seconds)
           interval: 30
           # Give up checking (seconds)
-          timeout: 900
+          timeout: 1800
