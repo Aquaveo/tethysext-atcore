@@ -10,6 +10,7 @@ requirements:
   conda:
     channels:
     - conda-forge
+    - nodefaults
     packages:
     - django>=3.2,<6
     - django-select2<8.3.0
