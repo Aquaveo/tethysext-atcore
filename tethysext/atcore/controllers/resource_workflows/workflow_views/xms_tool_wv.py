@@ -217,7 +217,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
 
     # Create Django Form class dynamically
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
-    form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
+    form_class = type(class_name, (forms.Form,), {})
 
     resource_choices = {}
     if resource and arg_mapping:
