@@ -244,8 +244,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
                             available_options.append((str(dataset.id), name_attr))  # (value, label)
 
                     # Store any initial options if found
-                    if available_options:
-                        initial_options[arg_name] = available_options
+                    initial_options[arg_name] = available_options
 
     # Fill in form values if necessary
     if form_values:
