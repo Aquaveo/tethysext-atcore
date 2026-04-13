@@ -38,6 +38,26 @@ xmstool_widget_map = {
 }
 
 
+def _default_setup_args(arguments):
+    """Takes the XMSToolArgument list and turns it into a dictionary of Param types.
+
+    Args:
+        arguments (List[Argument]): List of tool arguments.
+
+    Returns:
+        (Dict[str, Parameter]): List of Parameter objects.
+    """
+    arguments_dict = {}
+    for argument in arguments:
+        interface_info = argument.get_interface_info()
+        if interface_info['value'] is not None:
+            interface_info['value'] = argument.value
+        if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
+            continue
+        arguments_dict[argument.name] = interface_info
+    return arguments_dict
+
+
 class XMSToolWV(ResourceWorkflowView):
     """
     Controller for XMSToolRWS.
@@ -171,29 +191,9 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     Returns:
         Form: a Django form with fields matching the parameters of the given parameterized object.
     """
-    def _setup_parameterized_args(arguments):
-        """Takes the XMSToolArgument list and turns it into a dictionary of Param types.
 
-        Args:
-            arguments (List[Argument]): List of tool arguments.
-
-        Returns:
-            (Dict[str, Parameter]): List of Parameter objects.
-        """
-        arguments_dict = {}
-        for argument in arguments:
-            interface_info = argument.get_interface_info()
-            if interface_info['value'] is not None:
-                interface_info['value'] = argument.value
-            if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
-                continue
-            arguments_dict[argument.name] = interface_info
-        return arguments_dict
-
-    if not setup_func:
-        setup_func = _setup_parameterized_args
     tool_arguments = xms_tool_class.initial_arguments()
-    argument_params = setup_func(tool_arguments)
+    argument_params = (setup_func or _default_setup_args)(tool_arguments)
 
     # Create Django Form class dynamically
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
