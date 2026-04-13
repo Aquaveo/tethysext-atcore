@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import logging
+import traceback
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from django.shortcuts import redirect, reverse
@@ -98,13 +99,14 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
                 return redirect(reverse(url_name, kwargs=url_kwargs))
 
         except (StatementError, NoResultFound):
+            traceback.print_exc()
             messages.warning(request, 'The {} could not be found.'.format(
                 _ResourceWorkflow.DISPLAY_TYPE_SINGULAR.lower()
             ))
             return redirect(self.back_url)
         except ATCoreException as e:
-            error_message = str(e)
-            messages.warning(request, error_message)
+            traceback.print_exc()
+            messages.warning(request, str(e))
             return redirect(self.back_url)
         finally:
             session and session.close()
@@ -237,13 +239,14 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             return response
 
         except (StatementError, NoResultFound):
+            traceback.print_exc()
             messages.warning(request, 'Invalid step for workflow: {}.'.format(
                 _ResourceWorkflow.DISPLAY_TYPE_SINGULAR.lower()
             ))
             return redirect(self.back_url)
         except ATCoreException as e:
-            error_message = str(e)
-            messages.warning(request, error_message)
+            traceback.print_exc()
+            messages.warning(request, str(e))
             return redirect(self.back_url)
         finally:
             session and session.close()
@@ -317,8 +320,7 @@ class ResourceWorkflowRouter(WorkflowViewMixin):
             ))
             return redirect(self.back_url)
         except ATCoreException as e:
-            error_message = str(e)
-            messages.warning(request, error_message)
+            messages.warning(request, str(e))
             return redirect(self.back_url)
         finally:
             session and session.close()
