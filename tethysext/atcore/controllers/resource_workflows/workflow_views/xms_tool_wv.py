@@ -177,6 +177,25 @@ class XMSToolWV(ResourceWorkflowView):
         return response
 
 
+def _build_choices_from_resource(resource, arg_atts):
+    """Build (value, label) choices for a mapped argument by reading resource datasets."""
+    datasets = getattr(resource, arg_atts['resource_attr'])
+    if not isinstance(datasets, list):
+        datasets = [datasets]
+
+    choices = []
+    for dataset in datasets:
+        if getattr(dataset, arg_atts['filter_attr']) not in arg_atts['valid_values']:
+            continue
+        label = getattr(dataset, arg_atts['name_attr'])
+        if 'name_attr_regex' in arg_atts:
+            # Perform a regex on the name attribute to filter the name
+            match = re.findall(arg_atts['name_attr_regex'], label)
+            label = match[0] if match else label
+        choices.append((str(dataset.id), label))  # (value, label)
+    return choices
+
+
 def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, form_field_prefix=None,
                                  read_only=False, arg_mapping=None, setup_func=None):
     """
@@ -199,28 +218,12 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
-    initial_options = {}
+    options = {}
     if resource and arg_mapping:
         for arg_name, arg_atts in arg_mapping.items():
             for param in argument_params.items():
                 if param[0] == arg_name:
-                    available_options = []
-
-                    # Use the resource attribute to read the possible resource data sources
-                    datasets = getattr(resource, arg_atts['resource_attr'])
-                    datasets = datasets if type(datasets) is list else [datasets]
-                    for dataset in datasets:
-                        filter_attr_value = getattr(dataset, arg_atts['filter_attr'])
-                        if filter_attr_value in arg_atts['valid_values']:
-                            name_attr = getattr(dataset, arg_atts['name_attr'])
-                            if 'name_attr_regex' in arg_atts:
-                                # Perform a regex on the name attribute to filter the name
-                                name_attr_regex = re.findall(arg_atts['name_attr_regex'], name_attr)
-                                name_attr = name_attr_regex[0] if name_attr_regex else name_attr
-                            available_options.append((str(dataset.id), name_attr))  # (value, label)
-
-                    # Store any initial options if found
-                    initial_options[arg_name] = available_options
+                    options[arg_name] = _build_choices_from_resource(resource, arg_atts)
 
     # Fill in form values if necessary
     if form_values:
@@ -234,8 +237,8 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
 
         # Assign any initial arguments if found from argument mapping for input arguments
         for xms_arg in tool_arguments:
-            if xms_arg.name == p_name and xms_arg.io_direction == 1 and p_name in initial_options:
-                p_info['choices'] = initial_options[p_name]
+            if xms_arg.name == p_name and xms_arg.io_direction == 1 and p_name in options:
+                p_info['choices'] = options[p_name]
 
         # Prefix parameter name if prefix provided
         if form_field_prefix is not None:
