@@ -212,53 +212,49 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     """
 
     tool_arguments = xms_tool_class.initial_arguments()
+    input_arg_names = {a.name for a in tool_arguments if a.io_direction == 1}
     argument_params = (setup_func or _default_setup_args)(tool_arguments)
 
     # Create Django Form class dynamically
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
-    options = {}
+    resource_choices = {}
     if resource and arg_mapping:
         for arg_name, arg_atts in arg_mapping.items():
-            for param in argument_params.items():
-                if param[0] == arg_name:
-                    options[arg_name] = _build_choices_from_resource(resource, arg_atts)
+            if arg_name in argument_params:
+                resource_choices[arg_name] = _build_choices_from_resource(resource, arg_atts)
 
     # Fill in form values if necessary
     if form_values:
-        for form_value in form_values.items():
-            for param in argument_params.items():
-                if param[0] in form_value[1]:
-                    param[1]['value'] = form_value[1][param[0]]
+        for values in form_values.values():
+            for param_name, param_info in argument_params.items():
+                if param_name in values:
+                    param_info['value'] = values[param_name]
 
-    for param in argument_params.items():
-        p_name, p_info = param[0], param[1]
-
+    for param_name, param_info in argument_params.items():
         # Assign any initial arguments if found from argument mapping for input arguments
-        for xms_arg in tool_arguments:
-            if xms_arg.name == p_name and xms_arg.io_direction == 1 and p_name in options:
-                p_info['choices'] = options[p_name]
+        if param_name in input_arg_names and param_name in resource_choices:
+            param_info['choices'] = resource_choices[param_name]
 
         # Prefix parameter name if prefix provided
-        if form_field_prefix is not None:
-            p_name = form_field_prefix + p_name
+        field_name = (form_field_prefix or '') + param_name
 
         # Get appropriate Django field/widget based on param type
-        param_type = p_info['type']
+        param_type = param_info['type']
         if param_type not in xmstool_widget_map:
             param_type = 'StringSelector'  # Default to StringSelector if type is not found
-        form_class.base_fields[p_name] = xmstool_widget_map[param_type](p_info)
+        form_class.base_fields[field_name] = xmstool_widget_map[param_type](param_info)
 
         # Set label with param label if set, otherwise derive from parameter name
-        label = p_info['description']
-        form_class.base_fields[p_name].label = p_name.replace("_", " ").title() if not label else label
+        label = param_info['description']
+        form_class.base_fields[field_name].label = field_name.replace("_", " ").title() if not label else label
 
         # If form is read-only, set disabled attribute
-        form_class.base_fields[p_name].widget.attrs.update({'disabled': read_only})
+        form_class.base_fields[field_name].widget.attrs.update({'disabled': read_only})
 
         # Help text displayed on hover over field
-        if 'doc' in p_info and p_info['doc']:
-            form_class.base_fields[p_name].widget.attrs.update({'title': p_info['doc']})
+        if 'doc' in param_info and param_info['doc']:
+            form_class.base_fields[field_name].widget.attrs.update({'title': param_info['doc']})
 
     return form_class
