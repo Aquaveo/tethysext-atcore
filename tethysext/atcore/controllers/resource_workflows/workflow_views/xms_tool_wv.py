@@ -181,19 +181,13 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
             (Dict[str, Parameter]): List of Parameter objects.
         """
         arguments_dict = {}
-        argument_precedence = {}
-        precedence = 100
         for argument in arguments:
             interface_info = argument.get_interface_info()
             if interface_info['value'] is not None:
                 interface_info['value'] = argument.value
-            displayed = True
             if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
-                displayed = False
-            if displayed:
-                argument_precedence[argument.name] = precedence
-                arguments_dict[argument.name] = interface_info
-                precedence += 1
+                continue
+            arguments_dict[argument.name] = interface_info
         return arguments_dict
 
     if not setup_func:
@@ -205,13 +199,10 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
     form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
 
-    # Sort parameters based on precedence
-    sorted_params = argument_params.items()
-
     initial_options = {}
     if resource and arg_mapping:
         for arg_name, arg_atts in arg_mapping.items():
-            for param in sorted_params:
+            for param in argument_params.items():
                 if param[0] == arg_name:
                     available_options = []
 
@@ -234,11 +225,11 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     # Fill in form values if necessary
     if form_values:
         for form_value in form_values.items():
-            for param in sorted_params:
+            for param in argument_params.items():
                 if param[0] in form_value[1]:
                     param[1]['value'] = form_value[1][param[0]]
 
-    for param in sorted_params:
+    for param in argument_params.items():
         p_name, p_info = param[0], param[1]
 
         # Assign any initial arguments if found from argument mapping for input arguments
