@@ -20,36 +20,21 @@ from tethysext.atcore.models.resource_workflow_steps.xms_tool_rws import XMSTool
 log = logging.getLogger(f'tethys.{__name__}')
 
 
+def _build_selector_field(info):
+    return forms.ChoiceField(
+        initial=info['value'],
+        widget=Select2Widget,
+        choices=info['choices'],
+    )
+
+
 xmstool_widget_map = {
-    'Boolean':
-        lambda po, interface_info, name: forms.BooleanField(
-            initial=interface_info['value'],
-            required=False,
-        ),
-    'String':
-        lambda po, interface_info, name: forms.CharField(
-            initial=interface_info['value'],
-        ),
-    'Number':
-        lambda po, interface_info, name: forms.FloatField(
-            initial=interface_info['value'],
-        ),
-    'Integer':
-        lambda po, interface_info, name: forms.IntegerField(
-            initial=interface_info['value'],
-        ),
-    'ObjectSelector':
-        lambda po, d, name: forms.ChoiceField(
-            initial=d['value'],
-            widget=Select2Widget,
-            choices=[c for c in d['choices']],
-        ),
-    'StringSelector':
-        lambda po, d, name: forms.ChoiceField(
-            initial=d['value'],
-            widget=Select2Widget,
-            choices=[c for c in d['choices']],
-        ),
+    'Boolean': lambda info: forms.BooleanField(initial=info['value'], required=False),
+    'String': lambda info: forms.CharField(initial=info['value']),
+    'Number': lambda info: forms.FloatField(initial=info['value']),
+    'Integer': lambda info: forms.IntegerField(initial=info['value']),
+    'ObjectSelector': _build_selector_field,
+    'StringSelector': _build_selector_field,
 }
 
 
@@ -269,7 +254,7 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
         param_type = p_info['type']
         if param_type not in xmstool_widget_map:
             param_type = 'StringSelector'  # Default to StringSelector if type is not found
-        form_class.base_fields[p_name] = xmstool_widget_map[param_type](argument_params, p_info, p_name)
+        form_class.base_fields[p_name] = xmstool_widget_map[param_type](p_info)
 
         # Set label with param label if set, otherwise derive from parameter name
         label = p_info['description']
