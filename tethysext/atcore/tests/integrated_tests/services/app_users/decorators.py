@@ -132,6 +132,10 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
         self.mock_log = log_patcher.start()
         self.addCleanup(log_patcher.stop)
 
+        traceback_patcher = mock.patch('tethysext.atcore.services.app_users.decorators.traceback')
+        traceback_patcher.start()
+        self.addCleanup(traceback_patcher.stop)
+
     @override_settings(ENABLE_OPEN_PORTAL=False)
     def assertIsRedirect(self, response, to='/apps/'):
         self.assertIsInstance(response, HttpResponseRedirect)
@@ -216,8 +220,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_statement_error(self.request)
 
-        msg_args = self.mock_messages.warning.call_args_list
-        self.assertEqual('The generic resource could not be found.', msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual('The generic resource could not be found.', msg_args[0][0][2])
         self.assertEqual('The generic resource could not be found.', self.mock_log.exception.call_args_list[0][0][0])
         self.assertEqual(MockResourceController.back_url, response.url)
 
@@ -226,8 +230,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_statement_error_as_rest_controller(self.request)
 
-        msg_args = self.mock_messages.warning.call_args_list
-        self.assertEqual('The generic resource could not be found.', msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual('The generic resource could not be found.', msg_args[0][0][2])
         self.assertEqual('The generic resource could not be found.', self.mock_log.exception.call_args_list[0][0][0])
         response_dict = json.loads(response._container[0])
         self.assertFalse(response_dict['success'])
@@ -238,8 +242,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_no_result_found(self.request)
 
-        msg_args = self.mock_messages.warning.call_args_list
-        self.assertEqual('The generic resource could not be found.', msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual('The generic resource could not be found.', msg_args[0][0][2])
         self.assertEqual('The generic resource could not be found.', self.mock_log.exception.call_args_list[0][0][0])
         self.assertEqual(MockResourceController.back_url, response.url)
 
@@ -248,8 +252,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_no_result_found_as_rest_controller(self.request)
 
-        msg_args = self.mock_messages.warning.call_args_list
-        self.assertEqual('The generic resource could not be found.', msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual('The generic resource could not be found.', msg_args[0][0][2])
         self.assertEqual('The generic resource could not be found.', self.mock_log.exception.call_args_list[0][0][0])
         response_dict = json.loads(response._container[0])
         self.assertFalse(response_dict['success'])
@@ -260,8 +264,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_atcore_exception(self.request)
 
-        msg_args = self.mock_messages.warning.call_args_list
-        self.assertEqual('This is the ATCore exception.', msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual('This is the ATCore exception.', msg_args[0][0][2])
         self.assertEqual(MockResourceController.back_url, response.url)
 
     def test_resource_controller_atcore_exception_as_rest_controller(self):
@@ -269,8 +273,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_atcore_exception_as_rest_controller(self.request)
 
-        msg_args = self.mock_messages.warning.call_args_list
-        self.assertEqual('This is the ATCore exception.', msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual('This is the ATCore exception.', msg_args[0][0][2])
         response_dict = json.loads(response._container[0])
         self.assertFalse(response_dict['success'])
         self.assertEqual('This is the ATCore exception.', response_dict['error'])
@@ -296,8 +300,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_runtime_error(self.request)
 
-        msg_args = self.mock_messages.error.call_args_list
-        self.assertEqual("We're sorry, an unexpected error has occurred.", msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual("We're sorry, an unexpected error has occurred.", msg_args[0][0][2])
         self.assertEqual('This is the Runtime Error', self.mock_log.exception.call_args_list[0][0][0])
         self.assertEqual(MockResourceController.back_url, response.url)
 
@@ -306,8 +310,8 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
 
         response = MockResourceController().raise_runtime_error_as_rest_controller(self.request)
 
-        msg_args = self.mock_messages.error.call_args_list
-        self.assertEqual("We're sorry, an unexpected error has occurred.", msg_args[0][0][1])
+        msg_args = self.mock_messages.add_message.call_args_list
+        self.assertEqual("We're sorry, an unexpected error has occurred.", msg_args[0][0][2])
         self.assertEqual('This is the Runtime Error', self.mock_log.exception.call_args_list[0][0][0])
         response_dict = json.loads(response._container[0])
         self.assertFalse(response_dict['success'])
