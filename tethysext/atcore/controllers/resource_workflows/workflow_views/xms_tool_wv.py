@@ -20,37 +20,125 @@ from tethysext.atcore.models.resource_workflow_steps.xms_tool_rws import XMSTool
 log = logging.getLogger(f'tethys.{__name__}')
 
 
+def _build_selector_field(info):
+    return forms.ChoiceField(
+        initial=info['value'],
+        widget=Select2Widget,
+        choices=info['choices'],
+    )
+
+
 xmstool_widget_map = {
-    'Boolean':
-        lambda po, interface_info, name: forms.BooleanField(
-            initial=interface_info['value'],
-            required=False,
-        ),
-    'String':
-        lambda po, interface_info, name: forms.CharField(
-            initial=interface_info['value'],
-        ),
-    'Number':
-        lambda po, interface_info, name: forms.FloatField(
-            initial=interface_info['value'],
-        ),
-    'Integer':
-        lambda po, interface_info, name: forms.IntegerField(
-            initial=interface_info['value'],
-        ),
-    'ObjectSelector':
-        lambda po, d, name: forms.ChoiceField(
-            initial=d['value'],
-            widget=Select2Widget,
-            choices=[c for c in d['choices']],
-        ),
-    'StringSelector':
-        lambda po, d, name: forms.ChoiceField(
-            initial=d['value'],
-            widget=Select2Widget,
-            choices=[c for c in d['choices']],
-        ),
+    'Boolean': lambda info: forms.BooleanField(initial=info['value'], required=False),
+    'String': lambda info: forms.CharField(initial=info['value']),
+    'Number': lambda info: forms.FloatField(initial=info['value']),
+    'Integer': lambda info: forms.IntegerField(initial=info['value']),
+    'ObjectSelector': _build_selector_field,
+    'StringSelector': _build_selector_field,
 }
+
+
+def _default_setup_args(arguments):
+    """Takes the XMSToolArgument list and turns it into a dictionary of Param types.
+
+    Args:
+        arguments (List[Argument]): List of tool arguments.
+
+    Returns:
+        (Dict[str, Parameter]): List of Parameter objects.
+    """
+    arguments_dict = {}
+    for argument in arguments:
+        interface_info = argument.get_interface_info()
+        if interface_info['value'] is not None:
+            interface_info['value'] = argument.value
+        if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
+            continue
+        arguments_dict[argument.name] = interface_info
+    return arguments_dict
+
+
+def _build_choices_from_resource(resource, arg_atts):
+    """Build (value, label) choices for a mapped argument by reading resource datasets."""
+    datasets = getattr(resource, arg_atts['resource_attr'])
+    if not isinstance(datasets, list):
+        datasets = [datasets]
+
+    choices = []
+    for dataset in datasets:
+        if getattr(dataset, arg_atts['filter_attr']) not in arg_atts['valid_values']:
+            continue
+        label = getattr(dataset, arg_atts['name_attr'])
+        if 'name_attr_regex' in arg_atts:
+            # Perform a regex on the name attribute to filter the name
+            match = re.findall(arg_atts['name_attr_regex'], label)
+            label = match[0] if match else label
+        choices.append((str(dataset.id), label))  # (value, label)
+    return choices
+
+
+def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, form_field_prefix=None,
+                                 read_only=False, arg_mapping=None, setup_func=None):
+    """
+    Create a Django form from a Parameterized object.
+
+    Args:
+        xms_tool_class(class): the XMS tool class.
+        form_values(dict): dict of initial values to assign
+        form_field_prefix(str): A prefix to prepend to form fields
+        read_only(bool): Read only flag
+        arg_mapping(dict): Dictionary to map particular arguments to available resources
+    Returns:
+        Form: a Django form with fields matching the parameters of the given parameterized object.
+    """
+
+    tool_arguments = xms_tool_class.initial_arguments()
+    input_arg_names = {a.name for a in tool_arguments if a.io_direction == 1}
+    argument_params = (setup_func or _default_setup_args)(tool_arguments)
+
+    # Create Django Form class dynamically
+    class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
+    form_class = type(class_name, (forms.Form,), {})
+
+    resource_choices = {}
+    if resource and arg_mapping:
+        for arg_name, arg_atts in arg_mapping.items():
+            if arg_name in argument_params:
+                resource_choices[arg_name] = _build_choices_from_resource(resource, arg_atts)
+
+    # Fill in form values if necessary
+    if form_values:
+        for values in form_values.values():
+            for param_name, param_info in argument_params.items():
+                if param_name in values:
+                    param_info['value'] = values[param_name]
+
+    for param_name, param_info in argument_params.items():
+        # Assign any initial arguments if found from argument mapping for input arguments
+        if param_name in input_arg_names and param_name in resource_choices:
+            param_info['choices'] = resource_choices[param_name]
+
+        # Prefix parameter name if prefix provided
+        field_name = (form_field_prefix or '') + param_name
+
+        # Get appropriate Django field/widget based on param type
+        param_type = param_info['type']
+        if param_type not in xmstool_widget_map:
+            param_type = 'StringSelector'  # Default to StringSelector if type is not found
+        form_class.base_fields[field_name] = xmstool_widget_map[param_type](param_info)
+
+        # Set label with param label if set, otherwise derive from parameter name
+        label = param_info['description']
+        form_class.base_fields[field_name].label = field_name.replace("_", " ").title() if not label else label
+
+        # If form is read-only, set disabled attribute
+        form_class.base_fields[field_name].widget.attrs.update({'disabled': read_only})
+
+        # Help text displayed on hover over field
+        if 'doc' in param_info and param_info['doc']:
+            form_class.base_fields[field_name].widget.attrs.update({'title': param_info['doc']})
+
+    return form_class
 
 
 class XMSToolWV(ResourceWorkflowView):
@@ -170,117 +258,3 @@ class XMSToolWV(ResourceWorkflowView):
         )
 
         return response
-
-
-def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, form_field_prefix=None,
-                                 read_only=False, arg_mapping=None, setup_func=None):
-    """
-    Create a Django form from a Parameterized object.
-
-    Args:
-        xms_tool_class(class): the XMS tool class.
-        form_values(dict): dict of initial values to assign
-        form_field_prefix(str): A prefix to prepend to form fields
-        read_only(bool): Read only flag
-        arg_mapping(dict): Dictionary to map particular arguments to available resources
-    Returns:
-        Form: a Django form with fields matching the parameters of the given parameterized object.
-    """
-    def _setup_parameterized_args(arguments):
-        """Takes the XMSToolArgument list and turns it into a dictionary of Param types.
-
-        Args:
-            arguments (List[Argument]): List of tool arguments.
-
-        Returns:
-            (Dict[str, Parameter]): List of Parameter objects.
-        """
-        arguments_dict = {}
-        argument_precedence = {}
-        precedence = 100
-        for argument in arguments:
-            interface_info = argument.get_interface_info()
-            if interface_info['value'] is not None:
-                interface_info['value'] = argument.value
-            displayed = True
-            if argument.io_direction == 2 and argument.type in ['integer', 'float', 'string']:
-                displayed = False
-            if displayed:
-                argument_precedence[argument.name] = precedence
-                arguments_dict[argument.name] = interface_info
-                precedence += 1
-        return arguments_dict
-
-    if not setup_func:
-        setup_func = _setup_parameterized_args
-    tool_arguments = xms_tool_class.initial_arguments()
-    argument_params = setup_func(tool_arguments)
-
-    # Create Django Form class dynamically
-    class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
-    form_class = type(class_name, (forms.Form,), dict(forms.Form.__dict__))
-
-    # Sort parameters based on precedence
-    sorted_params = argument_params.items()
-
-    initial_options = {}
-    if resource and arg_mapping:
-        for arg_name, arg_atts in arg_mapping.items():
-            for param in sorted_params:
-                if param[0] == arg_name:
-                    available_options = []
-
-                    # Use the resource attribute to read the possible resource data sources
-                    datasets = getattr(resource, arg_atts['resource_attr'])
-                    datasets = datasets if type(datasets) is list else [datasets]
-                    for dataset in datasets:
-                        filter_attr_value = getattr(dataset, arg_atts['filter_attr'])
-                        if filter_attr_value in arg_atts['valid_values']:
-                            name_attr = getattr(dataset, arg_atts['name_attr'])
-                            if 'name_attr_regex' in arg_atts:
-                                # Perform a regex on the name attribute to filter the name
-                                name_attr_regex = re.findall(arg_atts['name_attr_regex'], name_attr)
-                                name_attr = name_attr_regex[0] if name_attr_regex else name_attr
-                            available_options.append((str(dataset.id), name_attr))  # (value, label)
-
-                    # Store any initial options if found
-                    if available_options:
-                        initial_options[arg_name] = available_options
-
-    # Fill in form values if necessary
-    if form_values:
-        for form_value in form_values.items():
-            for param in sorted_params:
-                if param[0] in form_value[1]:
-                    param[1]['value'] = form_value[1][param[0]]
-
-    for param in sorted_params:
-        p_name, p_info = param[0], param[1]
-
-        # Assign any initial arguments if found from argument mapping for input arguments
-        for xms_arg in tool_arguments:
-            if xms_arg.name == p_name and xms_arg.io_direction == 1 and p_name in initial_options:
-                p_info['choices'] = initial_options[p_name]
-
-        # Prefix parameter name if prefix provided
-        if form_field_prefix is not None:
-            p_name = form_field_prefix + p_name
-
-        # Get appropriate Django field/widget based on param type
-        param_type = p_info['type']
-        if param_type not in xmstool_widget_map:
-            param_type = 'StringSelector'  # Default to StringSelector if type is not found
-        form_class.base_fields[p_name] = xmstool_widget_map[param_type](argument_params, p_info, p_name)
-
-        # Set label with param label if set, otherwise derive from parameter name
-        label = p_info['description']
-        form_class.base_fields[p_name].label = p_name.replace("_", " ").title() if not label else label
-
-        # If form is read-only, set disabled attribute
-        form_class.base_fields[p_name].widget.attrs.update({'disabled': read_only})
-
-        # Help text displayed on hover over field
-        if 'doc' in p_info and p_info['doc']:
-            form_class.base_fields[p_name].widget.attrs.update({'title': p_info['doc']})
-
-    return form_class
