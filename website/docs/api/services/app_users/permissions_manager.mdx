@@ -1,0 +1,161 @@
+---
+id: services.app_users.permissions_manager
+title: tethysext.atcore.services.app_users.permissions_manager
+sidebar_label: permissions_manager
+---
+
+# `tethysext.atcore.services.app_users.permissions_manager`
+
+```text
+********************************************************************************
+* Name: permissions_manager.py
+* Author: nswain
+* Created On: April 09, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `AppPermissionsManager` \{#apppermissionsmanager\}
+
+> _No description._
+
+#### Methods
+
+
+##### `__init__(self, app_namespace)` \{#apppermissionsmanager-init\}
+
+```text
+Manages custom_permissions for a given app.
+Args:
+    app_namespace(str): Namespace of the app (e.g.: "my_first_app").
+```
+
+
+##### `list(self, with_namespace=False)` \{#apppermissionsmanager-list\}
+
+```text
+List all permission groups.
+Returns:
+    list<str>: names of all the custom_permissions groups.
+```
+
+
+##### `get_permissions_group_for(self, role, license=None, **kwargs)` \{#apppermissionsmanager-get-permissions-group-for\}
+
+```text
+Get the name of the custom_permissions group for the given role, license, and other criteria.
+Args:
+    role(str): Role of user.
+    license(str): License of organization to which user belongs.
+    **kwargs: Used for additional criteria when extending functionality of this class.
+
+Returns:
+    str: name of permission group.
+```
+
+
+##### `get_display_name_for(self, permissions_group)` \{#apppermissionsmanager-get-display-name-for\}
+
+```text
+Get the display name for the given permission group.
+Args:
+    permissions_group(str): name of permission group.
+
+Returns:
+    str: Display name for the given custom_permissions group.
+```
+
+
+##### `get_has_role_permission_for(self, role, license=None)` \{#apppermissionsmanager-get-has-role-permission-for\}
+
+```text
+Get name of the permission that can be tested to see if a user has the given role.
+Args:
+    role(str): Role of user.
+    license(str): License of organization to which user belongs (optional).
+
+Returns:
+    str: name of the "has role" permission.
+```
+
+
+##### `get_rank_for(self, permissions_group)` \{#apppermissionsmanager-get-rank-for\}
+
+```text
+Get the rank for the given permission group.
+Args:
+    permissions_group(str): name of permission group.
+
+Returns:
+    int: Rank for given permission group.
+```
+
+*`@staticmethod`*
+
+##### `add_permissions_group(app_user, permissions_group_name)` \{#apppermissionsmanager-add-permissions-group\}
+
+```text
+Add the user to the role/group with the given name.
+Args:
+    app_user(tethysext.atcore.models.AppUser): AppUser object
+    permissions_group_name(str): Name of group to add
+```
+
+*`@staticmethod`*
+
+##### `remove_permissions_group(app_user, permissions_group_name)` \{#apppermissionsmanager-remove-permissions-group\}
+
+```text
+Remove the user from the role/group with the given name.
+Args:
+    app_user(tethysext.atcore.models.AppUser): AppUser object
+    permissions_group_name(str): Name of group to remove
+```
+
+
+##### `remove_all_permissions_groups(self, app_user)` \{#apppermissionsmanager-remove-all-permissions-groups\}
+
+```text
+Remove the user from all permission groups of the bound app.
+Args:
+    app_user(tethysext.atcore.models.AppUser): AppUser object
+```
+
+
+##### `get_all_permissions_groups_for(self, app_user, as_display_name=False)` \{#apppermissionsmanager-get-all-permissions-groups-for\}
+
+```text
+Get all of the custom_permissions groups to which the given user is assigned.
+Args:
+    app_user(tethysext.atcore.models.AppUser): AppUser object
+    as_display_name(bool): Returns display names instead of programmatic name if True.
+
+Returns:
+    list: all custom_permissions group objects of the bound app to which the user belongs.
+```
+
+
+##### `assign_user_permission(self, app_user, role, license=None, **kwargs)` \{#apppermissionsmanager-assign-user-permission\}
+
+```text
+Add custom_permissions based on combo of role, license and other given criteria.
+
+Args:
+    app_user(tethysext.atcore.models.AppUser): AppUser object
+    role(str): Role of user.
+    license(str): License of organization to which user belongs.
+```
+
+
+##### `remove_user_permission(self, app_user, role, license=None, **kwargs)` \{#apppermissionsmanager-remove-user-permission\}
+
+```text
+Remove custom_permissions based on combo of role, license and other given criteria.
+
+Args:
+    app_user(tethysext.atcore.models.AppUser): AppUser object
+    role(str): Role of user.
+    license(str): License of organization to which user belongs.
+```

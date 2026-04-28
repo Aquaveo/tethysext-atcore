@@ -1,0 +1,161 @@
+---
+id: controllers.app_users.mixins
+title: tethysext.atcore.controllers.app_users.mixins
+sidebar_label: mixins
+---
+
+# `tethysext.atcore.controllers.app_users.mixins`
+
+```text
+********************************************************************************
+* Name: base.py
+* Author: nswain
+* Created On: April 06, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `AppUsersViewMixin(TethysController)` \{#appusersviewmixin\}
+
+```text
+Mixin for class-based views that adds convenience methods for working with the app user models.
+```
+#### Methods
+
+
+##### `get_app(self)` \{#appusersviewmixin-get-app\}
+
+> _No description._
+
+
+
+##### `get_app_user_model(self)` \{#appusersviewmixin-get-app-user-model\}
+
+> _No description._
+
+
+
+##### `get_organization_model(self)` \{#appusersviewmixin-get-organization-model\}
+
+> _No description._
+
+
+
+##### `get_permissions_manager(self)` \{#appusersviewmixin-get-permissions-manager\}
+
+> _No description._
+
+
+
+##### `get_sessionmaker(self)` \{#appusersviewmixin-get-sessionmaker\}
+
+> _No description._
+
+
+
+##### `get_base_context(self, request)` \{#appusersviewmixin-get-base-context\}
+
+> _No description._
+
+
+
+
+### `ResourceBackUrlViewMixin(AppUsersViewMixin)` \{#resourcebackurlviewmixin\}
+
+> _No description._
+
+#### Methods
+
+
+##### `get_resource(self, request, resource_id, session=None)` \{#resourcebackurlviewmixin-get-resource\}
+
+```text
+Get the resource and check permissions.
+
+Args:
+    request: Django HttpRequest.
+    resource_id: ID of the resource.
+    session: SQLAlchemy session. Optional.
+
+Returns:
+    Resource: the resource.
+```
+
+
+##### `dispatch(self, request, *args, **kwargs)` \{#resourcebackurlviewmixin-dispatch\}
+
+```text
+Intercept kwargs before calling handler method.
+```
+
+
+##### `default_back_url(self, request, *args, **kwargs)` \{#resourcebackurlviewmixin-default-back-url\}
+
+```text
+Hook for custom back url. Defaults to the resource details page.
+
+Returns:
+    str: back url.
+```
+
+
+
+### `ResourceViewMixin(ResourceBackUrlViewMixin)` \{#resourceviewmixin\}
+
+```text
+Mixin for class-based views that adds convenience methods for working with resources.
+```
+#### Methods
+
+
+##### `get_resource_model(self)` \{#resourceviewmixin-get-resource-model\}
+
+> _No description._
+
+
+
+##### `get_resource(self, request, resource_id, session=None)` \{#resourceviewmixin-get-resource\}
+
+```text
+Get the resource and check permissions.
+
+Args:
+    request: Django HttpRequest.
+    resource_id: ID of the resource.
+    session: SQLAlchemy session. Optional.
+
+Returns:
+    Resource: the resource.
+```
+
+
+
+### `MultipleResourcesViewMixin(ResourceBackUrlViewMixin)` \{#multipleresourcesviewmixin\}
+
+```text
+Mixin for class-based views that adds convenience methods for working with resources.
+```
+#### Methods
+
+
+##### `get_resource_models(self)` \{#multipleresourcesviewmixin-get-resource-models\}
+
+> _No description._
+
+
+
+##### `get_resource(self, request, resource_id, session=None)` \{#multipleresourcesviewmixin-get-resource\}
+
+```text
+Get the resource and check permissions.
+
+Args:
+    request: Django HttpRequest.
+    resource_id: ID of the resource.
+    session: SQLAlchemy session. Optional.
+
+Returns:
+    Resource: the resource.
+```

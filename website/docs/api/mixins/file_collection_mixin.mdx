@@ -1,0 +1,71 @@
+---
+id: mixins.file_collection_mixin
+title: tethysext.atcore.mixins.file_collection_mixin
+sidebar_label: file_collection_mixin
+---
+
+# `tethysext.atcore.mixins.file_collection_mixin`
+
+> _No description._
+
+## Classes
+
+
+### `FileCollectionMixin` \{#filecollectionmixin\}
+
+```text
+Helpful methods for managing models with a file_collections relationship. Add this mixin to model classes, replacing the file_collection property with a relationship with FileCollections, ideally using backref so FileCollections doesn't need to be modified.
+```
+#### Methods
+
+*`@classmethod`*
+
+##### `new(cls, file_database_client: FileDatabaseClient, files: List[str]=None, separate_collections: bool=False, **kwargs) -> Any` \{#filecollectionmixin-new\}
+
+```text
+Create a new Resource in the given file_database with given files as contents.
+
+Args:
+    file_database_client (FileDatabaseClient): The FileDatabaseClient to use for new FileCollections.
+    files (List(str)): Files to be added to the Resource FileCollections.
+    separate_collections (bool): If true, each item given will be a new FileCollection
+    kwargs: Other attributes of the Resource to set when creating (e.g.: name='foo', description='bar')
+
+Returns:
+    A new Resource
+```
+
+
+##### `export(self, file_database_client: FileDatabaseClient, target: str) -> None` \{#filecollectionmixin-export\}
+
+```text
+Copy files contained in the collections to the target directory.
+
+Args:
+    file_database_client (FileDatabaseClient): The FileDatabaseClient bound to FileDatabase that contains the FileCollections.
+    target (str): The directory to export to.
+```
+
+
+##### `duplicate(self, file_database_client: FileDatabaseClient) -> Any` \{#filecollectionmixin-duplicate\}
+
+```text
+Create a new Resource that includes copies of all the FileCollections of this Resource.
+
+Args:
+    file_database_client (FileDatabaseClient): The FileDatabaseClient bound to FileDatabase that contains the FileCollections.
+
+Returns:
+    The new Resource.
+```
+
+
+##### `delete_collections(self, root_directory: str, session: Session=None) -> None` \{#filecollectionmixin-delete-collections\}
+
+```text
+Delete all associated file collections, including files on disk.
+
+Args:
+    root_directory (str or Path): directory that contains the FileDatabase.
+    session (sqlalchemy.Session): session for the SQL database. Optional. Required if Resource is not bound to a session.
+```

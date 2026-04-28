@@ -1,0 +1,74 @@
+---
+id: models.resource_workflow_results.dataset_workflow_result
+title: tethysext.atcore.models.resource_workflow_results.dataset_workflow_result
+sidebar_label: dataset_workflow_result
+---
+
+# `tethysext.atcore.models.resource_workflow_results.dataset_workflow_result`
+
+```text
+********************************************************************************
+* Name: dataset_workflow_result.py
+* Author: nswain
+* Created On: June 3, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `DatasetWorkflowResult(ResourceWorkflowResult)` \{#datasetworkflowresult\}
+
+```text
+Data model for storing spatial information about resource workflow results.
+```
+#### Methods
+
+
+##### `__init__(self, *args, **kwargs)` \{#datasetworkflowresult-init\}
+
+```text
+Constructor.
+
+Args:
+```
+
+*`@property`*
+
+##### `default_options(self)` \{#datasetworkflowresult-default-options\}
+
+```text
+Returns default options dictionary for the object.
+```
+
+*`@property`*
+
+##### `datasets(self)` \{#datasetworkflowresult-datasets\}
+
+> _No description._
+
+
+*`@datasets.setter`*
+
+##### `datasets(self, value)` \{#datasetworkflowresult-datasets\}
+
+> _No description._
+
+
+
+##### `reset(self)` \{#datasetworkflowresult-reset\}
+
+> _No description._
+
+
+
+##### `add_pandas_dataframe(self, title, data_frame, show_export_button=False)` \{#datasetworkflowresult-add-pandas-dataframe\}
+
+```text
+Adds a pandas.DataFrame to the result.
+
+Args:
+    title(str): Display name.
+    data_frame(pandas.DataFrame): The data.
+    show_export_button(boolean): Enable data export option.
+```

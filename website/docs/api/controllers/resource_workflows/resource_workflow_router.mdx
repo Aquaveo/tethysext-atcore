@@ -1,0 +1,83 @@
+---
+id: controllers.resource_workflows.resource_workflow_router
+title: tethysext.atcore.controllers.resource_workflows.resource_workflow_router
+sidebar_label: resource_workflow_router
+---
+
+# `tethysext.atcore.controllers.resource_workflows.resource_workflow_router`
+
+```text
+********************************************************************************
+* Name: resource_workflow_view.py
+* Author: nswain
+* Created On: November 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceWorkflowRouter(WorkflowViewMixin)` \{#resourceworkflowrouter\}
+
+```text
+Router for resource workflow views. Routes to appropriate step controller.
+```
+#### Methods
+
+
+##### `get(self, request, resource_id, workflow_id, step_id=None, result_id=None, *args, **kwargs)` \{#resourceworkflowrouter-get\}
+
+```text
+Route GET requests.
+
+Controller for the following url patterns:
+
+/resource/<resource_id>/my-custom-workflow/<workflow_id>/
+/resource/<resource_id>/my-custom-workflow/<workflow_id>/step/<step_id>/
+/resource/<resource_id>/my-custom-workflow/<workflow_id>/step/<step_id>/result/<result_id>/
+
+Args:
+    request(HttpRequest): The request.
+    resource_id(str): ID of the resource this workflow applies to.
+    workflow_id(str): ID of the workflow.
+    step_id(str): ID of the step to render. Optional. Required if result_id given.
+    result_id(str): ID of the result to render. Optional.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+
+##### `post(self, request, resource_id, workflow_id, step_id, result_id=None, *args, **kwargs)` \{#resourceworkflowrouter-post\}
+
+```text
+Route POST requests.
+Args:
+    request(HttpRequest): The request.
+    resource_id(str): ID of the resource this workflow applies to.
+    workflow_id(str): ID of the workflow.
+    step_id(str): ID of the step to render.
+    result_id(str): ID of the result to render.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+
+##### `delete(self, request, resource_id, workflow_id, step_id, result_id=None, *args, **kwargs)` \{#resourceworkflowrouter-delete\}
+
+```text
+Route DELETE requests.
+Args:
+    request(HttpRequest): The request.
+    resource_id(str): ID of the resource this workflow applies to.
+    workflow_id(str): ID of the workflow.
+    step_id(str): ID of the step to render.
+    result_id(str): ID of the result to render.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```

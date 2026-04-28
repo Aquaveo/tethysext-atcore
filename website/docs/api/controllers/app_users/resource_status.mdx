@@ -1,0 +1,61 @@
+---
+id: controllers.app_users.resource_status
+title: tethysext.atcore.controllers.app_users.resource_status
+sidebar_label: resource_status
+---
+
+# `tethysext.atcore.controllers.app_users.resource_status`
+
+```text
+********************************************************************************
+* Name: resource_status.py
+* Author: nswain
+* Created On: September 20, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceStatus(ResourceViewMixin)` \{#resourcestatus\}
+
+```text
+Controller for resource_status page.
+
+GET: Render status view of given resource.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#resourcestatus-get\}
+
+```text
+Route get requests.
+```
+
+
+##### `default_back_url(self, request, *args, **kwargs)` \{#resourcestatus-default-back-url\}
+
+```text
+Derive the back controller.
+
+Args:
+    request: Django HttpRequest.
+
+Returns:
+    str: name of the controller to return to when hitting back or on error.
+```
+
+
+##### `get_context(self, request, context)` \{#resourcestatus-get-context\}
+
+```text
+Hook for modifying context.
+
+Args:
+    request(HttpRequest): Django HttpRequest.
+    context(dict): context object.
+
+Returns:
+    dict: context
+```

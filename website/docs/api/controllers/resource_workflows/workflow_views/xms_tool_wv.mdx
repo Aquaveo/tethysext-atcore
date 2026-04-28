@@ -1,0 +1,79 @@
+---
+id: controllers.resource_workflows.workflow_views.xms_tool_wv
+title: tethysext.atcore.controllers.resource_workflows.workflow_views.xms_tool_wv
+sidebar_label: xms_tool_wv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.workflow_views.xms_tool_wv`
+
+```text
+********************************************************************************
+* Name: xms_tool_wv.py
+* Author: dgallup
+* Created On: December, 2023
+* Copyright: (c) Aquaveo 2023
+********************************************************************************
+```
+## Classes
+
+
+### `XMSToolWV(ResourceWorkflowView)` \{#xmstoolwv\}
+
+```text
+Controller for XMSToolRWS.
+```
+#### Methods
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#xmstoolwv-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#xmstoolwv-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): the resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+
+## Functions
+
+
+### `generate_django_form_xmstool(xms_tool_class, form_values, resource=None, form_field_prefix=None, read_only=False, arg_mapping=None, setup_func=None)` \{#generate-django-form-xmstool\}
+
+```text
+Create a Django form from a Parameterized object.
+
+Args:
+    xms_tool_class(class): the XMS tool class.
+    form_values(dict): dict of initial values to assign
+    form_field_prefix(str): A prefix to prepend to form fields
+    read_only(bool): Read only flag
+    arg_mapping(dict): Dictionary to map particular arguments to available resources
+Returns:
+    Form: a Django form with fields matching the parameters of the given parameterized object.
+```

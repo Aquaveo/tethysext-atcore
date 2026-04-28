@@ -1,0 +1,136 @@
+---
+id: services.app_users.licenses
+title: tethysext.atcore.services.app_users.licenses
+sidebar_label: licenses
+---
+
+# `tethysext.atcore.services.app_users.licenses`
+
+```text
+********************************************************************************
+* Name: licenses
+* Author: nswain
+* Created On: April 04, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `Licenses` \{#licenses\}
+
+```text
+Container and methods for licenses.
+```
+#### Methods
+
+
+##### `__contains__(self, item)` \{#licenses-contains\}
+
+> _No description._
+
+
+
+##### `list(self)` \{#licenses-list\}
+
+```text
+Get a list of all licenses.
+Returns:
+    tuple: All available licenses.
+```
+
+
+##### `is_valid(self, license)` \{#licenses-is-valid\}
+
+```text
+Validate the given license.
+Args:
+    license(str): valid license.
+Returns:
+    bool: True if valid, else False.
+```
+
+
+##### `get_rank_for(self, license)` \{#licenses-get-rank-for\}
+
+```text
+Get the rank for the given license.
+Args:
+    license(str): valid license.
+
+Returns:
+    int: rank value.
+```
+
+
+##### `get_display_name_for(self, license)` \{#licenses-get-display-name-for\}
+
+```text
+Get the display name for the given license.
+Args:
+    license(str): valid license.
+
+Returns:
+    str: display name for license.
+```
+
+
+##### `get_assign_permission_for(self, license)` \{#licenses-get-assign-permission-for\}
+
+```text
+Get the name of the permission to check for assign rights of the given license.
+Args:
+    license(str): valid license.
+
+Returns:
+    str: name of create permission for the given license.
+```
+
+
+##### `compare(self, left_license, right_license)` \{#licenses-compare\}
+
+```text
+Compare the rank of two licenses.
+Args:
+    left_license(str): valid license.
+    right_license(str): valid license.
+
+Returns:
+    str: the winning license.
+```
+
+
+##### `can_have_clients(self, license)` \{#licenses-can-have-clients\}
+
+```text
+License based test to determine if an organization is allowed to have clients.
+Args:
+    license: valid license.
+
+Returns:
+    bool: True if organization with this license can have clients, else False.
+```
+
+
+##### `can_have_consultant(self, license)` \{#licenses-can-have-consultant\}
+
+```text
+License based test to determine if an organization is allowed to be assigned a consultant.
+Args:
+    license: valid license.
+
+Returns:
+    bool: True if organization with this license is allowed to be assigned a consultant, else False.
+```
+
+
+##### `must_have_consultant(self, license)` \{#licenses-must-have-consultant\}
+
+```text
+License based test to determine if an organization must be assigned a consultant.
+Args:
+    license: valid license.
+
+Returns:
+    bool: True if organization with this license must be assigned a constultant, else False
+```

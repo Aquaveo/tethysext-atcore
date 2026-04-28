@@ -1,0 +1,118 @@
+---
+id: controllers.resource_workflows.workflow_results_view
+title: tethysext.atcore.controllers.resource_workflows.workflow_results_view
+sidebar_label: workflow_results_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.workflow_results_view`
+
+> _No description._
+
+## Classes
+
+
+### `WorkflowResultsView(ResourceWorkflowView, ResultViewMixin)` \{#workflowresultsview\}
+
+```text
+Base class for result views.
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args, **kwargs)` \{#workflowresultsview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+    workflow_id (str): UUID of the workflow.
+    step_id (str): UUID of the step.
+    result_id (str): UUID of the result.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+*`@staticmethod`*
+
+##### `get_result_url_name(request, workflow)` \{#workflowresultsview-get-result-url-name\}
+
+```text
+Derive url map name for the given result view.
+Args:
+    request(HttpRequest): The request.
+    workflow(ResourceWorkflow): The current workflow.
+
+Returns:
+    str: name of the url pattern for the given workflow step views.
+```
+
+
+##### `build_result_cards(self, step)` \{#workflowresultsview-build-result-cards\}
+
+```text
+Build cards used by template to render the list of steps for the workflow.
+Args:
+    step(ResourceWorkflowStep): the step to which the results belong.
+
+Returns:
+    list<dict>: one dictionary for each result in the step.
+```
+
+
+##### `validate_result(self, request, session, result)` \{#workflowresultsview-validate-result\}
+
+```text
+Validate the result being used for this view. Raises TypeError if result is invalid.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    result(ResourceWorkflowResult): The result to be rendered.
+
+Raises:
+    TypeError: if step is invalid.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#workflowresultsview-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): The resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+
+Raises:
+    ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
+    RuntimeError: exceptions that require developer attention.
+```
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#workflowresultsview-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```

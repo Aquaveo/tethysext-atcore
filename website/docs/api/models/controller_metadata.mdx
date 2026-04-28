@@ -1,0 +1,38 @@
+---
+id: models.controller_metadata
+title: tethysext.atcore.models.controller_metadata
+sidebar_label: controller_metadata
+---
+
+# `tethysext.atcore.models.controller_metadata`
+
+```text
+********************************************************************************
+* Name: controller_metadata
+* Author: nswain
+* Created On: April 18, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `ControllerMetadata(AppUsersBase)` \{#controllermetadata\}
+
+```text
+Data model that stores controller metadata for objects associated with controllers.
+```
+#### Methods
+
+
+##### `instantiate(self, **kwargs)` \{#controllermetadata-instantiate\}
+
+```text
+Instantiate an instance of the TethysController referenced by the path with the given kwargs.
+
+Args:
+    kwargs: any kwargs that would be passed to the as_controller method of TethysControllers (i.e.: class-based view property overrides).
+
+Returns:
+    function: the controller method.
+```

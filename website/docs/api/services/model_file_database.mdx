@@ -1,0 +1,112 @@
+---
+id: services.model_file_database
+title: tethysext.atcore.services.model_file_database
+sidebar_label: model_file_database
+---
+
+# `tethysext.atcore.services.model_file_database`
+
+```text
+********************************************************************************
+* Name: model_file_database.py
+* Author: nswain & ckrewson
+* Created On: December 5, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModelFileDatabase(ModelDatabaseBase)` \{#modelfiledatabase\}
+
+```text
+Manages the creation of file databases for models.  # noqa: E501
+```
+#### Methods
+
+*`@property`*
+
+##### `database_root(self)` \{#modelfiledatabase-database-root\}
+
+```text
+Returns path of root path of resource directory
+```
+
+*`@property`*
+
+##### `directory(self)` \{#modelfiledatabase-directory\}
+
+```text
+Returns path of resource directory
+```
+
+*`@property`*
+
+##### `model_db_connection(self)` \{#modelfiledatabase-model-db-connection\}
+
+> _No description._
+
+
+
+##### `get_name(self)` \{#modelfiledatabase-get-name\}
+
+```text
+DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
+```
+
+
+##### `get_id(self)` \{#modelfiledatabase-get-id\}
+
+```text
+DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
+```
+
+
+##### `duplicate(self)` \{#modelfiledatabase-duplicate\}
+
+```text
+makes a copy of resource directory with new uuid
+
+Returns:
+    Instance of the duplicated model file database
+```
+
+
+##### `exists(self)` \{#modelfiledatabase-exists\}
+
+```text
+Check if the model file database exists.
+
+Returns:
+    True if the model file database exists
+```
+
+
+##### `list_databases(self)` \{#modelfiledatabase-list-databases\}
+
+```text
+Returns:
+     List of all models in the model file databases.
+```
+
+
+##### `list(self)` \{#modelfiledatabase-list\}
+
+```text
+Returns:
+     List of all models in the model file databases connection.
+```
+
+
+##### `delete(self)` \{#modelfiledatabase-delete\}
+
+```text
+deletes a models in the model file databases.
+```
+
+
+##### `initialize(self, *args, **kwargs)` \{#modelfiledatabase-initialize\}
+
+```text
+Creates a new file model database if it doesn't exist.
+```

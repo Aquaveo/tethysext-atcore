@@ -1,0 +1,102 @@
+---
+id: services.resource_spatial_manager
+title: tethysext.atcore.services.resource_spatial_manager
+sidebar_label: resource_spatial_manager
+---
+
+# `tethysext.atcore.services.resource_spatial_manager`
+
+```text
+********************************************************************************
+* Name: resource_spatial_manager
+* Author: nswain, msouffront & htran
+* Created On: December 15, 2020
+* Updated on: December 15, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceSpatialManager(BaseSpatialManager)` \{#resourcespatialmanager\}
+
+```text
+A generic SpatialManger for SpatialResource.
+```
+#### Methods
+
+
+##### `get_projection_units(self, *args, **kwargs)` \{#resourcespatialmanager-get-projection-units\}
+
+```text
+Get units of the given projection.
+```
+
+
+##### `get_projection_string(self, *args, **kwargs)` \{#resourcespatialmanager-get-projection-string\}
+
+```text
+Get the projection string as either wkt or proj4 format.
+```
+
+
+##### `get_extent_layer_name(self, resource_id)` \{#resourcespatialmanager-get-extent-layer-name\}
+
+```text
+Get name of the extent layer for a given resource.
+
+Args:
+    resource_id(str): id of the Resource.
+
+Returns:
+    str: name of the extent layer.
+```
+
+
+##### `get_extent_for_project(self, datastore_name, resource_id)` \{#resourcespatialmanager-get-extent-for-project\}
+
+```text
+Get the extent. This will return the list of the extent in EPSG 4326.
+The query in resource_extent_layer_view transforms all features to 4326.
+
+Args:
+    datastore_name(str): name of the PostGIS datastore in GeoServer that contains the layer data.
+     For example: app_primary_db.
+    resource_id(str): id of the Resources.
+```
+
+
+##### `get_resource_extent_wms_url(self, resource)` \{#resourcespatialmanager-get-resource-extent-wms-url\}
+
+```text
+Get url for map preview image.
+Returns:
+    str: preview image url.
+```
+
+
+##### `create_extent_layer(self, datastore_name, resource_id, geometry_type=None, srid=4326)` \{#resourcespatialmanager-create-extent-layer\}
+
+```text
+Creates a GeoServer SQLView Layer for the extent from the resource.
+
+Args:
+    datastore_name(str): name of the PostGIS datastore in GeoServer that contains the layer data.
+     For example: app_primary_db.
+    resource_id(str): id of the Resources.
+    geometry_type(str): type of geometry. Pick from: Polygon, LineString, Point.
+    srid(str): Spatial Reference Identifier of the extent. Default to 4326.
+```
+
+
+##### `delete_extent_layer(self, datastore_name, resource_id, recurse=True)` \{#resourcespatialmanager-delete-extent-layer\}
+
+```text
+Delete a given geoserver layer.
+
+Args:
+    datastore_name(str): name of the PostGIS datastore in GeoServer that contains the layer data.
+     For example: app_primary_db.
+    resource_id(str): id of the Resources.
+    recurse (bool): recursively delete any dependent objects if True.
+```

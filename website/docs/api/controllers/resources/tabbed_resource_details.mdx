@@ -1,0 +1,118 @@
+---
+id: controllers.resources.tabbed_resource_details
+title: tethysext.atcore.controllers.resources.tabbed_resource_details
+sidebar_label: tabbed_resource_details
+---
+
+# `tethysext.atcore.controllers.resources.tabbed_resource_details`
+
+```text
+********************************************************************************
+* Name: tabbed_resource_details.py
+* Author: nswain
+* Created On: November 12, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `TabbedResourceDetails(ResourceDetails)` \{#tabbedresourcedetails\}
+
+```text
+Class-based view/controller that builds a tabbed details view for a Resource.
+
+Required URL Parameters:
+    resource_id (str): the ID of the Resource.
+    tab_slug (str): Portion of URL that denotes which tab is active.
+
+Properties:
+    template_name (str): The template that is used to render this view.
+    base_template (str): The base template from which the default template extends.
+    back_url (str): The URL that will be used for the back button on the view.
+    http_method_names (list): List of allowed HTTP methods. Defaults to ['get', 'post', 'delete'].
+    css_requirements (list<str>): A list of CSS files to load with the view.
+    js_requirements (list<str>): A list of JavaScript files to load with the view.
+    tabs (iterable<dict<tab_slug, tab_title, tab_view>>): List of dictionaries defining the tabs for this view.
+```
+#### Methods
+
+*`@active_user_required()` `@permission_required('view_resources')` `@resource_controller()`*
+
+##### `get(self, request, session, resource, back_url, *args, tab_slug='', **kwargs)` \{#tabbedresourcedetails-get\}
+
+```text
+Handle GET requests.
+```
+
+*`@active_user_required()` `@resource_controller()`*
+
+##### `post(self, request, session, resource, back_url, *args, tab_slug='', **kwargs)` \{#tabbedresourcedetails-post\}
+
+```text
+Route POST requests.
+```
+
+*`@active_user_required()` `@resource_controller()`*
+
+##### `delete(self, request, session, resource, back_url, *args, tab_slug='', **kwargs)` \{#tabbedresourcedetails-delete\}
+
+```text
+Route DELETE requests.
+```
+
+
+##### `get_tab_view(self, request, resource, tab_slug, *args, **kwargs)` \{#tabbedresourcedetails-get-tab-view\}
+
+```text
+Retrieve tab view that matches given tab_slug.
+
+Args:
+    request (HttpRequest): The request.
+    resource (str): Resource instance.
+    tab_slug (str): The slug of the Tab.
+
+Returns:
+    ResourceTabView: The ResourceTabView class or None if not found.
+```
+
+
+##### `build_static_requirements(self, tabs)` \{#tabbedresourcedetails-build-static-requirements\}
+
+```text
+Build the static (css and js) requirement lists.
+
+Args:
+    tabs (iterable): List of ResourceTabs.
+
+Returns:
+    2-tuple: List of combined CSS requirements, List of combined JS requirements.
+```
+
+
+##### `get_context(self, request, context, *args, **kwargs)` \{#tabbedresourcedetails-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    context (dict): The context dictionary.
+Returns:
+    dict: modified context dictionary.
+```
+
+
+##### `get_tabs(self, request, resource, tab_slug, *args, **kwargs)` \{#tabbedresourcedetails-get-tabs\}
+
+```text
+Hook to allow for more complex Tab definitions. Returns self.tabs if defined.
+
+Args:
+    request (HttpRequest): The request.
+    resource (str): Resource instance.
+    tab_slug (str): The slug of the Tab.
+
+Returns:
+    iterable<dict<tab_slug, tab_title, tab_view>>: List of dictionaries defining the tabs for this view.
+```

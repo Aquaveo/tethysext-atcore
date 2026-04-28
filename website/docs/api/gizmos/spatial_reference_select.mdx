@@ -1,0 +1,75 @@
+---
+id: gizmos.spatial_reference_select
+title: tethysext.atcore.gizmos.spatial_reference_select
+sidebar_label: spatial_reference_select
+---
+
+# `tethysext.atcore.gizmos.spatial_reference_select`
+
+```text
+********************************************************************************
+* Name: spatial_reference_select.py
+* Author: nswain
+* Created On: May 14, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialReferenceSelect(TethysGizmoOptions)` \{#spatialreferenceselect\}
+
+```text
+Spatial reference select input gizmo.
+```
+#### Methods
+
+
+##### `__init__(self, display_name='Spatial Reference System', name='spatial-ref-select', id='spatial-ref-select', placeholder='', query_delay=1000, min_length=2, initial=None, spatial_reference_service='', error='', **kwargs)` \{#spatialreferenceselect-init\}
+
+```text
+constructor
+
+Args:
+    display_name(str): label for spatial reference select control. Defaults to Spatial "Reference System".
+    name(str): name of the spatial reference select control. Defaults to 'spatial-ref-select'.
+    id(str): id for spatial reference select control. No id assigned if not specified.
+    placeholder(str): placeholder to display when nothing is selected.
+    spatial_reference_service(str): spatial reference service url.
+    query_delay(int): miliseconds to wait before issueing query to server.
+    min_length(int): minimum length of query string required before issueing query to server.
+    initial(tuple or None): initial srid selected: (srid_display, srid_value).
+    error(str): error message to display on control.
+```
+
+*`@staticmethod`*
+
+##### `get_vendor_js()` \{#spatialreferenceselect-get-vendor-js\}
+
+```text
+JavaScript vendor libraries
+```
+
+*`@staticmethod`*
+
+##### `get_vendor_css()` \{#spatialreferenceselect-get-vendor-css\}
+
+```text
+CSS vendor libraries
+```
+
+*`@staticmethod`*
+
+##### `get_gizmo_js()` \{#spatialreferenceselect-get-gizmo-js\}
+
+```text
+JavaScript specific to gizmo.
+```
+
+*`@staticmethod`*
+
+##### `get_gizmo_css()` \{#spatialreferenceselect-get-gizmo-css\}
+
+```text
+CSS specific to gizmo .
+```

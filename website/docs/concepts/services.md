@@ -1,0 +1,74 @@
+---
+id: concepts-services
+title: Services
+sidebar_label: Services
+sidebar_position: 6
+---
+
+# Services
+
+The `services` package holds atcore's stateful helpers — things that aren't models or controllers but back the behavior of both.
+
+## Spatial managers
+
+[`BaseSpatialManager`](../api/services/base_spatial_manager.mdx) is the abstract parent for managers that talk to GeoServer. Concrete managers:
+
+- [`ModelDBSpatialManager`](../api/services/model_db_spatial_manager.mdx) — for layers tied to a model database.
+- [`ModelFileDBSpatialManager`](../api/services/model_file_db_spatial_manager.mdx) — for layers tied to a model + file database.
+- [`ResourceSpatialManager`](../api/services/resource_spatial_manager.mdx) — for layers tied to a `Resource`.
+
+A spatial manager owns the GeoServer workspace name (`WORKSPACE`), URI, cluster ports, SLD path, and the SQL/PostGIS path. Subclass it and override what you need:
+
+```python
+# example — services/my_spatial_manager.py
+from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
+
+
+class MySpatialManager(BaseSpatialManager):
+    WORKSPACE = 'my_first_app'
+    URI = 'http://app.aquaveo.com/my_first_app'
+```
+
+The `reload_config` decorator from [`services.base_spatial_manager`](../api/services/base_spatial_manager.mdx) refreshes the GeoServer cluster after mutating ops.
+
+## Map manager
+
+[`MapManagerBase`](../api/services/map_manager.mdx) builds Tethys `MapView` configurations for `MapView` controllers. Subclass it and implement the abstract `compose_map(self, request, *args, **kwargs)` to return a `(MapView, extent)` pair (where `extent` is a 4-list of floats).
+
+## Model database
+
+[`ModelDatabase`](../api/services/model_database.mdx) and [`ModelDatabaseConnection`](../api/services/model_database_connection.mdx) wrap a per-resource Postgres database. The base classes are [`ModelDatabaseBase`](../api/services/model_database_base.mdx) and [`ModelDatabaseConnectionBase`](../api/services/model_database_connection_base.mdx). The file-backed cousin is [`ModelFileDatabase`](../api/services/model_file_database.mdx) / [`ModelFileDatabaseConnection`](../api/services/model_file_database_connection.mdx).
+
+Use a `ModelDatabase` when each resource needs an isolated Postgres database (e.g., one DB per scenario / project). It load-balances across multiple Tethys persistent-store DB connections if your app declares more than one.
+
+## Permissions manager
+
+[`AppPermissionsManager`](../api/services/app_users/permissions_manager.mdx#apppermissionsmanager) is the runtime helper for atcore's role/license matrix. See the [Permissions concept page](./permissions.md) and the [Permissions cheat sheet](../reference/permissions-cheatsheet.md).
+
+## Workflow managers
+
+For long-running workflow steps, atcore submits HTCondor workflows:
+
+- [`BaseWorkflowManager`](../api/services/workflow_manager/base_workflow_manager.mdx) — base.
+- [`ResourceWorkflowCondorJobManager`](../api/services/workflow_manager/condor_workflow_manager.mdx) — submits Condor workflows for a `ResourceWorkflowStep` and writes status back to the resource.
+- [`ResourceCondorWorkflow`](../api/services/resource_condor_workflow.mdx) — submits the resource initialization workflow that runs after a `Resource` is created.
+
+See [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md) for an end-to-end example.
+
+## File database client
+
+[`FileDatabaseClient`](../api/services/file_database.mdx#filedatabaseclient) and [`FileCollectionClient`](../api/services/file_database.mdx#filecollectionclient) wrap the [`FileDatabase`](../api/models/file_database/file_database-module.mdx) model. See [File Database](./file-database.md).
+
+## Spatial reference
+
+[`SpatialReferenceService`](../api/services/spatial_reference.mdx) queries the PostGIS `spatial_ref_sys` table by SRID or name. It backs the `QuerySpatialReference` REST controller and the [`SpatialReferenceSelect`](./gizmos.md) gizmo.
+
+## Pagination and color ramps
+
+- [`paginate`](../api/services/paginate.mdx) — slice a list of records into pages with metadata.
+- [`color_ramps`](../api/services/color_ramps.mdx) — predefined color ramps for thematic map styling.
+
+## Resource workflow helpers
+
+- [`services.resource_workflows.decorators.workflow_step_controller`](../api/services/resource_workflows/decorators.mdx) — view decorator for workflow step controllers.
+- [`services.resource_workflows.helpers`](../api/services/resource_workflows/helpers.mdx) — shared helpers used by workflow views.

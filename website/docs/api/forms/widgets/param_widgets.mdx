@@ -1,0 +1,30 @@
+---
+id: forms.widgets.param_widgets
+title: tethysext.atcore.forms.widgets.param_widgets
+sidebar_label: param_widgets
+---
+
+# `tethysext.atcore.forms.widgets.param_widgets`
+
+```text
+********************************************************************************
+* Name: param_widgets.py
+* Author: Scott Christensen and Nathan Swain
+* Created On: January 18, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Functions
+
+
+### `generate_django_form(parameterized_obj, form_field_prefix=None, read_only=False)` \{#generate-django-form\}
+
+```text
+Create a Django form from a Parameterized object.
+
+Args:
+    parameterized_obj(Parameterized): the parameterized object.
+    form_field_prefix(str): A prefix to prepend to form fields
+Returns:
+    Form: a Django form with fields matching the parameters of the given parameterized object.
+```

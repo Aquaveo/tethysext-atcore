@@ -1,0 +1,94 @@
+---
+id: services.workflow_manager.condor_workflow_manager
+title: tethysext.atcore.services.workflow_manager.condor_workflow_manager
+sidebar_label: condor_workflow_manager
+---
+
+# `tethysext.atcore.services.workflow_manager.condor_workflow_manager`
+
+```text
+********************************************************************************
+* Name: condor_workflow_manager.py
+* Author: nswain
+* Created On: March 13, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceWorkflowCondorJobManager(BaseWorkflowManager)` \{#resourceworkflowcondorjobmanager\}
+
+```text
+Helper class that prepares and submits condor workflows/jobs for resource workflows.
+```
+#### Methods
+
+
+##### `__init__(self, session, resource, resource_workflow_step, user, working_directory, app, scheduler_name, jobs=None, input_files=None, gs_engine=None, resource_workflow=None, workflow_kwargs=None, *args)` \{#resourceworkflowcondorjobmanager-init\}
+
+```text
+Constructor.
+
+Args:
+    session(sqlalchemy.orm.Session): An SQLAlchemy session bound to the resource workflow.
+    resource(Resource): The resource being processed.
+    resource_workflow_step(atcore.models.app_users.ResourceWorkflowStep): Instance of ResourceWorkflowStep. Note: Must have active session (i.e. not closed).
+    user(auth.User): The Django user submitting the job.
+    working_directory(str): Path to users's workspace.
+    app(TethysAppBase): Class or instance of an app.
+    scheduler_name(str): Name of the condor scheduler to use.
+    jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
+    input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
+    resource_workflow(ResourceWorkflow): The workflow.
+    workflow_kwargs(dict): Optional keyword arguments to pass to the CondorWorkflow.
+```
+
+*`@property`*
+
+##### `workspace(self)` \{#resourceworkflowcondorjobmanager-workspace\}
+
+```text
+Workspace path property.
+Returns:
+    str: Path to workspace for this workflow
+```
+
+
+##### `prepare(self)` \{#resourceworkflowcondorjobmanager-prepare\}
+
+```text
+Prepares all workflow jobs for processing upload to database.
+
+Returns:
+    int: the job id.
+```
+
+
+##### `run_job(self)` \{#resourceworkflowcondorjobmanager-run-job\}
+
+```text
+Prepares and executes the job.
+
+Returns:
+    str: UUID of the CondorWorkflow.
+```
+
+
+##### `validate_jobs(self, jobs)` \{#resourceworkflowcondorjobmanager-validate-jobs\}
+
+```text
+Validate the given jobs.
+
+Conditions:
+1. Jobs must be defined (not None or empty)
+2. Jobs must be either:
+    - a function, or
+    - a list of CondorWorkflowJobNode objects, equivalent dicaiontry, or a mix of both
+
+Args:
+    jobs(function | list<CondorWorkflowJobNode or dict>): The jobs to validate.
+
+Raises:
+    ValueError: If jobs is None, empty, or not of a valid type.
+```

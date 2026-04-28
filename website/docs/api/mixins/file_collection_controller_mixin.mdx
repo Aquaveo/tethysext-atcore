@@ -1,0 +1,47 @@
+---
+id: mixins.file_collection_controller_mixin
+title: tethysext.atcore.mixins.file_collection_controller_mixin
+sidebar_label: file_collection_controller_mixin
+---
+
+# `tethysext.atcore.mixins.file_collection_controller_mixin`
+
+> _No description._
+
+## Classes
+
+
+### `FileCollectionsControllerMixin` \{#filecollectionscontrollermixin\}
+
+```text
+Provides methods for controllers that manage on Resources with FileCollections.
+```
+#### Methods
+
+
+##### `get_app(self)` \{#filecollectionscontrollermixin-get-app\}
+
+```text
+Usually implemented by other mixins or the controller.
+```
+
+
+##### `delete_file_collections(self, session, resource, log)` \{#filecollectionscontrollermixin-delete-file-collections\}
+
+```text
+Delete all FileCollections linked to the given resource.
+```
+
+
+##### `get_file_collections_details(self, session, resource)` \{#filecollectionscontrollermixin-get-file-collections-details\}
+
+```text
+Build summary details for each FileCollection associated with the given resource.
+
+Args:
+    session (Session): the SQLAlchemy session.
+    resource (Resource): a Resource with a file_collections relationship property.
+
+Returns:
+    list: a list of summary details table tuples, one for each FileCollection.
+```

@@ -1,0 +1,90 @@
+---
+id: services.model_db_spatial_manager
+title: tethysext.atcore.services.model_db_spatial_manager
+sidebar_label: model_db_spatial_manager
+---
+
+# `tethysext.atcore.services.model_db_spatial_manager`
+
+```text
+********************************************************************************
+* Name: model_db_spatial_manager
+* Author: nswain
+* Created On: July 06, 2018
+* Updated on: December 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModelDBSpatialManager(BaseSpatialManager)` \{#modeldbspatialmanager\}
+
+```text
+Class for Spatial Managers using a postgres database.
+```
+#### Methods
+
+*`@abstractmethod`*
+
+##### `get_extent_for_project(self, model_db)` \{#modeldbspatialmanager-get-extent-for-project\}
+
+```text
+Return the extent / bounding box for a project/model.
+Args:
+    model_db (ModelDatabase): the object representing the model database.
+Returns:
+    4-list: Extent bounding box (e.g.: [minx, miny, maxx, maxy] ).
+```
+
+
+##### `get_projection_units(self, model_db, srid)` \{#modeldbspatialmanager-get-projection-units\}
+
+```text
+Get units of the given projection.
+
+Args:
+    model_db(ModelDatabase): the object representing the model database.:
+    srid(int): EPSG spatial reference identifier.
+
+Returns:
+    str: SpatialManager.U_METRIC or SpatialManager.U_IMPERIAL
+```
+
+
+##### `get_projection_string(self, model_db, srid, proj_format='')` \{#modeldbspatialmanager-get-projection-string\}
+
+```text
+Get the projection string as either wkt or proj4 format.
+
+Args:
+    model_db(ModelDatabase): the object representing the model database.:
+    srid(int): EPSG spatial reference identifier.
+    proj_format(str): project string format (either SpatialManager.PRO_WKT or SpatialManager.PRO_PROJ4).
+
+Returns:
+    str: projection string.
+```
+
+
+##### `link_geoserver_to_db(self, model_db, reload_config=True)` \{#modeldbspatialmanager-link-geoserver-to-db\}
+
+```text
+Link GeoServer to a Model Database.
+
+Args:
+    model_db(ModelDatabase): the object representing the model database.
+    reload_config(bool): Reload the geoserver node configuration and catalog before returning if True.
+```
+
+
+##### `unlink_geoserver_from_db(self, model_db, purge=False, recurse=False)` \{#modeldbspatialmanager-unlink-geoserver-from-db\}
+
+```text
+Unlink GeoServer from a Model Database.
+
+Args:
+    model_db(ModelDatabase): the object representing the model database.
+    purge(bool): delete configuration files from filesystem if True.
+    recurse(bool): recursively delete any dependent objects if True.
+```

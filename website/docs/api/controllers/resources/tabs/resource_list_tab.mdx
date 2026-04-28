@@ -1,0 +1,62 @@
+---
+id: controllers.resources.tabs.resource_list_tab
+title: tethysext.atcore.controllers.resources.tabs.resource_list_tab
+sidebar_label: resource_list_tab
+---
+
+# `tethysext.atcore.controllers.resources.tabs.resource_list_tab`
+
+```text
+********************************************************************************
+* Name: resource_list_tab.py
+* Author: gagelarsen
+* Created On: December 11, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceListTab(ResourceTab)` \{#resourcelisttab\}
+
+```text
+A tab for the TabbedResourceDetails view that lists resources related to this resource.
+
+Required URL Variables:
+    resource_id (str): the ID of the Resource.
+    tab_slug (str): Portion of URL that denotes which tab is active.
+
+Methods:
+    get_resources (required): Get a list of resources to be associated with this resource.
+```
+#### Methods
+
+
+##### `get_resources(self, request, resource, session, *args, **kwargs)` \{#resourcelisttab-get-resources\}
+
+```text
+Get a list of resources
+
+Returns:
+    A list of Resources.
+```
+
+
+##### `get_href_for_resource(self, app_namespace, resource)` \{#resourcelisttab-get-href-for-resource\}
+
+```text
+Hook to allow implementations of ResourceListTab to provide action href.
+Args:
+    app_namespace (str): the namespace of the app.
+    resource (Resource): the current Resource.
+
+Returns:
+    str: the href for the given resource.
+```
+
+
+##### `get_context(self, request, session, resource, context, *args, **kwargs)` \{#resourcelisttab-get-context\}
+
+```text
+Build context for the ResourceFilesTab template that is used to generate the tab content.
+```

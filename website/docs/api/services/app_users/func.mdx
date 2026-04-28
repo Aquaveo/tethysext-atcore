@@ -1,0 +1,30 @@
+---
+id: services.app_users.func
+title: tethysext.atcore.services.app_users.func
+sidebar_label: func
+---
+
+# `tethysext.atcore.services.app_users.func`
+
+```text
+********************************************************************************
+* Name: func
+* Author: nswain
+* Created On: April 09, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Functions
+
+
+### `get_display_name_for_django_user(django_user, default_to_username=True, append_username=False)` \{#get-display-name-for-django-user\}
+
+```text
+Get a nice display name for a django user.
+Args:
+    django_user: Django User object.
+    default_to_username: Return username if no other names are available if True, otherwise return the empty string.
+    append_username: Append the username in parenthesis if True. e.g.: "First Last (username)".
+
+Returns: In order of priority: "First Last", "First", "Last", "username".
+```

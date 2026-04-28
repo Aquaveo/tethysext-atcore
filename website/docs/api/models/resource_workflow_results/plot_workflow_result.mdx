@@ -1,0 +1,128 @@
+---
+id: models.resource_workflow_results.plot_workflow_result
+title: tethysext.atcore.models.resource_workflow_results.plot_workflow_result
+sidebar_label: plot_workflow_result
+---
+
+# `tethysext.atcore.models.resource_workflow_results.plot_workflow_result`
+
+```text
+********************************************************************************
+* Name: plot_workflow_result.py
+* Author: nathan, htran, msouff
+* Created On: Oct 7, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `PlotWorkflowResult(ResourceWorkflowResult)` \{#plotworkflowresult\}
+
+```text
+Data model for storing spatial information about resource workflow results.
+
+Options:
+    renderer (str): bokeh or plotly
+    axes(list): A list of tuples for pair axis ex. For example: [('x', 'y'), ('x1', 'y1'), ('x', 'y2')]
+    axis_labels(list): A list of label for x and y axes respectively. For example: ['x', 'y']
+    plot_type (str): lines, scatter, or bar
+    line_shape (str): Only for plotly. You can select from on of these options: linear, spline, vhv, hvh, vh, hv
+    x_axis_type (str): type of x axis. Available options are 'linear' or 'datetime'
+```
+#### Methods
+
+
+##### `__init__(self, *args, **kwargs)` \{#plotworkflowresult-init\}
+
+```text
+Constructor.
+
+Args:
+```
+
+*`@property`*
+
+##### `default_options(self)` \{#plotworkflowresult-default-options\}
+
+```text
+Returns default options dictionary for the object.
+```
+
+*`@property`*
+
+##### `datasets(self)` \{#plotworkflowresult-datasets\}
+
+> _No description._
+
+
+*`@datasets.setter`*
+
+##### `datasets(self, value)` \{#plotworkflowresult-datasets\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `plot(self)` \{#plotworkflowresult-plot\}
+
+> _No description._
+
+
+*`@plot.setter`*
+
+##### `plot(self, value)` \{#plotworkflowresult-plot\}
+
+> _No description._
+
+
+
+##### `reset(self)` \{#plotworkflowresult-reset\}
+
+> _No description._
+
+
+
+##### `add_series(self, title, data)` \{#plotworkflowresult-add-series\}
+
+```text
+Add plot series into plot dataset. We assume that the first column is x and second column is y
+
+Args:
+    title: series name
+    data: plot data. Support different types of data: 2-D list, 2-D Numpy array and pandas dataframe with 2 col.
+```
+
+
+##### `plot_from_dataframe(self, data_frame, series_axes=None, series_labels=None)` \{#plotworkflowresult-plot-from-dataframe\}
+
+```text
+Adds a pandas.DataFrame with multiple columns to the result.
+
+Args:
+    data_frame(pandas.DataFrame): The data.
+    series_axes(list): A list of tuple label for x and y axes respectively.
+     For example: [('x', 'y'), ('x1', 'y1)]. if plot axes is not provided,
+     the first column is x and the rest are ys.
+    series_labels(list): A list of series' label. For example: ['Series 1', 'Series 2', 'Series 3'].
+```
+
+
+##### `add_plot(self, plot)` \{#plotworkflowresult-add-plot\}
+
+```text
+Adds a plotly plot object to the result.
+
+Args:
+    plot(obj): plotly figure. Only support adding one plot.
+```
+
+
+##### `get_plot_object(self)` \{#plotworkflowresult-get-plot-object\}
+
+```text
+Gets plot object from the result.
+
+Returns plot object.
+```

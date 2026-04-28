@@ -1,0 +1,139 @@
+---
+id: models.app_users.organization
+title: tethysext.atcore.models.app_users.organization
+sidebar_label: organization
+---
+
+# `tethysext.atcore.models.app_users.organization`
+
+> _No description._
+
+## Classes
+
+
+### `Organization(AppUsersBase, AttributesMixin)` \{#organization\}
+
+```text
+Definition for organizations table.
+```
+#### Methods
+
+*`@validates('license')`*
+
+##### `validate_license(self, key, field)` \{#organization-validate-license\}
+
+> _No description._
+
+
+*`@staticmethod`*
+
+##### `get_create_permission()` \{#organization-get-create-permission\}
+
+```text
+Get name of create permission.
+Returns:
+    str: name of create permission for this type of organization.
+```
+
+*`@staticmethod`*
+
+##### `get_edit_permission()` \{#organization-get-edit-permission\}
+
+```text
+Get name of edit permission.
+Returns:
+    str: name of edit permission for this type of organization.
+```
+
+*`@staticmethod`*
+
+##### `get_delete_permission()` \{#organization-get-delete-permission\}
+
+```text
+Get name of delete permission.
+Returns:
+    str: name of delete permission for this type of organization.
+```
+
+
+##### `get_modify_members_permission(self)` \{#organization-get-modify-members-permission\}
+
+```text
+Get name of modify members permission.
+Returns:
+    str: name of modify members permission for this type of organization.
+```
+
+
+##### `update_member_activity(self, session, request)` \{#organization-update-member-activity\}
+
+```text
+Update the active status of each member.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object
+    request(django.request): Django request object
+```
+
+
+##### `can_add_client_with_license(self, session, request, license)` \{#organization-can-add-client-with-license\}
+
+```text
+Determine if this organization can add a new client with the given license.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object
+    request(django.request): Django request object
+    license: valid license.
+
+Returns:
+    bool: True if can add client with given license, else False.
+```
+
+
+##### `can_have_clients(self)` \{#organization-can-have-clients\}
+
+```text
+Pass through for LICENSES.can_have_clients.
+Returns:
+    bool: True if can have clients, else false.
+```
+
+
+##### `can_have_consultant(self)` \{#organization-can-have-consultant\}
+
+```text
+Pass through for LICENSES.can_have_consultant.
+Returns:
+    bool: True if can have consultant, else false.
+```
+
+
+##### `must_have_consultant(self)` \{#organization-must-have-consultant\}
+
+```text
+Pass through for LICENSES.must_have_consultant.
+Returns:
+    bool: True if must have consultant, else false.
+```
+
+
+##### `is_member(self, app_user)` \{#organization-is-member\}
+
+```text
+Determine if given app_user is a member of this organization.
+Args:
+    app_user(AppUser): app_user to test.
+
+Returns:
+    bool: True when app_user is a member of this organization, else False.
+```
+
+
+## Functions
+
+*`@event.listens_for(Organization, 'before_delete')`*
+
+### `receive_before_delete(mapper, connection, target)` \{#receive-before-delete\}
+
+```text
+Handle removal of members and resources that would be orphaned by the removal of the target organization.
+```

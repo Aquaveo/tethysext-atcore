@@ -1,0 +1,77 @@
+---
+id: controllers.resource_workflows.map_workflows.spatial_data_mwv
+title: tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_data_mwv
+sidebar_label: spatial_data_mwv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_data_mwv`
+
+```text
+********************************************************************************
+* Name: spatial_data_mwv.py
+* Author: nswain
+* Created On: March 5, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialDataMWV(MapWorkflowView)` \{#spatialdatamwv\}
+
+```text
+Abstract controller for a map workflow view data assigned to each feature.
+```
+#### Methods
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#spatialdatamwv-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+*`@workflow_step_controller(is_rest_controller=True)`*
+
+##### `get_popup_form(self, request, session, resource, workflow, step, back_url, *args, **kwargs)` \{#spatialdatamwv-get-popup-form\}
+
+```text
+Handle GET requests with method get-attributes-form.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    workflow(ResourceWorkflow): the workflow.
+    step(ResourceWorkflowStep): the step.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+*`@workflow_step_controller(is_rest_controller=True)`*
+
+##### `save_spatial_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs)` \{#spatialdatamwv-save-spatial-data\}
+
+```text
+Handle GET requests with method get-attributes-form.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    workflow(ResourceWorkflow): the workflow.
+    step(ResourceWorkflowStep): the step.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```

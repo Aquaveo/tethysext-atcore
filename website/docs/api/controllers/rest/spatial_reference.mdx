@@ -1,0 +1,67 @@
+---
+id: controllers.rest.spatial_reference
+title: tethysext.atcore.controllers.rest.spatial_reference
+sidebar_label: spatial_reference
+---
+
+# `tethysext.atcore.controllers.rest.spatial_reference`
+
+```text
+********************************************************************************
+* Name: spatial_reference.py
+* Author: nswain
+* Created On: May 14, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `QuerySpatialReference(TethysController)` \{#queryspatialreference\}
+
+```text
+Controller for modify_resource page.
+
+POST: Handle spatial reference queries.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#queryspatialreference-get\}
+
+```text
+Route post requests.
+```
+
+
+##### `query_srid_by_id(self, request)` \{#queryspatialreference-query-srid-by-id\}
+
+```text
+"
+This controller is normally called by the select2 Ajax for looking up SRIDs from the SQL database
+```
+
+
+##### `query_wkt_by_id(self, request)` \{#queryspatialreference-query-wkt-by-id\}
+
+```text
+"
+This controller is normally called by the select2 Ajax for looking up SRIDs from the SQL database
+```
+
+
+##### `query_srid_by_query(self, request)` \{#queryspatialreference-query-srid-by-query\}
+
+```text
+"
+This controller is normally called by the select2 Ajax for looking up SRIDs from the SQL database
+```
+
+
+##### `get_engine(self)` \{#queryspatialreference-get-engine\}
+
+```text
+Get connection to database.
+Returns:
+    sqlalchemy.engine: connection to database with spatial_ref_sys table.
+```
