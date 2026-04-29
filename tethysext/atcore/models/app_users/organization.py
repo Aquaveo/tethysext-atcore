@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import event
+from sqlalchemy import event, text
 from sqlalchemy import Column, Boolean, String, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship, backref, validates
 from tethysext.atcore.models.types.guid import GUID
@@ -187,14 +187,14 @@ def receive_before_delete(mapper, connection, target):
                 'resource_id',
                 resource.id
             )
-            connection.execute(delete_relationship)
+            connection.execute(text(delete_relationship))
 
             delete_resource = sql_template.format(
                 resource.__tablename__,
                 'id',
                 resource.id
             )
-            connection.execute(delete_resource)
+            connection.execute(text(delete_resource))
 
     # Remove users that would be orphaned
     for member in target.members:
@@ -204,11 +204,11 @@ def receive_before_delete(mapper, connection, target):
                 'app_user_id',
                 member.id
             )
-            connection.execute(delete_relationship)
+            connection.execute(text(delete_relationship))
 
             delete_resource = sql_template.format(
                 member.__tablename__,
                 'id',
                 member.id
             )
-            connection.execute(delete_resource)
+            connection.execute(text(delete_resource))

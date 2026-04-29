@@ -11,90 +11,117 @@
 
 ### OS Dependencies
 
+On Debian/Ubuntu:
+
 ```bash
 $ sudo apt update
-$ sudo apt install gcc libgdal-dev g++ libhdf5-dev
+$ sudo apt install gcc g++ libgdal-dev libhdf5-dev
 ```
-### Activate tethys environment
+
+On macOS (Homebrew):
 
 ```bash
-conda activate tethys
+$ brew install gdal hdf5
 ```
-### Install for Development:
 
-Run the following command from the same directory as the setup.py
+### Create a Python virtual environment
+
+ATCore is a Tethys Platform extension. The supported way to develop and test it is in a Python venv with `tethys-platform` installed via pip. Python 3.10–3.13 are supported.
 
 ```bash
-$ tethys install -d
+$ python3.12 -m venv .venv
+$ source .venv/bin/activate
+$ pip install --upgrade pip wheel setuptools
 ```
 
-### Install for Production:
+### Install Tethys Platform and ATCore dependencies
 
-Run the following command from the same directory as the setup.py
+Install Tethys Platform itself, then the rest of ATCore's runtime/test dependencies (mirroring `install.yml`):
 
 ```bash
-$ tethys install
+$ pip install tethys-platform
+$ pip install \
+    "sqlalchemy>=2" \
+    "geoalchemy2>=0.13" \
+    "django-select2<8.3.0" \
+    django-taggit \
+    django-datetime-widget2 \
+    condorpy \
+    coverage \
+    factory_boy \
+    filelock \
+    flake8 \
+    geojson \
+    pandas \
+    panel \
+    param \
+    plotly \
+    "pyshp>=3.0.0" \
+    psycopg2-binary \
+    "geoserver-restconfig>=2.0.10" \
+    tethys-dataset-services
 ```
 
-### settings.py
+### Install ATCore for development
 
-Add the following to `INSTALLED_APPS` in your `settings.py` (tethys/tethys_portal/settings.py):
+From the repo root (the directory containing `pyproject.toml`):
 
-```python
-'datetimewidget',
-'django_select2',
-'taggit',
+```bash
+$ pip install -e .
 ```
 
 # Testing
 
-This extension has two types of tests: unit tests and integrated tests.
+This extension has two types of tests: unit tests and integrated tests. Integrated tests need a PostgreSQL+PostGIS database; unit tests do not.
 
-## Setup
+## Provision the test database
 
-Some of the tests require a test database. The database must be a PostgreSQL 9.6 or higher with the postgis extension intalled. Create an empty database before hand. The default database connection string is:
+Easiest path is a local PostGIS Docker container that mirrors CI. The default connection string in `tethysext/atcore/tests/__init__.py` is `postgresql://tethys_super:pass@172.17.0.1:5438/atcore_tests`; on macOS use `127.0.0.1` instead of `172.17.0.1`.
 
 ```bash
-'postgresql://tethys_super:pass@172.17.0.1:5435/atcore_tests'
+$ docker run -d \
+    --name atcore-postgis \
+    -e POSTGRES_USER=tethys_super \
+    -e POSTGRES_PASSWORD=pass \
+    -e POSTGRES_DB=atcore_tests \
+    -p 5438:5432 \
+    --platform linux/amd64 \
+    postgis/postgis:17-3.5
 ```
 
-To specify a custom database connection string, define the `ATCORE_TEST_DATABASE` environment variable:
+`--platform linux/amd64` is needed on Apple Silicon — the postgis image does not publish a native arm64 manifest.
+
+To point the tests at a different database, define `ATCORE_TEST_DATABASE`:
 
 ```bash
-export ATCORE_TEST_DATABASE="postgresql://<username>:<password>@<ipaddress>:<port>/<dbname>"
+$ export ATCORE_TEST_DATABASE="postgresql://<username>:<password>@<host>:<port>/<dbname>"
 ```
 
-## Running the Tests
+The user given must be a PostgreSQL superuser so the test runner can create/destroy the test database.
 
-To run unit tests:
+## Run the tests
+
+Run each phase individually so failures are easy to attribute:
 
 ```bash
+# Unit tests (no database needed)
 $ coverage run --rcfile=coverage.ini -m unittest -v tethysext.atcore.tests.unit_tests
-$ coverage report
+
+# Integrated tests (require ATCORE_TEST_DATABASE)
+$ TETHYS_MANAGE=$(python -c "import tethys_portal, os; print(os.path.join(os.path.dirname(tethys_portal.__file__), 'manage.py'))")
+$ coverage run -a --rcfile=coverage.ini "$TETHYS_MANAGE" test -v 2 tethysext.atcore.tests.integrated_tests
+
+# Coverage report
+$ coverage report --rcfile=coverage.ini --skip-covered
+
+# Lint
+$ flake8
 ```
 
-To run integrated tests, install extension in existing installation of Tethys and run:
+`test.sh` wraps all four phases:
 
 ```bash
-$ t
-$ coverage run --rcfile=coverage.ini <TETHYS_HOME>/src/manage.py test tethysext.atcore.tests.integrated_tests
-$ coverage report
-```
-
-## Linting
-
-We are using flake8 to enforce the pep 8 standard. Any change to the rules can be made in the tox.ini file.
-
-```bash
-$ flake8 [dir]
-```
-
-## Run All Tests
-
-To run all of the test and linting with cumulative coverage:
-
-```bash
-. test.sh </path/to/tethys/manage.py>
+$ . test.sh "$TETHYS_MANAGE"
 ```
 
 ## Minify Scripts

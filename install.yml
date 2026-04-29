@@ -15,6 +15,7 @@ requirements:
     - django>=3.2,<6
     - django-select2<8.3.0
     - django-taggit
+    - condorpy
     - coverage
     - factory_boy
     - filelock
@@ -24,7 +25,8 @@ requirements:
     - param
     - pyshp>=3.0.0
     - requests
-    - sqlalchemy<2
+    - sqlalchemy>=2
+    - geoalchemy2>=0.13
     - panel
   pip:
   - django-datetime-widget2

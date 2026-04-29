@@ -8,6 +8,8 @@
 """
 import operator
 
+from sqlalchemy import text
+
 from tethysext.atcore.services.model_database_connection import ModelDatabaseConnection
 from tethysext.atcore.services.model_database_base import ModelDatabaseBase
 
@@ -50,15 +52,16 @@ class ModelDatabase(ModelDatabaseBase):
             AND relname SIMILAR TO '%%epanet_\w+%%';
         '''.format(selection=selection)
 
-        result = engine.execute(query)
+        try:
+            with engine.connect() as connection:
+                result = connection.execute(text(query))
 
-        if not pretty:
-            size = result.scalar()
-        else:
-            size = result.fetchone().size
-
-        result.close()
-        engine.dispose()
+                if not pretty:
+                    size = result.scalar()
+                else:
+                    size = result.fetchone().size
+        finally:
+            engine.dispose()
 
         return size
 
@@ -174,28 +177,30 @@ class ModelDatabase(ModelDatabaseBase):
             if not curr_engine:
                 continue
 
-            # Get count of all databases: SELECT count(*) FROM pg_database;
-            response = curr_engine.execute(
-                'SELECT count(*) AS count '
-                'FROM pg_database;'
-            )
+            try:
+                with curr_engine.connect() as connection:
+                    # Get count of all databases: SELECT count(*) FROM pg_database;
+                    response = connection.execute(text(
+                        'SELECT count(*) AS count '
+                        'FROM pg_database;'
+                    ))
 
-            for row in response:
-                count = row.count
+                    for row in response:
+                        count = row.count
 
-            # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d  # noqa: E501
-            # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d  # noqa: E501
-            response = curr_engine.execute(
-                'SELECT sum(pg_catalog.pg_database_size(d.datname)) AS size '
-                'FROM pg_catalog.pg_database d;'
-            )
+                    # Get total cluster size (pretty): SELECT pg_catalog.pg_size_pretty(sum(pg_catalog.pg_database_size(d.datname))) AS Size FROM pg_catalog.pg_database d  # noqa: E501
+                    # Get total cluster size (bytes): SELECT sum(pg_catalog.pg_database_size(d.datname)) AS Size FROM pg_catalog.pg_database d  # noqa: E501
+                    response = connection.execute(text(
+                        'SELECT sum(pg_catalog.pg_database_size(d.datname)) AS size '
+                        'FROM pg_catalog.pg_database d;'
+                    ))
 
-            for row in response:
-                size_bytes = row.size
+                    for row in response:
+                        size_bytes = row.size
+            finally:
+                curr_engine.dispose()
 
             db_stats.append((connection_name, count, size_bytes))
-
-            curr_engine.dispose()
 
         # Logic for which connection here
         if not db_stats:

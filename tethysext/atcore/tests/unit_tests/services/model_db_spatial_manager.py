@@ -38,7 +38,7 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
             proj4text="+proj=utm +zone=20 +datum=WGS84 +units=ft +no_defs "
         )
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -51,7 +51,7 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
             proj4text="+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs "
         )
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -62,7 +62,7 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         srid = 2232
         mock_row = mock.MagicMock(proj4text="+proj=utm +zone=20 +datum=WGS84 +no_defs ")
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -79,7 +79,7 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
             proj4text="+proj=utm +zone=20 +datum=WGS84 +units=teva +no_defs "
         )
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -95,23 +95,23 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         mock_project_string = "FAKE PROJECTION STRING"
         mock_row = mock.MagicMock(proj_string=mock_project_string)
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
         ret = model_db_spatial_manager.get_projection_string(mock_model_db, srid)
         model_db_spatial_manager.get_projection_string(mock_model_db, srid)
-        execute_calls = mock_engine.execute.call_args_list
+        execute_calls = mock_engine.connect.return_value.__enter__.return_value.execute.call_args_list
         self.assertEqual(mock_project_string, ret)
         self.assertEqual(1, len(execute_calls))
-        self.assertIn("srtext", execute_calls[0][0][0])
+        self.assertIn("srtext", str(execute_calls[0][0][0]))
 
     def test_get_projection_string_wkt(self):
         srid = 2232
         mock_project_string = "FAKE PROJECTION STRING"
         mock_row = mock.MagicMock(proj_string=mock_project_string)
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -121,17 +121,17 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         model_db_spatial_manager.get_projection_string(
             mock_model_db, srid, ModelDBSpatialManager.PRO_WKT
         )
-        execute_calls = mock_engine.execute.call_args_list
+        execute_calls = mock_engine.connect.return_value.__enter__.return_value.execute.call_args_list
         self.assertEqual(mock_project_string, ret)
         self.assertEqual(1, len(execute_calls))
-        self.assertIn("srtext", execute_calls[0][0][0])
+        self.assertIn("srtext", str(execute_calls[0][0][0]))
 
     def test_get_projection_string_proj4(self):
         srid = 2232
         mock_project_string = "FAKE PROJECTION STRING"
         mock_row = mock.MagicMock(proj_string=mock_project_string)
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -141,17 +141,17 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         model_db_spatial_manager.get_projection_string(
             mock_model_db, srid, ModelDBSpatialManager.PRO_PROJ4
         )
-        execute_calls = mock_engine.execute.call_args_list
+        execute_calls = mock_engine.connect.return_value.__enter__.return_value.execute.call_args_list
         self.assertEqual(mock_project_string, ret)
         self.assertEqual(1, len(execute_calls))
-        self.assertIn("proj4text", execute_calls[0][0][0])
+        self.assertIn("proj4text", str(execute_calls[0][0][0]))
 
     def test_get_projection_string_invalid(self):
         srid = 2232
         mock_project_string = "FAKE PROJECTION STRING"
         mock_row = mock.MagicMock(proj_string=mock_project_string)
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -168,7 +168,7 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         mock_project_string = "FAKE PROJECTION STRING"
         mock_row = mock.MagicMock(proj_string=mock_project_string)
         mock_engine = mock.MagicMock()
-        mock_engine.execute.return_value = [mock_row]
+        mock_engine.connect.return_value.__enter__.return_value.execute.return_value = [mock_row]
         mock_model_db = mock.MagicMock()
         mock_model_db.get_engine.return_value = mock_engine
         model_db_spatial_manager = ModelDBSpatialManager(self.geoserver_engine)
@@ -184,11 +184,11 @@ class ModelDBSpatialManagerTests(unittest.TestCase):
         model_db_spatial_manager.get_projection_string(
             mock_model_db, srid, ModelDBSpatialManager.PRO_WKT
         )
-        execute_calls = mock_engine.execute.call_args_list
+        execute_calls = mock_engine.connect.return_value.__enter__.return_value.execute.call_args_list
         self.assertEqual(mock_project_string, ret)
         self.assertEqual(2, len(execute_calls))
-        self.assertIn("srtext", execute_calls[0][0][0])
-        self.assertIn("proj4text", execute_calls[1][0][0])
+        self.assertIn("srtext", str(execute_calls[0][0][0]))
+        self.assertIn("proj4text", str(execute_calls[1][0][0]))
 
     def test_link_geoserver_to_db_store_exists(self):
         model_db_spatial_manager = _ModelDBSpatialManager(self.geoserver_engine)

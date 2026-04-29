@@ -7,7 +7,7 @@
 ********************************************************************************
 """
 import json
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from django.test import RequestFactory
 from tethys_sdk.testing import TethysTestCase
 from tethysext.atcore.tests.factories.django_user import UserFactory
@@ -20,7 +20,8 @@ def setUpModule():
 
     # Connect to the database and create the schema within a transaction
     engine = create_engine(TEST_DB_URL)
-    engine.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
+    with engine.begin() as connection:
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS postgis;'))
 
 
 def tearDownModule():
