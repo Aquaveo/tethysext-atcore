@@ -78,6 +78,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         # test the results
         mock_handle_modify_user.assert_called_with(mock_request)
 
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
     @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
@@ -88,7 +89,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_post(self, _, mock_get_app_user_model, mock_get_organization_model,
                                                mock_get_sessionmaker, mock_get_active_app,
-                                               mock_get_permissions_manager, __, mock_reverse):
+                                               mock_get_permissions_manager, __, mock_reverse, mock_select):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'first-name': 'Foo', 'last-name': 'Bar',
                      'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
                      'password-confirm': 'abc123', 'assign-role': ['APP_ADMIN', 'DEVELOPER'],
@@ -184,6 +185,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         self.assertEqual('NameSpace:app_users_manage_users', mock_reverse.call_args_list[0][0][0])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.messages')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.reverse')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.redirect')
@@ -194,7 +196,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_user_not_found_exception(self, _, mock_get_app_user_model,
                                                                    __, mock_get_sessionmaker, mock_get_active_app, ___,
-                                                                   mock_reverse, mock_messages):
+                                                                   mock_reverse, mock_messages, mock_select):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1', 'first-name': 'Foo',
                      'last-name': 'Bar',
                      'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
@@ -222,7 +224,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         mock_get_active_app().url_namespace = 'NameSpace'
 
         mock_edit_session = mock_get_sessionmaker()()
-        mock_edit_session.query().filter().one.side_effect = NoResultFound
+        mock_edit_session.execute().scalar_one.side_effect = NoResultFound
 
         # call method
         modify_user = ModifyUser()
@@ -368,6 +370,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         self.assertFalse(mock_render.call_args_list[0][0][2]['is_me'])
         self.assertListEqual(['APP_ADMIN', 'DEVELOPER'], mock_render.call_args_list[0][0][2]['no_organization_roles'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
@@ -378,7 +381,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
                                                                        __,
                                                                        mock_get_sessionmaker,
                                                                        mock_get_active_app,
-                                                                       mock_render):
+                                                                       mock_render, mock_select):
 
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1 sam', 'first-name': 'Foo',
                      'last-name': 'Bar',
@@ -601,6 +604,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         self.assertEqual('Must assign user to at least one organization',
                          mock_render.call_args_list[0][0][2]['organization_select']['error'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
@@ -609,7 +613,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_validate_edit_confirm_password(self, _, mock_get_app_user_model,
                                                                          __, mock_get_sessionmaker,
-                                                                         mock_get_active_app, mock_render):
+                                                                         mock_get_active_app, mock_render, mock_select):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1 sam', 'first-name': 'Foo',
                      'last-name': 'Bar',
                      'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
@@ -672,6 +676,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
         self.assertEqual('You cannot remove yourself from all organization. You must belong to at least one.',
                          mock_render.call_args_list[0][0][2]['organization_select']['error'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
@@ -680,7 +685,8 @@ class ModifyUserTests(SqlAlchemyTestCase):
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_user_requests_validate_edit__password_confirm_password(self, _, mock_get_app_user_model,
                                                                                    __, mock_get_sessionmaker,
-                                                                                   mock_get_active_app, mock_render):
+                                                                                   mock_get_active_app, mock_render,
+                                                                                   mock_select):
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'username': 'user1 sam', 'first-name': 'Foo',
                      'last-name': 'Bar',
                      'user-account-status': 'on', 'email': 'user@aquaveo.com', 'password': 'abc123',
@@ -743,6 +749,8 @@ class ModifyUserTests(SqlAlchemyTestCase):
         self.assertEqual('You cannot remove yourself from all organization. You must belong to at least one.',
                          mock_render.call_args_list[0][0][2]['organization_select']['error'])
 
+    @mock.patch('tethysext.atcore.services.app_users.decorators.select')
+    @mock.patch('tethysext.atcore.controllers.app_users.modify_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.modify_user.get_active_app')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
@@ -750,7 +758,8 @@ class ModifyUserTests(SqlAlchemyTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch('tethys_apps.utilities.get_active_app')
     def test__handle_modify_normal_user_change_role(self, _, mock_get_app_user_model, __, mock_get_sessionmaker,
-                                                    mock_get_active_app, mock_render):
+                                                    mock_get_active_app, mock_render, mock_select,
+                                                    mock_decorator_select):
 
         mock_dict = {'modify-user-submit': 'modify-user-submit', 'first-name': 'Foo',
                      'last-name': 'Bar', 'username': self.app_user.username,
@@ -771,7 +780,7 @@ class ModifyUserTests(SqlAlchemyTestCase):
 
         mock_target_user.username = self.app_user.username
 
-        session.query().filter().one.return_value = mock_target_user
+        session.execute().scalar_one.return_value = mock_target_user
 
         mock_target_user.get_organizations.return_value = [self.organization]
 

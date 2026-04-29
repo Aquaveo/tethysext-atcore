@@ -6,6 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
+from sqlalchemy import text
 
 
 class SpatialReferenceService:
@@ -38,17 +39,17 @@ class SpatialReferenceService:
         # Retrieve a list of SRIDs from database
         get_spatial_ref_list = "SELECT * FROM spatial_ref_sys WHERE ({0} = @srid)".format(srid)
 
-        spatial_ref_object_result = self.db_engine.execute(get_spatial_ref_list)
+        with self.db_engine.connect() as connection:
+            spatial_ref_object_result = connection.execute(text(get_spatial_ref_list))
 
-        # Parse out the wanted items into the list for the select input
-        for spatial_reference in spatial_ref_object_result:
-            spatial_ref_list.append(
-                {
-                    "text": "{0} {1}".format(spatial_reference[0], spatial_reference[3].split('"')[1]),
-                    "id": str(spatial_reference[0])
-                }
-            )
-        spatial_ref_object_result.close()
+            # Parse out the wanted items into the list for the select input
+            for spatial_reference in spatial_ref_object_result:
+                spatial_ref_list.append(
+                    {
+                        "text": "{0} {1}".format(spatial_reference[0], spatial_reference[3].split('"')[1]),
+                        "id": str(spatial_reference[0])
+                    }
+                )
 
         json = {'results': spatial_ref_list}
         return json
@@ -72,12 +73,12 @@ class SpatialReferenceService:
         # Retrieve a list of SRIDs from database
         get_spatial_ref_list = "SELECT srtext FROM spatial_ref_sys WHERE ({0} = @srid)".format(srid)
 
-        spatial_ref_object_result = self.db_engine.execute(get_spatial_ref_list)
+        with self.db_engine.connect() as connection:
+            spatial_ref_object_result = connection.execute(text(get_spatial_ref_list))
 
-        # Get the WKT
-        for spatial_reference in spatial_ref_object_result:
-            wkt = spatial_reference[0]
-        spatial_ref_object_result.close()
+            # Get the WKT
+            for spatial_reference in spatial_ref_object_result:
+                wkt = spatial_reference[0]
         json = {'results': wkt}
         return json
 
@@ -100,17 +101,17 @@ class SpatialReferenceService:
                                "WHERE to_tsvector('english', srtext) @@ " \
                                "to_tsquery('english', '{0}');".format(sql_query_input)
 
-        spatial_ref_object_result = self.db_engine.execute(get_spatial_ref_list)
+        with self.db_engine.connect() as connection:
+            spatial_ref_object_result = connection.execute(text(get_spatial_ref_list))
 
-        # Parse out the wanted items into the list for the select input
-        for spatial_reference in spatial_ref_object_result:
-            spatial_ref_list.append(
-                {
-                    "text": "{0} {1}".format(spatial_reference[0], spatial_reference[3].split('"')[1]),
-                    "id": str(spatial_reference[0])
-                }
-            )
-        spatial_ref_object_result.close()
+            # Parse out the wanted items into the list for the select input
+            for spatial_reference in spatial_ref_object_result:
+                spatial_ref_list.append(
+                    {
+                        "text": "{0} {1}".format(spatial_reference[0], spatial_reference[3].split('"')[1]),
+                        "id": str(spatial_reference[0])
+                    }
+                )
 
         json = {'results': spatial_ref_list}
 

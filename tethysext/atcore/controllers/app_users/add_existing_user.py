@@ -2,6 +2,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
+from sqlalchemy import select
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import SelectInput
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
@@ -113,7 +114,7 @@ class AddExistingUser(AppUsersViewMixin):
                     # Add user to selected organizations and assign custom_permissions
                     if selected_role not in no_organization_roles:
                         for organization_id in selected_organizations:
-                            organization = create_session.query(_Organization).get(organization_id)
+                            organization = create_session.get(_Organization, organization_id)
                             new_app_user.organizations.append(organization)
                             permissions_manager.assign_user_permission(
                                 new_app_user,
@@ -133,7 +134,7 @@ class AddExistingUser(AppUsersViewMixin):
 
         # Get App Users
         session = SessionMaker()
-        app_users = session.query(_AppUser).all()
+        app_users = session.execute(select(_AppUser)).scalars().all()
 
         # Setup portal users select
         all_app_usernames = [u.username for u in app_users]

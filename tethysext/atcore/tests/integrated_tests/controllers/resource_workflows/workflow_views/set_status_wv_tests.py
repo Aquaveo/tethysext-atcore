@@ -1,5 +1,6 @@
 from unittest import mock
 
+from sqlalchemy import select
 from django.http import HttpRequest
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from django.test import RequestFactory
@@ -247,7 +248,7 @@ class SetStatusWVTests(WorkflowViewTestCase):
 
         self.assertEqual(self.mock_psd(), ret)
 
-        step = self.session.query(SetStatusRWS).filter(SetStatusRWS.name == 'ssrws_no_options').one()
+        step = self.session.execute(select(SetStatusRWS).where(SetStatusRWS.name == 'ssrws_no_options')).scalar_one()
         self.assertEqual(SetStatusRWS.STATUS_COMPLETE, step.get_status())
         self.assertEqual(comment, step.get_parameter('comments'))
 

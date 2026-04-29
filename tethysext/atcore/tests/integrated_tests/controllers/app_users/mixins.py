@@ -145,7 +145,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_session = self.farc.get_sessionmaker()()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
 
         ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id)
 
@@ -161,7 +161,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_session = mock.MagicMock()
         mock_requests_app_user = self.farc.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
 
         ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
@@ -192,7 +192,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
         mock_session = mock.MagicMock()
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
 
         ret = self.farc.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
@@ -207,7 +207,7 @@ class ResourceViewMixinTests(TethysTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
         mock_session = self.farc.get_sessionmaker()()
-        mock_session.query.side_effect = NoResultFound
+        mock_session.get.side_effect = NoResultFound
 
         self.assertRaises(NoResultFound, self.farc.get_resource, request=mock_request, resource_id=mock_resource_id)
 
@@ -241,7 +241,7 @@ class MultipleResourcesViewMixinTests(TethysTestCase):
         mock_session = self.fmrv.get_sessionmaker()()
         mock_requests_app_user = self.fmrv.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
 
         ret = self.fmrv.get_resource(request=mock_request, resource_id=mock_resource_id)
 
@@ -257,7 +257,7 @@ class MultipleResourcesViewMixinTests(TethysTestCase):
         mock_session = mock.MagicMock()
         mock_requests_app_user = self.fmrv.get_app_user_model().get_app_user_from_request()
         mock_requests_app_user.can_view.return_value = True
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
 
         ret = self.fmrv.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
@@ -288,7 +288,7 @@ class MultipleResourcesViewMixinTests(TethysTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
         mock_session = mock.MagicMock()
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
 
         ret = self.fmrv.get_resource(request=mock_request, resource_id=mock_resource_id, session=mock_session)
 
@@ -303,7 +303,7 @@ class MultipleResourcesViewMixinTests(TethysTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_resource_id = self.resource_id
         mock_session = self.fmrv.get_sessionmaker()()
-        mock_session.query.side_effect = NoResultFound
+        mock_session.get.side_effect = NoResultFound
 
         self.assertRaises(NoResultFound, self.fmrv.get_resource, request=mock_request, resource_id=mock_resource_id)
 

@@ -164,6 +164,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
 
         self.assertEqual('NameSpace:app_users_manage_users', mock_reverse.call_args_list[0][0][0])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
     @mock.patch.object(AppUsersViewMixin, 'get_permissions_manager')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
@@ -172,7 +173,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test__handle_modify_user_requests_must_assign_user(self, mock_get_app_usermodel, _,
                                                            mock_get_session_maker, mock_get_active_app,
-                                                           __, mock_render):
+                                                           __, mock_render, mock_select):
         session = mock_get_session_maker()()
 
         mock_dict = {'add-existing-user-submit': 'add-existing-user-submit', 'assign-role': 'role1',
@@ -225,6 +226,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
         self.assertEqual('Must assign user to at least one organization',
                          mock_render.call_args_list[0][0][2]['organization_select']['error'])
 
+    @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.select')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.render')
     @mock.patch('tethysext.atcore.controllers.app_users.add_existing_user.get_active_app')
     @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
@@ -232,7 +234,7 @@ class AddExistingUserTests(SqlAlchemyTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     def test__handle_modify_user_requests_with_invalid_post_data(self, mock_get_app_usermodel, _,
                                                                  mock_get_session_maker, mock_get_active_app,
-                                                                 mock_render):
+                                                                 mock_render, mock_select):
         session = mock_get_session_maker()()
 
         mock_dict = {'add-existing-user-submit': 'add-existing-user-submit', 'assign-role': '',

@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import unittest
+from sqlalchemy import text
 from sqlalchemy.engine import create_engine
 from tethysext.atcore.tests import TEST_DB_URL
 from tethysext.atcore.services.spatial_reference import SpatialReferenceService
@@ -17,7 +18,8 @@ def setUpModule():
 
     # Connect to the database and create the schema within a transaction
     engine = create_engine(TEST_DB_URL)
-    engine.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
+    with engine.begin() as connection:
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS postgis;'))
 
 
 def tearDownModule():

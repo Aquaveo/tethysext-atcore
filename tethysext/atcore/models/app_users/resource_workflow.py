@@ -12,15 +12,22 @@ import logging
 
 import datetime as dt
 from abc import abstractmethod
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
 
 from django.shortcuts import reverse
-from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import ForeignKey, String, DateTime, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.resource_workflow_steps import FormInputRWS, ResultsResourceWorkflowStep, TableInputRWS
+
+if TYPE_CHECKING:
+    from tethysext.atcore.models.app_users.resource import Resource
+    from tethysext.atcore.models.app_users.app_user import AppUser
+    from tethysext.atcore.models.app_users.resource_workflow_result import ResourceWorkflowResult
 
 log = logging.getLogger(f'tethys.{__name__}')
 __all__ = ['ResourceWorkflow']
@@ -67,23 +74,34 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
 
     COMPLETE_STATUSES = ResourceWorkflowStep.COMPLETE_STATUSES
 
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    resource_id = Column(GUID, ForeignKey('app_users_resources.id'))
-    creator_id = Column(GUID, ForeignKey('app_users_app_users.id'))
-    type = Column(String)
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    resource_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID, ForeignKey('app_users_resources.id'))
+    creator_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID, ForeignKey('app_users_app_users.id'))
+    type: Mapped[Optional[str]] = mapped_column(String)
 
-    name = Column(String)
-    date_created = Column(DateTime, default=dt.datetime.utcnow)
-    lock_when_finished = Column(Boolean, default=False)
-    _attributes = Column(String)
-    _user_lock = Column(String)
+    name: Mapped[Optional[str]] = mapped_column(String)
+    date_created: Mapped[Optional[datetime]] = mapped_column(DateTime, default=dt.datetime.utcnow)
+    lock_when_finished: Mapped[bool] = mapped_column(Boolean, default=False)
+    _attributes: Mapped[Optional[str]] = mapped_column(String)
+    _user_lock: Mapped[Optional[str]] = mapped_column(String)
 
-    resource = relationship('Resource', backref=backref('workflows', cascade='all,delete'))
-    creator = relationship('AppUser', backref='workflows')
-    steps = relationship('ResourceWorkflowStep', order_by='ResourceWorkflowStep.order', backref='workflow',
-                         cascade='all,delete')
-    results = relationship('ResourceWorkflowResult', order_by='ResourceWorkflowResult.order', backref='workflow',
-                           cascade='all,delete')
+    resource: Mapped[Optional["Resource"]] = relationship(
+        'Resource',
+        back_populates='workflows',
+    )
+    creator: Mapped[Optional["AppUser"]] = relationship('AppUser', back_populates='workflows')
+    steps: Mapped[list["ResourceWorkflowStep"]] = relationship(
+        'ResourceWorkflowStep',
+        order_by='ResourceWorkflowStep.order',
+        back_populates='workflow',
+        cascade='all,delete',
+    )
+    results: Mapped[list["ResourceWorkflowResult"]] = relationship(
+        'ResourceWorkflowResult',
+        order_by='ResourceWorkflowResult.order',
+        back_populates='workflow',
+        cascade='all,delete',
+    )
 
     __mapper_args__ = {
         'polymorphic_on': 'type',

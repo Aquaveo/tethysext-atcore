@@ -38,7 +38,7 @@ class TableInputRWSTests(SqlAlchemyTestCase):
     def test_query(self):
         self.session.add(self.instance)
         self.session.commit()
-        ret = self.session.query(TableInputRWS).get(self.instance.id)
+        ret = self.session.get(TableInputRWS, self.instance.id)
         self.assertEqual(self.instance, ret)
         self.session.delete(self.instance)
         self.session.commit()

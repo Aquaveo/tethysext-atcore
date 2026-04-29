@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 from django.contrib.auth.models import User, Group
+from sqlalchemy import select
 from tethysext.atcore.models.app_users import AppUser
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.services.app_users.licenses import Licenses
@@ -52,7 +53,9 @@ class AppPermissionsManagerTests(SqlAlchemyTestCase):
             email="teva@aquaveo.com",
             password="pass"
         )
-        self.staff_app_user = self.session.query(AppUser).filter(AppUser.username == AppUser.STAFF_USERNAME).one()
+        self.staff_app_user = self.session.execute(
+            select(AppUser).where(AppUser.username == AppUser.STAFF_USERNAME)
+        ).scalar_one()
 
         # Permissions manager setup
         self.url_namespace = 'foo'

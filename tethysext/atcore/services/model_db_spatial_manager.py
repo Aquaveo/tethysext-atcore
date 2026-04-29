@@ -8,6 +8,9 @@
 ********************************************************************************
 """
 from abc import abstractmethod
+
+from sqlalchemy import text
+
 from tethysext.atcore.services.exceptions import UnitsNotFound, UnknownUnits
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 
@@ -42,15 +45,16 @@ class ModelDBSpatialManager(BaseSpatialManager):
             db_engine = model_db.get_engine()
             try:
                 sql = "SELECT srid, proj4text FROM spatial_ref_sys WHERE srid = {}".format(srid)
-                ret = db_engine.execute(sql)
+                with db_engine.connect() as connection:
+                    ret = connection.execute(text(sql))
 
-                # Parse proj4text to get units
-                # e.g.: +proj=utm +zone=21 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
-                proj4text = ''
-                units = ''
+                    # Parse proj4text to get units
+                    # e.g.: +proj=utm +zone=21 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
+                    proj4text = ''
+                    units = ''
 
-                for row in ret:
-                    proj4text = row.proj4text
+                    for row in ret:
+                        proj4text = row.proj4text
             finally:
                 db_engine.dispose()
 
@@ -100,11 +104,12 @@ class ModelDBSpatialManager(BaseSpatialManager):
                 else:
                     sql = "SELECT proj4text AS proj_string FROM spatial_ref_sys WHERE srid = {}".format(srid)
 
-                ret = db_engine.execute(sql)
-                projection_string = ''
+                with db_engine.connect() as connection:
+                    ret = connection.execute(text(sql))
+                    projection_string = ''
 
-                for row in ret:
-                    projection_string = row.proj_string
+                    for row in ret:
+                        projection_string = row.proj_string
             finally:
                 db_engine.dispose()
 

@@ -35,7 +35,7 @@ class SpatialInputRWSTests(SqlAlchemyTestCase):
     def test_query(self):
         self.session.add(self.instance)
         self.session.commit()
-        ret = self.session.query(SpatialInputRWS).get(self.instance.id)
+        ret = self.session.get(SpatialInputRWS, self.instance.id)
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):

@@ -19,5 +19,5 @@ class FileDatabaseTests(SqlAlchemyTestCase):
         new_instance = FileDatabase(meta={"TestKey": "TestValue"})
         self.session.add(new_instance)
         self.session.commit()
-        instance_from_db = self.session.query(FileDatabase).get(new_instance.id)
+        instance_from_db = self.session.get(FileDatabase, new_instance.id)
         self.assertDictEqual(new_instance.meta, instance_from_db.meta)

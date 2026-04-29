@@ -1,4 +1,5 @@
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 
-AppUsersBase = declarative_base()
+class AppUsersBase(DeclarativeBase):
+    pass

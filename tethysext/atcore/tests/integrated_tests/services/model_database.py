@@ -9,6 +9,7 @@
 import unittest
 from unittest import mock
 import sqlalchemy
+from sqlalchemy.engine import make_url
 from tethys_sdk.base import TethysAppBase
 from tethysext.atcore.services.model_database import ModelDatabase
 from tethysext.atcore.services.model_database_connection import ModelDatabaseConnection
@@ -53,6 +54,22 @@ class MockResponse(object):
         pass
 
 
+class MockConnection(object):
+    """Context-managed connection backed by a MockEngine."""
+
+    def __init__(self, engine):
+        self._engine = engine
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
+    def execute(self, statement):
+        return self._engine._execute_sql(str(statement))
+
+
 class MockEngine(object):
 
     def __init__(self, connection_name):
@@ -61,7 +78,10 @@ class MockEngine(object):
     def dispose(self):
         pass
 
-    def execute(self, query):
+    def connect(self):
+        return MockConnection(self)
+
+    def _execute_sql(self, query):
         """
         Returns different values for different queries.
         CONN_1 and CONN_2 return different count and size.
@@ -110,7 +130,7 @@ def mock_get_engine(connection_name, as_url=False):
         return None
 
     if as_url:
-        return 'postgresql://name:pass@localhost:5435/{}_{}'.format('foo', connection_name)
+        return make_url('postgresql://name:pass@localhost:5435/{}_{}'.format('foo', connection_name))
 
     return MockEngine(connection_name)
 

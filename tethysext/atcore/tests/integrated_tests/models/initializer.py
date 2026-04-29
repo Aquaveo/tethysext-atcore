@@ -1,4 +1,5 @@
 from tethys_sdk.testing import TethysTestCase
+from sqlalchemy import select
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import Session
 
@@ -25,9 +26,9 @@ class AppUserInitializerTests(TethysTestCase):
         initialize_app_users_db(self.connection)
 
         session = Session(self.connection)
-        staff_user = session.query(AppUser). \
-            filter(AppUser.username == AppUser.STAFF_USERNAME). \
-            one_or_none()
+        staff_user = session.execute(
+            select(AppUser).where(AppUser.username == AppUser.STAFF_USERNAME)
+        ).scalar_one_or_none()
         self.assertIsNotNone(staff_user)
         self.assertEqual(AppUser.ROLES.DEVELOPER, staff_user.role)
         session.close()

@@ -200,7 +200,7 @@ class ManageUsersTests(SqlAlchemyTestCase):
     def test_delete_delete_exception(self):
         self.request.GET = {'action': 'delete', 'id': 123456}
         self.request.method = 'delete'
-        self.mock_get_session()().query.side_effect = Exception('Some exception message')
+        self.mock_get_session()().get.side_effect = Exception('Some exception message')
 
         response = self.controller(self.request)
 

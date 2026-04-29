@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 # Tethys core
+from sqlalchemy import select
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from tethys_sdk.permissions import permission_required, has_permission
@@ -116,9 +117,9 @@ class ModifyOrganization(MultipleResourcesViewMixin):
             if editing:
                 # Initialize the parameters from the existing consultant
                 try:
-                    organization = session.query(_Organization). \
-                        filter(_Organization.id == organization_id). \
-                        one()
+                    organization = session.execute(
+                        select(_Organization).where(_Organization.id == organization_id)
+                    ).scalar_one()
 
                 except (StatementError, NoResultFound):
                     raise ATCoreException('Unable to find the organization.')
@@ -205,7 +206,7 @@ class ModifyOrganization(MultipleResourcesViewMixin):
                 if valid and custom_valid:
                     # Lookup existing organization and assign/reset fields
                     if editing:
-                        organization = session.query(_Organization).get(organization_id)
+                        organization = session.get(_Organization, organization_id)
                         organization.name = organization_name
                         organization.license = selected_license
                         organization.active = is_active
@@ -223,12 +224,12 @@ class ModifyOrganization(MultipleResourcesViewMixin):
                     # Add resources
                     for _Resource in _Resources:
                         for resource_id in selected_resources[_Resource.SLUG]:
-                            resource = session.query(_Resource).get(resource_id)
+                            resource = session.get(_Resource, resource_id)
                             organization.resources.append(resource)
 
                     # Assign consultant
                     if selected_consultant:
-                        consultant = session.query(_Organization).get(selected_consultant)
+                        consultant = session.get(_Organization, selected_consultant)
                         organization.consultant = consultant
                     else:
                         organization.consultant = None

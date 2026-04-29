@@ -2,7 +2,7 @@ import datetime
 import json
 import uuid
 
-from sqlalchemy import func
+from sqlalchemy import func, select
 
 from tethysext.atcore.exceptions import InvalidSpatialResourceExtentTypeError
 from tethysext.atcore.models.app_users import SpatialResource
@@ -51,12 +51,12 @@ class SpatialResourceTests(SqlAlchemyTestCase):
                           '-109.528369903564 40.4484166930046,-109.528756141663 40.4629153531036,-109.557466506958 ' \
                           '40.4626541436629))'
 
-        qry = self.session.query(func.ST_GeomFromEWKT(self.extent_wkt).label('geom'))
+        qry = self.session.execute(select(func.ST_GeomFromEWKT(self.extent_wkt).label('geom')))
         self.expected_geometry = qry.first().geom
 
     def compare_geometries(self, geom_a, geom_b):
-        text_a = self.session.query(func.ST_AsText(geom_a).label('text'))
-        text_b = self.session.query(func.ST_AsText(geom_b).label('text'))
+        text_a = self.session.execute(select(func.ST_AsText(geom_a).label('text')))
+        text_b = self.session.execute(select(func.ST_AsText(geom_b).label('text')))
         self.assertEqual(text_a.first().text, text_b.first().text)
 
     def create_resource(self):
@@ -86,8 +86,8 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         self.session.add(resource)
         self.session.commit()
 
-        all_resources_count = self.session.query(SpatialResource).count()
-        all_resources = self.session.query(SpatialResource).all()
+        all_resources_count = self.session.execute(select(func.count()).select_from(SpatialResource)).scalar()
+        all_resources = self.session.execute(select(SpatialResource)).scalars().all()
 
         self.assertEqual(all_resources_count, 1)
         for resource in all_resources:
@@ -175,12 +175,12 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         resource = self.create_resource_in_session()
         resource.extent = self.expected_geometry
 
-        wkt_extent_query_before = self.session.query(func.ST_AsEWKT(resource.extent)).first()
+        wkt_extent_query_before = self.session.execute(select(func.ST_AsEWKT(resource.extent))).first()
         ret_before = wkt_extent_query_before[0]
         self.assertNotIn('SRID=3857', ret_before)
 
         resource.update_extent_srid(3857)
 
-        wkt_extent_query_after = self.session.query(func.ST_AsEWKT(resource.extent)).first()
+        wkt_extent_query_after = self.session.execute(select(func.ST_AsEWKT(resource.extent))).first()
         ret_after = wkt_extent_query_after[0]
         self.assertIn('SRID=3857', ret_after)

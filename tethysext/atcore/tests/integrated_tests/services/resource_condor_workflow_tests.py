@@ -51,7 +51,7 @@ class ResourceCondorWorkflowTests(unittest.TestCase):
     @mock.patch('tethysext.atcore.services.resource_condor_workflow.sessionmaker')
     def test_run_job(self, mock_sessionmaker, _):
         mock_session = mock_sessionmaker()()
-        mock_resource = mock_session.query().get()
+        mock_resource = mock_session.get()
         self.puw.prepare = mock.MagicMock()
         self.puw.workflow = mock.MagicMock()
         self.puw.run_job()

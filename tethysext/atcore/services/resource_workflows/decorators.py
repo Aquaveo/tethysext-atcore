@@ -151,11 +151,11 @@ def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
                     # errors with a subclass of the ResourceWorkflowStep.
                     # It could also be caused indirectly if the subclass
                     # has Pickle typed columns with values that import things.
-                    step = resource_db_session.query(ResourceWorkflowStep).get(args.resource_workflow_step_id)
+                    step = resource_db_session.get(ResourceWorkflowStep, args.resource_workflow_step_id)
 
                     # IMPORTANT: External Resource classes need to be imported at the top of the job file to
                     # allow sqlalchemy to resolve the polymorphic identity.
-                    resource = resource_db_session.query(ResourceClass).get(args.resource_id)
+                    resource = resource_db_session.get(ResourceClass, args.resource_id)
 
                     # Process parameters from workflow steps
                     with open(args.workflow_params_file, 'r') as p:

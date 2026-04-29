@@ -10,15 +10,20 @@ import json
 import uuid
 from abc import abstractmethod
 from copy import deepcopy
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, ForeignKey, String, PickleType, Integer, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import ForeignKey, String, PickleType, Integer, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.app_users.associations import step_parent_child_association
 from tethysext.atcore.models.controller_metadata import ControllerMetadata
 from tethysext.atcore.utilities import json_serializer
+
+if TYPE_CHECKING:
+    from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
+    from tethysext.atcore.models.resource_workflow_steps.results_rws import ResultsResourceWorkflowStep
 
 __all__ = ['ResourceWorkflowStep']
 
@@ -57,44 +62,61 @@ class ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMi
     UUID_FIELDS = ['id', 'child_id', 'resource_workflow_id']
     SERIALIZED_FIELDS = ['id', 'child_id', 'resource_workflow_id', 'type', 'name', 'help']
 
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    result_id = Column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
-    controller_metadata_id = Column(GUID, ForeignKey('app_users_controller_metadata.id'))
-    resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
-    type = Column(String)
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    result_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID, ForeignKey('app_users_resource_workflow_steps.id'))
+    controller_metadata_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        GUID, ForeignKey('app_users_controller_metadata.id'),
+    )
+    resource_workflow_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        GUID, ForeignKey('app_users_resource_workflows.id'),
+    )
+    type: Mapped[Optional[str]] = mapped_column(String)
 
-    name = Column(String)
-    help = Column(String)
-    order = Column(Integer)
-    status = Column(String)
-    dirty = Column(Boolean, default=False)
-    _options = Column(PickleType, default={})
-    _attributes = Column(String)
-    _parameters = Column(PickleType, default={})
-    _active_roles = Column(PickleType, default=[])
+    name: Mapped[Optional[str]] = mapped_column(String)
+    help: Mapped[Optional[str]] = mapped_column(String)
+    order: Mapped[Optional[int]] = mapped_column(Integer)
+    status: Mapped[Optional[str]] = mapped_column(String)
+    dirty: Mapped[bool] = mapped_column(Boolean, default=False)
+    _options: Mapped[Optional[dict]] = mapped_column(PickleType, default={})
+    _attributes: Mapped[Optional[str]] = mapped_column(String)
+    _parameters: Mapped[Optional[dict]] = mapped_column(PickleType, default={})
+    _active_roles: Mapped[Optional[list]] = mapped_column(PickleType, default=[])
 
-    _controller = relationship(
+    _controller: Mapped[Optional["ControllerMetadata"]] = relationship(
         'ControllerMetadata',
-        backref='step',
+        back_populates='step',
         cascade='all,delete',
         uselist=False,
     )
 
-    children = relationship(
+    children: Mapped[list["ResourceWorkflowStep"]] = relationship(
         'ResourceWorkflowStep',
         secondary=step_parent_child_association,
-        backref=backref('parents'),
+        back_populates='parents',
         secondaryjoin=id == step_parent_child_association.c.child_id,
         primaryjoin=id == step_parent_child_association.c.parent_id,
         cascade='all,delete',
     )
 
-    result = relationship(
+    parents: Mapped[list["ResourceWorkflowStep"]] = relationship(
+        'ResourceWorkflowStep',
+        secondary=step_parent_child_association,
+        back_populates='children',
+        secondaryjoin=id == step_parent_child_association.c.parent_id,
+        primaryjoin=id == step_parent_child_association.c.child_id,
+    )
+
+    result: Mapped[Optional["ResultsResourceWorkflowStep"]] = relationship(
         'ResultsResourceWorkflowStep',
-        backref=backref('source', uselist=False),
+        back_populates='source',
         foreign_keys=[result_id],
         remote_side=[id],
-        cascade='all,delete'
+        cascade='all,delete',
+    )
+
+    workflow: Mapped[Optional["ResourceWorkflow"]] = relationship(
+        'ResourceWorkflow',
+        back_populates='steps',
     )
 
     __mapper_args__ = {

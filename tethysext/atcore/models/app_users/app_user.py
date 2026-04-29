@@ -1,12 +1,19 @@
 import uuid
-from sqlalchemy import Column, Boolean, String
-from sqlalchemy.orm import relationship, validates, reconstructor
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import Boolean, String, select
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates, reconstructor
+
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.roles import Roles
 from .associations import user_organization_association
 from .user_setting import UserSetting
 from .base import AppUsersBase
+
+if TYPE_CHECKING:
+    from .organization import Organization
+    from .resource_workflow import ResourceWorkflow
 
 __all__ = ['AppUser']
 
@@ -28,17 +35,24 @@ class AppUser(AppUsersBase):
 
     __tablename__ = 'app_users_app_users'
 
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    username = Column(String)  #: Used to map to Django user object
-    role = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    username: Mapped[Optional[str]] = mapped_column(String)  #: Used to map to Django user object
+    role: Mapped[str] = mapped_column(String, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
-    organizations = relationship('Organization',
-                                 secondary=user_organization_association,
-                                 back_populates='members')
+    organizations: Mapped[list["Organization"]] = relationship(
+        'Organization',
+        secondary=user_organization_association,
+        back_populates='members',
+    )
 
-    settings = relationship('UserSetting', back_populates='user')
+    settings: Mapped[list[UserSetting]] = relationship('UserSetting', back_populates='user')
+
+    workflows: Mapped[list["ResourceWorkflow"]] = relationship(
+        'ResourceWorkflow',
+        back_populates='creator',
+    )
 
     def __init__(self, *args, **kwargs):
         """
@@ -120,7 +134,7 @@ class AppUser(AppUsersBase):
         else:
             username = request.user.username
 
-        app_user = session.query(cls).filter(cls.username == username).one_or_none()
+        app_user = session.execute(select(cls).where(cls.username == username)).scalar_one_or_none()
 
         return app_user
 
@@ -188,7 +202,7 @@ class AppUser(AppUsersBase):
         return_value = set()
 
         if self.is_staff() or has_permission(request, 'view_all_organizations', user=self.django_user):
-            user_organizations = session.query(_Organization).all()
+            user_organizations = session.execute(select(_Organization)).scalars().all()
 
         else:
             user_organizations = self.organizations
@@ -247,19 +261,19 @@ class AppUser(AppUsersBase):
             can_get_all = has_permission(request, 'view_all_resources', user=self.django_user)
 
         if self.is_staff() or can_get_all:
-            q = session.query(_Resource)
+            stmt = select(_Resource)
 
         # Other users can only assign resources that belong to their organizations
         else:
             _Organization = self.get_organization_model()
             organization_ids = [o.id for o in self.get_organizations(session, request, cascade=cascade)]
-            q = session.query(_Resource) \
-                .filter(_Resource.organizations.any(_Organization.id.in_(organization_ids)))
+            stmt = select(_Resource) \
+                .where(_Resource.organizations.any(_Organization.id.in_(organization_ids)))
 
         if not include_children:
-            q = q.filter(~_Resource.parents.any())
+            stmt = stmt.where(~_Resource.parents.any())
 
-        resources = set(q.all())
+        resources = set(session.execute(stmt).scalars().all())
         return self.filter_resources(resources)
 
     def filter_resources(self, resources):
@@ -317,9 +331,9 @@ class AppUser(AppUsersBase):
         from tethys_sdk.permissions import has_permission
 
         if self.is_staff() or has_permission(request, 'assign_any_user', user=self.django_user):
-            return session.query(AppUser).\
-                filter(AppUser.username != AppUser.STAFF_USERNAME).\
-                all()
+            return session.execute(
+                select(AppUser).where(AppUser.username != AppUser.STAFF_USERNAME)
+            ).scalars().all()
 
         manageable_users = set()
         organizations = self.get_organizations(session, request, cascade=cascade)
@@ -424,14 +438,14 @@ class AppUser(AppUsersBase):
         """
         _UserSetting = self._get_user_setting_model()
 
-        q = session.query(_UserSetting) \
-            .filter(_UserSetting.user_id == self.id) \
-            .filter(_UserSetting.key == key) \
+        stmt = select(_UserSetting) \
+            .where(_UserSetting.user_id == self.id) \
+            .where(_UserSetting.key == key)
 
         attributes_string = _UserSetting.build_attributes_string(**kwargs)
-        q = q.filter(_UserSetting._attributes == attributes_string)
+        stmt = stmt.where(_UserSetting._attributes == attributes_string)
 
-        setting = q.one_or_none()
+        setting = session.execute(stmt).scalar_one_or_none()
 
         if as_value:
             return setting.value if setting else None
@@ -448,10 +462,10 @@ class AppUser(AppUsersBase):
         """
         _UserSetting = self._get_user_setting_model()
 
-        q = session.query(_UserSetting) \
-            .filter(_UserSetting.user_id == self.id)
+        stmt = select(_UserSetting) \
+            .where(_UserSetting.user_id == self.id)
 
-        settings = q.all()
+        settings = session.execute(stmt).scalars().all()
 
         return settings
 

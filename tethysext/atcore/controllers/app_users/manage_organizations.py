@@ -9,7 +9,8 @@
 # Django
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
-
+# SQLAlchemy
+from sqlalchemy import select
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
@@ -60,7 +61,7 @@ class ManageOrganizations(MultipleResourcesViewMixin):
 
         # List organizations: admins can see all, everyone else can see only the organizations to which they belong
         if request_app_user.is_staff() or has_permission(request, 'view_all_organizations'):
-            organizations = session.query(_Organization).all()
+            organizations = session.execute(select(_Organization)).scalars().all()
         else:
             organizations = request_app_user.get_organizations(session, request, cascade=True)
 
@@ -161,7 +162,7 @@ class ManageOrganizations(MultipleResourcesViewMixin):
 
         try:
             request_app_user = _AppUser.get_app_user_from_request(request, session)
-            organization = session.query(_Organization).get(organization_id)
+            organization = session.get(_Organization, organization_id)
             self.perform_custom_delete_operations(request, organization)
 
             # Validate permission to delete the organization

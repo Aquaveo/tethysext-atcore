@@ -3,6 +3,8 @@ import shutil
 from unittest import mock
 import uuid
 
+from sqlalchemy import func, select
+
 from tethysext.atcore.exceptions import FileDatabaseNotFoundError, FileCollectionNotFoundError, UnboundFileDatabaseError
 from tethysext.atcore.services.file_database import FileCollectionClient, FileDatabaseClient
 from tethysext.atcore.models.file_database import FileCollection, FileDatabase
@@ -66,10 +68,10 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
 
     def test_new_file_database_client(self):
         """Test the new function on the file database client."""
-        self.assertTrue(self.session.query(FileDatabase).count() == 0)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileDatabase)).scalar() == 0)
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_database_client')
         database_client = FileDatabaseClient.new(self.session, root_dir)
-        self.assertTrue(self.session.query(FileDatabase).count() == 1)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileDatabase)).scalar() == 1)
         self.assertTrue(os.path.exists(database_client.path))
 
     def test_existing_file_database_client(self):
@@ -228,7 +230,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
         database_client.set_meta('Key3', 'NewValue')
 
-        altered_collection = self.session.query(FileDatabase).get(database_id)
+        altered_collection = self.session.get(FileDatabase, database_id)
         self.assertEqual(altered_collection.meta.get('Key3', None), 'NewValue')
 
     def test_set_meta_new_value(self):
@@ -242,7 +244,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
         database_client.set_meta('NewKey', 'AddedValue')
 
-        altered_collection = self.session.query(FileDatabase).get(database_id)
+        altered_collection = self.session.get(FileDatabase, database_id)
         self.assertEqual(altered_collection.meta.get('NewKey', None), 'AddedValue')
 
     def test_new_collection(self):
@@ -259,7 +261,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         )
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection()
-        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        new_file_collection = self.session.get(FileCollection, collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
         self.assertTrue(os.path.exists(os.path.join(database_client.path, str(collection_client.instance.id))))
 
@@ -281,7 +283,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         ]
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection(items=collection_files)
-        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        new_file_collection = self.session.get(FileCollection, collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
         self.assertTrue(os.path.exists(os.path.join(database_client.path, str(collection_client.instance.id))))
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
@@ -309,7 +311,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         ]
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection(items=collection_files)
-        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        new_file_collection = self.session.get(FileCollection, collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
         self.assertTrue(os.path.exists(os.path.join(database_client.path, str(collection_client.instance.id))))
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
@@ -342,7 +344,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             items=collection_files,
             relative_to=os.path.join(root_dir, 'files')
         )
-        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        new_file_collection = self.session.get(FileCollection, collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
         self.assertTrue(os.path.exists(os.path.join(database_client.path, str(collection_client.instance.id))))
         self.assertTrue(os.path.exists(os.path.join(collection_client.path, 'file1.txt')))
@@ -367,7 +369,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         )
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
         collection_client = database_client.new_collection(meta={'Key1': 'Val1', 'Key2': 'Val2'})
-        new_file_collection = self.session.query(FileCollection).get(collection_client.instance.id)
+        new_file_collection = self.session.get(FileCollection, collection_client.instance.id)
         self.assertTrue(new_file_collection is not None)
         self.assertDictEqual(collection_client.instance.meta, {'Key1': 'Val1', 'Key2': 'Val2'})
 
@@ -385,7 +387,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
             database_meta={'Key1': 'StringValue', 'Key2': 1234, 'Key3': 1.23}
         )
         database_client = FileDatabaseClient(self.session, root_dir, database_id)
-        pre_count = self.session.query(FileCollection).count()
+        pre_count = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
         collection_files = [
             os.path.join(root_dir, 'files', 'file1.txt'),
             os.path.join(root_dir, 'files', 'dir1'),
@@ -393,7 +395,7 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         mock_new_collection.side_effect = FileNotFoundError('Mock Exception')
         with self.assertRaises(FileNotFoundError):
             _ = database_client.new_collection(items=collection_files)
-        post_count = self.session.query(FileCollection).count()
+        post_count = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
         self.assertEqual(pre_count, post_count)
 
     def test_get_collection(self):
@@ -595,21 +597,26 @@ class FileDatabaseClientTests(SqlAlchemyTestCase):
         collection_path = collection_client.path
         database_client.delete_collection(collection_id)
         self.assertTrue(
-            self.session.query(FileCollection).filter_by(id=collection_id, file_database_id=database_id).count() == 0
+            self.session.execute(
+                select(func.count()).select_from(FileCollection).where(
+                    FileCollection.id == collection_id,
+                    FileCollection.file_database_id == database_id,
+                )
+            ).scalar() == 0
         )
         self.assertFalse(os.path.exists(collection_path))
 
     def test_delete(self):
         """Test deleting the file database."""
-        self.assertTrue(self.session.query(FileDatabase).count() == 0)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileDatabase)).scalar() == 0)
         root_dir = os.path.join(self.test_files_base, 'temp', 'test_new_file_database_client')
         database_client = FileDatabaseClient.new(self.session, root_dir)
-        self.assertTrue(self.session.query(FileDatabase).count() == 1)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileDatabase)).scalar() == 1)
         self.assertTrue(os.path.exists(database_client.path))
 
         database_client.delete()
 
-        self.assertTrue(self.session.query(FileDatabase).count() == 0)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileDatabase)).scalar() == 0)
         self.assertFalse(os.path.exists(database_client.path))
 
     def test_get_delete_does_not_exist(self):

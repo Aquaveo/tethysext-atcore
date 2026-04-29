@@ -126,7 +126,7 @@ class ManageOrganizationMembersTest(SqlAlchemyTestCase):
 
         session = make_session()
 
-        session.query().get.return_value = self.organization
+        session.get.return_value = self.organization
         mock_request_app_user = mock.MagicMock()
         app_user.get_app_user_from_request.return_value = mock_request_app_user
 
@@ -178,7 +178,7 @@ class ManageOrganizationMembersTest(SqlAlchemyTestCase):
         make_session = mock_get_sessionmaker()
         session = make_session()
 
-        session.query().get.side_effect = [self.organization, self.app_user]
+        session.get.side_effect = [self.organization, self.app_user]
 
         app_user.get_app_user_from_request.return_value = self.app_user
 
@@ -227,7 +227,7 @@ class ManageOrganizationMembersTest(SqlAlchemyTestCase):
 
         app_user.get_app_user_from_request.return_value = self.app_user
 
-        session.query().get.return_value = self.organization
+        session.get.return_value = self.organization
 
         app_user.ROLES.get_no_organization_roles.return_value = ['Role1']
 

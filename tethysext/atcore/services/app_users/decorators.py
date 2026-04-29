@@ -8,6 +8,7 @@
 """
 import logging
 import traceback
+from sqlalchemy import select
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from django.http import JsonResponse
@@ -41,9 +42,9 @@ def active_user_required():
                 make_session = self.get_sessionmaker()
 
                 session = make_session()
-                app_user = session.query(_AppUser).\
-                    filter(_AppUser.username == request.user.username).\
-                    one_or_none()
+                app_user = session.execute(
+                    select(_AppUser).where(_AppUser.username == request.user.username)
+                ).scalar_one_or_none()
                 session.close()
 
                 if app_user is None:

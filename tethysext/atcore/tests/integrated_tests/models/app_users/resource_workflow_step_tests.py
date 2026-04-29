@@ -237,7 +237,7 @@ class ResourceWorkflowStepTests(SqlAlchemyTestCase):
         self.step.reset()
         self.session.commit()
 
-        q_instance = self.session.query(ResourceWorkflowStep).get(id)
+        q_instance = self.session.get(ResourceWorkflowStep, id)
 
         self.assertFalse(q_instance.dirty)
         self.assertEqual(ResourceWorkflowStep.STATUS_PENDING,

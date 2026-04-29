@@ -6,10 +6,15 @@
 * Copyright: (c) Aquaveo 2019
 ********************************************************************************
 """
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy.orm import Mapped, relationship
 from tethysext.atcore.mixins import ResultsMixin, AttributesMixin
 from tethysext.atcore.models.app_users import ResourceWorkflowStep
 from tethysext.atcore.models.app_users.associations import step_result_association
+
+if TYPE_CHECKING:
+    from tethysext.atcore.models.app_users.resource_workflow_result import ResourceWorkflowResult
 
 
 class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, ResultsMixin):
@@ -22,12 +27,19 @@ class ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, Results
         'polymorphic_identity': TYPE
     }
 
-    results = relationship(
+    results: Mapped[list["ResourceWorkflowResult"]] = relationship(
         'ResourceWorkflowResult',
         secondary=step_result_association,
         order_by='ResourceWorkflowResult.order',
         cascade='all,delete',
-        backref='steps'
+        back_populates='steps',
+    )
+
+    source: Mapped[Optional["ResourceWorkflowStep"]] = relationship(
+        'ResourceWorkflowStep',
+        back_populates='result',
+        uselist=False,
+        foreign_keys='ResourceWorkflowStep.result_id',
     )
 
     @property

@@ -14,6 +14,7 @@ from shutil import Error as ShutilErrors
 import uuid
 from typing import Generator
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tethysext.atcore.exceptions import FileCollectionNotFoundError, FileDatabaseNotFoundError, \
@@ -75,7 +76,7 @@ class FileDatabaseClient(MetaMixin):
         if self.__deleted:
             raise UnboundFileDatabaseError('The file database has been deleted.')
         if not self._instance:
-            self._instance = self._session.query(FileDatabase).get(self._database_id)
+            self._instance = self._session.get(FileDatabase, self._database_id)
             if self._instance is None:
                 raise FileDatabaseNotFoundError(f'FileDatabase with id "{str(self._database_id)}" not found.')
         return self._instance
@@ -109,9 +110,12 @@ class FileDatabaseClient(MetaMixin):
         Returns:
             The FileCollectionClient for the FileCollection.
         """
-        file_collection_count = self._session.query(FileCollection)\
-            .filter_by(id=collection_id, file_database_id=self.instance.id)\
-            .count()
+        file_collection_count = self._session.execute(
+            select(func.count())
+            .select_from(FileCollection)
+            .where(FileCollection.id == collection_id)
+            .where(FileCollection.file_database_id == self.instance.id)
+        ).scalar()
         if file_collection_count != 1:
             raise FileCollectionNotFoundError(f'Collection with id "{str(collection_id)}" could not '
                                               f'be found with this database.')
@@ -239,7 +243,7 @@ class FileCollectionClient(MetaMixin):
         if self.__deleted:
             raise UnboundFileCollectionError('The collection has been deleted.')
         if not self._instance:
-            self._instance = self._session.query(FileCollection).get(self._collection_id)
+            self._instance = self._session.get(FileCollection, self._collection_id)
             if self._instance is None:
                 raise FileCollectionNotFoundError(f'FileCollection with id "{str(self._collection_id)}" not found.')
         return self._instance

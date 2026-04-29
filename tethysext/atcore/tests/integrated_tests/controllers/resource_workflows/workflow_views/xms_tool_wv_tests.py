@@ -1,6 +1,7 @@
 from unittest import mock
 
 import param
+from sqlalchemy import select
 from django.http import HttpRequest
 
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
@@ -188,7 +189,7 @@ class XmsToolWVTests(WorkflowViewTestCase):
         )
 
         self.assertEqual(self.mock_psd(), ret)
-        step = self.session.query(XMSToolRWS).filter(XMSToolRWS.name == 'xrws').one()
+        step = self.session.execute(select(XMSToolRWS).where(XMSToolRWS.name == 'xrws')).scalar_one()
         self.assertEqual({'value': {'integer_val': '1', 'float_val': '2.0', 'string_val': '3'}},
                          step.get_parameter('form-values'))
 

@@ -281,7 +281,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     def test_handle_delete(self, _, mock_get_session, mock_custom_delete, __):
         session = mock_get_session()()
         mock_resource = mock.MagicMock()
-        session.query().get.return_value = mock_resource
+        session.get.return_value = mock_resource
 
         mock_request = self.request_factory.get('/foo/bar/')
         mock_request.user = self.django_user
@@ -303,7 +303,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
     @mock.patch.object(ResourceViewMixin, 'get_resource_model')
     def test_handle_delete_query_exception(self, _, mock_get_session, mock_custom_delete, __):
         session = mock_get_session()()
-        session.query().get.side_effect = Exception
+        session.get.side_effect = Exception
 
         mock_request = self.request_factory.get('/foo/bar/')
         mock_request.user = self.django_user

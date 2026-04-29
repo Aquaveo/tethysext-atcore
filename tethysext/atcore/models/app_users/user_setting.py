@@ -8,11 +8,15 @@
 """
 import uuid
 import json
-from sqlalchemy import Column, ForeignKey, String
+from typing import TYPE_CHECKING, Optional
+from sqlalchemy import ForeignKey, String
 from tethysext.atcore.models.types.guid import GUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import AppUsersBase
 from tethysext.atcore.mixins import AttributesMixin
+
+if TYPE_CHECKING:
+    from .app_user import AppUser
 
 
 class UserSetting(AttributesMixin, AppUsersBase):
@@ -22,13 +26,13 @@ class UserSetting(AttributesMixin, AppUsersBase):
     __tablename__ = "app_users_user_settings"
 
     # Primary and Foreign Keys
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    user_id = Column(GUID, ForeignKey('app_users_app_users.id'))
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID, ForeignKey('app_users_app_users.id'))
 
     # Properties
-    _attributes = Column(String, default=json.dumps({}))
-    key = Column(String)
-    value = Column(String)
+    _attributes: Mapped[Optional[str]] = mapped_column(String, default=json.dumps({}))
+    key: Mapped[Optional[str]] = mapped_column(String)
+    value: Mapped[Optional[str]] = mapped_column(String)
 
     # Relationship
-    user = relationship('AppUser', back_populates='settings')
+    user: Mapped[Optional["AppUser"]] = relationship('AppUser', back_populates='settings')

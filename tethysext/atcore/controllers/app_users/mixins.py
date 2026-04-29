@@ -138,7 +138,7 @@ class ResourceViewMixin(ResourceBackUrlViewMixin):
 
         request_app_user = _AppUser.get_app_user_from_request(request, session)
         try:
-            resource = session.query(_Resource).get(resource_id)
+            resource = session.get(_Resource, resource_id)
 
             # TODO: Let the apps check permissions so anonymous user only has access to app specific resources?
             if not getattr(settings, 'ENABLE_OPEN_PORTAL', False):
@@ -188,7 +188,7 @@ class MultipleResourcesViewMixin(ResourceBackUrlViewMixin):
         request_app_user = _AppUser.get_app_user_from_request(request, session)
         try:
             for _Resource in _Resources:
-                resource = session.query(_Resource).get(resource_id)
+                resource = session.get(_Resource, resource_id)
                 if resource:
                     break
 

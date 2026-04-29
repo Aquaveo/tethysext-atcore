@@ -7,13 +7,19 @@
 ********************************************************************************
 """
 import uuid
+from typing import TYPE_CHECKING, Optional
+
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Column, ForeignKey, String, PickleType, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, String, PickleType, Integer
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.mixins import StatusMixin, AttributesMixin, OptionsMixin, SerializeMixin
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.models.controller_metadata import ControllerMetadata
+
+if TYPE_CHECKING:
+    from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
+    from tethysext.atcore.models.resource_workflow_steps.results_rws import ResultsResourceWorkflowStep
 
 
 __all__ = ['ResourceWorkflowResult']
@@ -27,23 +33,38 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
     CONTROLLER = 'tethysext.atcore.controllers.resource_workflows.workflow_results_view.WorkflowResultsView'
     TYPE = 'generic_workflow_result'
 
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    resource_workflow_id = Column(GUID, ForeignKey('app_users_resource_workflows.id'))
-    controller_metadata_id = Column(GUID, ForeignKey('app_users_controller_metadata.id'))
-    type = Column(String)
-    name = Column(String)
-    codename = Column(String)
-    description = Column(String)
-    order = Column(Integer)
-    _data = Column(PickleType, default={})
-    _options = Column(PickleType, default={})
-    _attributes = Column(String)
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    resource_workflow_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        GUID, ForeignKey('app_users_resource_workflows.id'),
+    )
+    controller_metadata_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        GUID, ForeignKey('app_users_controller_metadata.id'),
+    )
+    type: Mapped[Optional[str]] = mapped_column(String)
+    name: Mapped[Optional[str]] = mapped_column(String)
+    codename: Mapped[Optional[str]] = mapped_column(String)
+    description: Mapped[Optional[str]] = mapped_column(String)
+    order: Mapped[Optional[int]] = mapped_column(Integer)
+    _data: Mapped[Optional[dict]] = mapped_column(PickleType, default={})
+    _options: Mapped[Optional[dict]] = mapped_column(PickleType, default={})
+    _attributes: Mapped[Optional[str]] = mapped_column(String)
 
-    _controller = relationship(
+    _controller: Mapped[Optional["ControllerMetadata"]] = relationship(
         'ControllerMetadata',
-        backref=backref('result'),
+        back_populates='result',
         cascade='all,delete',
         uselist=False,
+    )
+
+    workflow: Mapped[Optional["ResourceWorkflow"]] = relationship(
+        'ResourceWorkflow',
+        back_populates='results',
+    )
+
+    steps: Mapped[list["ResultsResourceWorkflowStep"]] = relationship(
+        'ResultsResourceWorkflowStep',
+        secondary='app_users_step_result_association',
+        back_populates='results',
     )
 
     __mapper_args__ = {

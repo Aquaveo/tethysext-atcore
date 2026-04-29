@@ -39,7 +39,7 @@ def run(resource_db_url: str,
         resource_db_engine = create_engine(resource_db_url, **db_engine_kwargs)
         make_resource_db_session = sessionmaker(bind=resource_db_engine)
         resource_db_session = make_resource_db_session()
-        resource = resource_db_session.query(resource_class).get(resource_id)
+        resource = resource_db_session.get(resource_class, resource_id)
 
         # Check Status List
         if len(status_keys) <= 0:

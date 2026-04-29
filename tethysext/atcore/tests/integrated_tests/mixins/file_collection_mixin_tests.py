@@ -3,6 +3,7 @@ import os
 import shutil
 import uuid
 
+from sqlalchemy import select, func
 from sqlalchemy.orm import relationship, backref
 
 from tethysext.atcore.mixins.file_collection_mixin import FileCollectionMixin
@@ -115,8 +116,8 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             file_database_client=database_client,
             files=files
         )
-        collection_count = self.session.query(FileCollection).count()
-        resource_count = self.session.query(TestResourceWithFiles).count()
+        collection_count = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count, 1)
         self.assertEqual(resource_count, 1)
         self.assertTrue(len(resource.file_collections) == 1)
@@ -137,8 +138,8 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'file2.txt'),
         ]
         resource = TestResourceWithFiles.new(database_client, files)
-        collection_count = self.session.query(FileCollection).count()
-        resource_count = self.session.query(TestResourceWithFiles).count()
+        collection_count = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count, 1)
         self.assertEqual(resource_count, 1)
         self.assertTrue(len(resource.file_collections) == 1)
@@ -156,8 +157,8 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'file2.txt'),
         ]
         resource = TestResourceWithFiles.new(database_client, files, separate_collections=True)
-        collection_count = self.session.query(FileCollection).count()
-        resource_count = self.session.query(TestResourceWithFiles).count()
+        collection_count = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count, 2)
         self.assertEqual(resource_count, 1)
         self.assertTrue(len(resource.file_collections) == 2)
@@ -169,8 +170,8 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'dir1'),
         ]
         resource = TestResourceWithFiles.new(database_client, files)
-        collection_count = self.session.query(FileCollection).count()
-        resource_count = self.session.query(TestResourceWithFiles).count()
+        collection_count = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count, 1)
         self.assertEqual(resource_count, 1)
         self.assertTrue(len(resource.file_collections) == 1)
@@ -236,13 +237,13 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'file2.txt'),
         ]
         resource = TestResourceWithFiles.new(database_client, files)
-        collection_count_before = self.session.query(FileCollection).count()
-        resource_count_before = self.session.query(TestResourceWithFiles).count()
+        collection_count_before = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count_before = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count_before, 1)
         self.assertEqual(resource_count_before, 1)
         _ = resource.duplicate(database_client)
-        collection_count_after = self.session.query(FileCollection).count()
-        resource_count_after = self.session.query(TestResourceWithFiles).count()
+        collection_count_after = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count_after = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count_after, 2)
         self.assertEqual(resource_count_after, 2)
 
@@ -254,13 +255,13 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'file2.txt'),
         ]
         resource = TestResourceWithFiles.new(database_client, files, separate_collections=True)
-        collection_count_before = self.session.query(FileCollection).count()
-        resource_count_before = self.session.query(TestResourceWithFiles).count()
+        collection_count_before = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count_before = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count_before, 2)
         self.assertEqual(resource_count_before, 1)
         _ = resource.duplicate(database_client)
-        collection_count_after = self.session.query(FileCollection).count()
-        resource_count_after = self.session.query(TestResourceWithFiles).count()
+        collection_count_after = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count_after = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count_after, 4)
         self.assertEqual(resource_count_after, 2)
 
@@ -272,12 +273,12 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'file2.txt'),
         ]
         resource = TestResourceWithFiles.new(database_client, files)
-        collection_count_before = self.session.query(FileCollection).count()
-        resource_count_before = self.session.query(TestResourceWithFiles).count()
+        collection_count_before = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count_before = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count_before, 1)
         self.assertEqual(resource_count_before, 1)
         resource.delete_collections(self.root_dir)
-        collection_count_after = self.session.query(FileCollection).count()
+        collection_count_after = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
         self.assertEqual(collection_count_after, 0)
 
     def test_delete_collections_multiple_collections(self):
@@ -288,10 +289,10 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
             os.path.join(self.root_dir, 'files', 'file2.txt'),
         ]
         resource = TestResourceWithFiles.new(database_client, files, separate_collections=True)
-        collection_count_before = self.session.query(FileCollection).count()
-        resource_count_before = self.session.query(TestResourceWithFiles).count()
+        collection_count_before = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
+        resource_count_before = self.session.execute(select(func.count()).select_from(TestResourceWithFiles)).scalar()
         self.assertEqual(collection_count_before, 2)
         self.assertEqual(resource_count_before, 1)
         resource.delete_collections(self.root_dir)
-        collection_count_after = self.session.query(FileCollection).count()
+        collection_count_after = self.session.execute(select(func.count()).select_from(FileCollection)).scalar()
         self.assertEqual(collection_count_after, 0)

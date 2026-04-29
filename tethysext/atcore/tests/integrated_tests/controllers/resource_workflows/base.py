@@ -8,6 +8,7 @@
 """
 import datetime as dt
 from unittest import mock
+from sqlalchemy import select
 from tethys_sdk.base import TethysController
 from tethysext.atcore.services.app_users.roles import Roles
 from tethysext.atcore.models.app_users.organization import Organization
@@ -97,7 +98,7 @@ class AppUsersResourceWorkflowControllerTests(SqlAlchemyTestCase):
     def test_get_app_user_model(self):
         app_user_resource_workflow = ResourceWorkflowView()
         Res = app_user_resource_workflow.get_app_user_model()
-        a = self.session.query(Res).all()
+        a = self.session.execute(select(Res)).scalars().all()
         self.assertEqual('user1', a[0].username)
         self.assertEqual(Roles.ORG_USER, a[0].role)
 
@@ -109,7 +110,7 @@ class AppUsersResourceWorkflowControllerTests(SqlAlchemyTestCase):
     def test_get_resource_model(self):
         app_user_resource_workflow = ResourceWorkflowView()
         Res = app_user_resource_workflow.get_resource_model()
-        a = self.session.query(Res).all()
+        a = self.session.execute(select(Res)).scalars().all()
         self.assertEqual('eggs', a[0].name)
         self.assertEqual('for eating', a[0].description)
         self.assertEqual(Res, type(self.resource))
@@ -201,7 +202,7 @@ class AppUsersResourceControllerTests(SqlAlchemyTestCase):
 
         resource_out = mock.MagicMock()
 
-        session.query().filter().one.return_value = resource_out
+        session.get.return_value = resource_out
 
         # call the method
         ret = app_user_resource_controller.get_resource(mock_request, self.resource_id)

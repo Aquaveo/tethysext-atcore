@@ -279,7 +279,7 @@ class ManageResources(ResourceViewMixin):
 
             # Get child resources
             for child_id in children:
-                child_resource = session.query(_Resource).get(child_id)
+                child_resource = session.get(_Resource, child_id)
                 resource.children.append(child_resource)
 
                 for organization in child_resource.organizations:
@@ -307,7 +307,7 @@ class ManageResources(ResourceViewMixin):
         session = make_session()
 
         try:
-            resource = session.query(_Resource).get(resource_id)
+            resource = session.get(_Resource, resource_id)
             try:
                 self.perform_custom_delete_operations(session, request, resource)
             except Exception:  # noqa: E722

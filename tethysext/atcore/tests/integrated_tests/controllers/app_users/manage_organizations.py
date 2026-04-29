@@ -96,6 +96,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
         self.assertIn('"success": false', ret.content.decode("utf-8"))
         self.assertIn('"error": "Invalid action: foo"', ret.content.decode("utf-8"))
 
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.select')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.render')
     @mock.patch.object(ManageOrganizations, 'add_custom_fields')
     @mock.patch('tethysext.atcore.controllers.app_users.manage_organizations.has_permission')
@@ -104,7 +105,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
     @mock.patch.object(AppUsersViewMixin, 'get_app_user_model')
     @mock.patch.object(AppUsersViewMixin, 'get_organization_model')
     def test_handle_get(self, _, mock_get_app_user, mock_get_session, __, mock_has_permissions,
-                        ___, mock_render):
+                        ___, mock_render, mock_select):
         mock_request = self.request_factory.get('/foo/bar/')
         mock_request.user = self.django_user
 
@@ -113,7 +114,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
 
         mock_get_app_user().get_app_user_from_request.return_value = mock_app_user
 
-        mock_make_session.query().all.return_value = [self.organization]
+        mock_make_session.execute().scalars().all.return_value = [self.organization]
 
         mock_app_user.is_staff.return_value = True
         mock_has_permissions.return_value = True
@@ -177,7 +178,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
 
         mock_get_app_user().get_app_user_from_request.return_value = mock_app_user
 
-        mock_make_session.query().get.return_value = self.organization
+        mock_make_session.get.return_value = self.organization
 
         # call the method
         organization_id = 'O001'
@@ -213,7 +214,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
         app_user.get_app_user_from_request.return_value = mock_app_user
 
         self.organization.consultant = consultant
-        mock_make_session.query().get.return_value = self.organization
+        mock_make_session.get.return_value = self.organization
 
         # call the method
         organization_id = 'O001'
@@ -243,7 +244,7 @@ class ManageOrganizationsTests(SqlAlchemyTestCase):
 
         mock_get_app_user().get_app_user_from_request.return_value = mock_app_user
 
-        mock_make_session.query().get.return_value = self.organization
+        mock_make_session.get.return_value = self.organization
 
         mock_has_permission.return_value = False
 
