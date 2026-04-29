@@ -8,6 +8,7 @@
 """
 from unittest import mock
 
+from sqlalchemy import select
 from django.test import RequestFactory
 from django.http import JsonResponse
 from tethys_apps.models import TethysApp
@@ -533,7 +534,7 @@ class ResourceWorkflowsTabTests(SqlAlchemyTestCase):
         self.mock_messages.success.assert_called_with(request, 'Successfully created new Basic Workflow: New Workflow')
         self.assertEqual(self.mock_redirect(), ret)
 
-        self.session.query(ResourceWorkflow).filter(ResourceWorkflow.name == 'New Workflow').one()
+        self.session.execute(select(ResourceWorkflow).where(ResourceWorkflow.name == 'New Workflow')).scalar_one()
 
     def test_post_new_workflow_not_in_params(self):
         """Test new workflow form submissions with missing new-workflow parameter."""
@@ -619,7 +620,7 @@ class ResourceWorkflowsTabTests(SqlAlchemyTestCase):
         self.mock_log.info.assert_called_with(f'Deleted Workflow: {self.workflow}')
         self.assertIsInstance(ret, JsonResponse)
         self.assertEqual(b'{"success": true}', ret.content)
-        self.assertIsNone(self.session.query(ResourceWorkflow).get(workflow_id))
+        self.assertIsNone(self.session.get(ResourceWorkflow, workflow_id))
 
     def test_delete_exception(self):
         """Test delete workflows requests with exception occurring."""
