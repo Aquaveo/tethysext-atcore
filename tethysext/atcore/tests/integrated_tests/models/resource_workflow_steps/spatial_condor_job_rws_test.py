@@ -23,7 +23,7 @@ class SpatialCondorJobRWSTests(SqlAlchemyTestCase):
     def test_query(self):
         self.session.add(self.instance)
         self.session.commit()
-        ret = self.session.query(SpatialCondorJobRWS).get(self.instance.id)
+        ret = self.session.get(SpatialCondorJobRWS, self.instance.id)
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):

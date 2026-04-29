@@ -1,4 +1,5 @@
 import uuid
+from sqlalchemy import select
 from unittest.mock import patch
 from tethysext.atcore.models.app_users import Organization, AppUser, Resource
 from tethysext.atcore.tests.mock.permissions import mock_has_permission_false
@@ -226,13 +227,19 @@ class OrganizationTests(SqlAlchemyTestCase):
     def test_receive_before_delete(self):
         self.session.delete(self.organization)
         self.session.commit()
-        staff_user = self.session.query(AppUser).filter(AppUser.id == self.staff_user_id).one_or_none()
+        staff_user = self.session.execute(
+            select(AppUser).where(AppUser.id == self.staff_user_id)
+        ).scalar_one_or_none()
         self.assertIsNotNone(staff_user)
 
-        normal_user = self.session.query(AppUser).filter(AppUser.id == self.normal_user_id).one_or_none()
+        normal_user = self.session.execute(
+            select(AppUser).where(AppUser.id == self.normal_user_id)
+        ).scalar_one_or_none()
         self.assertIsNone(normal_user)
 
-        resource = self.session.query(Resource).filter(Resource.id == self.resource_id).one_or_none()
+        resource = self.session.execute(
+            select(Resource).where(Resource.id == self.resource_id)
+        ).scalar_one_or_none()
         self.assertIsNone(resource)
 
     def test_is_member_true(self):

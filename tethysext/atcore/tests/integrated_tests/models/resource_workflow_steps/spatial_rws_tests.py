@@ -24,7 +24,7 @@ class SpatialResourceWorkflowStepTests(SqlAlchemyTestCase):
     def test_query(self):
         self.session.add(self.instance)
         self.session.commit()
-        ret = self.session.query(SpatialResourceWorkflowStep).get(self.instance.id)
+        ret = self.session.get(SpatialResourceWorkflowStep, self.instance.id)
         self.assertEqual(self.instance, ret)
 
     @mock.patch('tethysext.atcore.models.resource_workflow_steps.spatial_rws.SpatialResourceWorkflowStep.get_parameter')

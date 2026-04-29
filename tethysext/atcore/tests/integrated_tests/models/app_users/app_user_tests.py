@@ -1,5 +1,6 @@
 import uuid
 from django.contrib.auth.models import User
+from sqlalchemy import func, select
 from unittest.mock import patch, MagicMock
 from tethys_sdk.base import TethysController
 from tethysext.atcore.models.app_users import AppUser, Organization, Resource
@@ -168,9 +169,9 @@ class AppUserTests(SqlAlchemyTestCase):
         self.session.add(self.rsrc3)
         self.session.commit()
 
-        self.staff_user = self.session.query(AppUser). \
-            filter(AppUser.username == AppUser.STAFF_USERNAME). \
-            one()
+        self.staff_user = self.session.execute(
+            select(AppUser).where(AppUser.username == AppUser.STAFF_USERNAME)
+        ).scalar_one()
 
         self.staff_user_request = MockDjangoRequest(
             user_username="im_staff",
@@ -197,7 +198,7 @@ class AppUserTests(SqlAlchemyTestCase):
         )
 
     def test_create_user(self):
-        user = self.session.query(AppUser).get(self.user_id)
+        user = self.session.get(AppUser, self.user_id)
         self.assertEqual(user.username, self.username)
         self.assertEqual(user.role, self.role)
         self.assertEqual(user.is_active, self.is_active)
@@ -760,56 +761,56 @@ class AppUserTests(SqlAlchemyTestCase):
         settings = self._init_settings_same_keys()
         settings_to_delete = [settings[0], settings[2]]
         self.user.delete_existing_settings(self.session, settings_to_delete)
-        count = self.session.query(UserSetting).count()
+        count = self.session.execute(select(func.count()).select_from(UserSetting)).scalar()
         self.assertEqual(2, count)
 
     def test_update_setting(self):
         self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_non_existing(self):
         self.user.update_setting(self.session, 'one', '2')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_resource(self):
         self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', resource=self.rsrc1)
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_secondary_id(self):
         self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', secondary_id='another-id')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_page(self):
         self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', page='a_page')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(1, len(settings))
 
     def test_update_setting_no_commit(self):
         self._init_settings_same_keys_same_values()
         self.user.update_setting(self.session, 'one', '2', commit=False)
         self.session.rollback()
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(0, len(settings))
 
     def test_update_setting_multiple_times(self):
         self.user.update_setting(self.session, 'one', '1')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '1').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '1')).scalars().all()
         self.assertEqual(1, len(settings))
         self.user.update_setting(self.session, 'one', '2')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '2').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '2')).scalars().all()
         self.assertEqual(1, len(settings))
         self.user.update_setting(self.session, 'one', '3')
-        settings = self.session.query(UserSetting).filter(UserSetting.value == '3').all()
+        settings = self.session.execute(select(UserSetting).where(UserSetting.value == '3')).scalars().all()
         self.assertEqual(1, len(settings))
-        all_one_settings = self.session.query(UserSetting).filter(UserSetting.key == 'one').all()
+        all_one_settings = self.session.execute(select(UserSetting).where(UserSetting.key == 'one')).scalars().all()
         self.assertEqual(1, len(all_one_settings))
 
     @patch('tethys_sdk.permissions.has_permission', side_effect=mock_has_permission_false)

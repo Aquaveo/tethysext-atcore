@@ -3,6 +3,8 @@ import os
 import shutil
 import uuid
 
+from sqlalchemy import func, select
+
 from tethysext.atcore.exceptions import FileCollectionNotFoundError, UnboundFileCollectionError, \
     FileCollectionItemNotFoundError, FileCollectionItemAlreadyExistsError
 from tethysext.atcore.services.file_database import FileDatabaseClient, FileCollectionClient
@@ -82,9 +84,9 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         if os.path.exists(root_dir):
             shutil.rmtree(root_dir)
         database_client = FileDatabaseClient.new(self.session, root_dir)
-        self.assertTrue(self.session.query(FileCollection).count() == 0)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileCollection)).scalar() == 0)
         collection_client = FileCollectionClient.new(self.session, database_client)
-        self.assertTrue(self.session.query(FileCollection).count() == 1)
+        self.assertTrue(self.session.execute(select(func.count()).select_from(FileCollection)).scalar() == 1)
         self.assertTrue(os.path.exists(collection_client.path))
 
     def test_path_property(self):
@@ -278,7 +280,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.set_meta('Key3', 'NewValue')
 
-        altered_collection = self.session.query(FileCollection).get(collection_id)
+        altered_collection = self.session.get(FileCollection, collection_id)
         self.assertEqual(altered_collection.meta.get('Key3', None), 'NewValue')
 
     def test_set_meta_new_value(self):
@@ -296,7 +298,7 @@ class FileCollectionClientTests(SqlAlchemyTestCase):
         collection_client = FileCollectionClient(self.session, database_client, collection_id)
         collection_client.set_meta('NewKey', 'AddedValue')
 
-        altered_collection = self.session.query(FileCollection).get(collection_id)
+        altered_collection = self.session.get(FileCollection, collection_id)
         self.assertEqual(altered_collection.meta.get('NewKey', None), 'AddedValue')
 
     def test_collection_delete(self):

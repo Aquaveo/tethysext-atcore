@@ -23,7 +23,7 @@ class ResultsResourceWorkflowStepTests(SqlAlchemyTestCase):
     def test_query(self):
         self.session.add(self.instance)
         self.session.commit()
-        ret = self.session.query(ResultsResourceWorkflowStep).get(self.instance.id)
+        ret = self.session.get(ResultsResourceWorkflowStep, self.instance.id)
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):

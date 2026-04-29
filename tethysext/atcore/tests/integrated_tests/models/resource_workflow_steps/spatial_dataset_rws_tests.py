@@ -39,7 +39,7 @@ class SpatialDatasetRWSTests(SqlAlchemyTestCase):
     def test_query(self):
         self.session.add(self.instance)
         self.session.commit()
-        ret = self.session.query(SpatialDatasetRWS).get(self.instance.id)
+        ret = self.session.get(SpatialDatasetRWS, self.instance.id)
         self.assertEqual(self.instance, ret)
 
     def test_default_options(self):
