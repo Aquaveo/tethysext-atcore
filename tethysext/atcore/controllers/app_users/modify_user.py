@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.contrib import messages
+from sqlalchemy import select
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from tethys_apps.decorators import permission_required
@@ -88,9 +89,9 @@ class ModifyUser(AppUsersViewMixin):
             edit_session = make_session()
 
             try:
-                target_app_user = edit_session.query(_AppUser).\
-                    filter(_AppUser.id == user_id).\
-                    one()
+                target_app_user = edit_session.execute(
+                    select(_AppUser).where(_AppUser.id == user_id)
+                ).scalar_one()
 
             except (StatementError, NoResultFound):
                 messages.warning(request, 'The user could not be found.')
@@ -196,7 +197,7 @@ class ModifyUser(AppUsersViewMixin):
 
                 # Lookup existing app user and django user
                 if editing:
-                    target_app_user = modify_session.query(_AppUser).get(user_id)
+                    target_app_user = modify_session.get(_AppUser, user_id)
                     django_user = target_app_user.django_user
 
                     # Reset organizations
@@ -229,7 +230,7 @@ class ModifyUser(AppUsersViewMixin):
 
                 # Update organizations
                 for selected_organization in selected_organizations:
-                    organization = modify_session.query(_Organization).get(selected_organization)
+                    organization = modify_session.get(_Organization, selected_organization)
                     target_app_user.organizations.append(organization)
 
                 # Persist changes

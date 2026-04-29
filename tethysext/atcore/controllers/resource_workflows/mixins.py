@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
 from tethysext.atcore.models.app_users import ResourceWorkflow, ResourceWorkflowStep, ResourceWorkflowResult
 
@@ -37,9 +39,9 @@ class WorkflowViewMixin(ResourceViewMixin):
             session = make_session()
 
         try:
-            workflow = session.query(_ResourceWorkflow). \
-                filter(_ResourceWorkflow.id == workflow_id). \
-                one()
+            workflow = session.execute(
+                select(_ResourceWorkflow).where(_ResourceWorkflow.id == workflow_id)
+            ).scalar_one()
 
         finally:
             if manage_session:
@@ -68,9 +70,9 @@ class WorkflowViewMixin(ResourceViewMixin):
             session = make_session()
 
         try:
-            step = session.query(_ResourceWorkflowStep). \
-                filter(_ResourceWorkflowStep.id == step_id). \
-                one()
+            step = session.execute(
+                select(_ResourceWorkflowStep).where(_ResourceWorkflowStep.id == step_id)
+            ).scalar_one()
 
         finally:
             if manage_session:
@@ -110,9 +112,9 @@ class ResultViewMixin(ResourceViewMixin):
             session = make_session()
 
         try:
-            workflow = session.query(_ResourceWorkflowResult). \
-                filter(_ResourceWorkflowResult.id == result_id). \
-                one()
+            workflow = session.execute(
+                select(_ResourceWorkflowResult).where(_ResourceWorkflowResult.id == result_id)
+            ).scalar_one()
 
         finally:
             if manage_session:

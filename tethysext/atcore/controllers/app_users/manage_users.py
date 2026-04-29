@@ -11,6 +11,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
+# SQLAlchemy
+from sqlalchemy import select
 # Tethys core
 from tethys_sdk.permissions import has_permission, permission_required
 # ATCore
@@ -75,7 +77,9 @@ class ManageUsers(AppUsersViewMixin):
         # App admins can see all users of the portal
         if has_permission(request, 'view_all_users'):
             # Django users
-            app_users = session.query(_AppUser).filter(_AppUser.username != request_app_user.username).all()
+            app_users = session.execute(
+                select(_AppUser).where(_AppUser.username != request_app_user.username)
+            ).scalars().all()
         else:
             # All others can manage users that belong to their organizations or organizations they consult
             app_users = request_app_user.get_peers(session, request, include_self=False, cascade=True)
@@ -163,7 +167,7 @@ class ManageUsers(AppUsersViewMixin):
         json_response = {'success': True}
         session = make_session()
         try:
-            app_user = session.query(_AppUser).get(user_id)
+            app_user = session.get(_AppUser, user_id)
             django_user = app_user.get_django_user()
             django_user.delete()
             session.delete(app_user)
@@ -192,7 +196,7 @@ class ManageUsers(AppUsersViewMixin):
         json_response = {'success': True}
         session = make_session()
         try:
-            app_user = session.query(_AppUser).get(user_id)
+            app_user = session.get(_AppUser, user_id)
             permissions_manager.remove_all_permissions_groups(app_user)
             session.delete(app_user)
             session.commit()

@@ -55,7 +55,7 @@ class WorkflowViewMixinTests(unittest.TestCase):
         ret = self.instance.get_workflow(request=mock.MagicMock(), workflow_id='valid workflow id',
                                          session=mock_session)
 
-        self.assertEqual(mock_session.query().filter().one(), ret)
+        self.assertEqual(mock_session.execute().scalar_one(), ret)
         mock_session.close.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_resource_workflow_model')
@@ -68,7 +68,7 @@ class WorkflowViewMixinTests(unittest.TestCase):
 
         self.instance.get_sessionmaker.assert_called()
         self.instance.get_sessionmaker().assert_called()
-        self.assertEqual(mock_session.query().filter().one(), ret)
+        self.assertEqual(mock_session.execute().scalar_one(), ret)
         mock_session.close.assert_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_resource_workflow_step_model')  # noqa: E501
@@ -78,7 +78,7 @@ class WorkflowViewMixinTests(unittest.TestCase):
 
         ret = self.instance.get_step(request=mock.MagicMock(), step_id='valid step id', session=mock_session)
 
-        self.assertEqual(mock_session.query().filter().one(), ret)
+        self.assertEqual(mock_session.execute().scalar_one(), ret)
         mock_session.close.assert_not_called()
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_resource_workflow_step_model')  # noqa: E501
@@ -91,5 +91,5 @@ class WorkflowViewMixinTests(unittest.TestCase):
 
         self.instance.get_sessionmaker.assert_called()
         self.instance.get_sessionmaker().assert_called()
-        self.assertEqual(mock_session.query().filter().one(), ret)
+        self.assertEqual(mock_session.execute().scalar_one(), ret)
         mock_session.close.assert_called()

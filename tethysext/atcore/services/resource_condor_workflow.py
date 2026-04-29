@@ -128,7 +128,7 @@ class ResourceCondorWorkflow(object):
             resource_db_engine = create_engine(self.resource_db_url, **self.db_engine_kwargs)
             make_resource_db_session = sessionmaker(bind=resource_db_engine)
             resource_db_session = make_resource_db_session()
-            resource = resource_db_session.query(Resource).get(self.resource_id)
+            resource = resource_db_session.get(Resource, self.resource_id)
 
             resource.set_status(Resource.ROOT_STATUS_KEY, Resource.STATUS_PENDING)
             resource_db_session.commit()

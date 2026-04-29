@@ -69,7 +69,7 @@ class ManageOrganizationMembers(AppUsersViewMixin):
         request_app_user = _AppUser.get_app_user_from_request(request, session)
 
         # Defaults
-        organization = session.query(_Organization).get(organization_id)
+        organization = session.get(_Organization, organization_id)
         selected_members = [str(u.id) for u in organization.members]
         members_select_errors = ""
         is_client = organization.consultant and organization.consultant.is_member(request_app_user)
@@ -95,7 +95,7 @@ class ManageOrganizationMembers(AppUsersViewMixin):
 
                 # Add members and assign custom_permissions again
                 for user_id in selected_members:
-                    user = session.query(_AppUser).get(user_id)
+                    user = session.get(_AppUser, user_id)
                     organization.members.append(user)
 
                 # Persist changes
