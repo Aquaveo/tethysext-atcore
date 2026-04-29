@@ -12,6 +12,7 @@ from abc import abstractmethod
 from django.http import JsonResponse
 from django.shortcuts import reverse, redirect
 from django.contrib import messages
+from sqlalchemy import select
 from tethys_sdk.permissions import has_permission
 
 from tethysext.atcore.models.app_users import ResourceWorkflow
@@ -128,9 +129,11 @@ class ResourceWorkflowsTab(ResourceTab):
         )
 
         if not self.show_all_workflows and app_user_role not in self.show_all_workflows_roles:
-            workflows_query = workflows_query.filter(ResourceWorkflow.creator_id == app_user.id)
+            workflows_query = workflows_query.where(ResourceWorkflow.creator_id == app_user.id)
 
-        workflows = workflows_query.order_by(ResourceWorkflow.date_created.desc()).all()
+        workflows = session.execute(
+            workflows_query.order_by(ResourceWorkflow.date_created.desc())
+        ).scalars().all()
 
         # Build up workflow cards for workflows table
         workflow_cards = []
@@ -272,7 +275,7 @@ class ResourceWorkflowsTab(ResourceTab):
             session = make_session()
 
             # Get the workflow
-            workflow = session.query(ResourceWorkflow).get(workflow_id)
+            workflow = session.get(ResourceWorkflow, workflow_id)
 
             # Delete the workflow
             session.delete(workflow)
@@ -304,6 +307,6 @@ class ResourceWorkflowsTab(ResourceTab):
         for child in resource.children:
             resource_ids.append(child.id)
 
-        workflows_query = session.query(ResourceWorkflow) \
-            .filter(ResourceWorkflow.resource_id.in_(resource_ids))
+        workflows_query = select(ResourceWorkflow) \
+            .where(ResourceWorkflow.resource_id.in_(resource_ids))
         return workflows_query

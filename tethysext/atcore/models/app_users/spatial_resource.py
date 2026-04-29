@@ -7,10 +7,11 @@
 ********************************************************************************
 """
 import json
-from typing import Union
+from typing import Optional, Union
 
-from sqlalchemy import func, inspect, Column
-from geoalchemy2.types import Geometry
+from sqlalchemy import func, inspect, select
+from sqlalchemy.orm import Mapped, mapped_column
+from geoalchemy2.types import Geometry, WKBElement
 
 from tethysext.atcore.exceptions import InvalidSpatialResourceExtentTypeError
 from tethysext.atcore.models.app_users.resource import Resource
@@ -24,7 +25,7 @@ class SpatialResource(Resource):
     DISPLAY_TYPE_SINGULAR = 'Spatial Resource'
     DISPLAY_TYPE_PLURAL = 'Spatial Resources'
 
-    extent = Column(Geometry)
+    extent: Mapped[Optional[WKBElement]] = mapped_column(Geometry)
 
     # Polymorphism
     __mapper_args__ = {
@@ -48,11 +49,11 @@ class SpatialResource(Resource):
             object_to_convert = json.dumps(obj)
         session = inspect(self).session
         if object_format == 'wkt':
-            qry = session.query(func.ST_SetSRID(func.ST_GeomFromEWKT(object_to_convert), srid).label('geom'))
-            new_extent = qry.first().geom
+            stmt = select(func.ST_SetSRID(func.ST_GeomFromEWKT(object_to_convert), srid).label('geom'))
+            new_extent = session.execute(stmt).first().geom
         else:
-            qry = session.query(func.ST_SetSRID(func.ST_GeomFromGeoJSON(object_to_convert), srid).label('geom'))
-            new_extent = qry.first().geom
+            stmt = select(func.ST_SetSRID(func.ST_GeomFromGeoJSON(object_to_convert), srid).label('geom'))
+            new_extent = session.execute(stmt).first().geom
         self.extent = new_extent
 
     def get_extent(self, extent_type: str = 'dict'):
@@ -71,17 +72,17 @@ class SpatialResource(Resource):
 
         session = inspect(self).session
         if extent_type == 'wkt':
-            qry = session.query(func.ST_AsEWKT(self.extent).label('extent'))
+            stmt = select(func.ST_AsEWKT(self.extent).label('extent'))
         else:
-            qry = session.query(func.ST_AsGeoJSON(self.extent).label('extent'))
-        extent = qry.first().extent
+            stmt = select(func.ST_AsGeoJSON(self.extent).label('extent'))
+        extent = session.execute(stmt).first().extent
         if extent_type == 'dict':
             extent = json.loads(extent)
         return extent
 
     def update_extent_srid(self, srid):
         session = inspect(self).session
-        qry = session.query(func.ST_SetSRID(self.extent, srid).label('geom'))
-        new_extent = qry.first().geom
+        stmt = select(func.ST_SetSRID(self.extent, srid).label('geom'))
+        new_extent = session.execute(stmt).first().geom
 
         self.extent = new_extent

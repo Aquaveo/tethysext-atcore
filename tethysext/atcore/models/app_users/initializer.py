@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from .base import AppUsersBase
 from .app_user import AppUser
@@ -19,9 +20,9 @@ def initialize_app_users_db(engine, first_time=False, app_user_model=AppUser):
     Session = sessionmaker(engine)
     session = Session()
 
-    staff_user = session.query(app_user_model).\
-        filter(app_user_model.username == app_user_model.STAFF_USERNAME).\
-        one_or_none()
+    staff_user = session.execute(
+        select(app_user_model).where(app_user_model.username == app_user_model.STAFF_USERNAME)
+    ).scalar_one_or_none()
 
     if not staff_user:
         new_user = app_user_model(

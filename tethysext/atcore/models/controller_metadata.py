@@ -8,11 +8,17 @@
 """
 import inspect
 import uuid
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, String, PickleType
+from sqlalchemy import String, PickleType
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from tethysext.atcore.models.types import GUID
 from tethysext.atcore.models.app_users.base import AppUsersBase
 from tethysext.atcore.utilities import import_from_string
+
+if TYPE_CHECKING:
+    from tethysext.atcore.models.app_users.resource_workflow_step import ResourceWorkflowStep
+    from tethysext.atcore.models.app_users.resource_workflow_result import ResourceWorkflowResult
 
 __all__ = ['ControllerMetadata']
 
@@ -23,10 +29,22 @@ class ControllerMetadata(AppUsersBase):
     """
     __tablename__ = 'app_users_controller_metadata'
 
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    path = Column(String)
-    kwargs = Column(PickleType, default={})
-    http_methods = Column(PickleType, default=['get', 'post', 'delete'])
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    path: Mapped[Optional[str]] = mapped_column(String)
+    kwargs: Mapped[Optional[dict]] = mapped_column(PickleType, default={})
+    http_methods: Mapped[Optional[list]] = mapped_column(PickleType, default=['get', 'post', 'delete'])
+
+    step: Mapped[Optional["ResourceWorkflowStep"]] = relationship(
+        'ResourceWorkflowStep',
+        back_populates='_controller',
+        uselist=False,
+    )
+
+    result: Mapped[Optional["ResourceWorkflowResult"]] = relationship(
+        'ResourceWorkflowResult',
+        back_populates='_controller',
+        uselist=False,
+    )
 
     def instantiate(self, **kwargs):
         """

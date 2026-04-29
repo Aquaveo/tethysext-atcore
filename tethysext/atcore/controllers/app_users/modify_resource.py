@@ -14,6 +14,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 # Tethys core
+from sqlalchemy import select
 from tethys_sdk.permissions import permission_required, has_permission
 from tethys_apps.utilities import get_active_app
 from tethys_gizmos.gizmo_options import TextInput, SelectInput
@@ -179,7 +180,7 @@ class ModifyResource(ResourceViewMixin):
                 if valid and custom_valid:
                     # Look up existing resource
                     if editing:
-                        resource = session.query(_Resource).get(resource_id)
+                        resource = session.get(_Resource, resource_id)
                         if not resource:
                             raise ATCoreException('Unable to find {}'.format(
                                 _Resource.DISPLAY_TYPE_SINGULAR.lower()
@@ -205,23 +206,23 @@ class ModifyResource(ResourceViewMixin):
 
                     # Assign project to organizations
                     for organization_id in selected_organizations:
-                        organization = session.query(_Organization).get(organization_id)
+                        organization = session.get(_Organization, organization_id)
                         if organization:
                             resource.organizations.append(organization)
 
                     if self.enable_relationship_fields:
                         # Assign parents to resource
                         if enable_parents_field and selected_parents:
-                            parents = session.query(_Resource) \
-                                .filter(_Resource.id.in_(selected_parents)) \
-                                .all()
+                            parents = session.execute(
+                                select(_Resource).where(_Resource.id.in_(selected_parents))
+                            ).scalars().all()
                             resource.parents.extend(parents)
 
                         # Assign children to resource
                         if enable_children_field and selected_children:
-                            children = session.query(_Resource) \
-                                .filter(_Resource.id.in_(selected_children)) \
-                                .all()
+                            children = session.execute(
+                                select(_Resource).where(_Resource.id.in_(selected_children))
+                            ).scalars().all()
                             resource.children.extend(children)
 
                     # Assign spatial reference id, handling change if editing
@@ -259,7 +260,7 @@ class ModifyResource(ResourceViewMixin):
             # Setup edit form fields
             if editing:
                 # Get existing resource
-                resource = session.query(_Resource).get(resource_id)
+                resource = session.get(_Resource, resource_id)
                 can_edit_resource, msg = self.can_edit_resource(session, request, request_app_user, resource)
 
                 if not can_edit_resource:
@@ -526,14 +527,14 @@ class ModifyResource(ResourceViewMixin):
         _Organization = self.get_organization_model()
 
         # Resource belonging to user's organization
-        parents_options_query = session.query(_Resource) \
-            .filter(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
+        parents_options_stmt = select(_Resource) \
+            .where(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
 
         # If resource is defined (editing) also exclude that resource
         if resource is not None:
-            parents_options_query = parents_options_query.filter(_Resource.id != resource.id)
+            parents_options_stmt = parents_options_stmt.where(_Resource.id != resource.id)
 
-        parents_options = [(p.name, p.id) for p in parents_options_query.all()]
+        parents_options = [(p.name, p.id) for p in session.execute(parents_options_stmt).scalars().all()]
         return parents_options
 
     def get_child_select_options(self, session, request, request_app_user, resource, app_user_organizations):
@@ -554,14 +555,14 @@ class ModifyResource(ResourceViewMixin):
         _Organization = self.get_organization_model()
 
         # Resource belonging to user's organization
-        children_options_query = session.query(_Resource) \
-            .filter(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
+        children_options_stmt = select(_Resource) \
+            .where(_Resource.organizations.any(_Organization.id.in_(app_user_organizations)))
 
         # If resource is defined (editing) also exclude that resource
         if resource is not None:
-            children_options_query = children_options_query.filter(_Resource.id != resource.id)
+            children_options_stmt = children_options_stmt.where(_Resource.id != resource.id)
 
-        children_options = [(c.name, c.id) for c in children_options_query.all()]
+        children_options = [(c.name, c.id) for c in session.execute(children_options_stmt).scalars().all()]
         return children_options
 
     def handle_srid_changed(self, session, request, request_app_user, resource, old_srid, new_srid):

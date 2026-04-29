@@ -1,12 +1,18 @@
+import datetime
 import uuid
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import event, text
-from sqlalchemy import Column, Boolean, String, ForeignKey, DateTime, func
-from sqlalchemy.orm import relationship, backref, validates
+from sqlalchemy import Boolean, String, ForeignKey, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.licenses import Licenses
 from tethysext.atcore.mixins import AttributesMixin
 from .associations import organization_resource_association, user_organization_association
 from .base import AppUsersBase
+
+if TYPE_CHECKING:
+    from .app_user import AppUser
+    from .resource import Resource
 
 __all__ = ['Organization']
 
@@ -23,26 +29,41 @@ class Organization(AppUsersBase, AttributesMixin):
     DISPLAY_TYPE_PLURAL = 'Organizations'
     LICENSES = Licenses()
 
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    parent_id = Column(GUID, ForeignKey('app_users_organizations.id'))
-    name = Column(String)
-    type = Column(String)
-    created = Column(DateTime, default=func.now())
-    license = Column(String, nullable=False)
-    license_expires = Column(DateTime)
-    active = Column(Boolean, default=True)
-    archived = Column(Boolean, default=False)
-    _attributes = Column(String)
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    parent_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID, ForeignKey('app_users_organizations.id'))
+    name: Mapped[Optional[str]] = mapped_column(String)
+    type: Mapped[Optional[str]] = mapped_column(String)
+    created: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, default=func.now())
+    license: Mapped[str] = mapped_column(String, nullable=False)
+    license_expires: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    _attributes: Mapped[Optional[str]] = mapped_column(String)
 
     # Relationships
-    resources = relationship('Resource',
-                             secondary=organization_resource_association,
-                             back_populates='organizations')
-    members = relationship('AppUser',
-                           secondary=user_organization_association,
-                           back_populates='organizations')
-    clients = relationship('Organization', cascade='all,delete',
-                           backref=backref('consultant', remote_side=[id]))
+    resources: Mapped[list["Resource"]] = relationship(
+        'Resource',
+        secondary=organization_resource_association,
+        back_populates='organizations',
+    )
+    members: Mapped[list["AppUser"]] = relationship(
+        'AppUser',
+        secondary=user_organization_association,
+        back_populates='organizations',
+    )
+    clients: Mapped[list["Organization"]] = relationship(
+        'Organization',
+        cascade='all,delete',
+        back_populates='consultant',
+        foreign_keys=[parent_id],
+    )
+
+    consultant: Mapped[Optional["Organization"]] = relationship(
+        'Organization',
+        remote_side=[id],
+        back_populates='clients',
+        foreign_keys=[parent_id],
+    )
 
     # Polymorphism
     __mapper_args__ = {
