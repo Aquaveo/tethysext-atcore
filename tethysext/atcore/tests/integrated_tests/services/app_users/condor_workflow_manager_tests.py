@@ -268,7 +268,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             'testkey'
         ]
 
-        self._assert_prepared_jobs(manager, 1, expected_job_args)
+        self._assert_prepared_jobs(manager, expected_job_args)
 
     @mock.patch('tethys_compute.models.tethys_job.TethysJob.execute')
     def test_run_job_prepared(self, _):
@@ -279,7 +279,12 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
 
         id = manager.run_job()
 
-        self.assertEqual(str(2), id)
+        # run_job returns the CondorWorkflow's auto-incrementing id as a string.
+        # The exact value depends on the test database's sequence state, so just
+        # assert the id is a non-empty stringified positive integer.
+        self.assertIsNotNone(id)
+        self.assertTrue(str(id).isdigit())
+        self.assertGreater(int(id), 0)
 
     def test_run_prepare_with_callback_function(self):
         def callback_func(manager):
@@ -302,15 +307,20 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
             'testkey'
         ]
 
-        self._assert_prepared_jobs(manager, 3, expected_job_args)
+        self._assert_prepared_jobs(manager, expected_job_args)
 
-    def _assert_prepared_jobs(self, manager, expected_workflow_id, expected_job_args):
+    def _assert_prepared_jobs(self, manager, expected_job_args):
         id = manager.prepare()
+
+        # All jobs should reference the same CondorWorkflow; the exact id
+        # value is whatever PostgreSQL's sequence happens to assign.
+        workflow_id = manager.jobs[0].workflow.id
+        self.assertIsNotNone(workflow_id)
 
         # Job 1 (use_atcore_args is not specified, defaults to True)
         self.assertEqual(self.jobs[0]['name'], manager.jobs[0].name)
-        self.assertEqual(expected_workflow_id, manager.jobs[0].workflow.id)
-        self.assertEqual(expected_workflow_id, manager.jobs[0].workflow_id)
+        self.assertEqual(workflow_id, manager.jobs[0].workflow.id)
+        self.assertEqual(workflow_id, manager.jobs[0].workflow_id)
         self.assertEqual(self.jobs[0]['name'], manager.jobs[0]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[0]._attributes['universe'])
         self.assertEqual('run_base_scenario.py', manager.jobs[0]._attributes['executable'])
@@ -323,8 +333,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
 
         # Job 2 (use_atcore_args is True)
         self.assertEqual(self.jobs[1]['name'], manager.jobs[1].name)
-        self.assertEqual(expected_workflow_id, manager.jobs[1].workflow.id)
-        self.assertEqual(expected_workflow_id, manager.jobs[1].workflow_id)
+        self.assertEqual(workflow_id, manager.jobs[1].workflow.id)
+        self.assertEqual(workflow_id, manager.jobs[1].workflow_id)
         self.assertEqual(self.jobs[1]['name'], manager.jobs[1]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[1]._attributes['universe'])
         self.assertEqual('run_detention_basin_scenario.py', manager.jobs[1]._attributes['executable'])
@@ -335,8 +345,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
 
         # Job 3 (use_atcore_args is False)
         self.assertEqual(self.jobs[2]['name'], manager.jobs[2].name)
-        self.assertEqual(expected_workflow_id, manager.jobs[2].workflow.id)
-        self.assertEqual(expected_workflow_id, manager.jobs[2].workflow_id)
+        self.assertEqual(workflow_id, manager.jobs[2].workflow.id)
+        self.assertEqual(workflow_id, manager.jobs[2].workflow_id)
         self.assertEqual(self.jobs[2]['name'], manager.jobs[2]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[2]._attributes['universe'])
         self.assertEqual('post_process.py', manager.jobs[2]._attributes['executable'])
@@ -348,8 +358,8 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
 
         # Job 4 (finalize job, use_atcore_args is not specified, defaults to True)
         self.assertEqual('finalize', manager.jobs[3].name)
-        self.assertEqual(expected_workflow_id, manager.jobs[3].workflow.id)
-        self.assertEqual(expected_workflow_id, manager.jobs[3].workflow_id)
+        self.assertEqual(workflow_id, manager.jobs[3].workflow.id)
+        self.assertEqual(workflow_id, manager.jobs[3].workflow_id)
         self.assertEqual('finalize', manager.jobs[3]._attributes['job_name'])
         self.assertEqual('vanilla', manager.jobs[3]._attributes['universe'])
         self.assertEqual('update_status.py', manager.jobs[3]._attributes['executable'])
@@ -357,7 +367,7 @@ class CondorWorkflowManagerTests(SqlAlchemyTestCase):
         self.assertEqual('../workflow_params.json', manager.jobs[3]._attributes['transfer_input_files'])
         self.assertEqual('', manager.jobs[3]._attributes['transfer_output_files'])
 
-        self.assertEqual(expected_workflow_id, id)
+        self.assertEqual(workflow_id, id)
         self.assertIsInstance(manager.workflow, CondorWorkflow)
         self.assertEqual(expected_job_args, manager.job_args)
         self.assertTrue(manager.prepared)

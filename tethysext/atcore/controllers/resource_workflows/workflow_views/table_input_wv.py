@@ -119,16 +119,24 @@ class TableInputWV(ResourceWorkflowView):
             row_count = max(row_count, len(c))
 
         optional_columns = step.options.get('optional_columns', [])
+        nodata_filled = []
         for column in columns:
             if column in optional_columns and not data[column]:
                 c = [TABLE_DATASET_NODATA] * row_count
                 data.update({column: c})
+                nodata_filled.append(column)
 
         # Save dataset as new pandas DataFrame
         dataset = pd.DataFrame(data=data, columns=columns)
 
-        # Coerce columns to be the same types as the template dataset
-        dataset = dataset.astype(template_dataset.dtypes, copy=True)
+        # Coerce columns to be the same types as the template dataset.
+        # NODATA-filled optional columns hold floats and must not be coerced
+        # back to the template's dtype (object), since pandas 3.0+ stringifies
+        # floats when cast to object.
+        target_dtypes = template_dataset.dtypes.copy()
+        for column in nodata_filled:
+            target_dtypes[column] = 'float64'
+        dataset = dataset.astype(target_dtypes, copy=True)
 
         # Reset the parameter to None for changes to be detected and saved.
         step.set_parameter('dataset', None)
