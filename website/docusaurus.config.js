@@ -7,7 +7,6 @@ const { themes: prismThemes } = require('prism-react-renderer');
 const config = {
   title: 'tethysext-atcore',
   tagline: 'A Tethys Platform extension providing reusable controllers, services, and gizmos.',
-  favicon: 'img/favicon.ico',
 
   url: 'https://aquaveo.github.io',
   baseUrl: '/tethysext-atcore/',

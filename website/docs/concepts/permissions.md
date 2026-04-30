@@ -74,6 +74,49 @@ class MyFirstApp(TethysAppBase):
 
 The generator emits Tethys `PermissionGroup` instances with a curated set of permissions per group. The full breakdown is in [`permissions/app_users.py`](https://github.com/Aquaveo/tethysext-atcore/blob/master/tethysext/atcore/permissions/app_users.py); a quick view is on the [Permissions cheat sheet](../reference/permissions-cheatsheet.md).
 
+### App-specific permissions: post-mutation
+
+`PermissionsGenerator.generate()` returns the standard permission groups; it has no extension hook for adding a permission to "every admin group" or "every group with a specific suffix." Production apps post-mutate the returned list:
+
+```python
+from tethys_sdk.permissions import Permission
+
+def permissions(self):
+    pm = MyPermissionsManager(self.url_namespace)
+    groups = PermissionsGenerator(pm).generate()
+
+    extra = Permission(name='set_map_extent', description='Edit project default extent.')
+    for group in groups:
+        if 'admin' in group.name:
+            group.permissions.append(extra)
+
+    return groups
+```
+
+You can also subclass `PermissionsGenerator` outright and override `generate()` to define the full permission graph yourself — appropriate when your app has many app-specific permissions or a non-standard role/license set. Both approaches show up in real apps; pick the one that matches the size of your customization.
+
+## Subclassing the permissions manager
+
+When you subclass `Roles` or `Licenses` to subset (or extend) the available values, also subclass `AppPermissionsManager` so the manager picks up your new sets:
+
+```python
+# myapp_adapter/app_users/permissions.py
+from tethysext.atcore.services.app_users.licenses import Licenses
+from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
+
+
+class MyLicenses(Licenses):
+    @classmethod
+    def list(cls):
+        return (cls.STANDARD, cls.CONSULTANT)
+
+
+class MyPermissionsManager(AppPermissionsManager):
+    LICENSES = MyLicenses()
+```
+
+Pass the manager class through to the URL helpers via `custom_permissions_manager=MyPermissionsManager` so atcore's controllers use it for permission-group lookups.
+
 ## Built-in permissions
 
 Permissions defined by `PermissionsGenerator` cluster into five buckets:

@@ -52,7 +52,70 @@ See [Resource Workflows](./resource-workflows.md). The router is [`ResourceWorkf
 
 ## Tabbed resource details
 
-[`TabbedResourceDetails`](../api/controllers/resources/tabbed_resource_details.mdx) supports rendering a tabbed details page composed of `tab_classes` ([`controllers.resources.tabs`](../api/controllers/resources/tabs/index.mdx)). Use it instead of `ResourceDetails` when one detail page isn't enough.
+[`TabbedResourceDetails`](../api/controllers/resources/tabbed_resource_details.mdx) renders a tabbed page composed of tab classes ([`controllers.resources.tabs`](../api/controllers/resources/tabs/index.mdx)). Use it instead of `ResourceDetails` when one detail page isn't enough.
+
+Built-in tab classes:
+
+- [`ResourceSummaryTab`](../api/controllers/resources/tabs/summary_tab.mdx) — name / status / created-by header card; subclass and override `get_summary_tab_info` to add columns.
+- [`ResourceFilesTab`](../api/controllers/resources/tabs/files_tab.mdx) — listing of `FileCollection`s attached to the resource.
+- [`ResourceWorkflowsTab`](../api/controllers/resources/tabs/workflows_tab.mdx) — list of `ResourceWorkflow`s plus a "new workflow" launcher; subclass and override `get_workflow_types` to filter the launcher menu by resource state.
+- [`ResourceListTab`](../api/controllers/resources/tabs/resource_list_tab.mdx) — list of child resources for a parent resource.
+
+Compose them on a subclass:
+
+```python
+# tethysapp/myapp/controllers/resources/project_details.py
+from tethysext.atcore.controllers.resources import (
+    TabbedResourceDetails, ResourceSummaryTab,
+    ResourceFilesTab, ResourceWorkflowsTab,
+)
+
+
+class ProjectSummaryTab(ResourceSummaryTab):
+    def get_summary_tab_info(self, request, session, resource):
+        return {
+            'general': {
+                'title': 'General',
+                'columns': [
+                    [('Region', resource.get_attribute('region') or '-')],
+                    [('Inputs', resource.get_attribute('input_count') or 0)],
+                ],
+            },
+        }
+
+
+class ProjectDetails(TabbedResourceDetails):
+    template_name = 'myapp/project_details.html'
+    tabs = (
+        {'slug': 'summary', 'title': 'Summary', 'view': ProjectSummaryTab},
+        {'slug': 'files', 'title': 'Files', 'view': ResourceFilesTab},
+        {'slug': 'workflows', 'title': 'Workflows', 'view': ResourceWorkflowsTab},
+    )
+```
+
+`TabbedResourceDetails` requires a `{tab_slug}` URL kwarg, which the default `urls.resources.urls(...)` helpers don't emit. Register the URL by hand:
+
+```python
+# tethysapp/myapp/app.py — register_url_maps
+url_maps += [
+    UrlMap(
+        name='project_details_tab',
+        url='projects/{resource_id}/{tab_slug}',
+        controller=ProjectDetails.as_controller(
+            _app=self,
+            _persistent_store_name='primary_db',
+            _AppUser=MyAppUser,
+            _Organization=MyOrganization,
+            _Resource=Project,
+            _PermissionsManager=MyPermissionsManager,
+        ),
+    ),
+]
+```
+
+The leading-underscore kwargs to `as_controller(...)` are the convention for populating the view mixin slots — `AppUsersViewMixin._AppUser`, `ResourceViewMixin._Resource`, etc. The atcore URL helpers fill them automatically; when you register a URL by hand, you fill them yourself.
+
+See [Add a tabbed resource details page](../how-to/add-a-tabbed-resource-details-page.md) for the full recipe.
 
 ## Decorators
 

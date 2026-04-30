@@ -13,14 +13,22 @@ The file database is a SQL-tracked filesystem store. Use it when a `Resource` (o
 
 Models in [`tethysext.atcore.models.file_database`](../api/models/file_database/index.mdx):
 
-- [`FileDatabase`](../api/models/file_database/file_database-module.mdx) — the top-level container. Carries a `meta` JSON blob.
-- [`FileCollection`](../api/models/file_database/file_collection.mdx) — a named bucket of files within a `FileDatabase`.
-- [`ResourceFileCollectionAssociation`](../api/models/file_database/resource_file_collection_association.mdx) — link table tying a `Resource` to a `FileCollection`.
+- [`FileDatabase`](../api/models/file_database/file_database-module.mdx) — the top-level container. Carries a `meta` JSON blob and corresponds to a single root directory on disk.
+- [`FileCollection`](../api/models/file_database/file_collection.mdx) — a named bucket of files within a `FileDatabase`. Backed by a UUID-named subdirectory.
+- [`ResourceFileCollectionAssociation`](../api/models/file_database/resource_file_collection_association.mdx) — link table tying a `Resource` to one or more `FileCollection`s.
 
 Clients in [`tethysext.atcore.services.file_database`](../api/services/file_database.mdx):
 
 - [`FileDatabaseClient`](../api/services/file_database.mdx#filedatabaseclient) — bind / create file databases.
 - [`FileCollectionClient`](../api/services/file_database.mdx#filecollectionclient) — bind / create file collections within a database.
+
+## When to use it
+
+- A `Resource` owns input files (uploaded shapefiles, rasters, parameter files) that need to live on disk because they're large or non-relational.
+- A workflow step produces output files that should remain accessible after the step finishes.
+- You want a uniform listing UI for "all the files this resource owns" via [`ResourceFilesTab`](../api/controllers/resources/tabs/files_tab.mdx).
+
+If you only need a single root directory of free-form files for a resource and don't care about per-collection grouping, you can also fall back to the Tethys app workspace. Choose `FileDatabase` when you want SQL to remember which collection each file belongs to and which resource owns each collection.
 
 ## Creating a file database
 
@@ -66,13 +74,93 @@ The available exceptions are documented in the [exceptions reference](../referen
 - `FileDatabaseNotFoundError`, `FileCollectionNotFoundError` — the requested id doesn't exist.
 - `FileCollectionItemNotFoundError`, `FileCollectionItemAlreadyExistsError` — item-level mismatches.
 
-## Mixins for `Resource`
+## Wiring a Resource to its files
 
 Two mixins help your `Resource` subclass own collections:
 
 - [`FileCollectionMixin`](../api/mixins/file_collection_mixin.mdx) — model-level helper methods.
 - [`FileCollectionsControllerMixin`](../api/mixins/file_collection_controller_mixin.mdx) — controller-level helpers for upload/download views.
 
-:::caution Verification needed
-The `FileCollectionMixin` and `FileCollectionsControllerMixin` are intentionally _not_ re-exported from `tethysext.atcore.mixins.__init__` (a comment in the source notes "DO NOT IMPORT ... CAUSES CIRCULAR IMPORT ISSUES"). Import them directly from their submodules — `from tethysext.atcore.mixins.file_collection_mixin import FileCollectionMixin`. We have not validated end-to-end that subclassing `Resource` with these mixins is the recommended pattern; this should be confirmed by the maintainers.
-:::
+Both are intentionally **not** re-exported from `tethysext.atcore.mixins.__init__` (a comment in the source notes "DO NOT IMPORT ... CAUSES CIRCULAR IMPORT ISSUES"). Import them directly from their submodules:
+
+```python
+from tethysext.atcore.mixins.file_collection_mixin import FileCollectionMixin
+from tethysext.atcore.mixins.file_collection_controller_mixin import FileCollectionsControllerMixin
+```
+
+### Pattern A: per-resource `FileDatabase`
+
+When a resource is the owner of a whole tree of files (e.g., a `Project` that contains many input files and many output collections), give the resource its own `FileDatabase` and grow `FileCollection`s underneath it:
+
+```python
+# myapp_adapter/resources/project.py
+import os
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.orm import relationship
+from tethysext.atcore.models.app_users import Resource
+from tethysext.atcore.models.file_database import FileDatabase
+from tethysext.atcore.models.types.guid import GUID
+from tethysext.atcore.services.file_database import FileDatabaseClient
+
+
+class Project(Resource):
+    TYPE = 'project'
+    __mapper_args__ = {'polymorphic_identity': TYPE}
+
+    file_database_id = Column(GUID, ForeignKey('file_databases.id'))
+    file_database = relationship(FileDatabase)
+
+    @classmethod
+    def new(cls, session, name, **kwargs):
+        project = cls(name=name, **kwargs)
+        client = FileDatabaseClient.new(
+            session=session,
+            root_directory=os.environ['FDB_ROOT_DIR'],
+            meta={'project_name': name},
+        )
+        project.file_database = client.instance
+        session.add(project)
+        return project
+```
+
+The `FDB_ROOT_DIR` environment variable convention is what production atcore apps use to point all `FileDatabase`s at a shared root volume; replace it with whatever fits your deployment.
+
+### Pattern B: per-collection attachment
+
+When a resource just needs a single collection of files (no nested grouping), use `FileCollectionMixin` directly to attach one or more `FileCollection`s without a top-level `FileDatabase`:
+
+```python
+# myapp_adapter/resources/dataset.py
+from tethysext.atcore.mixins.file_collection_mixin import FileCollectionMixin
+from tethysext.atcore.models.app_users import Resource
+
+
+class Dataset(Resource, FileCollectionMixin):
+    TYPE = 'dataset'
+    __mapper_args__ = {'polymorphic_identity': TYPE}
+```
+
+The mixin adds a `file_collections` relationship to `ResourceFileCollectionAssociation`, exposing `dataset.file_collection_client` once a collection is attached.
+
+### Controller-side: file upload/download
+
+To enable upload/download views for a resource that has collections, mix in `FileCollectionsControllerMixin` on the matching `Manage*` controller:
+
+```python
+# tethysapp/myapp/controllers/resources/manage_datasets.py
+from tethysext.atcore.controllers.app_users import ManageResources
+from tethysext.atcore.mixins.file_collection_controller_mixin import (
+    FileCollectionsControllerMixin,
+)
+
+
+class ManageDatasets(ManageResources, FileCollectionsControllerMixin):
+    pass
+```
+
+The mixin wires `_handle_delete` to drop the on-disk collection directory when the resource is deleted, and provides helpers used by [`ResourceFilesTab`](../api/controllers/resources/tabs/files_tab.mdx) to render the file listing.
+
+## See also
+
+- [Add a custom resource type](../how-to/add-a-resource-type.md) — combines `FileCollectionMixin` with a custom resource.
+- [Wire up a file database](../how-to/wire-up-a-file-database.md) — end-to-end walkthrough.

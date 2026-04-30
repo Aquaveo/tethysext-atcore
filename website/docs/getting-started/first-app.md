@@ -56,7 +56,6 @@ from tethysext.atcore.permissions.app_users import PermissionsGenerator
 from tethysext.atcore.services.app_users.permissions_manager import AppPermissionsManager
 from tethysext.atcore.urls import (
     app_users as app_users_urls,
-    resources as resources_urls,
     spatial_reference as sr_urls,
 )
 from .models.projects import Project
@@ -101,16 +100,14 @@ class MyFirstApp(TethysAppBase):
             ),
         ]
 
+        # app_users.urls(custom_resources={...}) is the consolidated form:
+        # it registers the user / organization pages AND the per-resource
+        # CRUD pages in one call. Pass each Resource subclass mapped to
+        # its [Manage, Modify(, Details)] controllers.
         url_maps += list(app_users_urls.urls(
             url_map_maker=UrlMap, app=self,
             persistent_store_name='app_users_db',
-            base_template='my_first_app/base.html',
-        ))
-
-        url_maps += list(resources_urls.urls(
-            url_map_maker=UrlMap, app=self,
-            persistent_store_name='app_users_db',
-            resource_model=Project,
+            custom_resources={Project: []},  # use atcore defaults; pass [Manage, Modify] to override
             base_template='my_first_app/base.html',
         ))
 
@@ -121,6 +118,10 @@ class MyFirstApp(TethysAppBase):
 
         return tuple(url_maps)
 ```
+
+:::tip Single-resource shortcut
+If you only have one resource type and don't need the user/organization pages, call `resources_urls.urls(..., resource_model=Project)` directly. The consolidated `app_users_urls.urls(custom_resources={...})` form is the better default for non-trivial apps because adding a second resource type (or an `Organization` subclass) doesn't require rewiring.
+:::
 
 ## Bootstrap the database
 

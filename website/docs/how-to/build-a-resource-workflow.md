@@ -9,61 +9,139 @@ sidebar_position: 2
 
 This recipe walks through composing a custom workflow from the built-in step types and registering its URLs.
 
-## 1. Subclass `ResourceWorkflow`
+## 1. Subclass `ResourceWorkflow` with a `new()` factory
+
+Production atcore workflows always define a `new()` classmethod that takes the runtime context (the app, the resource id, the GeoServer name, the map and spatial managers) and returns an unsaved workflow with its step graph populated. Following this contract lets your workflow drop into atcore's URL helpers and controllers without further wiring.
 
 ```python
-# my_first_app/models/workflows.py
+# myapp_adapter/workflows/analysis.py
 from tethysext.atcore.models.app_users import ResourceWorkflow
+from tethysext.atcore.models.resource_workflow_steps import (
+    SpatialInputRWS, FormInputRWS, SpatialCondorJobRWS, ResultsResourceWorkflowStep,
+)
+from tethysext.atcore.services.app_users.roles import Roles
+
+
+def build_jobs_callback(workflow, step, *args, **kwargs):
+    """Returns the CondorWorkflowJobNode dict list for this run."""
+    return []  # replace with real job specs
 
 
 class AnalysisWorkflow(ResourceWorkflow):
     TYPE = 'analysis'
     DISPLAY_TYPE_SINGULAR = 'Analysis'
     DISPLAY_TYPE_PLURAL = 'Analyses'
-
     __mapper_args__ = {'polymorphic_identity': TYPE}
+
+    @classmethod
+    def new(cls, app, name, resource_id, creator_id,
+            geoserver_name, map_manager, spatial_manager, **kwargs):
+        workflow = cls(name=name, resource_id=resource_id, creator_id=creator_id)
+
+        pick = SpatialInputRWS(
+            name='Pick study area',
+            order=1,
+            help='Draw or upload your area of interest.',
+            options={
+                'shapes': ['polygons', 'extents'],
+                'singular_name': 'Area of Interest',
+                'plural_name': 'Areas of Interest',
+                'allow_shapefile': True,
+                'allow_drawing': True,
+            },
+            geoserver_name=geoserver_name,
+            map_manager=map_manager,
+            spatial_manager=spatial_manager,
+            active_roles=[Roles.ORG_USER, Roles.ORG_ADMIN],
+        )
+
+        configure = FormInputRWS(
+            name='Configure inputs',
+            order=2,
+            options={
+                # Dot-path string — the form module is imported lazily so it
+                # can in turn import other domain models without circulars.
+                'param_class': 'myapp_adapter.workflows.analysis.options.AnalysisOptions',
+                'form_title': 'Analysis Options',
+                'renderer': 'django',
+            },
+            active_roles=[Roles.ORG_USER, Roles.ORG_ADMIN],
+        )
+
+        run = SpatialCondorJobRWS(
+            name='Run analysis',
+            order=3,
+            options={
+                'scheduler': app.SCHEDULER_NAME,
+                'jobs': build_jobs_callback,         # callable, not a static list
+                'workflow_kwargs': {},
+                'working_message': 'Running...',
+                'error_message': 'Failed.',
+                'pending_message': 'Pending.',
+            },
+            geoserver_name=geoserver_name,
+            map_manager=map_manager,
+            spatial_manager=spatial_manager,
+            active_roles=[Roles.ORG_USER, Roles.ORG_ADMIN],
+        )
+        run.parents.append(pick)
+
+        results = ResultsResourceWorkflowStep(name='Results', order=4)
+        run.result = results        # singular `result`, not `results.append`
+
+        workflow.steps.extend([pick, configure, run, results])
+        return workflow
 ```
 
-The workflow's steps and results are defined per-instance, not per-class — you build the step list in code when you create a workflow row.
+The wiring beyond `workflow.steps.extend(...)` matters:
 
-## 2. Create the workflow with steps
+- **`run.parents.append(pick)`** declares that the condor step depends on the spatial-input step. Step views consult `parents` to fetch upstream data (e.g., the polygon the user drew).
+- **`run.result = results`** is the singular attribute that ties a job step to the page that displays its output. Don't append to `workflow.results`; the condor manager populates that list when the job finishes.
+
+## 2. Build the form options class
+
+`FormInputRWS.options['param_class']` accepts a dot-path string. Pointing at the dotted path means atcore imports the class lazily, after the workflow module has finished loading — the form module can therefore import other domain models without creating an import cycle:
+
+```python
+# myapp_adapter/workflows/analysis/options.py
+import param
+
+
+class AnalysisOptions(param.Parameterized):
+    duration_days = param.Integer(default=30, bounds=(1, 365), doc='Analysis duration')
+    include_uncertainty = param.Boolean(default=False)
+```
+
+Atcore's `param_widgets` translate the `param.Parameterized` fields into Django form fields automatically.
+
+## 3. Instantiate the workflow
+
+Call `new()` from a controller or a Django shell:
 
 ```python
 # example — controllers/start_analysis.py
-from tethysext.atcore.models.resource_workflow_steps import (
-    SpatialInputRWS, FormInputRWS, SpatialCondorJobRWS, ResultsResourceWorkflowStep,
+from myapp_adapter.workflows.analysis import AnalysisWorkflow
+
+workflow = AnalysisWorkflow.new(
+    app=app,
+    name=f'Analysis for {project.name}',
+    resource_id=project.id,
+    creator_id=request.user.username,
+    geoserver_name='primary_geoserver',
+    map_manager=map_manager,
+    spatial_manager=spatial_manager,
 )
-from .models.workflows import AnalysisWorkflow
-
-
-def start_analysis(session, resource, app_user):
-    workflow = AnalysisWorkflow(
-        name=f'Analysis for {resource.name}',
-        resource=resource,
-        creator=app_user,
-    )
-
-    workflow.steps.extend([
-        SpatialInputRWS(name='Pick study area', order=1, help='Draw or select features for analysis.'),
-        FormInputRWS(name='Configure inputs', order=2, help='Set parameters.'),
-        SpatialCondorJobRWS(name='Run model', order=3, help='Submit the Condor job.'),
-        ResultsResourceWorkflowStep(name='View results', order=4),
-    ])
-
-    session.add(workflow)
-    session.commit()
-    return workflow
+session.add(workflow)
+session.commit()
 ```
 
-The available step classes are listed on the [Resource Workflows concept page](../concepts/resource-workflows.md). Each step's `name`, `order`, and `help` strings show up in the workflow UI; subclass-specific options (e.g. allowed geometry types for `SpatialInputRWS`) live on the step instance.
-
-## 3. Register the workflow router
+## 4. Register the workflow router
 
 ```python
-# my_first_app/app.py — register_url_maps
+# myapp/app.py — register_url_maps
 from tethysext.atcore.urls import resource_workflows as rw_urls
 from tethysext.atcore.controllers.resource_workflows import ResourceWorkflowRouter
-from .models.workflows import AnalysisWorkflow
+from myapp_adapter.workflows.analysis import AnalysisWorkflow
 
 
 def register_url_maps(self):
@@ -72,9 +150,9 @@ def register_url_maps(self):
     return tuple(rw_urls.urls(
         url_map_maker=UrlMap,
         app=self,
-        persistent_store_name='app_users_db',
-        workflow_pairs=[(AnalysisWorkflow, ResourceWorkflowRouter)],
-        base_template='my_first_app/base.html',
+        persistent_store_name='primary_db',
+        workflow_pairs=((AnalysisWorkflow, ResourceWorkflowRouter),),
+        base_template='myapp/workflows_base.html',
     ))
 ```
 
@@ -84,28 +162,59 @@ The router emits three URL maps per workflow type:
 - `<workflow_type>_workflow_step`
 - `<workflow_type>_workflow_step_result`
 
-## 4. Link a user into the workflow
+Apps with multiple workflow types call `rw_urls.urls(...)` once per type — the per-call options (template, custom models, permissions manager) tend to vary.
+
+## 5. Link a user into the workflow
 
 ```python
 from django.shortcuts import redirect, reverse
 
 return redirect(reverse(
-    'my_first_app:analysis_workflow',
+    'myapp:analysis_workflow',
     kwargs={'resource_id': resource.id, 'workflow_id': workflow.id},
 ))
 ```
 
 The router takes it from there — it loads the workflow, picks the current step (the first one not yet complete), and dispatches to the appropriate view from [`workflow_views`](../api/controllers/resource_workflows/workflow_views/index.mdx) or [`map_workflows`](../api/controllers/resource_workflows/map_workflows/index.mdx).
 
-## 5. Customizing a step view
+## 6. Customizing a step view
 
-Subclass the appropriate view (e.g., [`SpatialInputMWV`](../api/controllers/resource_workflows/map_workflows/spatial_input_mwv.mdx) for `SpatialInputRWS`) and override `process_step_data` or `get_context`. Then subclass `ResourceWorkflowRouter` and add a mapping from your step class to your view, and pass _that_ subclass in the `workflow_pairs`.
+Subclass the view that matches your step base, override the hook you care about, and wire the subclass via the step's `CONTROLLER` attribute (a dot-path string).
 
-:::caution Verification needed
-The exact override mechanism for adding custom step-to-view mappings on `ResourceWorkflowRouter` (e.g. whether subclasses populate a class-level dict or override `_get_step_url_name` / `_get_step_view`) was not fully traced from the source. Confirm with the maintainers before customizing the router.
-:::
+```python
+# myapp/controllers/workflow_steps/picky_spatial_input_mwv.py
+from tethysext.atcore.controllers.resource_workflows.map_workflows import (
+    SpatialInputMWV,
+)
+
+
+class PickyspatialInputMWV(SpatialInputMWV):
+    template_name = 'myapp/workflow_steps/picky_spatial_input.html'
+
+    def process_step_data(self, request, session, step, *args, **kwargs):
+        # Validate, transform, or augment the submitted features here.
+        return super().process_step_data(request, session, step, *args, **kwargs)
+```
+
+To bind a step type to your view, set the step's `CONTROLLER` to the dot-path of the view:
+
+```python
+# myapp_adapter/workflow_steps/picky_spatial_input_rws.py
+from tethysext.atcore.models.resource_workflow_steps import SpatialInputRWS
+
+
+class PickySpatialInputRWS(SpatialInputRWS):
+    CONTROLLER = 'myapp.controllers.workflow_steps.picky_spatial_input_mwv.PickyspatialInputMWV'
+    TYPE = 'picky_spatial_input'
+    __mapper_args__ = {'polymorphic_identity': TYPE}
+```
+
+The router uses `CONTROLLER` to dispatch each step. There is no class-level dict to populate on `ResourceWorkflowRouter` — you don't need to subclass the router unless you want to override behavior like `default_back_url(request, resource_id)`.
+
+For the full custom-step-type recipe (defining a new step base, attribute schema, etc.), see [Add a custom workflow step type](./add-a-custom-workflow-step-type.md).
 
 ## See also
 
+- [Resource Workflows concept page](../concepts/resource-workflows.md) for the `new()` factory contract and step-options patterns.
 - [Run a Condor Workflow Job](./run-a-condor-workflow-job.md) for `SpatialCondorJobRWS` specifics.
 - [Permissions](../concepts/permissions.md) for `can_override_user_locks` (the workflow-lock override).

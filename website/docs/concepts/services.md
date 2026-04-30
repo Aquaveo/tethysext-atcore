@@ -41,6 +41,39 @@ The `reload_config` decorator from [`services.base_spatial_manager`](../api/serv
 
 Use a `ModelDatabase` when each resource needs an isolated Postgres database (e.g., one DB per scenario / project). It load-balances across multiple Tethys persistent-store DB connections if your app declares more than one.
 
+### The connection-pool pattern
+
+`ModelDatabase` doesn't operate against a single named database — it dynamically creates one PostGIS database per resource by selecting from a pool of `PersistentStoreConnectionSetting` entries declared by the app:
+
+```python
+def persistent_store_settings(self):
+    return (
+        PersistentStoreDatabaseSetting(
+            name='primary_db', initializer='myapp.models.init_primary_db',
+            spatial=True, required=True,
+        ),
+        PersistentStoreConnectionSetting(name='model_db_1', required=True),
+        PersistentStoreConnectionSetting(name='model_db_2', required=True),
+        PersistentStoreConnectionSetting(name='model_db_3', required=True),
+    )
+```
+
+Each `model_db_N` is a *connection* to a Postgres server, not a database. When `ModelDatabase(app=app, database_id=...).initialize()` runs, atcore picks the least-loaded connection and creates a fresh database on it named after `database_id`. The mapping from resource → server is balanced across the declared connections, so you can scale by adding more `model_db_N` entries.
+
+Resources record their assigned `database_id` as an attribute (`resource.set_attribute('database_id', uuid_hex)`), and the `MapManager` resolves it back to a `ModelDatabase` when rendering layers.
+
+### `ModelDatabase` vs. `FileDatabase`
+
+| | `ModelDatabase` | `FileDatabase` |
+| --- | --- | --- |
+| Storage | Per-resource PostGIS database | Per-resource directory on disk |
+| Best for | Spatial layers published to GeoServer; SQL-queryable per-resource state | Bulk input/output files (rasters, archives, model output) |
+| Layer publishing | `ModelDBSpatialManager` registers the DB as a GeoServer datastore | `BaseSpatialManager` reads files and publishes layers individually |
+| Cleanup | Drop the database when the resource is deleted | Drop the directory tree |
+| Scaling | Add more `PersistentStoreConnectionSetting` entries | Mount more disk |
+
+Production apps mix both: an analysis app that produces maps from geospatial inputs uses `ModelDatabase` for the per-resource layer store and `FileDatabase` for the input rasters that fed it.
+
 ## Permissions manager
 
 [`AppPermissionsManager`](../api/services/app_users/permissions_manager.mdx#apppermissionsmanager) is the runtime helper for atcore's role/license matrix. See the [Permissions concept page](./permissions.md) and the [Permissions cheat sheet](../reference/permissions-cheatsheet.md).
