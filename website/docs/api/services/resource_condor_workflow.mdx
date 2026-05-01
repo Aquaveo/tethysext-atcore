@@ -1,0 +1,68 @@
+---
+id: services.resource_condor_workflow
+title: tethysext.atcore.services.resource_condor_workflow
+sidebar_label: resource_condor_workflow
+---
+
+# `tethysext.atcore.services.resource_condor_workflow`
+
+```text
+********************************************************************************
+* Name: resource_condor_workflow.py
+* Author: gagelarsen
+* Created On: December 11, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceCondorWorkflow(object)` \{#resourcecondorworkflow\}
+
+```text
+Helper class that prepares and submits the new project upload jobs and workflow.
+```
+#### Methods
+
+
+##### `__init__(self, app, user, workflow_name, workspace_path, resource_db_url, resource, scheduler, job_manager, status_keys=None, db_engine_kwargs=None, **kwargs)` \{#resourcecondorworkflow-init\}
+
+```text
+Constructor.
+
+Args:
+    app (TethysApp): App class for the Tethys app.
+    user (auth.User): Django user.
+    workflow_name (str): Name of the job.
+    workspace_path (str): Path to workspace to be used by job.
+    resource_db_url (str): SQLAlchemy url to Resource database.
+    resource (Resource): Instance of the Resource.
+    scheduler (Scheduler): The condor scheduler for the application
+    job_manager (JobManger): The condor job manager for the application.
+    status_keys (list): One or more keys of statuses to check to determine resource status. The other jobs must update these statuses to one of the Resource.OK_STATUSES for the resource to be marked as SUCCESS.
+    db_engine_kwargs (dict): Optional arguments to pass to SQLAlchemy create_engine method.
+```
+
+
+##### `get_jobs(self)` \{#resourcecondorworkflow-get-jobs\}
+
+```text
+Get CondorWorkflowJobNodes and the corresponding status key.
+
+Returns:
+    list: A list of 2 tuples in the format [(CondorWorkflowJobNodes, 'status_key'), ...]
+```
+
+
+##### `prepare(self)` \{#resourcecondorworkflow-prepare\}
+
+```text
+Prepares all workflow jobs for processing upload to database.
+```
+
+
+##### `run_job(self)` \{#resourcecondorworkflow-run-job\}
+
+```text
+Executes the prepared job.
+```

@@ -1,0 +1,82 @@
+---
+id: utilities
+title: tethysext.atcore.utilities
+sidebar_label: utilities
+---
+
+# `tethysext.atcore.utilities`
+
+```text
+********************************************************************************
+* Name: utilities
+* Author: nswain
+* Created On: July 30, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Functions
+
+
+### `parse_url(url)` \{#parse-url\}
+
+```text
+Splits url into parts.
+e.g.: "http://admin:geoserver@localhost:8181/geoserver/rest"
+```
+
+
+### `generate_geoserver_urls(gs_engine)` \{#generate-geoserver-urls\}
+
+> _No description._
+
+
+
+### `clean_request(request)` \{#clean-request\}
+
+```text
+Strip the "method" variable from the GET and POST params of a request.
+
+Args:
+    request(HttpRequest): the request.
+
+Returns:
+    HttpRequest: the modified request
+```
+
+
+### `strip_list(the_list, *args)` \{#strip-list\}
+
+```text
+Strip emtpy items from end of list.
+
+Args:
+    the_list(list): the list.
+    *args: any number of values to strip from the end of the list.
+```
+
+
+### `grammatically_correct_join(strings, conjunction='and')` \{#grammatically-correct-join\}
+
+> _No description._
+
+
+
+### `import_from_string(path)` \{#import-from-string\}
+
+```text
+Import object from given dot-path string.
+
+Args:
+    path<str>: Dot-path to Class, Function or other object in a module (e.g. foo.bar.Klass).
+```
+
+
+### `json_serializer(obj)` \{#json-serializer\}
+
+> _No description._
+
+
+
+### `update_urlmap_index(urlmaps, app)` \{#update-urlmap-index\}
+
+> _No description._

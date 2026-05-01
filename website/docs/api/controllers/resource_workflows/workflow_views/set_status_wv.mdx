@@ -1,0 +1,64 @@
+---
+id: controllers.resource_workflows.workflow_views.set_status_wv
+title: tethysext.atcore.controllers.resource_workflows.workflow_views.set_status_wv
+sidebar_label: set_status_wv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.workflow_views.set_status_wv`
+
+```text
+********************************************************************************
+* Name: set_status_wv.py
+* Author: nswain
+* Created On: August 19, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SetStatusWV(ResourceWorkflowView)` \{#setstatuswv\}
+
+```text
+Controller for SetStatusRWS.
+```
+#### Methods
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#setstatuswv-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#setstatuswv-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): the resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+
+Raises:
+    ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
+    RuntimeError: exceptions that require developer attention.
+```

@@ -1,0 +1,77 @@
+---
+id: mixins.results_mixin
+title: tethysext.atcore.mixins.results_mixin
+sidebar_label: results_mixin
+---
+
+# `tethysext.atcore.mixins.results_mixin`
+
+> _No description._
+
+## Classes
+
+
+### `ResultsMixin(object)` \{#resultsmixin\}
+
+```text
+Provides convenience methods for managing a results. Requires attributes mixin.
+```
+#### Methods
+
+
+##### `get_result(self, result_id)` \{#resultsmixin-get-result\}
+
+```text
+Get result with the given id.
+
+Args:
+    result_id(str or uuid): id of the result.
+
+Returns:
+    ResourceWorkflowResult: the result or None if not found.
+```
+
+
+##### `get_result_by_codename(self, codename)` \{#resultsmixin-get-result-by-codename\}
+
+```text
+Get a result by the given codename.
+Args:
+    codename(str): codename of the result.
+
+Returns:
+    ResourceWorkflowResult: the result or None if not found.
+```
+
+
+##### `get_last_result(self)` \{#resultsmixin-get-last-result\}
+
+```text
+Get the result which was last viewed by the user.
+
+Returns:
+    ResourceWorkflowResult: the last result or None if not found.
+```
+
+
+##### `set_last_result(self, result=None)` \{#resultsmixin-set-last-result\}
+
+```text
+Set the id of the last result viewed by the user.
+
+Args:
+   result(ResourceWorkflowResult): The result to mark as being last viewed.
+```
+
+
+##### `get_adjacent_results(self, result)` \{#resultsmixin-get-adjacent-results\}
+
+```text
+Get the adjacent results the given result.
+
+Args:
+    result(ResourceWorkflowResult): A result belonging to this workflow.
+
+Returns:
+    ResourceWorkflowResult, ResourceWorkflowResult: previous and next results, respectively.
+```

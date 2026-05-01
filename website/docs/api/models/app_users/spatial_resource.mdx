@@ -1,0 +1,51 @@
+---
+id: models.app_users.spatial_resource
+title: tethysext.atcore.models.app_users.spatial_resource
+sidebar_label: spatial_resource
+---
+
+# `tethysext.atcore.models.app_users.spatial_resource`
+
+```text
+********************************************************************************
+* Name: spatial_resource.py
+* Author: glarsen
+* Created On: November 17, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialResource(Resource)` \{#spatialresource\}
+
+> _No description._
+
+#### Methods
+
+
+##### `set_extent(self, obj: Union[dict, str], object_format: str='dict', srid=4326)` \{#spatialresource-set-extent\}
+
+```text
+Set the extent for the SpatialResource.
+
+Args:
+    obj: A string or a dict representing the extent.
+    object_format (str): A string defining the type of obj. One of 'wkt', 'geojson', and 'dict'.
+    srid(str): EPSG code of the extent.
+```
+
+
+##### `get_extent(self, extent_type: str='dict')` \{#spatialresource-get-extent\}
+
+```text
+Get the extent from the SpatialResource.
+
+Args:
+    extent_type (str): The format that should be returned for the extent. One of 'wkt', 'geojson', and 'dict'.
+```
+
+
+##### `update_extent_srid(self, srid)` \{#spatialresource-update-extent-srid\}
+
+> _No description._

@@ -1,0 +1,84 @@
+---
+id: controllers.resource_workflows.map_workflows.spatial_dataset_mwv
+title: tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_dataset_mwv
+sidebar_label: spatial_dataset_mwv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_dataset_mwv`
+
+```text
+********************************************************************************
+* Name: spatial_dataset_mwv.py
+* Author: nswain
+* Created On: March 5, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialDatasetMWV(SpatialDataMWV)` \{#spatialdatasetmwv\}
+
+```text
+Controller for a map workflow view requiring spatial input (drawing).
+```
+#### Methods
+
+*`@workflow_step_controller(is_rest_controller=True)`*
+
+##### `get_popup_form(self, request, session, resource, workflow, step, back_url, *args, **kwargs)` \{#spatialdatasetmwv-get-popup-form\}
+
+```text
+Handle GET requests with method get-attributes-form.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    workflow(ResourceWorkflow): the workflow.
+    step(ResourceWorkflowStep): the step.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+*`@workflow_step_controller(is_rest_controller=True)`*
+
+##### `save_spatial_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs)` \{#spatialdatasetmwv-save-spatial-data\}
+
+```text
+Handle GET requests with method get-attributes-form.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    workflow(ResourceWorkflow): the workflow.
+    step(ResourceWorkflowStep): the step.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#spatialdatasetmwv-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): The resource being updated.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+
+Raises:
+    ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
+    RuntimeError: exceptions that require developer attention.
+```

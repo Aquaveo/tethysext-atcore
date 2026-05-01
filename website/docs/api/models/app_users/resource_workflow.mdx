@@ -1,0 +1,189 @@
+---
+id: models.app_users.resource_workflow
+title: tethysext.atcore.models.app_users.resource_workflow
+sidebar_label: resource_workflow
+---
+
+# `tethysext.atcore.models.app_users.resource_workflow`
+
+```text
+********************************************************************************
+* Name: resource_workflow.py
+* Author: nswain
+* Created On: September 25, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixin, SerializeMixin)` \{#resourceworkflow\}
+
+```text
+Data model for storing information about resource workflows.
+
+Primary Workflow Status Progression:
+1. STATUS_PENDING = No steps have been started in workflow.
+2. STATUS_CONTINUE = Workflow has non-complete steps, has no steps with errors or failed, and no steps that are processing.
+3. STATUS_WORKING = Workflow has steps that are processing.
+4. STATUS_ERROR = Workflow has steps with errors.test_get_status_options_list
+5. STATUS_FAILED = Workflow has steps that have failed.
+6. STATUS_COMPLETE = All steps are complete in workflow.
+
+Review Workflow Status Progression (if applicable):
+1. STATUS_SUBMITTED = Workflow submitted for review
+2. STATUS_UNDER_REVIEW = Workflow currently being reviewed
+3a. STATUS_APPROVED = Changes approved.
+3b. STATUS_REJECTED = Changes disapproved.
+3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
+```
+#### Methods
+
+
+##### `__repr__(self)` \{#resourceworkflow-repr\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `complete(self)` \{#resourceworkflow-complete\}
+
+> _No description._
+
+
+
+##### `get_next_step(self)` \{#resourceworkflow-get-next-step\}
+
+```text
+Return the next step object, based on the status of the steps.
+
+Returns:
+    int, ResourceWorkflowStep: the index of the next step and the next step.
+```
+
+
+##### `get_status(self)` \{#resourceworkflow-get-status\}
+
+```text
+Returns the status of the next workflow step.
+
+Returns:
+    ResourceWorkflowStep.STATUS_X: status of the next step.
+```
+
+
+##### `get_step_by_name(self, name)` \{#resourceworkflow-get-step-by-name\}
+
+```text
+Get the step from the workflow with given name.
+
+Args:
+    name(str): The name of the step you want to get.
+
+Returns:
+    ResourceWorkflowStep: the step with matching name or None if not found.
+```
+
+
+##### `get_adjacent_steps(self, step)` \{#resourceworkflow-get-adjacent-steps\}
+
+```text
+Get the adjacent steps to the given step.
+
+Args:
+    step(ResourceWorkflowStep): A step belonging to this workflow.
+
+Returns:
+    ResourceWorkflowStep, ResourceWorkflowStep: previous and next steps, respectively.
+```
+
+
+##### `get_previous_steps(self, step)` \{#resourceworkflow-get-previous-steps\}
+
+```text
+Get all previous steps to the given step.
+
+Args:
+   step(ResourceWorkflowStep): A step belonging to this workflow.
+
+Returns:
+    list<ResourceWorkflowStep>: a list of steps previous to this one.
+```
+
+
+##### `get_tabular_data_for_previous_steps(self, step, request, session, resource)` \{#resourceworkflow-get-tabular-data-for-previous-steps\}
+
+```text
+Get all tabular data for previous steps based on the given step.
+
+Args:
+    step(ResourceWorkflowStep): A step belonging to this workflow.
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    resource(Resource): the resource for this request.
+
+Returns:
+    dict: a dictionary with tabular data per step.
+```
+
+
+##### `get_next_steps(self, step)` \{#resourceworkflow-get-next-steps\}
+
+```text
+Get all steps following the given step.
+Args:
+    step(ResourceWorkflowStep): A step belonging to this workflow.
+
+Returns:
+    list<ResourceWorkflowStep>: a list of steps following this one.
+```
+
+
+##### `reset_next_steps(self, step, include_current=False)` \{#resourceworkflow-reset-next-steps\}
+
+```text
+Reset all steps following the given step that are not PENDING.
+Args:
+    step(ResourceWorkflowStep): A step belonging to this workflow.
+    include_current(bool): Reset current step
+```
+
+*`@abstractmethod`*
+
+##### `get_url_name(self) -> str` \{#resourceworkflow-get-url-name\}
+
+```text
+Override to specify the URL name for the workflow type.
+```
+
+
+##### `get_url(self)` \{#resourceworkflow-get-url\}
+
+```text
+Get the URL to the workflow. IMPORTANT: Must implement get_url_name().
+```
+
+*`@staticmethod`*
+
+##### `get_key_from_value(dict_object, value)` \{#resourceworkflow-get-key-from-value\}
+
+```text
+Get the key from a given value
+dict_object: dictionary object
+value: value to look up
+:return: key associated with the value
+```
+
+
+##### `serialize_base_fields(self, d: dict) -> dict` \{#resourceworkflow-serialize-base-fields\}
+
+```text
+Hook for ATCore base classes to add their custom fields to serialization.
+
+Args:
+    d: Base serialized Resource dictionary.
+
+Returns:
+    Serialized Resource dictionary.
+```

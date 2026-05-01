@@ -1,0 +1,39 @@
+---
+id: models.types.guid
+title: tethysext.atcore.models.types.guid
+sidebar_label: guid
+---
+
+# `tethysext.atcore.models.types.guid`
+
+> _No description._
+
+## Classes
+
+
+### `GUID(TypeDecorator)` \{#guid\}
+
+```text
+Platform-independent GUID type.
+
+Uses Postgresql's UUID type, otherwise uses
+CHAR(32), storing as stringified hex values.
+```
+#### Methods
+
+
+##### `load_dialect_impl(self, dialect)` \{#guid-load-dialect-impl\}
+
+> _No description._
+
+
+
+##### `process_bind_param(self, value, dialect)` \{#guid-process-bind-param\}
+
+> _No description._
+
+
+
+##### `process_result_value(self, value, dialect)` \{#guid-process-result-value\}
+
+> _No description._

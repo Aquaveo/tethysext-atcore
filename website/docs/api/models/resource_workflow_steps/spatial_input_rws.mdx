@@ -1,0 +1,82 @@
+---
+id: models.resource_workflow_steps.spatial_input_rws
+title: tethysext.atcore.models.resource_workflow_steps.spatial_input_rws
+sidebar_label: spatial_input_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.spatial_input_rws`
+
+```text
+********************************************************************************
+* Name: spatial_input_rws.py
+* Author: nswain
+* Created On: December 17, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialInputRWS(SpatialResourceWorkflowStep)` \{#spatialinputrws\}
+
+```text
+Workflow step used for retrieving simple spatial user input (points, lines, polygons).
+
+Options:
+    shapes(list): The types of shapes to allow. Any combination of 'points', 'lines', 'polygons', and/or 'extents'.
+    singular_name(str): Name to use when referring to a single feature in other areas of the user interface (e.g. "Detention Basin").
+    plural_name(str): Name to use when referring to multiple features in other areas of the user interface (e.g. "Detention Basins").
+    allow_shapefile(bool): Allow shapfile upload as spatial input. Defaults to True.
+    allow_drawing(bool): Allow manually drawing shapes. Defaults to True.
+    snapping_enabled(bool): Enabled snapping when drawing features. Defaults to True.
+    snapping_layer(dict): Specify a layer to snap to. Create a 1-dict where the key is the dot-path to the layer attribute to use in comparison  and the value is the value to match (e.g. {'data.layer_id': 10}).
+    snapping_options(dict): Supported options include edge, vertex, pixelTolerance. See: https://openlayers.org/en/latest/apidoc/module-ol_interaction_Snap.html
+    allow_image(bool): Allow reference image upload as spatial input.  Defaults to False.
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#spatialinputrws-default-options\}
+
+> _No description._
+
+
+
+##### `init_parameters(self, *args, **kwargs)` \{#spatialinputrws-init-parameters\}
+
+```text
+Initialize the parameters for this step.
+
+Returns:
+    dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+```
+
+
+##### `validate(self)` \{#spatialinputrws-validate\}
+
+```text
+Validates parameter values of this this step.
+
+Returns:
+    bool: True if data is valid, else Raise exception.
+
+Raises:
+    ValueError
+```
+
+
+##### `validate_feature_attributes(self, attributes)` \{#spatialinputrws-validate-feature-attributes\}
+
+```text
+Validate attribute values of a feature against the given param-based attributes definition.
+
+Args:
+    attributes(dict<attribute,value>): The attributes/properties of the feature to validate.
+
+Returns:
+    bool: True if data is valid, else Raise exception.
+
+Raises:
+    ValueError: If validation fails, a ValueError is raised with appropriate message to display to the user.
+```

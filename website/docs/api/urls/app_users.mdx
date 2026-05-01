@@ -1,0 +1,62 @@
+---
+id: urls.app_users
+title: tethysext.atcore.urls.app_users
+sidebar_label: app_users
+---
+
+# `tethysext.atcore.urls.app_users`
+
+```text
+********************************************************************************
+* Name: app_users.py
+* Author: nswain
+* Created On: November 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Functions
+
+
+### `urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html', custom_controllers=(), custom_models=(), custom_resources=(), custom_permissions_manager=None)` \{#urls\}
+
+```text
+Generate UrlMap objects for app_users extension. To link to pages provided by the app_users extension use the name of the url with your app namespace:
+
+::
+
+    {% url 'my_first_app:app_users_add_user %}
+    {% url 'my_first_app:app_users_edit_user, user_id=user.id %}
+
+Args:
+    url_map_maker (UrlMap): UrlMap class bound to app root url.
+    app (TethysAppBase): instance of Tethys app class.
+    persistent_store_name (str): name of persistent store database setting the controllers should use to create sessions.
+    base_url_path (str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
+    base_template (str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
+    custom_controllers (list<TethysController>): Any number of TethysController subclasses to override default controller classes.
+    custom_models (list<cls>): custom subclasses of AppUser or Organization models.
+    custom_resources (list<Resource> or dict<Resource: list<TethysController>>): list of custom subclasses of Resource models or dict with Resource models as keys and list of controllers as values.
+    custom_permissions_manager (cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
+
+Url Map Names:
+    app_users_manage_users
+    app_users_add_user
+    app_users_edit_user <user_id>
+    app_users_add_existing_user
+    app_users_user_account
+    app_users_manage_organizations
+    app_users_manage_organization_members <organization_id>
+    app_users_new_organization
+    app_users_edit_organization <organization_id>
+
+Url Map Names for each Resource given:
+    <resource_slug>_manage_resources
+    <resource_slug>_new_resource
+    <resource_slug>_edit_resource <resource_id>
+    <resource_slug>_resource_details <resource_id>
+    <resource_slug>_resource_status <resource_id>
+    <resource_slug>_resource_status_list
+
+Returns:
+    tuple: UrlMap objects for the app_users extension.
+```

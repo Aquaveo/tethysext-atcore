@@ -1,0 +1,57 @@
+---
+id: models.resource_workflow_steps.set_status_rws
+title: tethysext.atcore.models.resource_workflow_steps.set_status_rws
+sidebar_label: set_status_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.set_status_rws`
+
+```text
+********************************************************************************
+* Name: set_status_rws.py
+* Author: nswain
+* Created On: August 19, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SetStatusRWS(ResourceWorkflowStep)` \{#setstatusrws\}
+
+```text
+Workflow step that can be used to change the status of a workflow with the click of a button.
+
+Options:
+    form_title(str): Title to be displayed at the top of the form. Defaults to the name of the step.
+    status_label(str): Custom label for the status select form field. Defaults to "Status".
+    statuses(list<dicts<status,label>>): List of dictionaries with two keys: "status" and "label". The value of "status" must be a valid status from the StatusMixin as determined by the valid_statuses() method on the step. The value of the "label" will be what is displayed to the user. If "label" is None or not given, the value of "status" will be displayed to the user.
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#setstatusrws-default-options\}
+
+> _No description._
+
+
+
+##### `init_parameters(self, *args, **kwargs)` \{#setstatusrws-init-parameters\}
+
+```text
+Initialize the parameters for this step.
+
+Returns:
+    dict<name:dict<help,value,required>>: Dictionary of all parameters with their initial value set.
+```
+
+
+##### `validate_statuses(self)` \{#setstatusrws-validate-statuses\}
+
+```text
+Validate the status dictionaries given in the "statuses" option.
+
+Raises:
+    RuntimeError: Invalid statuses or malformed status dictionaries.
+```

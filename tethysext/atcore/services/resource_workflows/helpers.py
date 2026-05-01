@@ -29,7 +29,7 @@ def parse_workflow_step_args():
     )
     parser.add_argument(
         'model_db_url',
-        help='SQLAlchemy URL to the database containing the GSSHA model.'
+        help='SQLAlchemy URL to the database containing the model data.'
     )
     parser.add_argument(
         'resource_id',
@@ -66,14 +66,14 @@ def parse_workflow_step_args():
     parser.add_argument(
         '-s', '--scenario_id',
         dest='scenario_id',
-        help='Scenario ID for this GSSHA model.',
+        help='Scenario ID for the model.',
         default=1
     )
     parser.add_argument(
         '-a', '--app_namespace',
         help='Namespace of the app the database belongs to.',
         dest='app_namespace',
-        default='agwa'
+        default='app'
     )
     args, unknown_args = parser.parse_known_args()
     return args, unknown_args

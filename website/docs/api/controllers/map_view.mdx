@@ -1,0 +1,194 @@
+---
+id: controllers.map_view
+title: tethysext.atcore.controllers.map_view
+sidebar_label: map_view
+---
+
+# `tethysext.atcore.controllers.map_view`
+
+```text
+********************************************************************************
+* Name: map_view.py
+* Author: nswain
+* Created On: October 15, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `MapView(ResourceView)` \{#mapview\}
+
+```text
+Controller for a map view page.
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, *args, **kwargs)` \{#mapview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+
+##### `get_permissions(self, request, permissions, resource, *args, **kwargs)` \{#mapview-get-permissions\}
+
+```text
+Hook to modify permissions.
+
+Args:
+    request (HttpRequest): The request.
+    permissions (dict): The permissions dictionary with boolean values.
+    resource (Resource): The resource.
+
+Returns:
+    dict: modified permissions dictionary.
+```
+
+
+##### `translate_layers_to_cesium(self, map_view_layers)` \{#mapview-translate-layers-to-cesium\}
+
+> _No description._
+
+
+
+##### `save_custom_layers(self, request, session, resource, *args, **kwargs)` \{#mapview-save-custom-layers\}
+
+```text
+Persist custom layers added to map by user.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): The database session.
+    resource(Resource): The resource.
+
+Returns:
+    JsonResponse: success.
+```
+
+
+##### `remove_custom_layer(self, request, session, resource, *args, **kwargs)` \{#mapview-remove-custom-layer\}
+
+```text
+Remove custom layers removed by user.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): The database session.
+    resource(Resource): The resource.
+
+Returns:
+    JsonResponse: success.
+```
+
+
+##### `build_legend_item(self, request, session, resource, *args, **kwargs)` \{#mapview-build-legend-item\}
+
+```text
+Render the HTML for a legend.
+```
+
+
+##### `build_layer_group_tree_item(self, request, session, resource, *args, **kwargs)` \{#mapview-build-layer-group-tree-item\}
+
+```text
+Render the HTML for a layer group tree item.
+
+status (create/append): create is create a whole new layer group with all the layer items associated with it
+                        append is append an associated layer into an existing layer group
+```
+
+
+##### `should_disable_basemap(self, request, resource, map_manager)` \{#mapview-should-disable-basemap\}
+
+```text
+Hook to override disabling the basemap.
+
+Args:
+    request (HttpRequest): The request.
+    resource (Resource): Resource instance or None.
+    map_manager (MapManager): MapManager instance associated with this request.
+
+Returns:
+    bool: True to disable the basemap.
+```
+
+
+##### `get_map_manager(self, request, resource, *args, **kwargs)` \{#mapview-get-map-manager\}
+
+```text
+Lazily build and retrieve a MapManager instance.
+
+Args:
+    request (HttpRequest): The request.
+    resource (Resource): Resource instance or None.
+
+Returns:
+    MapManager: MapManager instance.
+```
+
+
+##### `get_plot_data(self, request, session, resource, *args, **kwargs)` \{#mapview-get-plot-data\}
+
+```text
+Load plot from given parameters.
+
+Args:
+    request (HttpRequest): The request.
+    session(sqlalchemy.Session): The database session.
+    resource(Resource): The resource.
+
+Returns:
+    JsonResponse: title, data, and layout options for the plot.
+```
+
+*`@permission_required('use_map_geocode', raise_exception=True)`*
+
+##### `find_location_by_query(self, request, *args, **kwargs)` \{#mapview-find-location-by-query\}
+
+```text
+"
+This controller is used in default geocode feature.
+
+Args:
+    request(HttpRequest): The request.
+    resource_id(str): UUID of the resource being mapped.
+```
+
+*`@permission_required('use_map_geocode', raise_exception=True)`*
+
+##### `find_location_by_advanced_query(self, request, *args, **kwargs)` \{#mapview-find-location-by-advanced-query\}
+
+```text
+"
+This controller called by the advanced geocode search feature.
+
+Args:
+    request(HttpRequest): The request.
+    resource_id(str): UUID of the resource being mapped.
+```
+
+
+##### `convert_geojson_to_shapefile(self, request, session, resource, *args, **kwargs)` \{#mapview-convert-geojson-to-shapefile\}
+
+```text
+credit to:
+https://github.com/TipsForGIS/geoJSONToShpFile/blob/master/geoJ.py
+Updated for pyshp 3.x compatibility.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): The database session.
+    resource(Resource): The resource.
+
+Returns:
+    HttpResponse: Zip file containing shapefile.
+```

@@ -1,0 +1,57 @@
+---
+id: services.model_file_db_spatial_manager
+title: tethysext.atcore.services.model_file_db_spatial_manager
+sidebar_label: model_file_db_spatial_manager
+---
+
+# `tethysext.atcore.services.model_file_db_spatial_manager`
+
+```text
+********************************************************************************
+* Name: spatial_manager
+* Author: nswain
+* Created On: July 06, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModelFileDBSpatialManager(BaseSpatialManager)` \{#modelfiledbspatialmanager\}
+
+```text
+Class for SpatialManagers using a file database
+```
+#### Methods
+
+*`@abstractmethod`*
+
+##### `get_extent_for_project(self, *args, **kwargs)` \{#modelfiledbspatialmanager-get-extent-for-project\}
+
+```text
+Return the extent / bounding box for a project/model.
+```
+
+*`@abstractmethod`*
+
+##### `get_projection_units(self, *args, **kwargs)` \{#modelfiledbspatialmanager-get-projection-units\}
+
+```text
+Get units of the given projection.
+```
+
+*`@abstractmethod`*
+
+##### `get_projection_string(self, *args, **kwargs)` \{#modelfiledbspatialmanager-get-projection-string\}
+
+```text
+Get the projection string as either wkt or proj4 format.
+
+Args:
+    model_db(ModelDatabase): the object representing the model database.:
+    srid(int): EPSG spatial reference identifier.
+    proj_format(str): project string format (either SpatialManager.PRO_WKT or SpatialManager.PRO_PROJ4).
+
+Returns:
+    str: projection string.
+```

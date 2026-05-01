@@ -1,0 +1,295 @@
+---
+id: services.map_manager
+title: tethysext.atcore.services.map_manager
+sidebar_label: map_manager
+---
+
+# `tethysext.atcore.services.map_manager`
+
+```text
+********************************************************************************
+* Name: map_manager
+* Author: nswain
+* Created On: August 30, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `MapManagerBase(object)` \{#mapmanagerbase\}
+
+```text
+Base class for object that orchestrates the map layers and resources.
+```
+#### Methods
+
+
+##### `__init__(self, spatial_manager, resource)` \{#mapmanagerbase-init\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `map_extent(self)` \{#mapmanagerbase-map-extent\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `default_view(self)` \{#mapmanagerbase-default-view\}
+
+> _No description._
+
+
+*`@abstractmethod`*
+
+##### `compose_map(self, request, *args, **kwargs)` \{#mapmanagerbase-compose-map\}
+
+```text
+Compose the MapView object.
+Args:
+    request(HttpRequest): A Django request object.
+
+Returns:
+    MapView, 4-list<float>: The MapView and extent objects.
+```
+
+
+##### `get_cesium_token(self)` \{#mapmanagerbase-get-cesium-token\}
+
+```text
+Get the cesium token for Cesium Views
+
+Returns:
+    str: The cesium API token
+```
+
+
+##### `build_param_string(self, **kwargs)` \{#mapmanagerbase-build-param-string\}
+
+```text
+Build a VIEWPARAMS or ENV string with given kwargs (e.g.: 'foo:1;bar:baz')
+
+Args:
+    **kwargs: key-value pairs of paramaters.
+
+Returns:
+    str: parameter string.
+```
+
+
+##### `build_geojson_layer(self, geojson, layer_name, layer_title, layer_variable, layer_id='', visible=True, public=True, selectable=False, plottable=False, has_action=False, extent=None, popup_title=None, excluded_properties=None, show_download=False, label_options=None)` \{#mapmanagerbase-build-geojson-layer\}
+
+```text
+Build an MVLayer object with supplied arguments.
+Args:
+    geojson(dict): Python equivalent GeoJSON FeatureCollection.
+    layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+    layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+    layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+    layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+    visible(bool): Layer is visible when True. Defaults to True.
+    public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+    selectable(bool): Enable feature selection. Defaults to False.
+    plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+    has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+    extent(list): Extent for the layer. Optional.
+    popup_title(str): Title to display on feature popups. Defaults to layer title.
+    excluded_properties(list): List of properties to exclude from feature popups.
+    show_download(boolean): enable download geojson as shapefile. Default is False.
+    label_options(dict): Dictionary for labeling.  Possibilities include label_property (the name of the
+        property to label), font (label font), text_align (alignment of the label), offset_x (x offset). Optional.
+
+Returns:
+    MVLayer: the MVLayer object.
+```
+
+
+##### `build_cesium_layer(self, cesium_type, cesium_json, layer_name, layer_title, layer_variable, layer_id='', visible=True, public=True, selectable=False, plottable=False, has_action=False, extent=None, popup_title=None, excluded_properties=None, show_download=False)` \{#mapmanagerbase-build-cesium-layer\}
+
+```text
+Build an MVLayer object with supplied arguments.
+Args:
+    cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'.
+    cesium_json(dict): Cesium dictionary to describe the layer.
+    layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+    layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+    layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+    layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+    visible(bool): Layer is visible when True. Defaults to True.
+    public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+    selectable(bool): Enable feature selection. Defaults to False.
+    plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+    has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+    extent(list): Extent for the layer. Optional.
+    popup_title(str): Title to display on feature popups. Defaults to layer title.
+    excluded_properties(list): List of properties to exclude from feature popups.
+    show_download(boolean): enable download geojson as shapefile. Default is False.
+
+Returns:
+    MVLayer: the MVLayer object.
+```
+
+
+##### `build_wms_layer(self, endpoint, layer_name, layer_title, layer_variable, style='', viewparams=None, env=None, visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None, public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None, popup_title=None, use_geoserver_legend=True, geoserver_legend_params=None, color_ramp_division_kwargs=None, times=None)` \{#mapmanagerbase-build-wms-layer\}
+
+```text
+Build an WMS MVLayer object with supplied arguments.
+Args:
+    endpoint(str): URL to GeoServer WMS interface.
+    layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+    layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+    layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+    style(str): Name of the Geoserver layer style
+    layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+    viewparams(str): VIEWPARAMS string.
+    env(str): ENV string.
+    visible(bool): Layer is visible when True. Defaults to True.
+    public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+    tiled(bool): Configure as tiled layer if True. Defaults to True.
+    selectable(bool): Enable feature selection. Defaults to False.
+    plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+    has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+    extent(list): Extent for the layer. Optional.
+    popup_title(str): Title to display on feature popups. Defaults to layer title.
+    excluded_properties(list): List of properties to exclude from feature popups.
+    geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+    use_geoserver_legend(bool): If True, the legend will be retrieved directly from Geoserver. If False,
+        a legend will be generated locally using the parameter `color_ramp_division_kwargs`.
+    geoserver_legend_params: Dictionary of additional GeoServer GetLegendGraphic request parameters.
+        Both standard WMS parameters (e.g. "transparent", "format") and legend-specific options ("legend_options") can be included.
+        Example:
+        {
+            "transparent": "true",
+            "format": "image/png",
+            "legend_options": "hideEmptyRules:true;fontSize:12"
+        }
+    color_ramp_division_kwargs(dict): arguments from map_manager.generate_custom_color_ramp_divisions
+    times (list): List of time steps if layer is time-enabled. Times should be represented as strings in ISO 8601 format (e.g.: ["20210322T112511Z", "20210322T122511Z", "20210322T132511Z"]). Currently only supported in CesiumMapView.
+Returns:
+    MVLayer: the MVLayer object.
+```
+
+
+##### `build_arc_gis_layer(self, endpoint, layer_name, layer_title, layer_variable, viewparams=None, env=None, visible=True, tiled=True, selectable=False, plottable=False, has_action=False, extent=None, public=True, geometry_attribute='geometry', layer_id='', excluded_properties=None, popup_title=None)` \{#mapmanagerbase-build-arc-gis-layer\}
+
+```text
+Build an AcrGIS Map Server MVLayer object with supplied arguments.
+Args:
+    endpoint(str): URL to GeoServer WMS interface.
+    layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+    layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
+    layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
+    layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
+    viewparams(str): VIEWPARAMS string.
+    env(str): ENV string.
+    visible(bool): Layer is visible when True. Defaults to True.
+    public(bool): Layer is publicly accessible when app is running in Open Portal Mode if True. Defaults to True.
+    tiled(bool): Configure as tiled layer if True. Defaults to True.
+    selectable(bool): Enable feature selection. Defaults to False.
+    plottable(bool): Enable "Plot" button on pop-up properties. Defaults to False.
+    has_action(bool): Enable "Action" button on pop-up properties. Defaults to False.
+    extent(list): Extent for the layer. Optional.
+    popup_title(str): Title to display on feature popups. Defaults to layer title.
+    excluded_properties(list): List of properties to exclude from feature popups.
+    geometry_attribute(str): Name of the geometry attribute. Defaults to "geometry".
+
+Returns:
+    MVLayer: the MVLayer object.
+```
+
+
+##### `build_layer_group(self, id, display_name, layers, layer_control='checkbox', visible=True, public=True)` \{#mapmanagerbase-build-layer-group\}
+
+```text
+Build a layer group object.
+
+Args:
+    id(str): Unique identifier for the layer group.
+    display_name(str): Name displayed in MapView layer selector/legend.
+    layers(list<MVLayer>): List of layers to include in the layer group.
+    layer_control(str): Type of control for layers. Either 'checkbox' or 'radio'. Defaults to checkbox.
+    visible(bool): Whether layer group is initially visible. Defaults to True.
+    public(bool): enable public to see this layer group if True.
+Returns:
+    dict: Layer group definition.
+```
+
+
+##### `get_vector_style_map(self)` \{#mapmanagerbase-get-vector-style-map\}
+
+```text
+Builds the style map for vector layers.
+
+Returns:
+    dict: the style map.
+```
+
+
+##### `get_wms_endpoint(self)` \{#mapmanagerbase-get-wms-endpoint\}
+
+```text
+Get the public wms endpoint for GeoServer.
+```
+
+
+##### `get_map_extent(self)` \{#mapmanagerbase-get-map-extent\}
+
+```text
+Get the default view and extent for the project.
+
+Returns:
+    MVView, 4-list<float>: default view and extent of the project.
+```
+
+
+##### `build_legend(self, layer, units='')` \{#mapmanagerbase-build-legend\}
+
+```text
+Build Legend data for a given layer
+
+Args:
+    layer: result.layer object
+    units: unit for the legend.
+Returns:
+    Legend data associate with the layer.
+```
+
+
+##### `generate_custom_color_ramp_divisions(self, min_value, max_value, num_divisions=10, value_precision=2, first_division=1, top_offset=0, bottom_offset=0, prefix='val', color_ramp='', color_prefix='color', no_data_value=None)` \{#mapmanagerbase-generate-custom-color-ramp-divisions\}
+
+```text
+Generate custom elevation divisions.
+
+Args:
+    min_value(number): minimum value.
+    max_value(number): maximum value.
+    num_divisison(int): number of divisions.
+    value_precision(int): level of precision for legend values.
+    first_division(int): first division number (defaults to 1).
+    top_offset(number): offset from top of color ramp (defaults to 0).
+    bottom_offset(number): offset from bottom of color ramp (defaults to 0).
+    prefix(str): name of division variable prefix (i.e.: 'val' for pattern 'val1').
+    color_ramp(str): color ramp name in COLOR_RAMPS dict. Options are ['Blue', 'Blue and Red', 'Flower Field', 'Galaxy Berries', 'Heat Map', 'Olive Harmony', 'Mother Earth', 'Rainforest Frogs', 'Retro FLow', 'Sunset Fade']
+    color_prefix(str): name of color variable prefix (i.e.: 'color' for pattern 'color1').
+    no_data_value (str): set no data value for the color ramp. (defaults to None).
+Returns:
+    dict<name, value>: custom divisions
+```
+
+
+##### `get_plot_for_layer_feature(self, layer_name, feature_id)` \{#mapmanagerbase-get-plot-for-layer-feature\}
+
+```text
+Get plot data for given feature on given layer.
+
+Args:
+    layer_name(str): Name/id of layer.
+    feature_id(str): PostGIS Feature ID of feature.
+
+Returns:
+    str, list<dict>, dict: plot title, data series, and layout options, respectively.
+```

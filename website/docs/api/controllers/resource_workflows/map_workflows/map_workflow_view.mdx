@@ -1,0 +1,102 @@
+---
+id: controllers.resource_workflows.map_workflows.map_workflow_view
+title: tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view
+sidebar_label: map_workflow_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.map_workflows.map_workflow_view`
+
+```text
+********************************************************************************
+* Name: map_workflow_view.py
+* Author: nswain
+* Created On: November 21, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `MapWorkflowView(MapView, ResourceWorkflowView)` \{#mapworkflowview\}
+
+```text
+Controller for a map view with workflows integration.
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, *args, **kwargs)` \{#mapworkflowview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): the session.
+    resource(Resource): the resource for this request.
+    context(dict): The context dictionary.
+    workflow_id(str): The id of the workflow.
+    step_id(str): The id of the step.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+*`@staticmethod`*
+
+##### `set_feature_selection(map_view, enabled=True)` \{#mapworkflowview-set-feature-selection\}
+
+```text
+Set whether features are selectable or not.
+Args:
+    map_view(MapView): The MapView gizmo options object.
+    enabled(bool): True to enable selection, False to disable it.
+```
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#mapworkflowview-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+*`@staticmethod`*
+
+##### `get_geometry_data_for_previous_steps(current_step)` \{#mapworkflowview-get-geometry-data-for-previous-steps\}
+
+```text
+Retrieve geometry data from previous workflow steps
+
+Args:
+    current_step (ResourceWorkflowStep): the current workflow step for which geometry data is being retrieved.
+
+Returns:
+    list[(ResourceWorkflowStep, str)]: a list of tuples, where each tuple contains a previous step and
+                                       its GeoJSON string
+```
+
+
+##### `add_layers_for_previous_steps(self, request, resource, current_step, map_view, layer_groups, selectable=None)` \{#mapworkflowview-add-layers-for-previous-steps\}
+
+```text
+Create layers for previous steps that have a spatial component to them for review of the previous steps.
+Args:
+    request(HttpRequest): The request.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    map_view(MapView): The Tethys MapView object.
+    layer_groups(list<dict>): List of layer group dictionaries for new layers to add.
+    selectable(bool): Layers generated for previous steps are selectable when True.
+
+Returns:
+    MapView, list<dict>: The updated MapView and layer groups.
+```

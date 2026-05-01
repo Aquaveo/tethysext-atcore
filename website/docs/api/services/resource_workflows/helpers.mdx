@@ -1,0 +1,31 @@
+---
+id: services.resource_workflows.helpers
+title: tethysext.atcore.services.resource_workflows.helpers
+sidebar_label: helpers
+---
+
+# `tethysext.atcore.services.resource_workflows.helpers`
+
+> _No description._
+
+## Functions
+
+
+### `set_step_status(resource_db_session, step, status)` \{#set-step-status\}
+
+```text
+Sets the status on the provided step to the provided status.
+Args:
+    resource_db_session(sqlalchemy.orm.Session): Session bound to the step.
+    step(ResourceWorkflowStep): The step to modify
+    status(str): The status to set.
+```
+
+
+### `parse_workflow_step_args()` \{#parse-workflow-step-args\}
+
+```text
+Parses and validates command line arguments for workflow_step_job.
+Returns:
+    argparse.Namespace: The parsed and validated arguments.
+```

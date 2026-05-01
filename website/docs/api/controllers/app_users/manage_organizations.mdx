@@ -1,0 +1,67 @@
+---
+id: controllers.app_users.manage_organizations
+title: tethysext.atcore.controllers.app_users.manage_organizations
+sidebar_label: manage_organizations
+---
+
+# `tethysext.atcore.controllers.app_users.manage_organizations`
+
+```text
+********************************************************************************
+* Name: manage_organizations
+* Author: nswain
+* Created On: April 03, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ManageOrganizations(MultipleResourcesViewMixin)` \{#manageorganizations\}
+
+```text
+Controller for manage_organizations page.
+
+GET: Render list of all organizations.
+DELETE: Delete an organization.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#manageorganizations-get\}
+
+```text
+Route get requests.
+```
+
+
+##### `delete(self, request, *args, **kwargs)` \{#manageorganizations-delete\}
+
+```text
+Route delete requests.
+```
+
+
+##### `add_custom_fields(self, organization, organization_card)` \{#manageorganizations-add-custom-fields\}
+
+```text
+Hook to add custom fields to each organization card.
+Args:
+    organization(Organization): the sqlalchemy Organization instance.
+    organization_card(dict): the default organization card.
+Returns:
+    dict: customized organization card.
+```
+
+
+##### `perform_custom_delete_operations(self, request, organization)` \{#manageorganizations-perform-custom-delete-operations\}
+
+```text
+Hook to perform custom delete operations prior to the organization being deleted.
+Args:
+    request(django.Request): the DELETE request object.
+    organization(Organization): the sqlalchemy Organization instance to be deleted.
+
+Raises:
+    Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
+```

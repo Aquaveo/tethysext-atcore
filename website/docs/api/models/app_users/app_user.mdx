@@ -1,0 +1,324 @@
+---
+id: models.app_users.app_user
+title: tethysext.atcore.models.app_users.app_user
+sidebar_label: app_user
+---
+
+# `tethysext.atcore.models.app_users.app_user`
+
+> _No description._
+
+## Classes
+
+
+### `AppUser(AppUsersBase)` \{#appuser\}
+
+```text
+Definition for the app_user table. All app users are associated with django users.
+```
+#### Methods
+
+
+##### `__init__(self, *args, **kwargs)` \{#appuser-init\}
+
+```text
+Contstructor.
+```
+
+*`@reconstructor`*
+
+##### `init_on_load(self)` \{#appuser-init-on-load\}
+
+```text
+Contstructor for the instances loaded from database
+```
+
+*`@validates('role')`*
+
+##### `validate_role(self, key, field)` \{#appuser-validate-role\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `django_user(self)` \{#appuser-django-user\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `email(self)` \{#appuser-email\}
+
+> _No description._
+
+
+*`@email.setter`*
+
+##### `email(self, value)` \{#appuser-email\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `first_name(self)` \{#appuser-first-name\}
+
+> _No description._
+
+
+*`@first_name.setter`*
+
+##### `first_name(self, value)` \{#appuser-first-name\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `last_name(self)` \{#appuser-last-name\}
+
+> _No description._
+
+
+*`@last_name.setter`*
+
+##### `last_name(self, value)` \{#appuser-last-name\}
+
+> _No description._
+
+
+*`@classmethod`*
+
+##### `get_app_user_from_request(cls, request, session, redirect_if_invalid=True)` \{#appuser-get-app-user-from-request\}
+
+```text
+Get the AppUser cooresponding with the request user and redirect if no app user exists.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object.
+    request(django.request): Django request object.
+    redirect_if_invalid (bool): Redirects to app library page if no app user is found for the request user.
+
+Returns:
+    AppUser: app user cooresponding with the request user or None if one does not exist and redirect is False.
+```
+
+*`@staticmethod`*
+
+##### `get_organization_model()` \{#appuser-get-organization-model\}
+
+> _No description._
+
+
+*`@staticmethod`*
+
+##### `get_resource_model()` \{#appuser-get-resource-model\}
+
+> _No description._
+
+
+
+##### `is_staff(self)` \{#appuser-is-staff\}
+
+> _No description._
+
+
+
+##### `get_display_name(self, default_to_username=True, append_username=False)` \{#appuser-get-display-name\}
+
+```text
+Get a nice display name for an app user.
+Args:
+    default_to_username: Return username if no other names are available if True.
+    append_username: Append the username in parenthesis if True. e.g.: "First Last (username)".
+
+Returns: In order of priority: "First Last", "First", "Last", "username".
+```
+
+
+##### `get_django_user(self)` \{#appuser-get-django-user\}
+
+```text
+Get the Django user object associated with this app user object
+
+Returns: Django User object
+```
+
+
+##### `get_organizations(self, session, request, as_options=False, cascade=True, consultants=False)` \{#appuser-get-organizations\}
+
+```text
+Get the Organizations to which the given user belongs.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object.
+    request(django.request): Django request object.
+    as_options(bool): Return and select option pairs if True.
+    cascade(bool): Return subordinate organizations if True.
+    consultants(bool): Only organizations that can be a consultant if True.
+
+Returns:
+    list: Organizations to which the user belongs with subordinate Organizations if cascade.
+```
+
+
+##### `get_resources(self, session, request, of_type=None, cascade=True, for_assigning=False, include_children=True)` \{#appuser-get-resources\}
+
+```text
+Get the resources that the request user is able to assign to clients and consultants.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object
+    request(djanog.request): Django request object
+    of_type(Resource): A subclass of Resource.
+    cascade(bool): Also retrieve resources of child organizations.
+    for_assigning(bool): check assign permission versus view permission.
+    include_children(bool): include the resources that are children to other resources.
+Returns:
+```
+
+
+##### `filter_resources(self, resources)` \{#appuser-filter-resources\}
+
+```text
+Filter and sort the resources returned by get_resources.
+Args:
+    resources: all resources that are accessible by this user.
+
+Returns:
+    list: list of Resource objects.
+```
+
+
+##### `get_assignable_roles(self, request, as_options=False)` \{#appuser-get-assignable-roles\}
+
+```text
+Get a list of user roles that this user can assign.
+
+Args:
+    request: Django request object
+    as_options: Returns a list of tuple pairs for use as select input options.
+
+Returns: list of user roles the request user can assign
+```
+
+
+##### `get_peers(self, session, request, include_self=False, cascade=False)` \{#appuser-get-peers\}
+
+```text
+Get AppUsers belonging to organizations to which this user belongs.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object
+    request(django.request): Django request object
+    include_self(bool): Include self in list of users
+    cascade(bool): Also retrieve resources of child organizations.
+
+Returns: A list of AppUser objects.
+```
+
+
+##### `update_activity(self, session, request)` \{#appuser-update-activity\}
+
+```text
+Update the is_active status of this user based on the activity of the organizations to which it belongs.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object
+    request(django.request): Django request object
+```
+
+
+##### `get_role(self, display_name=False)` \{#appuser-get-role\}
+
+```text
+Get the most elevated role that has been applied to the given user.
+
+Args:
+    display_name(bool): Return display friendly name of role if True.
+
+Returns: Name of role
+```
+
+
+##### `update_permissions(self, session, request, permissions_manager)` \{#appuser-update-permissions\}
+
+```text
+Update custom_permissions of this user based on its role and the licenses of the organizations to which it belongs.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object.
+    request(django.request): Django request object.
+    permissions_manager(AppPermissionsManager): Permissions manager bound to current app.
+```
+
+
+##### `get_rank(self, permissions_manager)` \{#appuser-get-rank\}
+
+```text
+Get the maximum permissions-based rank of the user.
+Args:
+    permissions_manager(AppPermissionsManager): Permissions manager bound to current app.
+
+Returns:
+    float: highest permissions-based rank of the user.
+```
+
+
+##### `get_setting(self, session, key, as_value=False, **kwargs)` \{#appuser-get-setting\}
+
+```text
+Get user setting using given criteria.
+Args:
+    session(sqlalchemy.session): database session.
+    key(str): name of setting.
+    as_value(bool): return value of setting, instead of UserSetting instance if True.
+    kwargs: Any number of key value attributes to attach for filtering (i.e.: page, secondary_id, resource).
+Returns:
+    UserSetting: the user setting or None if does not exist.
+```
+
+
+##### `get_all_settings(self, session)` \{#appuser-get-all-settings\}
+
+```text
+Get all user settings.
+Args:
+    session(sqlalchemy.session): database session.
+Returns:
+    list<UserSetting>: All user settings associated with given criteria.
+```
+
+*`@staticmethod`*
+
+##### `delete_existing_settings(session, settings)` \{#appuser-delete-existing-settings\}
+
+```text
+Delete all given settings.
+Args:
+    session(sqlalchemy.session): database session.
+    settings(list<UserSetting>): list of UserSettings to delete.
+```
+
+
+##### `update_setting(self, session, key, value, commit=True, **kwargs)` \{#appuser-update-setting\}
+
+```text
+Update the value of the setting matching the given criteria.
+Args:
+    session(sqlalchemy.session): database session.
+    key(str): name of setting.
+    value(str): value of setting.
+    commit(bool): commit the changes if True.
+    kwargs: Any number of key value attributes to attach for filtering (i.e.: page, secondary_id, resource).
+```
+
+
+##### `can_view(self, session, request, resource)` \{#appuser-can-view\}
+
+```text
+Check whether this user can view the given resource.
+Args:
+    session(sqlalchemy.session): SQLAlchemy session object
+    request(django.request): Django request object
+    resource(Resource): resource to test.
+
+Returns:
+    bool: True if user can view the resource, else False.
+```

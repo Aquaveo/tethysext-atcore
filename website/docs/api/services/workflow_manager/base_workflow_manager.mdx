@@ -1,0 +1,62 @@
+---
+id: services.workflow_manager.base_workflow_manager
+title: tethysext.atcore.services.workflow_manager.base_workflow_manager
+sidebar_label: base_workflow_manager
+---
+
+# `tethysext.atcore.services.workflow_manager.base_workflow_manager`
+
+> _No description._
+
+## Classes
+
+
+### `BaseWorkflowManager(object)` \{#baseworkflowmanager\}
+
+> _No description._
+
+#### Methods
+
+
+##### `__init__(self, session, model_db, resource_workflow_step, user, working_directory, app, scheduler_name=None, jobs=None, job_script=None, input_files=None, gs_engine=None, *args)` \{#baseworkflowmanager-init\}
+
+```text
+Constructor.
+
+Args:
+    session(sqlalchemy.orm.Session): An SQLAlchemy session bound to the resource workflow.
+    model_db(ModelDatabase): ModelDatabase instance bound to model database.
+    resource_workflow_step(atcore.models.app_users.ResourceWorkflowStep): Instance of ResourceWorkflowStep. Note: Must have active session (i.e. not closed).
+    user(auth.User): The Django user submitting the job.
+    working_directory(str): Path to users's workspace.
+    app(TethysAppBase): Class or instance of an app.
+    scheduler_name(str): Name of the condor scheduler to use.
+    jobs(list<CondorWorkflowJobNode or dict>): List of CondorWorkflowJobNodes to run.
+    input_files(list<str>): List of paths to files to sends as inputs to every job. Optional.
+```
+
+*`@property`*
+
+##### `workspace(self)` \{#baseworkflowmanager-workspace\}
+
+```text
+Workspace path property.
+Returns:
+    str: Path to workspace for this workflow
+```
+
+
+##### `prepare(self)` \{#baseworkflowmanager-prepare\}
+
+> _No description._
+
+
+
+##### `run_job(self)` \{#baseworkflowmanager-run-job\}
+
+```text
+Prepares and executes the job.
+
+Returns:
+    str: UUID of the Workflow/Job.
+```

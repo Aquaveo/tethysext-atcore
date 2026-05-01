@@ -1,0 +1,217 @@
+---
+id: models.app_users.resource_workflow_step
+title: tethysext.atcore.models.app_users.resource_workflow_step
+sidebar_label: resource_workflow_step
+---
+
+# `tethysext.atcore.models.app_users.resource_workflow_step`
+
+```text
+********************************************************************************
+* Name: resource_workflow_step
+* Author: nswain
+* Created On: November 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceWorkflowStep(AppUsersBase, StatusMixin, AttributesMixin, OptionsMixin)` \{#resourceworkflowstep\}
+
+```text
+Data model for storing information about resource workflows.
+
+Primary Workflow Step Status Progression:
+1. STATUS_PENDING = Step has not been started yet.
+2. STATUS_WORKING = Processing on step has been started but not complete.
+3. STATUS_ERROR = ValueError or ValidateError has occurred.
+4. STATUS_FAILED = Processing error has occurred.
+5. STATUS_COMPLETE = Step has been completed successfully.
+
+Review Workflow Status Progression (if applicable):
+1. STATUS_SUBMITTED = Workflow submitted for review
+2. STATUS_UNDER_REVIEW = Workflow currently being reviewed
+3a. STATUS_APPROVED = Changes approved.
+3b. STATUS_REJECTED = Changes disapproved.
+3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit
+
+Options:
+    workflow_lock_required(bool): This step requires a workflow lock to be performed (to prevent conflicts). Defaults to False.
+    release_workflow_lock_on_completion(bool): Attempt to release a workflow lock when the view is initialized. Defaults to True.
+    release_workflow_lock_on_init(bool): Attempt to release a workflow lock when the step is completed. Ignored if `workflow_lock_required` is True. Defaults to False.
+    resource_lock_required(bool): This step requires a resource lock to be performed (to prevent conflicts). Defaults to False.
+    release_resource_lock_on_completion(bool): Attempt to release a resource lock when the view is initialized. Defaults to True.
+    release_resource_lock_on_init(bool): Attempt to release a resource lock when the step is completed. Ignored if `resource_lock_required` is True. Defaults to False.
+```
+#### Methods
+
+
+##### `__init__(self, *args, **kwargs)` \{#resourceworkflowstep-init\}
+
+> _No description._
+
+
+
+##### `__str__(self)` \{#resourceworkflowstep-str\}
+
+> _No description._
+
+
+
+##### `__repr__(self)` \{#resourceworkflowstep-repr\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `default_options(self)` \{#resourceworkflowstep-default-options\}
+
+```text
+Returns default options dictionary for the object.
+```
+
+*`@property`*
+
+##### `complete(self)` \{#resourceworkflowstep-complete\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `active_roles(self)` \{#resourceworkflowstep-active-roles\}
+
+> _No description._
+
+
+*`@active_roles.setter`*
+
+##### `active_roles(self, value)` \{#resourceworkflowstep-active-roles\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `controller(self)` \{#resourceworkflowstep-controller\}
+
+> _No description._
+
+
+*`@abstractmethod`*
+
+##### `init_parameters(self, *args, **kwargs)` \{#resourceworkflowstep-init-parameters\}
+
+```text
+Initialize the parameters for this step.
+Returns:
+    dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+```
+
+*`@classmethod`*
+
+##### `valid_statuses(cls)` \{#resourceworkflowstep-valid-statuses\}
+
+```text
+Primary Workflow Step Status Progression:
+1. STATUS_PENDING = Step has not been started yet.
+2. STATUS_WORKING = Processing on step has been started but not complete.
+3. STATUS_ERROR = ValueError or ValidateError has occurred.
+4. STATUS_FAILED = Processing error has occurred.
+5. STATUS_COMPLETE = Step has been completed successfully.
+
+Review Workflow Status Progression (if applicable):
+1. STATUS_SUBMITTED = Workflow submitted for review.
+2. STATUS_UNDER_REVIEW = Workflow currently being reviewed.
+3a. STATUS_APPROVED = Changes approved.
+3b. STATUS_REJECTED = Changes disapproved.
+3c. STATUS_CHANGES_REQUESTED = Changes required and resubmit.
+4. STATUS_REVIEWED - Workflow has been reviewed.
+
+Returns:
+    list: valid statuses.
+```
+
+
+##### `to_dict(self)` \{#resourceworkflowstep-to-dict\}
+
+```text
+Serialize ResourceWorkflowStep into a dictionary.
+
+Returns:
+    dict: dictionary representation of ResourceWorkflowStep.
+```
+
+
+##### `to_json(self)` \{#resourceworkflowstep-to-json\}
+
+```text
+Serialize ResourceWorkflowStep, including parameters, to json.
+
+Returns:
+    str: JSON string representation of ResourceWorkflowStep.
+```
+
+
+##### `validate(self)` \{#resourceworkflowstep-validate\}
+
+```text
+Validates parameter values of this this step. If the parameter values of this step are invalid a ValueError will be raised
+```
+
+
+##### `parse_parameters(self, parameters)` \{#resourceworkflowstep-parse-parameters\}
+
+```text
+Parse parameters from a dictionary.
+
+Args:
+    parameters(dict<name,value>): Dictionary of parameters.
+```
+
+
+##### `set_parameter(self, name, value)` \{#resourceworkflowstep-set-parameter\}
+
+```text
+Sets the value of the named parameter.
+Args:
+    name(str): Name of the parameter to set.
+    value(varies): Value of the parameter.
+```
+
+
+##### `get_parameter(self, name)` \{#resourceworkflowstep-get-parameter\}
+
+```text
+Get value of the named parameter.
+Args:
+    name(str): name of parameter.
+
+Returns:
+    varies: Value of the named parameter.
+```
+
+
+##### `get_parameters(self)` \{#resourceworkflowstep-get-parameters\}
+
+```text
+Get all parameter objects.
+Returns:
+    dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+```
+
+
+##### `resolve_option(self, option)` \{#resourceworkflowstep-resolve-option\}
+
+```text
+Resolve options that depend on parameters from other steps.
+```
+
+
+##### `reset(self)` \{#resourceworkflowstep-reset\}
+
+```text
+Resets the step back to its initial state.
+```

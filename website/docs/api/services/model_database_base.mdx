@@ -1,0 +1,99 @@
+---
+id: services.model_database_base
+title: tethysext.atcore.services.model_database_base
+sidebar_label: model_database_base
+---
+
+# `tethysext.atcore.services.model_database_base`
+
+```text
+********************************************************************************
+* Name: model_database_base.py
+* Author: nswain & ckrewson
+* Created On: December 5, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModelDatabaseBase(object)` \{#modeldatabasebase\}
+
+> _No description._
+
+#### Methods
+
+
+##### `__init__(self, app, database_id=None)` \{#modeldatabasebase-init\}
+
+```text
+Constructor
+
+Args:
+    app(TethysApp): TethysApp class or instance.
+    database_id(str): UUID to be assigned to the database.
+```
+
+*`@abc.abstractmethod`*
+
+##### `get_name(self)` \{#modeldatabasebase-get-name\}
+
+> _No description._
+
+
+*`@abc.abstractmethod`*
+
+##### `get_id(self)` \{#modeldatabasebase-get-id\}
+
+> _No description._
+
+
+*`@property` `@abc.abstractmethod`*
+
+##### `model_db_connection(self)` \{#modeldatabasebase-model-db-connection\}
+
+> _No description._
+
+
+*`@abc.abstractmethod`*
+
+##### `initialize(self, *args, **kwargs)` \{#modeldatabasebase-initialize\}
+
+> _No description._
+
+
+
+##### `pre_initialize(self, *args, **kwargs)` \{#modeldatabasebase-pre-initialize\}
+
+```text
+Override to perform additional initialize steps before the database and tables have been initialized.
+```
+
+
+##### `post_initialize(self, *args, **kwargs)` \{#modeldatabasebase-post-initialize\}
+
+```text
+Override to perform additional initialize steps after the database and tables have been initialized.
+```
+
+*`@abc.abstractmethod`*
+
+##### `exists(self)` \{#modeldatabasebase-exists\}
+
+> _No description._
+
+
+*`@abc.abstractmethod`*
+
+##### `list(self)` \{#modeldatabasebase-list\}
+
+> _No description._
+
+
+*`@classmethod`*
+
+##### `generate_id(cls)` \{#modeldatabasebase-generate-id\}
+
+```text
+Returns a UUID name for databases.
+```

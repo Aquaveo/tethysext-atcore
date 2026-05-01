@@ -1,0 +1,126 @@
+---
+id: services.model_database
+title: tethysext.atcore.services.model_database
+sidebar_label: model_database
+---
+
+# `tethysext.atcore.services.model_database`
+
+```text
+********************************************************************************
+* Name: model_database.py
+* Author: nswain
+* Created On: June 5, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModelDatabase(ModelDatabaseBase)` \{#modeldatabase\}
+
+```text
+Manages the creation of databases for models and will load-balance between multiple database connections if defined by the app.  # noqa: E501
+```
+#### Methods
+
+
+##### `get_name(self)` \{#modeldatabase-get-name\}
+
+```text
+DB name getter (e.g.: my_app_02893760_1f1e_43a2_8578_b10fc829c15f).
+```
+
+
+##### `get_id(self)` \{#modeldatabase-get-id\}
+
+```text
+DB id getter (e.g.: 02893760_1f1e_43a2_8578_b10fc829c15f).
+```
+
+
+##### `get_size(self, pretty=False)` \{#modeldatabase-get-size\}
+
+```text
+Get the size of the ModelDatabase
+```
+
+*`@property`*
+
+##### `db_url(self)` \{#modeldatabase-db-url\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `db_url_obj(self)` \{#modeldatabase-db-url-obj\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `model_db_connection(self)` \{#modeldatabase-model-db-connection\}
+
+> _No description._
+
+
+
+##### `exists(self)` \{#modeldatabase-exists\}
+
+```text
+Returns true if the model database exists.
+```
+
+
+##### `list(self)` \{#modeldatabase-list\}
+
+```text
+Returns a list names of all the model databases.
+```
+
+
+##### `get_engine(self)` \{#modeldatabase-get-engine\}
+
+```text
+Returns an SQLAlchemy engine for the model database.
+```
+
+
+##### `get_session(self)` \{#modeldatabase-get-session\}
+
+```text
+Returns an SQLAlchemy session for the model database.
+```
+
+
+##### `get_session_maker(self)` \{#modeldatabase-get-session-maker\}
+
+```text
+Returns an SQLAlchemy session maker for the model database.
+```
+
+
+##### `initialize(self, declarative_bases=(), spatial=False)` \{#modeldatabase-initialize\}
+
+```text
+Creates a new model database if it doesn't exist and initializes it with the data models passed in (if any).
+
+Args:
+    declarative_bases(tuple): one or more SQLAlchemy declarative base classes used to initialize tables.
+    spatial(bool): enable postgis extension on model database if True.
+
+Returns:
+    database_id of the model database
+```
+
+
+##### `delete(self)` \{#modeldatabase-delete\}
+
+```text
+Delete the database associated with this model database.
+
+Returns:
+    bool: True if successfully deleted, otherwise False.
+```
