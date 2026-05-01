@@ -63,7 +63,9 @@ class Project(Resource):
 
 ## 3. Define `AnalysisWorkflow`
 
-Workflows expose a `new()` factory that takes the runtime context and builds the step graph. See [the `new()` factory](../concepts/resource-workflows.md#the-new-factory) for why.
+Workflows expose a `new()` classmethod that builds the step graph from runtime context. The atcore `WorkflowsTab` launcher calls `WorkflowClass.new(app=..., name=..., resource_id=..., creator_id=..., geoserver_name=..., map_manager=..., spatial_manager=...)`, so subclasses that want to be created from that tab must accept those kwargs. See [the `new()` factory](../concepts/resource-workflows.md#the-new-factory).
+
+`ResourceWorkflow.get_url_name()` is abstract — your subclass must return the namespaced URL name your app registers for this workflow type.
 
 ```python
 # my_first_app/models/workflows.py
@@ -76,14 +78,27 @@ from tethysext.atcore.models.resource_workflow_steps import (
 from tethysext.atcore.services.app_users.roles import Roles
 
 
-def build_jobs_callback(workflow, step, *args, **kwargs):
-    """Returns the CondorWorkflowJobNode dict list for this run.
+def build_jobs_callback(manager):
+    """Return at least one CondorWorkflowJobNode dict.
 
-    Called by SpatialCondorJobRWS at submit time so it can read fresh
-    workflow state. Returning an empty list is fine for a tutorial — the
-    job runner will succeed immediately.
+    SpatialCondorJobRWS calls this at submit time so the callback can read
+    live workflow state. Returning an empty list raises in
+    ResourceWorkflowCondorJobManager.validate_jobs — the manager always
+    requires at least one job.
     """
-    return []
+    return [
+        {
+            # Replace the executable with a real script in your app workspace.
+            # The 'noop' template runs /bin/true and returns immediately, which
+            # is enough to advance the workflow on a working Condor scheduler.
+            'name': 'noop',
+            'condorpy_template_name': 'vanilla',
+            'attributes': {
+                'executable': '/bin/true',
+            },
+            'remote_input_files': [],
+        },
+    ]
 
 
 class AnalysisWorkflow(ResourceWorkflow):
@@ -91,6 +106,9 @@ class AnalysisWorkflow(ResourceWorkflow):
     DISPLAY_TYPE_SINGULAR = 'Analysis'
     DISPLAY_TYPE_PLURAL = 'Analyses'
     __mapper_args__ = {'polymorphic_identity': TYPE}
+
+    def get_url_name(self):
+        return f'my_first_app:{self.TYPE}_workflow'
 
     @classmethod
     def new(cls, app, name, resource_id, creator_id,
@@ -142,12 +160,18 @@ class AnalysisWorkflow(ResourceWorkflow):
         return workflow
 ```
 
+:::caution Condor is required for this step
+`SpatialCondorJobRWS` always submits to a Condor scheduler — atcore validates the jobs list before submitting and `[]` raises `ValueError`. If you don't have HTCondor wired up, swap the `SpatialCondorJobRWS` step for a [`SetStatusRWS`](../api/models/resource_workflow_steps/set_status_rws.mdx) that flips straight to `STATUS_COMPLETE` so you can still walk the workflow end-to-end.
+:::
+
 ## 4. Build a SpatialManager and MapManager
 
 The MapManager renders a static GeoJSON layer for the project's `area_of_interest` so step 7 has something to verify against — a polygon should appear when you open the map page.
 
 ```python
 # my_first_app/services/spatial.py
+from geoalchemy2.shape import to_shape
+from shapely.geometry import mapping
 from tethys_sdk.gizmos import MapView, MVLayer, MVView
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 from tethysext.atcore.services.map_manager import MapManagerBase
@@ -175,14 +199,13 @@ class MyFirstMapManager(MapManagerBase):
 
         layers = []
         if self.resource and self.resource.area_of_interest is not None:
+            shape = to_shape(self.resource.area_of_interest)
             geojson = {
                 'type': 'FeatureCollection',
                 'crs': {'type': 'name', 'properties': {'name': 'EPSG:4326'}},
                 'features': [{
                     'type': 'Feature',
-                    'geometry': self.resource.get_extent_as_geojson() if hasattr(
-                        self.resource, 'get_extent_as_geojson'
-                    ) else None,
+                    'geometry': mapping(shape),
                     'properties': {'name': self.resource.name},
                 }],
             }
@@ -195,15 +218,22 @@ class MyFirstMapManager(MapManagerBase):
             )
             layers.append(aoi_layer)
 
-        map_view = MapView(
-            view=view,
-            layers=layers,
-            basemap='OpenStreetMap',
-            controls=['ZoomSlider', 'FullScreen', 'ScaleLine'],
-        )
-        # MapManagerBase.compose_map returns (MapView, extent)
+        layer_groups = [
+            self.build_layer_group(
+                id='project_layers',
+                display_name='Project',
+                layers=layers,
+                layer_control='checkbox',
+            ),
+        ]
+
+        map_view = MapView(view=view, layers=layers, basemap='OpenStreetMap')
+
+        # MapManagerBase.compose_map returns (MapView, extent, layer_groups).
+        # The MapView controller overwrites controls/legend/height/width on
+        # the returned MapView, so don't bother setting those here.
         extent = [-180.0, -90.0, 180.0, 90.0]
-        return map_view, extent
+        return map_view, extent, layer_groups
 ```
 
 A fresh project with no `area_of_interest` renders an empty map over the basemap. That's the expected first-load state.
@@ -220,9 +250,12 @@ class ProjectMap(MapView):
     map_title = 'Project Map'
     map_subtitle = ''
     template_name = 'atcore/map_view/map_view.html'
+    geoserver_name = 'primary_geoserver'
     _MapManager = MyFirstMapManager
     _SpatialManager = MyFirstSpatialManager
 ```
+
+`geoserver_name` must match the `SpatialDatasetServiceSetting` you'll register in step 7. The `MapView` controller resolves it via `app.get_spatial_dataset_service(self.geoserver_name, as_engine=True)`, so leaving it at the default empty string raises before `compose_map` runs.
 
 ## 6. Build a "start workflow" controller
 
@@ -233,6 +266,7 @@ Normally this would be a button on the project details page or the workflows tab
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from tethys_sdk.routing import controller
+from tethysext.atcore.models.app_users import AppUser
 
 from ..app import MyFirstApp as app
 from ..models import Project, AnalysisWorkflow
@@ -249,7 +283,8 @@ def start_analysis(request, resource_id):
     session = Session()
     try:
         project = session.query(Project).get(resource_id)
-        creator = request.user.username  # AppUser.username mirrors Django username
+        # ResourceWorkflow.creator_id is a UUID FK to AppUser, not a username.
+        app_user = AppUser.get_app_user_from_request(request, session)
         spatial_manager = MyFirstSpatialManager(geoserver_engine=None)
         map_manager = MyFirstMapManager(spatial_manager=spatial_manager, resource=project)
 
@@ -257,7 +292,7 @@ def start_analysis(request, resource_id):
             app=app,
             name=f'Analysis for {project.name}',
             resource_id=project.id,
-            creator_id=creator,
+            creator_id=app_user.id,
             geoserver_name='primary_geoserver',
             map_manager=map_manager,
             spatial_manager=spatial_manager,
@@ -352,8 +387,12 @@ class MyFirstApp(TethysAppBase):
         return PermissionsGenerator(pm).generate()
 
     def register_url_maps(self):
+        # Call super() so Tethys discovers @controller-decorated functions
+        # (the start_analysis view in step 6 won't register otherwise).
+        url_maps = list(super().register_url_maps(set_index=False))
+
         UrlMap = url_map_maker(self.root_url)
-        url_maps = [
+        url_maps += [
             UrlMap(
                 name='project_map',
                 url='projects/{resource_id}/map',
@@ -416,9 +455,9 @@ Once you redirect into the router:
 - It picks the first incomplete step (the `SpatialInputRWS` named "Pick study area").
 - It dispatches to `controllers.resource_workflows.map_workflows.SpatialInputMWV`, which renders a draw-tools map.
 - After you draw a polygon and submit, the `SpatialCondorJobRWS` named "Run analysis" becomes active.
-- Submitting that step calls `build_jobs_callback`, which returns an empty job list. atcore submits the no-op Condor workflow, marks the step `STATUS_COMPLETE`, and reveals the `ResultsResourceWorkflowStep`.
+- Submitting that step calls `build_jobs_callback` and submits the returned jobs to your Condor scheduler. The `noop` job in the example finishes immediately; atcore writes `STATUS_COMPLETE` back to the step and reveals the `ResultsResourceWorkflowStep`.
 
-Swap `build_jobs_callback` for real `CondorWorkflowJobNode` dicts to make the step do actual work — see [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md).
+Swap `build_jobs_callback` for real `CondorWorkflowJobNode` dicts pointing at your own scripts to make the step do actual work — see [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md).
 
 ## What you built
 

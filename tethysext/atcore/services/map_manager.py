@@ -95,12 +95,28 @@ class MapManagerBase(object):
     @abstractmethod
     def compose_map(self, request, *args, **kwargs):
         """
-        Compose the MapView object.
+        Compose the MapView object, its default extent, and any layer groups.
+
+        The MapView controller calls this method and unpacks the result as
+        ``map_view, model_extent, layer_groups = map_manager.compose_map(...)``,
+        so subclass implementations must return all three values.
+
         Args:
             request(HttpRequest): A Django request object.
 
         Returns:
-            MapView, 4-list<float>: The MapView and extent objects.
+            tuple: A 3-tuple of ``(MapView, 4-list<float>, list<dict>)``:
+
+            - **MapView** — the configured Tethys ``MapView`` gizmo.
+            - **4-list<float>** — the default map extent ``[minx, miny, maxx, maxy]``.
+            - **list<dict>** — layer groups built via :meth:`build_layer_group`.
+              May be empty.
+
+        Notes:
+            The ``MapView`` controller overwrites ``controls``, ``legend``,
+            ``height``, ``width``, ``feature_selection``, and ``disable_basemap``
+            on the returned ``MapView`` after this method runs, so setting
+            those fields here has no effect.
         """
 
     def get_cesium_token(self):

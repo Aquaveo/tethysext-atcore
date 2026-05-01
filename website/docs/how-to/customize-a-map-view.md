@@ -11,10 +11,12 @@ Build a `MapView` page for a custom resource. You'll need a [`Resource`](../conc
 
 ## 1. Define a SpatialManager and MapManager
 
-Add layers in `compose_map(...)`. It returns a `(MapView, extent)` tuple: a Tethys `MapView` gizmo configuration and a 4-list extent.
+Add layers in `compose_map(...)`. It returns a `(MapView, extent, layer_groups)` tuple — the `MapView` controller unpacks all three. `layer_groups` is a list built via `build_layer_group(...)` and powers the layer-toggle UI; pass `[]` if you don't want grouping.
 
 ```python
 # myapp/services/spatial.py
+from geoalchemy2.shape import to_shape
+from shapely.geometry import mapping
 from tethys_sdk.gizmos import MapView, MVLayer, MVView
 from tethysext.atcore.services.base_spatial_manager import BaseSpatialManager
 from tethysext.atcore.services.map_manager import MapManagerBase
@@ -44,7 +46,7 @@ class MyAppMapManager(MapManagerBase):
         if self.resource and self.resource.area_of_interest is not None:
             layers.append(self._compose_aoi_layer(self.resource))
 
-        # 2) A WMS layer published by GeoServer for the project's basemap.
+        # 2) A WMS layer published by GeoServer for a project basemap.
         wms_url = self.spatial_manager.get_ows_endpoint() + '/wms'
         layers.append(MVLayer(
             source='ImageWMS',
@@ -68,26 +70,21 @@ class MyAppMapManager(MapManagerBase):
             ),
         ]
 
-        map_view = MapView(
-            view=view,
-            layers=layers,
-            basemap='OpenStreetMap',
-            controls=['ZoomSlider', 'FullScreen', 'ScaleLine'],
-        )
+        # The MapView controller overwrites controls / legend / height / width
+        # / disable_basemap on the returned MapView — don't bother setting them.
+        map_view = MapView(view=view, layers=layers, basemap='OpenStreetMap')
 
-        # MapManagerBase.compose_map returns (MapView, extent)
         extent = self.get_map_extent()
-        return map_view, extent
+        return map_view, extent, layer_groups
 
     def _compose_aoi_layer(self, resource):
+        shape = to_shape(resource.area_of_interest)
         geojson = {
             'type': 'FeatureCollection',
             'crs': {'type': 'name', 'properties': {'name': 'EPSG:4326'}},
             'features': [{
                 'type': 'Feature',
-                'geometry': resource.get_extent_as_geojson() if hasattr(
-                    resource, 'get_extent_as_geojson'
-                ) else None,
+                'geometry': mapping(shape),
                 'properties': {'name': resource.name},
             }],
         }
@@ -117,6 +114,7 @@ class ProjectMap(MapView):
     map_title = 'Project Map'
     map_subtitle = 'Inputs and outputs'
     template_name = 'myapp/project_map.html'
+    geoserver_name = 'primary_geoserver'  # SpatialDatasetServiceSetting name
 
     _MapManager = MyAppMapManager
     _SpatialManager = MyAppSpatialManager
