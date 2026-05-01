@@ -12,7 +12,7 @@ slug: /
 
 ## What's inside
 
-- **A project layout convention** — most production atcore apps split themselves into a Tethys package and a sibling adapter package. See [Project Structure](./concepts/project-structure.md).
+- **A project layout convention** — atcore apps typically split into a Tethys package and a sibling adapter package. See [Project Structure](./concepts/project-structure.md).
 - **App users, organizations, and resources** — SQLAlchemy models plus controllers and URL helpers for managing them. See [App Users](./concepts/app-users.md) and [Resources](./concepts/resources.md).
 - **Resource workflows** — a step-based engine for guiding users through multi-step processes (form input, spatial input, condor jobs, results). See [Resource Workflows](./concepts/resource-workflows.md).
 - **Map and resource views** — base [controllers](./concepts/controllers.md) (`MapView`, `ResourceView`) you subclass to render resource-aware pages.

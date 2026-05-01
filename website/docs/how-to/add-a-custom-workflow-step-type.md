@@ -7,13 +7,13 @@ sidebar_position: 8
 
 # Add a custom workflow step type
 
-The built-in step types ([`SpatialInputRWS`](../api/models/resource_workflow_steps/spatial_input_rws.mdx), [`FormInputRWS`](../api/models/resource_workflow_steps/form_input_rws.mdx), [`SpatialCondorJobRWS`](../api/models/resource_workflow_steps/spatial_condor_job_rws.mdx), [`XMSToolRWS`](../api/models/resource_workflow_steps/xms_tool_rws.mdx), ...) cover most needs. When you need a step that does something atcore doesn't ship — a domain-specific NDVI computation, a custom mesh-quality check, a specialized chart — define your own step type and a matching view.
+The built-in step types ([`SpatialInputRWS`](../api/models/resource_workflow_steps/spatial_input_rws.mdx), [`FormInputRWS`](../api/models/resource_workflow_steps/form_input_rws.mdx), [`SpatialCondorJobRWS`](../api/models/resource_workflow_steps/spatial_condor_job_rws.mdx), [`XMSToolRWS`](../api/models/resource_workflow_steps/xms_tool_rws.mdx), ...) cover most needs. When you need something they don't — a domain-specific computation, a custom QC check, a specialized chart — define your own step type and a matching view.
 
-This recipe takes a "compute NDVI for the picked area" step as a running example.
+The example below is a "compute NDVI for the picked area" step.
 
 ## 1. Subclass a step base
 
-Pick the closest existing base. For map-based interaction use [`SpatialResourceWorkflowStep`](../api/models/app_users/resource_workflow_step.mdx); for plain forms use `FormInputRWS`; for Condor-backed work use `SpatialCondorJobRWS`. Set `CONTROLLER` to the dot-path of the view that will render the step:
+Pick the closest existing base: [`SpatialResourceWorkflowStep`](../api/models/app_users/resource_workflow_step.mdx) for map-based interaction, `FormInputRWS` for plain forms, `SpatialCondorJobRWS` for Condor-backed work. Set `CONTROLLER` to the dot-path of the view that renders the step:
 
 ```python
 # myapp_adapter/workflow_steps/ndvi_rws.py
@@ -26,9 +26,9 @@ class NDVIRWS(SpatialResourceWorkflowStep):
     __mapper_args__ = {'polymorphic_identity': TYPE}
 ```
 
-`CONTROLLER` is a string, not an import — atcore resolves it at request time. This avoids a circular import (the view in the Tethys package needs to import the step; the step in the adapter package would otherwise need to import the view).
+`CONTROLLER` is a string, not an import — atcore resolves it at request time. This dodges a circular import: the view in the Tethys package imports the step, and the step in the adapter package would otherwise need to import the view.
 
-If your step has its own attribute schema, add `param.Parameterized` accessors via `set_attribute` / `get_attribute`:
+If the step has its own attribute schema, add accessors via `set_attribute` / `get_attribute`:
 
 ```python
 class NDVIRWS(SpatialResourceWorkflowStep):
@@ -47,7 +47,7 @@ class NDVIRWS(SpatialResourceWorkflowStep):
 
 ## 2. Subclass a workflow view
 
-Pick the matching view base — [`MapWorkflowView`](../api/controllers/resource_workflows/map_workflows/index.mdx) for spatial steps, [`ResourceWorkflowView`](../api/controllers/resource_workflows/workflow_view.mdx) for non-spatial — and set `valid_step_classes` to the list of step types this view is willing to render:
+Pick the matching view base: [`MapWorkflowView`](../api/controllers/resource_workflows/map_workflows/index.mdx) for spatial steps, [`ResourceWorkflowView`](../api/controllers/resource_workflows/workflow_view.mdx) for non-spatial. Set `valid_step_classes` to the step types this view will render:
 
 ```python
 # tethysapp/myapp/controllers/workflow_steps/ndvi_mwv.py
@@ -62,7 +62,7 @@ class NDVIMWV(MapWorkflowView):
 
     def get_context(self, request, session, resource, context, *args, **kwargs):
         context = super().get_context(request, session, resource, context, *args, **kwargs)
-        # Add anything the template needs beyond what the base view provides.
+        # Anything the template needs beyond the base view.
         context['available_bands'] = ['B02', 'B03', 'B04', 'B08']
         return context
 
@@ -71,17 +71,15 @@ class NDVIMWV(MapWorkflowView):
         red = request.POST.get('red_band')
         if red:
             step.red_band = red
-        # Returning the result of super() lets atcore's status transitions run.
+        # Returning super() lets atcore run its status transitions.
         return super().process_step_data(request, session, step, *args, **kwargs)
 ```
 
-The `valid_step_classes` list is the safety check: if the router accidentally dispatches the wrong step type to this view, it raises rather than silently rendering against the wrong schema.
-
-The `CONTROLLER` dot-path on the step *and* `valid_step_classes` on the view must agree. The router uses `CONTROLLER` to dispatch; the view uses `valid_step_classes` to refuse to render against the wrong step type.
+`valid_step_classes` is the safety check: if the router dispatches the wrong step type, the view raises instead of silently rendering against the wrong schema. The router dispatches by `CONTROLLER`; the view refuses by `valid_step_classes`. Keep the two in sync.
 
 ## 3. Provide the template
 
-Custom step views need a template that extends the appropriate atcore template. For a map-based step:
+The custom view needs a template that extends the right atcore template. For a map-based step:
 
 ```html
 {# tethysapp/myapp/templates/myapp/workflow_steps/ndvi.html #}
@@ -101,11 +99,11 @@ Custom step views need a template that extends the appropriate atcore template. 
 {% endblock %}
 ```
 
-The atcore template provides the surrounding map, the layer toggle, and the next/back navigation; you just supply the form fields specific to your step.
+The atcore template handles the surrounding map, the layer toggle, and next/back navigation. Supply the form fields for your step.
 
 ## 4. Use the step in a workflow
 
-Once the step type is defined, drop it into a `ResourceWorkflow.new()` factory like any built-in step:
+Drop the step into a `ResourceWorkflow.new()` factory like any built-in step:
 
 ```python
 # myapp_adapter/workflows/vegetation/__init__.py
@@ -136,11 +134,11 @@ class VegetationWorkflow(ResourceWorkflow):
         return wf
 ```
 
-The router reads `NDVIRWS.CONTROLLER`, resolves the dot-path to `NDVIMWV`, and renders. No router subclass needed.
+The router reads `NDVIRWS.CONTROLLER`, resolves it to `NDVIMWV`, and renders. No router subclass needed.
 
 ## 5. (Optional) Override the router only for navigation
 
-If you want the "back" link to land somewhere specific, subclass `ResourceWorkflowRouter` and override `default_back_url`:
+To send the "back" link somewhere specific, subclass `ResourceWorkflowRouter` and override `default_back_url`:
 
 ```python
 # tethysapp/myapp/controllers/workflows/my_router.py

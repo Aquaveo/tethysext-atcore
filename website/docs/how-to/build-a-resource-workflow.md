@@ -7,11 +7,11 @@ sidebar_position: 2
 
 # Build a resource workflow
 
-This recipe walks through composing a custom workflow from the built-in step types and registering its URLs.
+Compose a custom workflow from the built-in step types, then register its URLs.
 
 ## 1. Subclass `ResourceWorkflow` with a `new()` factory
 
-Production atcore workflows always define a `new()` classmethod that takes the runtime context (the app, the resource id, the GeoServer name, the map and spatial managers) and returns an unsaved workflow with its step graph populated. Following this contract lets your workflow drop into atcore's URL helpers and controllers without further wiring.
+Define a `new()` classmethod that takes the runtime context (app, resource id, GeoServer name, map and spatial managers) and returns an unsaved workflow with its step graph populated. atcore's URL helpers and controllers expect this shape.
 
 ```python
 # myapp_adapter/workflows/analysis.py
@@ -93,14 +93,14 @@ class AnalysisWorkflow(ResourceWorkflow):
         return workflow
 ```
 
-The wiring beyond `workflow.steps.extend(...)` matters:
+Two bits of wiring beyond `workflow.steps.extend(...)`:
 
-- **`run.parents.append(pick)`** declares that the condor step depends on the spatial-input step. Step views consult `parents` to fetch upstream data (e.g., the polygon the user drew).
-- **`run.result = results`** is the singular attribute that ties a job step to the page that displays its output. Don't append to `workflow.results`; the condor manager populates that list when the job finishes.
+- `run.parents.append(pick)` declares that the condor step depends on the spatial-input step. Step views read `parents` to fetch upstream data (e.g., the polygon the user drew).
+- `run.result = results` ties a job step to the page that displays its output. It's singular — don't append to `workflow.results`; the condor manager populates that list when the job finishes.
 
 ## 2. Build the form options class
 
-`FormInputRWS.options['param_class']` accepts a dot-path string. Pointing at the dotted path means atcore imports the class lazily, after the workflow module has finished loading — the form module can therefore import other domain models without creating an import cycle:
+`FormInputRWS.options['param_class']` is a dot-path string. atcore imports the class lazily after the workflow module finishes loading, so the form module can import other domain models without circulars:
 
 ```python
 # myapp_adapter/workflows/analysis/options.py
@@ -112,7 +112,7 @@ class AnalysisOptions(param.Parameterized):
     include_uncertainty = param.Boolean(default=False)
 ```
 
-Atcore's `param_widgets` translate the `param.Parameterized` fields into Django form fields automatically.
+atcore's `param_widgets` translate `param.Parameterized` fields into Django form fields.
 
 ## 3. Instantiate the workflow
 
@@ -162,7 +162,7 @@ The router emits three URL maps per workflow type:
 - `<workflow_type>_workflow_step`
 - `<workflow_type>_workflow_step_result`
 
-Apps with multiple workflow types call `rw_urls.urls(...)` once per type — the per-call options (template, custom models, permissions manager) tend to vary.
+Call `rw_urls.urls(...)` once per workflow type. The per-call options (template, custom models, permissions manager) usually differ.
 
 ## 5. Link a user into the workflow
 
@@ -175,11 +175,11 @@ return redirect(reverse(
 ))
 ```
 
-The router takes it from there — it loads the workflow, picks the current step (the first one not yet complete), and dispatches to the appropriate view from [`workflow_views`](../api/controllers/resource_workflows/workflow_views/index.mdx) or [`map_workflows`](../api/controllers/resource_workflows/map_workflows/index.mdx).
+The router loads the workflow, picks the current step (the first one not yet complete), and dispatches to the appropriate view from [`workflow_views`](../api/controllers/resource_workflows/workflow_views/index.mdx) or [`map_workflows`](../api/controllers/resource_workflows/map_workflows/index.mdx).
 
 ## 6. Customizing a step view
 
-Subclass the view that matches your step base, override the hook you care about, and wire the subclass via the step's `CONTROLLER` attribute (a dot-path string).
+Subclass the view for your step base, override the hook you need, and point the step's `CONTROLLER` attribute (a dot-path string) at the subclass.
 
 ```python
 # myapp/controllers/workflow_steps/picky_spatial_input_mwv.py
@@ -196,7 +196,7 @@ class PickyspatialInputMWV(SpatialInputMWV):
         return super().process_step_data(request, session, step, *args, **kwargs)
 ```
 
-To bind a step type to your view, set the step's `CONTROLLER` to the dot-path of the view:
+Set `CONTROLLER` on the step type to the dot-path of the view:
 
 ```python
 # myapp_adapter/workflow_steps/picky_spatial_input_rws.py
@@ -209,12 +209,12 @@ class PickySpatialInputRWS(SpatialInputRWS):
     __mapper_args__ = {'polymorphic_identity': TYPE}
 ```
 
-The router uses `CONTROLLER` to dispatch each step. There is no class-level dict to populate on `ResourceWorkflowRouter` — you don't need to subclass the router unless you want to override behavior like `default_back_url(request, resource_id)`.
+The router dispatches each step via `CONTROLLER`. There's no class-level dict to populate on `ResourceWorkflowRouter`, and you don't need to subclass the router unless you want to override behavior like `default_back_url(request, resource_id)`.
 
-For the full custom-step-type recipe (defining a new step base, attribute schema, etc.), see [Add a custom workflow step type](./add-a-custom-workflow-step-type.md).
+For defining a new step base or attribute schema, see [Add a custom workflow step type](./add-a-custom-workflow-step-type.md).
 
 ## See also
 
-- [Resource Workflows concept page](../concepts/resource-workflows.md) for the `new()` factory contract and step-options patterns.
-- [Run a Condor Workflow Job](./run-a-condor-workflow-job.md) for `SpatialCondorJobRWS` specifics.
-- [Permissions](../concepts/permissions.md) for `can_override_user_locks` (the workflow-lock override).
+- [Resource Workflows concept page](../concepts/resource-workflows.md) — the `new()` factory contract and step-options patterns.
+- [Run a Condor Workflow Job](./run-a-condor-workflow-job.md) — `SpatialCondorJobRWS` specifics.
+- [Permissions](../concepts/permissions.md) — `can_override_user_locks` (the workflow-lock override).

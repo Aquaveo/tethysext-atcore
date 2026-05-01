@@ -7,19 +7,19 @@ sidebar_position: 9
 
 # Wire up a file database
 
-This recipe attaches a [`FileDatabase`](../concepts/file-database.md) to a custom `Resource` and exposes its files via the `ResourceFilesTab` and the upload/download views.
+Attach a [`FileDatabase`](../concepts/file-database.md) to a custom `Resource` and expose its files through `ResourceFilesTab` and the upload/download views.
 
-The pattern below is the production approach used by atcore-backed apps that own large input/output trees per resource. For a simpler "one collection of files per resource," skip the per-resource `FileDatabase` and just mix in `FileCollectionMixin` (Pattern B in the [File Database concept page](../concepts/file-database.md#pattern-b-per-collection-attachment)).
+The pattern below fits apps that own large input/output trees per resource. For a simpler "one collection of files per resource," skip the per-resource `FileDatabase` and mix in `FileCollectionMixin` instead — see Pattern B in the [File Database concept page](../concepts/file-database.md#pattern-b-per-collection-attachment).
 
 ## 1. Configure the file-database root
 
-Decide where on disk the file databases live. The convention in production atcore apps is an `FDB_ROOT_DIR` environment variable pointing at a shared volume:
+Pick a location on disk for the file databases. The convention is an `FDB_ROOT_DIR` env var pointing at a shared volume:
 
 ```bash
 export FDB_ROOT_DIR=/var/lib/myapp/file_dbs
 ```
 
-Add the directory to your deployment manifest (Helm chart, Compose file, etc.) and ensure the Tethys process can write to it.
+Add the directory to your deployment manifest (Helm chart, Compose file, etc.) and make sure the Tethys process can write to it.
 
 ## 2. Add a `file_database` relationship to your `Resource`
 
@@ -64,11 +64,11 @@ class Project(Resource):
         )
 ```
 
-The custom `Project.new()` factory creates the on-disk database alongside the row. Use it in your `ModifyResource` controller's `handle_resource_finished_processing` hook so brand-new projects always have a backing `FileDatabase`.
+`Project.new()` creates the on-disk database alongside the row. Call it from your `ModifyResource` controller's `handle_resource_finished_processing` hook so new projects always have a backing `FileDatabase`.
 
 ## 3. Add child resources that own their own collections
 
-When the project has datasets that each own a collection of files, define a `Dataset` resource that mixes in `FileCollectionMixin`:
+When the project has datasets that each own a collection of files, define a `Dataset` that mixes in `FileCollectionMixin`:
 
 ```python
 # myapp_adapter/resources/dataset.py
@@ -83,11 +83,11 @@ class Dataset(Resource, FileCollectionMixin):
     __mapper_args__ = {'polymorphic_identity': TYPE}
 ```
 
-Import the mixin from the submodule directly — it's intentionally not re-exported from `tethysext.atcore.mixins.__init__` (a circular-import guard).
+Import the mixin from the submodule directly — it isn't re-exported from `tethysext.atcore.mixins.__init__` to avoid a circular import.
 
 ## 4. Create collections under the project's file database
 
-In a workflow step or controller, attach a new `FileCollection` to a `Dataset` under the parent `Project`'s `FileDatabase`:
+In a workflow step or controller, attach a `FileCollection` to a `Dataset` under the parent `Project`'s `FileDatabase`:
 
 ```python
 # myapp/controllers/datasets/upload_dataset.py
@@ -101,8 +101,8 @@ def attach_dataset_files(session, project, dataset, uploaded_files):
         meta={'kind': 'inputs', 'dataset_id': str(dataset.id)},
     )
     for upload in uploaded_files:
-        # FileCollectionClient.add_item accepts a path on disk;
-        # it copies the file into the collection's UUID-named directory.
+        # add_item takes a path on disk and copies the file into
+        # the collection's UUID-named directory.
         client.add_item(upload.temporary_file_path())
 
     dataset.file_collections.append(client.instance)
@@ -123,7 +123,7 @@ $FDB_ROOT_DIR/
 
 ## 5. Wire the `Manage*` controller for cleanup
 
-Mix `FileCollectionsControllerMixin` into the dataset's `ManageResources` controller so that deleting a `Dataset` also drops the collection directory:
+Mix `FileCollectionsControllerMixin` into the dataset's `ManageResources` controller so deleting a `Dataset` also drops the collection directory:
 
 ```python
 # myapp/controllers/datasets/manage_datasets.py
@@ -171,11 +171,11 @@ class DatasetDetails(TabbedResourceDetails):
     )
 ```
 
-`ResourceFilesTab` reads `dataset.file_collections` (provided by `FileCollectionMixin`) and renders an upload/download UI for each collection.
+`ResourceFilesTab` reads `dataset.file_collections` (from `FileCollectionMixin`) and renders an upload/download UI per collection.
 
 ## 7. Async deletion for big projects
 
-A `Project` with hundreds of datasets and gigabytes of files can take a long time to delete. Override `ManageResources._handle_delete` to flip the status to `STATUS_DELETING` and spawn a daemon `Thread` that does the actual cleanup:
+Deleting a `Project` with hundreds of datasets and gigabytes of files can take a while. Override `ManageResources._handle_delete` to flip the status to `STATUS_DELETING` and spawn a daemon `Thread` for the cleanup:
 
 ```python
 # myapp/controllers/projects/manage_resource_delete_mixin.py
@@ -199,7 +199,7 @@ class ManageResourceDeleteMixin:
         ...
 ```
 
-Mix it into your `ManageProjects` controller. The user gets an immediate redirect; the cleanup runs in the background.
+Mix it into your `ManageProjects` controller. The user gets an immediate redirect and the cleanup runs in the background.
 
 ## See also
 

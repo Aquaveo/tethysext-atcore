@@ -7,7 +7,7 @@ sidebar_position: 7
 
 # Add a tabbed resource details page
 
-The default `ResourceDetails` controller shows a single page per resource. When that page outgrows the form, switch to [`TabbedResourceDetails`](../api/controllers/resources/tabbed_resource_details.mdx). It composes any number of tab classes ([`controllers.resources.tabs`](../api/controllers/resources/tabs/index.mdx)) into a tabbed view and works with the existing `ManageResources` / `ModifyResource` URL maps.
+The default `ResourceDetails` controller shows a single page per resource. When that outgrows the form, switch to [`TabbedResourceDetails`](../api/controllers/resources/tabbed_resource_details.mdx). It composes tab classes from [`controllers.resources.tabs`](../api/controllers/resources/tabs/index.mdx) into a tabbed view and works with the existing `ManageResources` / `ModifyResource` URL maps.
 
 ## 1. Choose your tabs
 
@@ -15,10 +15,10 @@ atcore ships these tab classes:
 
 - [`ResourceSummaryTab`](../api/controllers/resources/tabs/summary_tab.mdx) — header card; subclass to add summary columns.
 - [`ResourceFilesTab`](../api/controllers/resources/tabs/files_tab.mdx) — `FileCollection` listing.
-- [`ResourceWorkflowsTab`](../api/controllers/resources/tabs/workflows_tab.mdx) — `ResourceWorkflow` listing + new-workflow launcher.
+- [`ResourceWorkflowsTab`](../api/controllers/resources/tabs/workflows_tab.mdx) — `ResourceWorkflow` listing plus new-workflow launcher.
 - [`ResourceListTab`](../api/controllers/resources/tabs/resource_list_tab.mdx) — child resources.
 
-You can mix built-ins with your own subclasses.
+Mix built-ins with your own subclasses.
 
 ## 2. Subclass `ResourceSummaryTab` for the summary card
 
@@ -41,11 +41,11 @@ class ProjectSummaryTab(ResourceSummaryTab):
         }
 ```
 
-`get_summary_tab_info` returns a dict whose values are the cards rendered on the summary tab. Each card has `title` and `columns` (a list of column-lists of `(label, value)` tuples).
+`get_summary_tab_info` returns a dict of cards. Each card has `title` and `columns` (a list of column-lists of `(label, value)` tuples).
 
 ## 3. Customize the workflows tab (optional)
 
-When the available workflow types depend on the resource state — e.g., parent resources offer different workflows than leaf resources — subclass `ResourceWorkflowsTab` and override `get_workflow_types`:
+When the available workflow types depend on resource state (parents offer different workflows than leaves, etc.), subclass `ResourceWorkflowsTab` and override `get_workflow_types`:
 
 ```python
 # myapp/controllers/resources/tabs/project_workflows_tab.py
@@ -58,7 +58,7 @@ class ProjectWorkflowsTab(ResourceWorkflowsTab):
         return PARENT_WORKFLOWS if resource.children else LEAF_WORKFLOWS
 ```
 
-The base implementation returns a global dict of `{TYPE: WorkflowClass}`; the override gates the launcher menu by resource state.
+The base returns a global `{TYPE: WorkflowClass}` dict; the override gates the launcher menu by resource state.
 
 ## 4. Compose the details controller
 
@@ -81,7 +81,7 @@ class ProjectDetails(TabbedResourceDetails):
 
     def get_context(self, request, session, resource, context, *args, **kwargs):
         context = super().get_context(request, session, resource, context, *args, **kwargs)
-        # Gate any UI affordances on permissions atcore sets.
+        # Gate UI on atcore-provided permissions.
         from tethys_sdk.permissions import has_permission
         context['can_manage_resources'] = has_permission(request, 'edit_resource')
         return context
@@ -89,7 +89,7 @@ class ProjectDetails(TabbedResourceDetails):
 
 ## 5. Provide the template
 
-The default tabbed template lives at `atcore/resources/tabbed_resource_details.html`. Extend it and override the `app_navigation_items` block (or any other) to add app-specific chrome:
+The default tabbed template lives at `atcore/resources/tabbed_resource_details.html`. Extend it and override `app_navigation_items` (or any other block) to add app-specific chrome:
 
 ```html
 {# tethysapp/myapp/templates/myapp/project_details.html #}
@@ -106,7 +106,7 @@ The default tabbed template lives at `atcore/resources/tabbed_resource_details.h
 
 ## 6. Register the URL by hand
 
-`TabbedResourceDetails` requires a `{tab_slug}` URL kwarg, which the default `app_users.urls(custom_resources=...)` and `resources.urls(...)` helpers don't emit. Add the URL map by hand in `register_url_maps`:
+`TabbedResourceDetails` needs a `{tab_slug}` URL kwarg. The `app_users.urls(custom_resources=...)` and `resources.urls(...)` helpers don't emit it, so add the URL map yourself in `register_url_maps`:
 
 ```python
 # myapp/app.py
@@ -130,7 +130,7 @@ url_maps += [
 ]
 ```
 
-The leading-underscore kwargs to `as_controller(...)` populate the view-mixin slots that atcore's controllers depend on. The atcore URL helpers fill them automatically; when you register a URL by hand, you fill them yourself.
+The leading-underscore kwargs to `as_controller(...)` fill the view-mixin slots that atcore's controllers depend on. The URL helpers do this automatically — when you register a URL by hand, you do it yourself.
 
 ## 7. Link to a specific tab
 
@@ -142,7 +142,7 @@ url = reverse('myapp:project_details_tab', kwargs={
 })
 ```
 
-The default redirect after the standard `ResourceDetails` action is to `<slug>_resource_details`; consider overriding `default_back_url` on your workflow router (and similar) so the user lands on the tab they came from.
+The default redirect after a `ResourceDetails` action goes to `<slug>_resource_details`. Override `default_back_url` on your workflow router (and similar) so the user lands on the tab they came from.
 
 ## See also
 

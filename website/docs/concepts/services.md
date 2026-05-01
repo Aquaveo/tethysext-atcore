@@ -7,7 +7,7 @@ sidebar_position: 6
 
 # Services
 
-The `services` package holds atcore's stateful helpers — things that aren't models or controllers but back the behavior of both.
+The `services` package holds atcore's stateful helpers — the bits that aren't models or controllers but back the behavior of both.
 
 ## Spatial managers
 
@@ -43,7 +43,7 @@ Use a `ModelDatabase` when each resource needs an isolated Postgres database (e.
 
 ### The connection-pool pattern
 
-`ModelDatabase` doesn't operate against a single named database — it dynamically creates one PostGIS database per resource by selecting from a pool of `PersistentStoreConnectionSetting` entries declared by the app:
+`ModelDatabase` doesn't operate against a single named database. It creates one PostGIS database per resource, selecting from a pool of `PersistentStoreConnectionSetting` entries the app declares:
 
 ```python
 def persistent_store_settings(self):
@@ -58,9 +58,9 @@ def persistent_store_settings(self):
     )
 ```
 
-Each `model_db_N` is a *connection* to a Postgres server, not a database. When `ModelDatabase(app=app, database_id=...).initialize()` runs, atcore picks the least-loaded connection and creates a fresh database on it named after `database_id`. The mapping from resource → server is balanced across the declared connections, so you can scale by adding more `model_db_N` entries.
+Each `model_db_N` is a *connection* to a Postgres server, not a database. When `ModelDatabase(app=app, database_id=...).initialize()` runs, atcore picks the least-loaded connection and creates a fresh database on it named after `database_id`. Resource-to-server assignment balances across the declared connections, so you scale by adding more `model_db_N` entries.
 
-Resources record their assigned `database_id` as an attribute (`resource.set_attribute('database_id', uuid_hex)`), and the `MapManager` resolves it back to a `ModelDatabase` when rendering layers.
+Resources record their assigned `database_id` as an attribute (`resource.set_attribute('database_id', uuid_hex)`); the `MapManager` resolves it back to a `ModelDatabase` when rendering layers.
 
 ### `ModelDatabase` vs. `FileDatabase`
 
@@ -72,7 +72,7 @@ Resources record their assigned `database_id` as an attribute (`resource.set_att
 | Cleanup | Drop the database when the resource is deleted | Drop the directory tree |
 | Scaling | Add more `PersistentStoreConnectionSetting` entries | Mount more disk |
 
-Production apps mix both: an analysis app that produces maps from geospatial inputs uses `ModelDatabase` for the per-resource layer store and `FileDatabase` for the input rasters that fed it.
+Many apps use both: `ModelDatabase` for the per-resource layer store, `FileDatabase` for the input rasters that fed it.
 
 ## Permissions manager
 

@@ -100,14 +100,14 @@ class MyFirstApp(TethysAppBase):
             ),
         ]
 
-        # app_users.urls(custom_resources={...}) is the consolidated form:
-        # it registers the user / organization pages AND the per-resource
-        # CRUD pages in one call. Pass each Resource subclass mapped to
-        # its [Manage, Modify(, Details)] controllers.
+        # app_users.urls(custom_resources={...}) registers the user /
+        # organization pages and the per-resource CRUD pages in one call.
+        # Pass each Resource subclass mapped to its [Manage, Modify(, Details)]
+        # controllers, or [] to use the atcore defaults.
         url_maps += list(app_users_urls.urls(
             url_map_maker=UrlMap, app=self,
             persistent_store_name='app_users_db',
-            custom_resources={Project: []},  # use atcore defaults; pass [Manage, Modify] to override
+            custom_resources={Project: []},  # atcore defaults; pass [Manage, Modify] to override
             base_template='my_first_app/base.html',
         ))
 
@@ -120,7 +120,7 @@ class MyFirstApp(TethysAppBase):
 ```
 
 :::tip Single-resource shortcut
-If you only have one resource type and don't need the user/organization pages, call `resources_urls.urls(..., resource_model=Project)` directly. The consolidated `app_users_urls.urls(custom_resources={...})` form is the better default for non-trivial apps because adding a second resource type (or an `Organization` subclass) doesn't require rewiring.
+If you only have one resource type and don't need the user/organization pages, call `resources_urls.urls(..., resource_model=Project)` directly. Prefer `app_users_urls.urls(custom_resources={...})` once you have more than one resource type or an `Organization` subclass — you won't have to rewire later.
 :::
 
 ## Bootstrap the database

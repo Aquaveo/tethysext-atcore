@@ -7,11 +7,11 @@ sidebar_position: 3
 
 # Customize a map view
 
-This recipe builds a `MapView` page for a custom resource. You'll need a [`Resource`](../concepts/resources.md) subclass and a [`SpatialManager`](../concepts/services.md) subclass.
+Build a `MapView` page for a custom resource. You'll need a [`Resource`](../concepts/resources.md) subclass and a [`SpatialManager`](../concepts/services.md) subclass.
 
 ## 1. Define a SpatialManager and MapManager
 
-`compose_map(...)` is where you add layers. The `MapManagerBase` returns a `(MapView, extent)` tuple — a Tethys `MapView` gizmo configuration plus a 4-list extent.
+Add layers in `compose_map(...)`. It returns a `(MapView, extent)` tuple: a Tethys `MapView` gizmo configuration and a 4-list extent.
 
 ```python
 # myapp/services/spatial.py
@@ -99,10 +99,10 @@ class MyAppMapManager(MapManagerBase):
         )
 ```
 
-The base class also exposes [`COLOR_RAMPS`](../api/services/color_ramps.mdx) for thematic styling and `build_layer_group(...)`, `build_legend_item(...)` helpers for grouping layers in the layer-toggle UI.
+The base class also exposes [`COLOR_RAMPS`](../api/services/color_ramps.mdx) for thematic styling, plus `build_layer_group(...)` and `build_legend_item(...)` helpers for the layer-toggle UI.
 
 :::tip Where layer URLs come from
-For PostGIS-backed layers published through `ModelDBSpatialManager`, the WMS / WFS URL points at GeoServer with the resource's `ModelDatabase` as the datastore. For static GeoJSON, you build the geometry in-process and hand it to `MVLayer(source='GeoJSON', options={...})`. Mix freely — most maps in production atcore apps combine both.
+For PostGIS-backed layers published through `ModelDBSpatialManager`, the WMS / WFS URL points at GeoServer with the resource's `ModelDatabase` as the datastore. For static GeoJSON, build the geometry in-process and hand it to `MVLayer(source='GeoJSON', options={...})`. Mixing both on one map is fine.
 :::
 
 ## 2. Subclass `MapView`
@@ -126,20 +126,20 @@ class ProjectMap(MapView):
     show_legends = True
 ```
 
-`MapView` already wires the auth check, the resource lookup, and the slide sheet; you only override what you want to change.
+`MapView` wires the auth check, resource lookup, and slide sheet; override only what you need.
 
-Common hooks you can override (subclass and define):
+Common hooks:
 
 - `get_context(request, session, resource, context, *args, **kwargs)` — extend the template context.
-- `get_map_manager(request, resource, *args, **kwargs)` — return a custom manager instance per-request.
+- `get_map_manager(request, resource, *args, **kwargs)` — return a custom manager instance per request.
 - `should_disable_basemap(request, resource, map_manager)` — toggle the basemap.
 - `on_get` — short-circuit a GET before the default rendering. POST handlers go through `request_to_method` (the `method` POST parameter selects the handler by name).
 
 ## 3. Reuse `MapView`'s template
 
-The default `MapView` template is `atcore/map_view/map_view.html`. To extend it, set `template_name` on your subclass and `{% extends 'atcore/map_view/map_view.html' %}` in your template, overriding the blocks you want.
+The default template is `atcore/map_view/map_view.html`. To extend it, set `template_name` on your subclass and `{% extends 'atcore/map_view/map_view.html' %}` in your template, overriding the blocks you want.
 
-If you only need to change the page subtitle or the layer-tab name, set those as class attributes (`map_subtitle`, `layer_tab_name`) and keep the default template.
+For tweaks like the page subtitle or layer-tab name, just set the class attributes (`map_subtitle`, `layer_tab_name`) and keep the default template.
 
 ## 4. Register the URL
 
@@ -157,10 +157,10 @@ UrlMap(
 )
 ```
 
-`MapView` extends [`ResourceView`](../api/controllers/resource_view.mdx#resourceview), so `_app` and `_persistent_store_name` are required `as_controller` kwargs. If you've subclassed `Resource`, also pass `_Resource=Project` so the controller resolves to your subclass on lookup.
+`MapView` extends [`ResourceView`](../api/controllers/resource_view.mdx#resourceview), so `_app` and `_persistent_store_name` are required `as_controller` kwargs. If you subclassed `Resource`, also pass `_Resource=Project` so the controller resolves your subclass on lookup.
 
 ## See also
 
 - [`MapView`](../api/controllers/map_view.mdx#mapview) class docs.
-- [Services](../concepts/services.md) — when to choose `ResourceSpatialManager` vs. `ModelDBSpatialManager`.
+- [Services](../concepts/services.md) — choosing between `ResourceSpatialManager` and `ModelDBSpatialManager`.
 - [`SlideSheet`](../concepts/gizmos.md) — already integrated into `MapView` for layer / feature details.

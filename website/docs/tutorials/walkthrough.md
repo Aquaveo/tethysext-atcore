@@ -7,12 +7,12 @@ sidebar_position: 1
 
 # End-to-end walkthrough: a project + analysis app
 
-This tutorial builds a small atcore-backed Tethys app from scratch. We'll create a `Project` resource, register the app-user pages, add a map page that actually displays a layer, and build a one-step analysis workflow that submits a Condor job. By the end, you'll have used every major atcore subsystem at least once.
+A small atcore-backed Tethys app, from scratch. A `Project` resource, the app-user pages, a map page that actually shows a layer, and a one-step analysis workflow that submits a Condor job. Touches every major atcore subsystem.
 
-If you're new to Tethys itself, finish [the Tethys tutorial](https://docs.tethysplatform.org/en/stable/tutorials.html) first — this walkthrough assumes you can already register URL maps, configure persistent stores, and build a Tethys gizmo template.
+If you're new to Tethys, finish [the Tethys tutorial](https://docs.tethysplatform.org/en/stable/tutorials.html) first. This walkthrough assumes you can already register URL maps, configure persistent stores, and build a Tethys gizmo template.
 
 :::tip Single-package vs. two-package layout
-Production atcore apps split the domain layer into a sibling adapter package — see [Project Structure](../concepts/project-structure.md). To keep this tutorial focused, we'll use a single-package layout. Refactor into two packages once your model and workflow code is more than a screenful.
+Larger atcore apps split the domain layer into a sibling adapter package — see [Project Structure](../concepts/project-structure.md). To keep things short, this walkthrough uses a single package. Refactor into two once your model and workflow code is more than a screenful.
 :::
 
 ## Prerequisites
@@ -34,7 +34,7 @@ Add atcore to your `install.yml` requirements if it isn't already pulled in tran
 
 ## 2. Define `Project`
 
-Three pieces: a polymorphic identity, a real geometry column for the area-of-interest, and a status key for "is the resource ready to use." We deliberately keep most state on the inherited JSON `_attributes` blob.
+Three pieces: a polymorphic identity, a geometry column for the area-of-interest, and a status key for "is this ready to use." Most other state stays on the inherited JSON `_attributes` blob.
 
 ```python
 # my_first_app/models/__init__.py
@@ -63,7 +63,7 @@ class Project(Resource):
 
 ## 3. Define `AnalysisWorkflow`
 
-Every production atcore workflow has a `new()` factory that takes the runtime context and builds the step graph. See [the `new()` contract](../concepts/resource-workflows.md#the-new-factory-contract) for why.
+Workflows expose a `new()` factory that takes the runtime context and builds the step graph. See [the `new()` factory](../concepts/resource-workflows.md#the-new-factory) for why.
 
 ```python
 # my_first_app/models/workflows.py
@@ -144,7 +144,7 @@ class AnalysisWorkflow(ResourceWorkflow):
 
 ## 4. Build a SpatialManager and MapManager
 
-The MapManager renders something visible on first load — a static GeoJSON layer for the project's `area_of_interest`. This makes step 7 verifiable: you'll see a polygon when you open the map page.
+The MapManager renders a static GeoJSON layer for the project's `area_of_interest` so step 7 has something to verify against — a polygon should appear when you open the map page.
 
 ```python
 # my_first_app/services/spatial.py
@@ -206,7 +206,7 @@ class MyFirstMapManager(MapManagerBase):
         return map_view, extent
 ```
 
-When the resource doesn't have an `area_of_interest` yet (a fresh project), the map renders empty over the basemap — that's the expected first-load state.
+A fresh project with no `area_of_interest` renders an empty map over the basemap. That's the expected first-load state.
 
 ## 5. Build a `MapView` controller
 
@@ -226,7 +226,7 @@ class ProjectMap(MapView):
 
 ## 6. Build a "start workflow" controller
 
-In a real app you'd add a button on the project details page or the workflows tab; here we expose it as a URL the user hits manually.
+Normally this would be a button on the project details page or the workflows tab. Here it's just a URL you hit manually.
 
 ```python
 # my_first_app/controllers/start_analysis.py
@@ -273,11 +273,11 @@ def start_analysis(request, resource_id):
         session.close()
 ```
 
-The redirect target name comes from the URL helper — `<workflow_type>_workflow` is the pattern, and our `AnalysisWorkflow.TYPE` is `'analysis'`.
+The redirect target name comes from the URL helper. The pattern is `<workflow_type>_workflow` and `AnalysisWorkflow.TYPE` is `'analysis'`.
 
 ## 7. Wire `app.py`
 
-This pulls all four atcore URL helpers together — `app_users.urls(custom_resources={...})` registers the user, organization, AND `Project` CRUD pages in one call.
+Four atcore URL helpers, one app. `app_users.urls(custom_resources={...})` registers the user, organization, and `Project` CRUD pages in a single call.
 
 ```python
 # my_first_app/app.py
@@ -398,40 +398,40 @@ Then:
 
 1. Visit `/apps/my-first-app/users/` → atcore's `ManageUsers` page.
 2. Visit `/apps/my-first-app/organizations/` → `ManageOrganizations`. Create an organization.
-3. Visit `/apps/my-first-app/projects/` → `ManageResources` for `Project`. Click **New** and create a project. The form accepts a name and description; the area-of-interest can be set via your custom modify form later.
+3. Visit `/apps/my-first-app/projects/` → `ManageResources` for `Project`. Click **New** and create a project. The form takes a name and description; the area-of-interest gets set later via a custom modify form.
 4. Click into the project, then visit `/apps/my-first-app/projects/<resource_id>/map` to see the map page.
-5. Hit `/apps/my-first-app/projects/<resource_id>/analysis/start` to launch a new `AnalysisWorkflow`. atcore redirects you into the `ResourceWorkflowRouter`, which dispatches to the `SpatialInputRWS` view.
+5. Hit `/apps/my-first-app/projects/<resource_id>/analysis/start` to launch an `AnalysisWorkflow`. atcore redirects into the `ResourceWorkflowRouter`, which dispatches to the `SpatialInputRWS` view.
 
 ### Expected map state
 
-- **Fresh project (no AOI):** OpenStreetMap basemap centered on the US, no overlay layers. The legend is empty.
-- **Project with AOI:** The basemap with a translucent blue polygon for the area-of-interest. The legend shows the project's name.
+- Fresh project (no AOI): OpenStreetMap basemap centered on the US, no overlay layers, empty legend.
+- Project with AOI: basemap plus a translucent blue polygon for the area-of-interest, with the project's name in the legend.
 
-If you instead see a 500 from the map page, the most common cause is a missing `MyFirstApp.permissions()` registration (atcore's `MapView` uses `active_user_required`, which expects the permission groups to exist).
+If the map page returns a 500, the usual culprit is a missing `MyFirstApp.permissions()` registration. atcore's `MapView` uses `active_user_required`, which expects the permission groups to exist.
 
 ## 9. Where the workflow goes from here
 
-The router takes over once you redirect into it:
+Once you redirect into the router:
 
 - It picks the first incomplete step (the `SpatialInputRWS` named "Pick study area").
 - It dispatches to `controllers.resource_workflows.map_workflows.SpatialInputMWV`, which renders a draw-tools map.
-- After you draw a polygon and submit, the next step (`SpatialCondorJobRWS` named "Run analysis") becomes active.
-- Submitting the run step calls `build_jobs_callback`, which returns an empty job list — atcore submits the no-op Condor workflow, marks the step `STATUS_COMPLETE`, and reveals the `ResultsResourceWorkflowStep`.
+- After you draw a polygon and submit, the `SpatialCondorJobRWS` named "Run analysis" becomes active.
+- Submitting that step calls `build_jobs_callback`, which returns an empty job list. atcore submits the no-op Condor workflow, marks the step `STATUS_COMPLETE`, and reveals the `ResultsResourceWorkflowStep`.
 
-Replace `build_jobs_callback` with real `CondorWorkflowJobNode` dicts to make the step do work; see [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md).
+Swap `build_jobs_callback` for real `CondorWorkflowJobNode` dicts to make the step do actual work — see [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md).
 
 ## What you built
 
-- A custom `Resource` (`Project`) with a real PostGIS geometry column, registered via the consolidated `app_users.urls(custom_resources=...)` call.
-- A custom `MapView` backed by your own `MapManager` and `SpatialManager` that renders a real GeoJSON layer.
-- A custom `ResourceWorkflow` (`AnalysisWorkflow`) following the production `new()` factory contract — three steps, role-gated, with `parents` and `result` wiring.
+- A custom `Resource` (`Project`) with a PostGIS geometry column, registered through `app_users.urls(custom_resources=...)`.
+- A custom `MapView` backed by your own `MapManager` and `SpatialManager`, rendering a GeoJSON layer.
+- A custom `ResourceWorkflow` (`AnalysisWorkflow`) using the `new()` factory contract — three steps, role-gated, with `parents` and `result` wired up.
 - A "start workflow" controller that materializes a workflow and redirects into the router.
-- App-users / organizations / spatial-reference pages courtesy of atcore's `urls(...)` factories.
+- App-users / organizations / spatial-reference pages from atcore's `urls(...)` factories.
 
 ## Where to go next
 
-- [Project Structure](../concepts/project-structure.md) — how to refactor into a two-package adapter layout when this app grows.
+- [Project Structure](../concepts/project-structure.md) — refactoring into a two-package adapter layout once the app grows.
 - [Add a tabbed resource details page](../how-to/add-a-tabbed-resource-details-page.md) — replace the default project details with `TabbedResourceDetails`.
 - [Add a custom workflow step type](../how-to/add-a-custom-workflow-step-type.md) — when the built-in step types don't fit.
-- [Wire up a file database](../how-to/wire-up-a-file-database.md) — give `Project` ownership of on-disk inputs.
-- [Build a Resource Workflow](../how-to/build-a-resource-workflow.md) and [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md) for the next layer of customization.
+- [Wire up a file database](../how-to/wire-up-a-file-database.md) — give `Project` on-disk inputs.
+- [Build a Resource Workflow](../how-to/build-a-resource-workflow.md) and [Run a Condor Workflow Job](../how-to/run-a-condor-workflow-job.md).

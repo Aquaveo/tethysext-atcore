@@ -52,14 +52,14 @@ See [Resource Workflows](./resource-workflows.md). The router is [`ResourceWorkf
 
 ## Tabbed resource details
 
-[`TabbedResourceDetails`](../api/controllers/resources/tabbed_resource_details.mdx) renders a tabbed page composed of tab classes ([`controllers.resources.tabs`](../api/controllers/resources/tabs/index.mdx)). Use it instead of `ResourceDetails` when one detail page isn't enough.
+[`TabbedResourceDetails`](../api/controllers/resources/tabbed_resource_details.mdx) renders a tabbed page composed of tab classes from [`controllers.resources.tabs`](../api/controllers/resources/tabs/index.mdx). Use it instead of `ResourceDetails` when one detail page isn't enough.
 
-Built-in tab classes:
+Built-in tabs:
 
-- [`ResourceSummaryTab`](../api/controllers/resources/tabs/summary_tab.mdx) — name / status / created-by header card; subclass and override `get_summary_tab_info` to add columns.
+- [`ResourceSummaryTab`](../api/controllers/resources/tabs/summary_tab.mdx) — name / status / created-by header card. Override `get_summary_tab_info` to add columns.
 - [`ResourceFilesTab`](../api/controllers/resources/tabs/files_tab.mdx) — listing of `FileCollection`s attached to the resource.
-- [`ResourceWorkflowsTab`](../api/controllers/resources/tabs/workflows_tab.mdx) — list of `ResourceWorkflow`s plus a "new workflow" launcher; subclass and override `get_workflow_types` to filter the launcher menu by resource state.
-- [`ResourceListTab`](../api/controllers/resources/tabs/resource_list_tab.mdx) — list of child resources for a parent resource.
+- [`ResourceWorkflowsTab`](../api/controllers/resources/tabs/workflows_tab.mdx) — list of `ResourceWorkflow`s plus a "new workflow" launcher. Override `get_workflow_types` to filter the launcher menu by resource state.
+- [`ResourceListTab`](../api/controllers/resources/tabs/resource_list_tab.mdx) — child resources for a parent resource.
 
 Compose them on a subclass:
 
@@ -93,7 +93,7 @@ class ProjectDetails(TabbedResourceDetails):
     )
 ```
 
-`TabbedResourceDetails` requires a `{tab_slug}` URL kwarg, which the default `urls.resources.urls(...)` helpers don't emit. Register the URL by hand:
+`TabbedResourceDetails` needs a `{tab_slug}` URL kwarg, which the default `urls.resources.urls(...)` helpers don't emit. Register the URL by hand:
 
 ```python
 # tethysapp/myapp/app.py — register_url_maps
@@ -113,13 +113,13 @@ url_maps += [
 ]
 ```
 
-The leading-underscore kwargs to `as_controller(...)` are the convention for populating the view mixin slots — `AppUsersViewMixin._AppUser`, `ResourceViewMixin._Resource`, etc. The atcore URL helpers fill them automatically; when you register a URL by hand, you fill them yourself.
+The leading-underscore kwargs to `as_controller(...)` populate the view mixin slots — `AppUsersViewMixin._AppUser`, `ResourceViewMixin._Resource`, and the rest. atcore's URL helpers fill them automatically; if you register a URL by hand, you fill them yourself.
 
 See [Add a tabbed resource details page](../how-to/add-a-tabbed-resource-details-page.md) for the full recipe.
 
 ## Decorators
 
-You'll typically inherit auth/session handling from `ResourceView`. If you write a free-function controller and still want atcore's behavior, the building blocks are exported by [`services.app_users.decorators`](../api/services/app_users/decorators.mdx):
+Most of the time you inherit auth/session handling from `ResourceView`. For free-function controllers that still need atcore's behavior, the building blocks live in [`services.app_users.decorators`](../api/services/app_users/decorators.mdx):
 
 - `active_user_required()`
 - `resource_controller(is_rest_controller=False)`

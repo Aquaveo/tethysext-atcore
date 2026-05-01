@@ -7,12 +7,12 @@ sidebar_position: 5
 
 # Run a Condor workflow job
 
-atcore submits long-running jobs through HTCondor and updates the resource (or workflow step) status when they finish. There are two paths:
+atcore submits long-running jobs through HTCondor and updates the resource (or workflow step) status when they finish. Two paths:
 
-- [`ResourceCondorWorkflow`](../api/services/resource_condor_workflow.mdx) — used when **creating** a `Resource` to run any required initialization jobs.
-- [`ResourceWorkflowCondorJobManager`](../api/services/workflow_manager/condor_workflow_manager.mdx) — used inside a [Resource Workflow](../concepts/resource-workflows.md) to run jobs as a `SpatialCondorJobRWS` step.
+- [`ResourceCondorWorkflow`](../api/services/resource_condor_workflow.mdx) — for initialization jobs run when **creating** a `Resource`.
+- [`ResourceWorkflowCondorJobManager`](../api/services/workflow_manager/condor_workflow_manager.mdx) — for jobs run inside a [Resource Workflow](../concepts/resource-workflows.md) as a `SpatialCondorJobRWS` step.
 
-Both end up creating Tethys Condor workflow jobs. The difference is what they wire status updates back to.
+Both create Tethys Condor workflow jobs. They differ in what they wire status updates back to.
 
 ## Resource initialization (one-time, on create)
 
@@ -38,17 +38,17 @@ def submit_init(app, request, resource, scheduler, job_manager, workspace_path, 
     return rcw
 ```
 
-`status_keys` lists the keys atcore will check on `resource.get_status(key)`. Your job script must set those statuses to one of [`Resource.OK_STATUSES`](../api/mixins/status_mixin.mdx) for the resource to flip from `STATUS_PENDING` to `STATUS_AVAILABLE`.
+`status_keys` lists the keys atcore checks via `resource.get_status(key)`. Your job script must set each one to a value in [`Resource.OK_STATUSES`](../api/mixins/status_mixin.mdx) for the resource to flip from `STATUS_PENDING` to `STATUS_AVAILABLE`.
 
-The helper script atcore ships for status updates is [`tethysext.atcore.job_scripts.update_resource_status`](https://github.com/Aquaveo/tethysext-atcore/blob/master/tethysext/atcore/job_scripts/update_resource_status.py) — Condor calls it when the workflow finishes.
+atcore ships [`tethysext.atcore.job_scripts.update_resource_status`](https://github.com/Aquaveo/tethysext-atcore/blob/master/tethysext/atcore/job_scripts/update_resource_status.py) for status updates; Condor calls it when the workflow finishes.
 
 ## Workflow step jobs (`SpatialCondorJobRWS`)
 
-When you reach a [`SpatialCondorJobRWS`](../api/models/resource_workflow_steps/spatial_condor_job_rws.mdx) step in a workflow, atcore instantiates a `ResourceWorkflowCondorJobManager` automatically. The integration point is the **`jobs` callable** you put on the step's `options` dict.
+When a workflow reaches a [`SpatialCondorJobRWS`](../api/models/resource_workflow_steps/spatial_condor_job_rws.mdx) step, atcore instantiates a `ResourceWorkflowCondorJobManager`. You hook in via the `jobs` callable on the step's `options` dict.
 
 ### The `jobs` callback pattern
 
-`SpatialCondorJobRWS.options['jobs']` is a callable, not a static list. atcore invokes it at submit time, passing the live workflow context. The callback returns a list of dicts that map to `condorpy_template_name` job specs.
+`SpatialCondorJobRWS.options['jobs']` is a callable, not a static list. atcore calls it at submit time with the live workflow context, and it returns a list of dicts matching `condorpy_template_name` job specs.
 
 ```python
 # myapp_adapter/workflows/analysis/jobs.py
@@ -105,7 +105,7 @@ SpatialCondorJobRWS(
 
 ### What atcore stamps onto each job
 
-`ResourceWorkflowCondorJobManager` automatically appends a positional argument list to every job in the workflow. Your job script receives them as `sys.argv`:
+`ResourceWorkflowCondorJobManager` appends a positional argument list to every job in the workflow. Your job script reads them off `sys.argv`:
 
 ```
 resource_db_url, model_db_url,
@@ -148,11 +148,11 @@ if __name__ == '__main__':
 
 ### Opting out of the standard arg list
 
-If your job is generic (e.g., wraps a third-party CLI) and shouldn't read those positional arguments, set `use_atcore_args=False` on the `CondorWorkflowJobNode` in your jobs callback. The job will be submitted without atcore's stamped args, and you're responsible for status updates yourself.
+If a job wraps a third-party CLI and shouldn't receive atcore's positional args, set `use_atcore_args=False` on the `CondorWorkflowJobNode` in your callback. The job is submitted without the stamped args, and you handle status updates yourself.
 
 ## Calling the manager directly
 
-If you need to submit a Condor workflow outside the `SpatialCondorJobRWS` flow (rare), the manager is callable:
+To submit a Condor workflow outside the `SpatialCondorJobRWS` flow (rare), call the manager yourself:
 
 ```python
 # example — inside a custom step view
@@ -178,9 +178,9 @@ manager.prepare()
 manager.run_job()
 ```
 
-## Choosing where the workspace lives
+## Where the workspace lives
 
-Both managers create a workspace directory under `working_directory`. For step jobs, the layout is:
+Both managers create a workspace directory under `working_directory`. For step jobs the layout is:
 
 ```
 <working_directory>/<workflow_id>/<step_id>/<safe_job_name>/
@@ -190,5 +190,5 @@ Both managers create a workspace directory under `working_directory`. For step j
 
 ## See also
 
-- [Resource Workflows](../concepts/resource-workflows.md) for the surrounding workflow infrastructure.
-- [Services](../concepts/services.md) for `ModelDatabase` (used to stamp `model_db_url` on the manager).
+- [Resource Workflows](../concepts/resource-workflows.md) — the surrounding workflow infrastructure.
+- [Services](../concepts/services.md) — `ModelDatabase` (used to stamp `model_db_url` on the manager).

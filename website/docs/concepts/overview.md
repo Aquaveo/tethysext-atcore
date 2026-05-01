@@ -45,6 +45,6 @@ A typical atcore-backed page looks like this:
 ## Where to go next
 
 - New to the project? Start with [Installation](../getting-started/installation.md).
-- Planning the layout of an atcore-backed app? Read [Project Structure](./project-structure.md) for the two-package adapter pattern that production apps use.
+- Planning an atcore-backed app's layout? Read [Project Structure](./project-structure.md) for the two-package adapter pattern.
 - Building your first atcore page? Read [App Users](./app-users.md) and [Resources](./resources.md), then [Controllers](./controllers.md).
 - Need the full class signatures? Jump to the [API Reference](../api/index.mdx).

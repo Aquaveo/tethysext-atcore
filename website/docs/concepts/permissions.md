@@ -76,7 +76,7 @@ The generator emits Tethys `PermissionGroup` instances with a curated set of per
 
 ### App-specific permissions: post-mutation
 
-`PermissionsGenerator.generate()` returns the standard permission groups; it has no extension hook for adding a permission to "every admin group" or "every group with a specific suffix." Production apps post-mutate the returned list:
+`PermissionsGenerator.generate()` returns the standard permission groups. There's no extension hook for "add this permission to every admin group" or "every group with this suffix" — post-mutate the returned list:
 
 ```python
 from tethys_sdk.permissions import Permission
@@ -93,11 +93,11 @@ def permissions(self):
     return groups
 ```
 
-You can also subclass `PermissionsGenerator` outright and override `generate()` to define the full permission graph yourself — appropriate when your app has many app-specific permissions or a non-standard role/license set. Both approaches show up in real apps; pick the one that matches the size of your customization.
+If your app has many app-specific permissions or a non-standard role/license set, subclass `PermissionsGenerator` and override `generate()` to define the full permission graph. Pick whichever approach matches the size of your customization.
 
 ## Subclassing the permissions manager
 
-When you subclass `Roles` or `Licenses` to subset (or extend) the available values, also subclass `AppPermissionsManager` so the manager picks up your new sets:
+If you subclass `Roles` or `Licenses` to subset or extend the available values, subclass `AppPermissionsManager` too so it picks up your new sets:
 
 ```python
 # myapp_adapter/app_users/permissions.py
@@ -115,7 +115,7 @@ class MyPermissionsManager(AppPermissionsManager):
     LICENSES = MyLicenses()
 ```
 
-Pass the manager class through to the URL helpers via `custom_permissions_manager=MyPermissionsManager` so atcore's controllers use it for permission-group lookups.
+Pass it to the URL helpers via `custom_permissions_manager=MyPermissionsManager` so atcore's controllers use it for permission-group lookups.
 
 ## Built-in permissions
 
