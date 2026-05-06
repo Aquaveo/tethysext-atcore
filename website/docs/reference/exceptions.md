@@ -30,7 +30,7 @@ Exception
 
 | Exception | Raised when |
 | --- | --- |
-| `ATCoreException` | Base class. Catch this to catch any atcore-specific error that shouldn't crash the request. The [`resource_controller`](../api/services/app_users/decorators.mdx) decorator handles it by surfacing `str(e)` as a Django message. |
+| `ATCoreException` | Base class for a subset of ATCore exceptions. Catch this for user-actionable errors that explicitly inherit from `ATCoreException` (for example model-database errors). The [`resource_controller`](../api/services/app_users/decorators.mdx) decorator handles those by surfacing `str(e)` as a Django message. |
 | `ModelDatabaseError` | Generic problem talking to a `ModelDatabase`. |
 | `ModelDatabaseInitializationError` | A `ModelDatabase` could not be created or initialized. |
 | `ModelFileDatabaseInitializationError` | A `ModelFileDatabase` could not be created or initialized. |
@@ -44,7 +44,7 @@ Exception
 
 ## Catching them
 
-The most common pattern: let the [`resource_controller`](../api/services/app_users/decorators.mdx) decorator catch `ATCoreException` so it shows up as a user-visible warning. Raise `ATCoreException("Reason")` from your view code when the failure is expected and user-actionable.
+The most common pattern: let the [`resource_controller`](../api/services/app_users/decorators.mdx) decorator catch `ATCoreException` so it shows up as a user-visible warning. Raise `ATCoreException("Reason")` from your view code when the failure is expected and user-actionable. For file-database and collection exceptions, catch the specific exception classes directly.
 
 ```python
 from tethysext.atcore.exceptions import ATCoreException
