@@ -1,0 +1,69 @@
+---
+id: controllers.resource_workflows.results_views.report_workflow_results_view
+title: tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view
+sidebar_label: report_workflow_results_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.results_views.report_workflow_results_view`
+
+```text
+********************************************************************************
+* Name: report_workflow_results_view.py
+* Author: nswain, htran, msouffront
+* Created On: October 14, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `ReportWorkflowResultsView(MapWorkflowView, WorkflowResultsView)` \{#reportworkflowresultsview\}
+
+```text
+Report Result View controller.
+```
+#### Methods
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#reportworkflowresultsview-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args, **kwargs)` \{#reportworkflowresultsview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+    workflow_id (int): The workflow id.
+    step_id (int): The step id.
+    result_id (int): The result id.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+*`@staticmethod`*
+
+##### `geoserver_url(link)` \{#reportworkflowresultsview-geoserver-url\}
+
+```text
+link: 'http://admin:geoserver@192.168.99.163:8181/geoserver/wms/'
+:return: 'http://192.168.99.163:8181/geoserver/wms/'
+```

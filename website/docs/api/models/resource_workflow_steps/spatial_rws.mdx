@@ -1,0 +1,57 @@
+---
+id: models.resource_workflow_steps.spatial_rws
+title: tethysext.atcore.models.resource_workflow_steps.spatial_rws
+sidebar_label: spatial_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.spatial_rws`
+
+```text
+********************************************************************************
+* Name: spatial_rws.py
+* Author: nswain
+* Created On: March 28, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialResourceWorkflowStep(ResourceWorkflowStep)` \{#spatialresourceworkflowstep\}
+
+```text
+Abstract base class of all Spatial Resource Workflow Steps.
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#spatialresourceworkflowstep-default-options\}
+
+> _No description._
+
+
+
+##### `__init__(self, geoserver_name, map_manager, spatial_manager, *args, **kwargs)` \{#spatialresourceworkflowstep-init\}
+
+```text
+Constructor.
+
+Args:
+    geoserver_name(str): Name of geoserver setting to use.
+    map_manager(MapManager): Instance of MapManager to use for the map view.
+    spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
+```
+
+
+##### `to_geojson(self, as_str=False)` \{#spatialresourceworkflowstep-to-geojson\}
+
+```text
+Serialize SpatialResourceWorkflowStep to GeoJSON.
+
+Args:
+    as_str(bool): Returns GeoJSON string if True, otherwise returns dict equivalent.
+
+Returns:
+    str or dict: GeoJSON string or dict equivalent representation of the spatial portions of a SpatialResourceWorkflowStep.
+```

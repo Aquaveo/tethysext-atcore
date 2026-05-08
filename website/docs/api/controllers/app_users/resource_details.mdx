@@ -1,0 +1,61 @@
+---
+id: controllers.app_users.resource_details
+title: tethysext.atcore.controllers.app_users.resource_details
+sidebar_label: resource_details
+---
+
+# `tethysext.atcore.controllers.app_users.resource_details`
+
+```text
+********************************************************************************
+* Name: resource_details.py
+* Author: nswain
+* Created On: April 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceDetails(ResourceViewMixin)` \{#resourcedetails\}
+
+```text
+Controller for resource_details page.
+
+GET: Render detail view of given resource.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#resourcedetails-get\}
+
+```text
+Route get requests.
+```
+
+
+##### `default_back_url(self, request, *args, **kwargs)` \{#resourcedetails-default-back-url\}
+
+```text
+Derive the back controller.
+
+Args:
+    request: Django HttpRequest.
+
+Returns:
+    str: name of the controller to return to when hitting back or on error.
+```
+
+
+##### `get_context(self, request, context)` \{#resourcedetails-get-context\}
+
+```text
+Hook for modifying context.
+
+Args:
+    request(HttpRequest): Django HttpRequest.
+    context(dict): context object.
+
+Returns:
+    dict: context
+```

@@ -1,0 +1,97 @@
+---
+id: mixins.user_lock_mixin
+title: tethysext.atcore.mixins.user_lock_mixin
+sidebar_label: user_lock_mixin
+---
+
+# `tethysext.atcore.mixins.user_lock_mixin`
+
+```text
+********************************************************************************
+* Name: user_lock_mixin.py
+* Author: nswain
+* Created On: September 24, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `UserLockMixin` \{#userlockmixin\}
+
+```text
+Provides methods for implementing the user lock pattern.
+```
+#### Methods
+
+*`@property`*
+
+##### `user_lock(self)` \{#userlockmixin-user-lock\}
+
+```text
+Get the current value of the user lock.
+
+Returns:
+    str or None: the username of the user that has read-write access, LOCKED_FOR_ALL_USERS if locked for all users, or None if the user lock is not locked.
+```
+
+*`@property`*
+
+##### `is_user_locked(self)` \{#userlockmixin-is-user-locked\}
+
+```text
+Check if the workflow is user locked.
+
+Returns:
+    bool: True if the workflow is user locked, False if not.
+```
+
+*`@property`*
+
+##### `is_locked_for_all_users(self)` \{#userlockmixin-is-locked-for-all-users\}
+
+```text
+Check if the workflow is user locked for all users.
+
+Returns:
+    bool: True if the workflow is user locked for all users, False if not.
+```
+
+
+##### `acquire_user_lock(self, request=None)` \{#userlockmixin-acquire-user-lock\}
+
+```text
+Acquire a user lock for the given request user. Only the given user will be able to access the workflow in read-write mode. All other users will have read-only access. If no user is provided, the workflow will be locked for all users.
+
+Args:
+    request(django.http.HttpRequest): The Django Request.
+
+Returns:
+    bool: True if acquisition was successful. False if already locked.
+```
+
+
+##### `release_user_lock(self, request)` \{#userlockmixin-release-user-lock\}
+
+```text
+Release the user lock for the request user user. Only the user that was used to acquire the lock or other user with appropriate permissions (e.g. admin or staff user) can release a user lock. If the workflow is locked for all users, an admin will be required to unlock it.
+
+Args:
+    request(django.http.HttpRequest): The Django Request.
+
+Returns:
+    bool: True if release was successful or if the user lock was not locked. False otherwise.
+```
+
+
+##### `is_locked_for_request_user(self, request)` \{#userlockmixin-is-locked-for-request-user\}
+
+```text
+Determine if the lock is locked for the request user.
+
+Args:
+    request(django.http.HttpRequest): The Django Request.
+
+Returns:
+    bool: True if workflow is locked for request user.
+```

@@ -1,0 +1,188 @@
+---
+id: controllers.app_users.modify_resource
+title: tethysext.atcore.controllers.app_users.modify_resource
+sidebar_label: modify_resource
+---
+
+# `tethysext.atcore.controllers.app_users.modify_resource`
+
+```text
+********************************************************************************
+* Name: modify_resource.py
+* Author: nswain
+* Created On: April 18, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModifyResource(ResourceViewMixin)` \{#modifyresource\}
+
+```text
+Controller for modify_resource page.
+
+GET: Render form for adding/editing resource.
+POST: Handle form submission to add/edit a new resource.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#modifyresource-get\}
+
+```text
+Route get requests.
+```
+
+
+##### `post(self, request, *args, **kwargs)` \{#modifyresource-post\}
+
+```text
+Route post requests.
+```
+
+
+##### `can_create_resource(self, session, request, request_app_user)` \{#modifyresource-can-create-resource\}
+
+```text
+Check performed when determining if a new resource can be created, considering permissions and other factors (i.e. storage).  # noqa: E501
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+
+Returns:
+    bool: True if the request app users is able to created a new resource, else false.
+    str: Error message to display if False.
+```
+
+
+##### `can_edit_resource(self, session, request, request_app_user, resource)` \{#modifyresource-can-edit-resource\}
+
+```text
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    resource(Resource): The resource being edited.
+
+Returns:
+    bool: True if can edit, else false.
+```
+
+
+##### `handle_file_upload(self, session, request, request_app_user, files, resource)` \{#modifyresource-handle-file-upload\}
+
+```text
+Handle file uploads. Raise an ATCoreException if issue occur.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    files(request.FILES): Django in-memory files object.
+    resource(Resource): The newly created resource.
+```
+
+
+##### `get_parents_select_options(self, session, request, request_app_user, resource, app_user_organizations)` \{#modifyresource-get-parents-select-options\}
+
+```text
+Build the list of options for the parent relationship select field.
+
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    resource(Resource): The resource being edited.
+    app_user_organizations (list<str>): List of organization ids to which the app user belongs.
+
+Returns:
+    list<2-tuples<name, id>>: A list of 2-tuples, each tuple containing the name and id of a resource.
+```
+
+
+##### `get_child_select_options(self, session, request, request_app_user, resource, app_user_organizations)` \{#modifyresource-get-child-select-options\}
+
+```text
+Build the list of options for the child relationship select field.
+
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    resource(Resource): The resource being edited.
+    app_user_organizations (list<str>): List of organization ids to which the app user belongs.
+
+Returns:
+    list<2-tuples<name, id>>: A list of 2-tuples, each tuple containing the name and id of a resource.
+```
+
+
+##### `handle_srid_changed(self, session, request, request_app_user, resource, old_srid, new_srid)` \{#modifyresource-handle-srid-changed\}
+
+```text
+Handle srid changed event when editing an existing resource.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    resource(Resource): The resource being edited.
+    old_srid(str): The old srid.
+    new_srid(str): The new srid.
+```
+
+
+##### `handle_resource_finished_processing(self, session, request, request_app_user, resource, editing, context=None)` \{#modifyresource-handle-resource-finished-processing\}
+
+```text
+Hook to allow for post processing after the resource has finished being created or updated.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    resource(Resource): The resource being edited or newly created.
+    editing(bool): True if editing, False if creating a new resource.
+    contex(dict): Template context variables for the view.
+```
+
+
+##### `initialize_custom_fields(self, session, request, resource, editing, context=None)` \{#modifyresource-initialize-custom-fields\}
+
+```text
+Hook to allow for initializing custom fields.
+
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    resource(Resource): The resource being edited.
+    editing(bool): True if rendering form for editing.
+    context(dict): Template context variables for the view.
+
+Returns:
+    dict: Template context variables for defining custom fields.
+```
+
+
+##### `validate_custom_fields(self, params, session=None, request=None, request_app_user=None)` \{#modifyresource-validate-custom-fields\}
+
+```text
+Hook to allow for validating custom fields.
+
+Args:
+    params: The request.POST object with values submitted by user.
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+
+Returns:
+    bool, dict: False if any custom fields invalid, Template context variables for validation feedback (i.e. error messages).
+```
+
+
+##### `get_context(self, request, context, editing)` \{#modifyresource-get-context\}
+
+```text
+Hook to add to context.
+Args:
+    context(dict): context for controller.
+```

@@ -11,7 +11,7 @@ from tethys_sdk.gizmos import TethysGizmoOptions
 
 class SlideSheet(TethysGizmoOptions):
     """
-    Spatial reference select input gizmo.
+    Slide-out panel gizmo for presenting supplemental page content.
     """
     gizmo_name = 'slide_sheet'
 

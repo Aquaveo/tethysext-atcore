@@ -1,0 +1,84 @@
+---
+id: models.app_users.resource_workflow_result
+title: tethysext.atcore.models.app_users.resource_workflow_result
+sidebar_label: resource_workflow_result
+---
+
+# `tethysext.atcore.models.app_users.resource_workflow_result`
+
+```text
+********************************************************************************
+* Name: resource_workflow_result
+* Author: nswain
+* Created On: April 30, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, OptionsMixin, SerializeMixin)` \{#resourceworkflowresult\}
+
+```text
+Data model for storing information about resource workflow results.
+```
+#### Methods
+
+
+##### `__init__(self, *args, **kwargs)` \{#resourceworkflowresult-init\}
+
+> _No description._
+
+
+
+##### `__str__(self)` \{#resourceworkflowresult-str\}
+
+> _No description._
+
+
+
+##### `__repr__(self)` \{#resourceworkflowresult-repr\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `controller(self)` \{#resourceworkflowresult-controller\}
+
+> _No description._
+
+
+*`@property`*
+
+##### `data(self)` \{#resourceworkflowresult-data\}
+
+> _No description._
+
+
+*`@data.setter`*
+
+##### `data(self, value)` \{#resourceworkflowresult-data\}
+
+> _No description._
+
+
+
+##### `reset(self)` \{#resourceworkflowresult-reset\}
+
+```text
+Resets result to initial state.
+```
+
+
+##### `serialize_base_fields(self, d: dict) -> dict` \{#resourceworkflowresult-serialize-base-fields\}
+
+```text
+Hook for ATCore base classes to add their custom fields to serialization.
+
+Args:
+    d: Base serialized Resource dictionary.
+
+Returns:
+    Serialized Resource dictionary.
+```

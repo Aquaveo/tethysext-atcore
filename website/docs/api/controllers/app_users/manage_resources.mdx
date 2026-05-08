@@ -1,0 +1,147 @@
+---
+id: controllers.app_users.manage_resources
+title: tethysext.atcore.controllers.app_users.manage_resources
+sidebar_label: manage_resources
+---
+
+# `tethysext.atcore.controllers.app_users.manage_resources`
+
+```text
+********************************************************************************
+* Name: manage_resources.py
+* Author: nswain
+* Created On: April 18, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ManageResources(ResourceViewMixin)` \{#manageresources\}
+
+```text
+Controller for manage_resources page.
+
+GET: Render list of all resources.
+DELETE: Delete and organization.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#manageresources-get\}
+
+```text
+Route get requests.
+```
+
+
+##### `post(self, request, *args, **kwargs)` \{#manageresources-post\}
+
+```text
+Route post requests.
+```
+
+
+##### `delete(self, request, *args, **kwargs)` \{#manageresources-delete\}
+
+```text
+Route delete requests.
+```
+
+
+##### `get_working_url(self, request, resource)` \{#manageresources-get-working-url\}
+
+```text
+Get the URL for the Resource Working button.
+```
+
+
+##### `get_launch_url(self, request, resource)` \{#manageresources-get-launch-url\}
+
+```text
+Get the URL for the Resource Launch button.
+```
+
+
+##### `get_error_url(self, request, resource)` \{#manageresources-get-error-url\}
+
+```text
+Get the URL for the Resource Error button.
+```
+
+
+##### `get_info_url(self, request, resource)` \{#manageresources-get-info-url\}
+
+```text
+Get the URL for the Resource name link and row click.
+```
+
+
+##### `get_resource_action(self, session, request, request_app_user, resource)` \{#manageresources-get-resource-action\}
+
+```text
+Get the parameters that define the action button (i.e.: Launch button).
+
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+
+Returns:
+    dict<action, title, href>: action attributes.
+```
+
+
+##### `get_resources(self, session, request, request_app_user)` \{#manageresources-get-resources\}
+
+```text
+Hook to allow easy customization of the resources query.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+Returns:
+    list<Resources>: the list of resources to render on the manage_resources page.
+```
+
+
+##### `perform_custom_delete_operations(self, session, request, resource)` \{#manageresources-perform-custom-delete-operations\}
+
+```text
+Hook to perform custom delete operations prior to the resource being deleted.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.Request): the DELETE request object.
+    resource(Resource): the sqlalchemy Resource instance to be deleted.
+
+Raises:
+    Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
+```
+
+
+##### `can_edit_resource(self, session, request, resource)` \{#manageresources-can-edit-resource\}
+
+```text
+Hook into resource_card.editable attribute to allow for more than permissions-based check.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.Request): the request object.
+    resource(Resource): current resource.
+
+Returns:
+    bool: the edit button will be displayed for this resource if True.
+```
+
+
+##### `can_delete_resource(self, session, request, resource)` \{#manageresources-can-delete-resource\}
+
+```text
+Hook into resource_card.deletable attribute to allow for more than permissions-based check.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.Request): the request object.
+    resource(Resource): current resource.
+
+Returns:
+    bool: the delete button will be displayed for this resource if True.
+```

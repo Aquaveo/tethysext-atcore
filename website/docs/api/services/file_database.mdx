@@ -1,0 +1,326 @@
+---
+id: services.file_database
+title: tethysext.atcore.services.file_database
+sidebar_label: file_database
+---
+
+# `tethysext.atcore.services.file_database`
+
+```text
+********************************************************************************
+* Name: file_database.py
+* Author: glarsen
+* Created On: November 10, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `FileDatabaseClient(MetaMixin)` \{#filedatabaseclient\}
+
+> _No description._
+
+#### Methods
+
+
+##### `__init__(self, session: Session, root_directory: str, file_database_id: uuid.UUID)` \{#filedatabaseclient-init\}
+
+```text
+Use this constructor to bind the FileDatabaseClient to an existing FileDatabase. Use the new() factory method to create a new FileDatabase.
+
+Args:
+    session (sqlalchemy.orm.Session): The session for the SQL database.
+    root_directory (str): Path to the directory that contains the FileDatabase.
+    file_database_id (uuid.UUID): The id of the FileDatabase.
+```
+
+*`@classmethod`*
+
+##### `new(cls, session: Session, root_directory: str, meta: dict=None) -> 'FileDatabaseClient'` \{#filedatabaseclient-new\}
+
+```text
+Use this method to create a new FileDatabase. Use the constructor to bind to an existing FileDatabase.
+
+Args:
+    session (sqlalchemy.orm.Session): The session for the SQL database.
+    root_directory (str or Path): Directory in which the new FileDatabase will be created.
+    meta (dict): The meta for the FileCollection.
+
+Returns:
+    FileDatabaseClient: A FileDatabaseClient bound to the new FileDatabase.
+```
+
+*`@property`*
+
+##### `instance(self) -> FileDatabase` \{#filedatabaseclient-instance\}
+
+```text
+Property to get the underlying instance so it can be lazy loaded.
+```
+
+*`@property`*
+
+##### `root_directory(self) -> str` \{#filedatabaseclient-root-directory\}
+
+```text
+The directory that contains the FileDatabase directory.
+```
+
+*`@property`*
+
+##### `path(self) -> str` \{#filedatabaseclient-path\}
+
+```text
+Path to the FileDatabase directory.
+```
+
+
+##### `delete(self)` \{#filedatabaseclient-delete\}
+
+```text
+Delete this FileDatabase
+```
+
+
+##### `get_collection(self, collection_id: uuid.UUID) -> 'FileCollectionClient'` \{#filedatabaseclient-get-collection\}
+
+```text
+Get a FileCollectionClient owned by this FileDatabase by its collection_id
+
+Args:
+    collection_id (uuid.UUID): The id for the file collection owned by this FileDatabase.
+
+Returns:
+    The FileCollectionClient for the FileCollection.
+```
+
+
+##### `new_collection(self, items: list=None, meta: dict=None, move: bool=False, relative_to: str='') -> 'FileCollectionClient'` \{#filedatabaseclient-new-collection\}
+
+```text
+Create a new collection copying any files and meta data passed in.
+
+Args:
+    items (list): A list of files or paths to be copied to the file collection.
+    meta: (dict): The meta data to be stored in the FileCollection.
+    move (bool): Move the files if True, otherwise copy the files. Defaults to False.
+    relative_to (str): Preserve the relative path of the items relative to this directory.
+
+Returns:
+    A new FileCollectionClient object for the FileCollection.
+```
+
+
+##### `delete_collection(self, collection_id: uuid.UUID) -> None` \{#filedatabaseclient-delete-collection\}
+
+```text
+Delete a specified FileCollection from the FileDatabase
+
+Args:
+    collection_id (uuid.UUID): The id for the collection to be deleted.
+```
+
+
+##### `export_collection(self, collection_id: uuid.UUID, target: str) -> None` \{#filedatabaseclient-export-collection\}
+
+```text
+Export the collection to a target location.
+
+Args:
+    collection_id (uuid.UUID): The id for the file collection to be exported.
+    target (str): Path to the target location.
+```
+
+
+##### `duplicate_collection(self, collection_id: uuid.UUID) -> 'FileCollectionClient'` \{#filedatabaseclient-duplicate-collection\}
+
+```text
+Duplicate a collection and add it to the FileDatabase
+
+Args:
+    collection_id (uuid.UUID): The id for the collection to be duplicated.
+
+Returns:
+    A FileCollectionClient for the newly duplicated FileCollect
+```
+
+
+
+### `FileCollectionClient(MetaMixin)` \{#filecollectionclient\}
+
+> _No description._
+
+#### Methods
+
+
+##### `__init__(self, session: Session, file_database_client: FileDatabaseClient, file_collection_id: uuid.UUID)` \{#filecollectionclient-init\}
+
+```text
+Use this constructor to bind the FileCollectionClient to an existing FileCollection. Use the new() factory method to create a new FileCollection.
+
+Args:
+    session (sqlalchemy.orm.Session): The session for the SQL database.
+    file_database_client (FileDatabaseClient): A FileDatabaseClient bound to the FileDatabase containing the FileCollection.
+    file_collection_id (uuid.UUID): The id of the FileCollection.
+```
+
+*`@classmethod`*
+
+##### `new(cls, session: Session, file_database_client: FileDatabaseClient, meta: dict=None) -> 'FileCollectionClient'` \{#filecollectionclient-new\}
+
+```text
+Use this method to create a new FileCollection. Use the constructor to bind to an existing FileCollection.
+
+Args:
+    session (sqlalchemy.orm.Session): The session for the SQL database.
+    file_database_client (FileDatabaseClient): A FileDatabaseClient bound to the FileDatabase in which you would like the new FileCollection to be created.
+    meta (dict): The meta for the FileCollection
+
+Returns:
+    A client to a newly generated FileCollection.
+```
+
+*`@property`*
+
+##### `instance(self) -> FileCollection` \{#filecollectionclient-instance\}
+
+```text
+Property to get the underlying instance so it can be lazy loaded.
+
+Returns:
+    The underlying FileCollection instance.
+
+Raises:
+    Exception: If the the instance has been deleted.
+```
+
+*`@property`*
+
+##### `file_database_client(self) -> FileDatabaseClient` \{#filecollectionclient-file-database-client\}
+
+```text
+FileDatabaseClient bound to the FileDatabase containing the FileCollection.
+```
+
+*`@property`*
+
+##### `path(self) -> str` \{#filecollectionclient-path\}
+
+```text
+Path to the FileCollection directory.
+```
+
+*`@property`*
+
+##### `files(self) -> Generator[str, None, None]` \{#filecollectionclient-files\}
+
+```text
+Generator that iterates recursively through all files (ignoring empty directories).
+
+Returns:
+    Generate giving a list of files in the FileCollection
+```
+
+
+##### `delete(self)` \{#filecollectionclient-delete\}
+
+```text
+Delete this CollectionInstance
+```
+
+
+##### `export(self, target)` \{#filecollectionclient-export\}
+
+```text
+Copy the FileCollection to the target.
+
+Args:
+    target (str): location of the newly exported FileCollection.
+```
+
+
+##### `duplicate(self)` \{#filecollectionclient-duplicate\}
+
+```text
+Duplicate collection with a new ID and associate it with the current FileDatabase
+
+Returns:
+    A client for the newly duplicated FileCollection
+```
+
+
+##### `has_item(self, item: str)` \{#filecollectionclient-has-item\}
+
+```text
+Check if an item is in the file collection.
+
+Args:
+    item: The path to the item to be checked.
+```
+
+
+##### `add_item(self, item: str, move: bool=False, relative_to: str='') -> None` \{#filecollectionclient-add-item\}
+
+```text
+Add an item to the file collection.
+
+Args:
+    item: A path to the item to be added.
+    move: Move the file if True, otherwise just copy.
+    relative_to: Preserve the relative path of the item relative to this directory.
+```
+
+
+##### `delete_item(self, item: str)` \{#filecollectionclient-delete-item\}
+
+```text
+Delete an item from the file collection.
+
+Args:
+    item (str): Path to the item to be deleted, relative to the collection.
+```
+
+
+##### `export_item(self, item: str, target: str)` \{#filecollectionclient-export-item\}
+
+```text
+Export an item from the collection to a new location.
+
+Args:
+    item (str): Path to the item to be exported, relative to the collection.
+    target (str): Path to the export location.
+```
+
+
+##### `duplicate_item(self, item, new_item)` \{#filecollectionclient-duplicate-item\}
+
+```text
+Duplicate an item in the collection.
+
+Args:
+    item (str): Path to the item to duplicate, relative to the collection.
+    new_item (str): Path to the new item, relative to the collection.
+```
+
+*`@contextmanager`*
+
+##### `open_file(self, file, *args, **kwargs)` \{#filecollectionclient-open-file\}
+
+```text
+Open a file in the collection for reading/writing.
+
+Args:
+    file: The file to be opened, relative to the collection.
+    args, kwargs: Additional arguments passed to open function.
+
+Returns:
+    A handle to the file that has been opened.
+```
+
+
+##### `walk(self)` \{#filecollectionclient-walk\}
+
+```text
+Walk through the files, and directories of the collection recursively.
+```

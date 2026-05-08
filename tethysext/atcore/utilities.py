@@ -115,7 +115,7 @@ def clean_request(request):
 
 def strip_list(the_list, *args):
     """
-    Strip emtpy items from end of list.
+    Strip empty items from end of list.
 
     Args:
         the_list(list): the list.

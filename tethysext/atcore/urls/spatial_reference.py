@@ -14,20 +14,14 @@ def urls(
     custom_services=(),
 ):
     """
-    Generate UrlMap objects for spatial_reference_select gizmo.
-
-    ::
-
-        {% url 'my_first_app:app_users_add_user %}
-        {% url 'my_first_app:app_users_edit_user, user_id=user.id %}
+    Generate UrlMap objects for spatial reference REST endpoints.
 
     Args:
         url_map_maker(UrlMap): UrlMap class bound to app root url.
         app(TethysAppBase): instance of Tethys app class.
         persistent_store_name(str): name of persistent store database setting the controllers should use to create sessions.
-        base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful to add navigation to ManageUsers, ManageOrganizations, ManageResources, and UserAccount views.
         custom_controllers(list<TethysController>): Any number of TethysController subclasses to override default controller classes.
-        custom_services(cls): custom subclasses of SpatialRefereceService service.
+        custom_services(cls): custom subclasses of SpatialReferenceService service.
 
     Url Map Names:
         atcore_query_spatial_reference
