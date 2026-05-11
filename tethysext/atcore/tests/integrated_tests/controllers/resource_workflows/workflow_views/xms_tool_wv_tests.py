@@ -270,11 +270,13 @@ class XmsToolWVTests(WorkflowViewTestCase):
         mock_dataset.dataset_type = 'ObjectSelector'
         regex_base_description = 'choice description'
         mock_dataset.description = f'"{regex_base_description}" plus extra for filtering out'
+        mock_dataset.id = '12345678'
         mock_dataset.choices = ['a', 'b', 'c']
         mock_dataset2 = mock.MagicMock()
         mock_dataset2.dataset_type = 'ObjectSelector'
         mock_dataset2.description = 'ds2 description'
-        mock_dataset.choices = ['d']
+        mock_dataset2.id = '87654321'
+        mock_dataset2.choices = ['d']
         mock_resource = mock.MagicMock()
         mock_resource.datasets = [mock_dataset, mock_dataset2]
 
@@ -298,5 +300,7 @@ class XmsToolWVTests(WorkflowViewTestCase):
         self.assertEqual(len(form.base_fields['bar'].choices), 2)
         self.assertEqual(len(form.base_fields['bar'].choices[0]), 2)
         self.assertEqual(len(form.base_fields['bar'].choices[1]), 2)
+        self.assertEqual('12345678', form.base_fields['bar'].choices[0][0])
         self.assertEqual(regex_base_description, form.base_fields['bar'].choices[0][1])
+        self.assertEqual('87654321', form.base_fields['bar'].choices[1][0])
         self.assertEqual(mock_dataset2.description, form.base_fields['bar'].choices[1][1])

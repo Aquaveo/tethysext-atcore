@@ -1,0 +1,45 @@
+---
+id: models.app_users.resource
+title: tethysext.atcore.models.app_users.resource
+sidebar_label: resource
+---
+
+# `tethysext.atcore.models.app_users.resource`
+
+> _No description._
+
+## Classes
+
+
+### `Resource(StatusMixin, AttributesMixin, UserLockMixin, SerializeMixin, AppUsersBase)` \{#resource\}
+
+```text
+Definition for the resources table.
+```
+#### Methods
+
+
+##### `__repr__(self)` \{#resource-repr\}
+
+> _No description._
+
+
+*`@classproperty`*
+
+##### `SLUG(self)` \{#resource-slug\}
+
+> _No description._
+
+
+
+##### `serialize_base_fields(self, d: dict) -> dict` \{#resource-serialize-base-fields\}
+
+```text
+Hook for ATCore base classes to add their custom fields to serialization.
+
+Args:
+    d: Base serialized Resource dictionary.
+
+Returns:
+    Serialized Resource dictionary.
+```

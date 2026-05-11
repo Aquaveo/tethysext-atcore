@@ -1,0 +1,77 @@
+---
+id: controllers.resource_workflows.results_views.map_workflow_results_view
+title: tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view
+sidebar_label: map_workflow_results_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.results_views.map_workflow_results_view`
+
+```text
+********************************************************************************
+* Name: map_workflow_results_view.py
+* Author: nswain
+* Created On: October 15, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `MapWorkflowResultsView(MapWorkflowView, WorkflowResultsView)` \{#mapworkflowresultsview\}
+
+```text
+Map Result View controller.
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args, **kwargs)` \{#mapworkflowresultsview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+
+##### `get_plot_data(self, request, session, resource, result_id, *args, **kwargs)` \{#mapworkflowresultsview-get-plot-data\}
+
+```text
+Load plot from given parameters.
+
+Args:
+    request (HttpRequest): The request.
+    session(sqlalchemy.Session): The database session.
+    resource(Resource): The resource.
+
+Returns:
+    JsonResponse: title, data, and layout options for the plot.
+```
+
+
+##### `get_plot_for_geojson(self, layer, feature_id)` \{#mapworkflowresultsview-get-plot-for-geojson\}
+
+```text
+Retrieves plot for feature from given layer.
+
+Args:
+    layer(dict): layer dictionary.
+    feature_id(str): id of the feature in the layer to plot.
+
+Returns:
+    title, data, layout: Plot dictionary.
+```
+
+
+##### `update_result_layer(self, request, session, resource, *args, **kwargs)` \{#mapworkflowresultsview-update-result-layer\}
+
+```text
+Update color ramp of a layer in the result. In the future, we can add more things to update here.
+```

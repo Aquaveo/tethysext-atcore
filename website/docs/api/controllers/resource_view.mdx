@@ -1,0 +1,96 @@
+---
+id: controllers.resource_view
+title: tethysext.atcore.controllers.resource_view
+sidebar_label: resource_view
+---
+
+# `tethysext.atcore.controllers.resource_view`
+
+```text
+********************************************************************************
+* Name: base_resource_view.py
+* Author: nswain
+* Created On: May 6, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceView(ResourceViewMixin)` \{#resourceview\}
+
+```text
+Base controller for all Resource-based views.
+```
+#### Methods
+
+*`@active_user_required()` `@resource_controller()`*
+
+##### `get(self, request, session, resource, back_url, *args, **kwargs)` \{#resourceview-get\}
+
+```text
+Handle GET requests.
+```
+
+*`@active_user_required()` `@resource_controller()`*
+
+##### `post(self, request, session, resource, back_url, *args, **kwargs)` \{#resourceview-post\}
+
+```text
+Route POST requests.
+```
+
+
+##### `request_to_method(self, request)` \{#resourceview-request-to-method\}
+
+```text
+Derive python method on this class from "method" GET or POST parameter.
+Args:
+    request (HttpRequest): The request.
+
+Returns:
+    callable: the method or None if not found.
+```
+
+
+##### `on_get(self, request, session, resource, *args, **kwargs)` \{#resourceview-on-get\}
+
+```text
+Hook that is called at the beginning of the get request, before any other controller logic occurs.
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+Returns:
+    None or HttpResponse: If an HttpResponse is returned, render that instead.
+```
+
+
+##### `get_context(self, request, session, resource, context, *args, **kwargs)` \{#resourceview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+
+##### `get_permissions(self, request, permissions, resource, *args, **kwargs)` \{#resourceview-get-permissions\}
+
+```text
+Hook to modify permissions.
+
+Args:
+    request (HttpRequest): The request.
+    permissions (dict): The permissions dictionary with boolean values.
+    resource (Resource): the resource for this request.
+
+Returns:
+    dict: modified permisssions dictionary.
+```

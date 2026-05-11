@@ -1,0 +1,60 @@
+---
+id: controllers.resource_workflows.workflow_views.form_input_wv
+title: tethysext.atcore.controllers.resource_workflows.workflow_views.form_input_wv
+sidebar_label: form_input_wv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.workflow_views.form_input_wv`
+
+```text
+********************************************************************************
+* Name: form_input_wv.py
+* Author: mmlebaron, glarsen
+* Created On: October 18, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `FormInputWV(ResourceWorkflowView)` \{#forminputwv\}
+
+```text
+Controller for FormInputRWV.
+```
+#### Methods
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#forminputwv-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#forminputwv-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): the resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+```

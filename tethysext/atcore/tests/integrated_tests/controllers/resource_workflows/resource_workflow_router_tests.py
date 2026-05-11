@@ -169,6 +169,12 @@ class ResourceWorkflowRouterTests(SqlAlchemyTestCase):
         self.mock_get_workflow.return_value = self.workflow
         self.addCleanup(get_workflow_patcher.stop)
 
+        traceback_patcher = mock.patch(
+            'tethysext.atcore.controllers.resource_workflows.resource_workflow_router.traceback'
+        )
+        traceback_patcher.start()
+        self.addCleanup(traceback_patcher.stop)
+
     def tearDown(self):
         super().tearDown()
 

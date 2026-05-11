@@ -18,7 +18,7 @@ from tethys_sdk.permissions import permission_required
 from tethys_apps.utilities import get_active_app
 # ATCore
 from tethysext.atcore.controllers.app_users.mixins import ResourceViewMixin
-from tethysext.atcore.services.app_users.decorators import active_user_required
+from tethysext.atcore.services.app_users.decorators import active_user_required, resource_controller
 
 
 class ResourceStatus(ResourceViewMixin):
@@ -41,29 +41,25 @@ class ResourceStatus(ResourceViewMixin):
 
     @active_user_required()
     @permission_required('view_resources')
-    def _handle_get(self, request, *args, **kwargs):
+    @resource_controller()
+    def _handle_get(self, request, session, resource, back_url, *args, **kwargs):
         """
         Handle get requests.
         """
-        # GET PARAMS
-        params = request.GET
-        resource_id = params.get('r', None)
-
-        resource = None
+        resource_id = None
+        if isinstance(resource, HttpResponse):
+            return resource
         app = self.get_app()
         job_manager = app.get_job_manager()
         jobs = job_manager.list_jobs()
-        SessionMaker = self.get_sessionmaker()
-        session = SessionMaker()
         app_user = self._AppUser.get_app_user_from_request(request, session)
 
         # Filter by resource
         filtered_jobs = []
 
-        if resource_id:
+        if resource is not None:
             # This checks for existence of the resource and access permissions
-            resource = self.get_resource(request, resource_id)
-
+            resource_id = str(resource.id)
             # TODO: Move permissions check into decorator
             if isinstance(resource, HttpResponse):
                 return resource
@@ -87,7 +83,6 @@ class ResourceStatus(ResourceViewMixin):
             self._AppUser.ROLES.APP_ADMIN,
             self._AppUser.ROLES.ORG_ADMIN
         ]
-        session.close()
         jobs_table = JobsTable(
             jobs=filtered_jobs,
             column_fields=('id', 'name', 'creation_time', 'execute_time', 'run_time'),

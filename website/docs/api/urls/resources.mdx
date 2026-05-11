@@ -1,0 +1,51 @@
+---
+id: urls.resources
+title: tethysext.atcore.urls.resources
+sidebar_label: resources
+---
+
+# `tethysext.atcore.urls.resources`
+
+```text
+********************************************************************************
+* Name: resources.py
+* Author: msouffront & htran
+* Created On: November 20, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Functions
+
+
+### `urls(url_map_maker, app, persistent_store_name, base_url_path='', base_template='atcore/app_users/base.html', custom_controllers=(), custom_models=(), custom_permissions_manager=None, resource_model=Resource)` \{#urls\}
+
+```text
+Generate UrlMap objects for Resource Views. To link to pages provided by the Resource Views use the name of the url with your app namespace:
+
+::
+
+    {% url 'my_first_app:manage_resources_url %}
+    {% url 'my_first_app:edit_resource_url, resource_id=resource.id %}
+
+Args:
+    url_map_maker (UrlMap): UrlMap class bound to app root url.
+    app (TethysAppBase): instance of Tethys app class.
+    persistent_store_name (str): name of persistent store database setting the controllers should use to create sessions.
+    base_url_path (str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
+    base_template (str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
+    custom_controllers (list<TethysController>): Any number of TethysController subclasses to override default controller classes.
+    custom_models (list<cls>): custom subclasses of AppUser or Organization models.
+    custom_permissions_manager (cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
+    resource_model (Resource): Resource model class. Defaults to Resource.
+
+Url Map Names:
+    <resource_slug>_manage_resources
+    <resource_slug>_new_resource
+    <resource_slug>_edit_resource <resource_id>
+    <resource_slug>_resource_details <resource_id>
+    <resource_slug>_resource_status <resource_id>
+    <resource_slug>_resource_status_list
+
+Returns:
+    tuple: UrlMap objects for the Resource Views.
+```

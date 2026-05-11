@@ -1,0 +1,93 @@
+---
+id: models.resource_workflow_steps.xms_tool_rws
+title: tethysext.atcore.models.resource_workflow_steps.xms_tool_rws
+sidebar_label: xms_tool_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.xms_tool_rws`
+
+```text
+********************************************************************************
+* Name: xms_tool_rws.py
+* Author: dgallup, ysun
+* Created On: December, 2023
+* Copyright: (c) Aquaveo 2023
+********************************************************************************
+```
+## Classes
+
+
+### `XMSToolRWS(ResourceWorkflowStep)` \{#xmstoolrws\}
+
+```text
+Workflow step that can be used to get XMSTool input from a user.
+
+Example argument mapping (provide options from the database, for input arguments):
+(Look in resource.datasets, where a dataset_type is a raster, for the dataset description, which is then filtered)
+'arg_mapping': {
+    'input_raster': {
+        'resource_attr': 'datasets',
+        'filter_attr': 'dataset_type',
+        'valid_values': ['RASTER_ASCII', 'RASTER_GEOTIFF'],
+        'name_attr': 'description',
+        'name_attr_regex': r'"(.*?[^\])"',  # optional regex expression on the name_attr value
+    },
+}
+
+Options:
+    form_title(str): Title to be displayed at the top of the form. Defaults to the name of the step.
+    status_label(str): Custom label for the status select form field. Defaults to "Status".
+    xmstool_class(dict): xms tool class used on the form.
+    arg_mapping(dict): dict of lookup options to map arguments to existing data.
+    renderer(str): Renderer option. Available values are 'django' and 'bokeh'. Defauls to 'django'.
+    validators (dict, optional): A dictionary of validator functions to check parameter values
+        before running the tool. Validators are called automatically when a parameter is set.
+        The structure can be:
+
+            {
+                'param_name': validator_func,            # Single parameter
+                ('param_name_1', 'param_name_2'): validator_func   # Multiple parameters
+            }
+
+        Where `validator_func` is a callable that receives the parameter value(s) and raises a `ValueError`
+        if the value is invalid.
+
+        Examples:
+
+            # Validate a single parameter
+            def validate_start(value):
+                if value < 0:
+                    raise ValueError("Start value must be non-negative")
+
+            validators = {
+                'start_time': validate_start
+            }
+
+            # Validate multiple parameters together
+            def validate_range(start, end):
+                if start >= end:
+                    raise ValueError("Start must be earlier than end")
+
+            validators = {
+                ('start_time', 'end_time'): validate_range
+            }
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#xmstoolrws-default-options\}
+
+> _No description._
+
+
+
+##### `init_parameters(self, *args, **kwargs)` \{#xmstoolrws-init-parameters\}
+
+> _No description._
+
+
+
+##### `validate(self)` \{#xmstoolrws-validate\}
+
+> _No description._

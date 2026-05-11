@@ -1,7 +1,7 @@
 # Use our Tethyscore base docker image as a parent image
 ARG PYTHON_VERSION=3.12
 ARG DJANGO_VERSION=3.2
-ARG TETHYS_VERSION=4.3.7
+ARG TETHYS_VERSION=4.5.1
 ARG BASE_IMAGE_TAG="${TETHYS_VERSION}-py${PYTHON_VERSION}-dj${DJANGO_VERSION}"
 ARG BASE_IMAGE="tethysplatform/tethys-core"
 

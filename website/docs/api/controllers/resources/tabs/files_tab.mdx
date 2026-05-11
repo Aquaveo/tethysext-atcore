@@ -1,0 +1,59 @@
+---
+id: controllers.resources.tabs.files_tab
+title: tethysext.atcore.controllers.resources.tabs.files_tab
+sidebar_label: files_tab
+---
+
+# `tethysext.atcore.controllers.resources.tabs.files_tab`
+
+```text
+********************************************************************************
+* Name: files_tab.py
+* Author: gagelarsen
+* Created On: December 03, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceFilesTab(ResourceTab)` \{#resourcefilestab\}
+
+```text
+A tab for the TabbedResourceDetails view that lists collections and files that are contained in those collections.
+
+Required URL Variables:
+    resource_id (str): the ID of the Resource.
+    tab_slug (str): Portion of URL that denotes which tab is active.
+
+Properties:
+    file_hide_patterns: A list of regular expression patterns for files that should not be shown in the files tab.fla
+
+Methods:
+    get_file_collections (required): Override this method to define a list of FileCollections that are shown in this tab.
+```
+#### Methods
+
+
+##### `get_file_collections(self, request, resource, session, *args, **kwargs)` \{#resourcefilestab-get-file-collections\}
+
+```text
+Get the file_collections
+
+Returns:
+    A list of FileCollection clients.
+```
+
+
+##### `get_context(self, request, session, resource, context, *args, **kwargs)` \{#resourcefilestab-get-context\}
+
+```text
+Build context for the ResourceFilesTab template that is used to generate the tab content.
+```
+
+
+##### `download_file(self, request, resource, session, *args, **kwargs)` \{#resourcefilestab-download-file\}
+
+```text
+A function to download a file from a request.
+```

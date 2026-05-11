@@ -1,0 +1,50 @@
+---
+id: urls.resource_workflows
+title: tethysext.atcore.urls.resource_workflows
+sidebar_label: resource_workflows
+---
+
+# `tethysext.atcore.urls.resource_workflows`
+
+```text
+********************************************************************************
+* Name: resource_workflows.py
+* Author: nswain
+* Created On: November 19, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Functions
+
+
+### `urls(url_map_maker, app, persistent_store_name, workflow_pairs, base_url_path='', custom_models=(), custom_permissions_manager=None, base_template='atcore/base.html', handler=DEFAULT_HANDLER['handler'], handler_type=DEFAULT_HANDLER['type'])` \{#urls\}
+
+```text
+Generate UrlMap objects for each workflow model-controller pair provided. To link to pages provided by the app_users extension use the name of the url with your app namespace:
+
+::
+
+    {% url 'my_first_app:a_workflow_workflow', resource_id=resource.id, workflow_id=workflow.id %}
+
+    OR
+
+    reverse('my_first_app:a_workflow_workflow_step', kwargs={'resource_id': resource.id, 'workflow_id': workflow.id, 'step_id': step.id})
+
+Args:
+    url_map_maker(UrlMap): UrlMap class bound to app root url.
+    app(TethysAppBase): instance of Tethys app class.
+    persistent_store_name(str): name of persistent store database setting the controllers should use to create sessions.
+    workflow_pairs(2-tuple<ResourceWorkflow, ResourceWorkflowRouter>): Pairs of ResourceWorkflow models and ResourceWorkFlow views.
+    base_url_path(str): url path to prepend to all app_user urls (e.g.: 'foo/bar').
+    custom_models(list<cls>): custom subclasses of AppUser, Organization, or Resource models.
+    custom_permissions_manager(cls): Custom AppPermissionsManager class. Defaults to AppPermissionsManager.
+    base_template(str): relative path to base template (e.g.: 'my_first_app/base.html'). Useful for customizing styles or overriding navigation of all views.
+
+Url Map Names:
+    <workflow_type>_workflow <resource_id> <workflow_id>
+    <workflow_type>_workflow_step <resource_id> <workflow_id> <step_id>
+    <workflow_type>_workflow_step_result <resource_id> <workflow_id> <step_id> <result_id>
+
+Returns:
+    tuple: UrlMap objects for the app_users extension.
+```

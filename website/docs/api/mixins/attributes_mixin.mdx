@@ -1,0 +1,87 @@
+---
+id: mixins.attributes_mixin
+title: tethysext.atcore.mixins.attributes_mixin
+sidebar_label: attributes_mixin
+---
+
+# `tethysext.atcore.mixins.attributes_mixin`
+
+```text
+********************************************************************************
+* Name: attributes_mixin.py
+* Author: nswain
+* Created On: April 23, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `AttributesMixin(object)` \{#attributesmixin\}
+
+```text
+Provides methods for implementing the attributes pattern.
+```
+#### Methods
+
+*`@property`*
+
+##### `attributes(self)` \{#attributesmixin-attributes\}
+
+> _No description._
+
+
+*`@attributes.setter`*
+
+##### `attributes(self, value)` \{#attributesmixin-attributes\}
+
+> _No description._
+
+
+
+##### `get_attribute(self, key, default=None)` \{#attributesmixin-get-attribute\}
+
+```text
+Get value of a specific attribute.
+Args:
+    key(str): key of attribute.
+
+Returns:
+    varies: value of attribute.
+```
+
+
+##### `set_attribute(self, key, value)` \{#attributesmixin-set-attribute\}
+
+```text
+Set value of a specific attribute.
+Args:
+    key(str): key of attribute
+    value: value of attribute
+```
+
+*`@classmethod`*
+
+##### `build_attributes_string(cls, **kwargs)` \{#attributesmixin-build-attributes-string\}
+
+```text
+Helper method that builds attributes string to use when querying.
+Args:
+    **kwargs: any number of key value pairs to use for filtering.
+
+Returns:
+    json: kwargs serialized into a json string.
+```
+
+*`@classmethod`*
+
+##### `build_attributes(cls, **kwargs)` \{#attributesmixin-build-attributes\}
+
+```text
+Helper method used to build attributes object.
+Args:
+    **kwargs: any number of key value pairs to use for filtering.
+
+Returns:
+    dict: kwargs serialized into dictionary.
+```

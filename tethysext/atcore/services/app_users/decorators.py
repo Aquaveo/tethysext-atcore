@@ -7,6 +7,7 @@
 ********************************************************************************
 """
 import logging
+import traceback
 from sqlalchemy.exc import StatementError
 from sqlalchemy.orm.exc import NoResultFound
 from django.http import JsonResponse
@@ -68,6 +69,18 @@ def resource_controller(is_rest_controller=False):
             session = None
             resource = None
 
+            def _handle_exception(e, user_message=None, level=messages.WARNING):
+                """Log traceback and return the appropriate error response."""
+                traceback.print_exc()
+                log.exception(str(e))
+                if isinstance(e, (ValueError, RuntimeError)) and session:
+                    session.rollback()
+                if user_message:
+                    messages.add_message(request, level, user_message)
+                if not is_rest_controller:
+                    return redirect(self.back_url)
+                return JsonResponse({'success': False, 'error': str(e)})
+
             try:
                 make_session = self.get_sessionmaker()
                 session = make_session()
@@ -75,46 +88,25 @@ def resource_controller(is_rest_controller=False):
                 if resource_id:
                     resource = self.get_resource(request, resource_id=resource_id, session=session)
 
-                # Call the Controller
                 return controller_func(self, request, session, resource, back_url, *args, **kwargs)
 
             except (StatementError, NoResultFound) as e:
-                message = 'The {} could not be found.'.format(
-                    _Resource.DISPLAY_TYPE_SINGULAR.lower()
-                )
+                message = f'The {_Resource.DISPLAY_TYPE_SINGULAR.lower()} could not be found.'
                 log.exception(message)
-                messages.warning(request, message)
-                if not is_rest_controller:
-                    return redirect(self.back_url)
-                else:
-                    return JsonResponse({'success': False, 'error': str(e)})
+                return _handle_exception(e, user_message=message)
 
             except ATCoreException as e:
-                error_message = str(e)
-                messages.warning(request, error_message)
-                if not is_rest_controller:
-                    return redirect(self.back_url)
-                else:
-                    return JsonResponse({'success': False, 'error': str(e)})
+                return _handle_exception(e, user_message=str(e))
 
             except ValueError as e:
-                if session:
-                    session.rollback()
-                if not is_rest_controller:
-                    return redirect(self.back_url)
-                else:
-                    return JsonResponse({'success': False, 'error': str(e)})
+                return _handle_exception(e)
 
             except RuntimeError as e:
-                if session:
-                    session.rollback()
-
-                log.exception(str(e))
-                messages.error(request, "We're sorry, an unexpected error has occurred.")
-                if not is_rest_controller:
-                    return redirect(self.back_url)
-                else:
-                    return JsonResponse({'success': False, 'error': str(e)})
+                return _handle_exception(
+                    e,
+                    user_message="We're sorry, an unexpected error has occurred.",
+                    level=messages.ERROR,
+                )
 
             finally:
                 session and session.close()

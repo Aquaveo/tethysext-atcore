@@ -1,0 +1,49 @@
+---
+id: models.resource_workflow_steps.results_rws
+title: tethysext.atcore.models.resource_workflow_steps.results_rws
+sidebar_label: results_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.results_rws`
+
+```text
+********************************************************************************
+* Name: results_rws.py
+* Author: nswain
+* Created On: March 28, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `ResultsResourceWorkflowStep(ResourceWorkflowStep, AttributesMixin, ResultsMixin)` \{#resultsresourceworkflowstep\}
+
+```text
+Abstract base class of all Results Resource Workflow Steps.
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#resultsresourceworkflowstep-default-options\}
+
+```text
+Returns default options dictionary for the result.
+```
+
+
+##### `init_parameters(self, *args, **kwargs)` \{#resultsresourceworkflowstep-init-parameters\}
+
+```text
+Initialize the parameters for this step.
+Returns:
+    dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+```
+
+
+##### `reset(self)` \{#resultsresourceworkflowstep-reset\}
+
+```text
+Resets the step back to its initial state.
+```

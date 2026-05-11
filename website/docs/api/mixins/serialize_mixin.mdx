@@ -1,0 +1,77 @@
+---
+id: mixins.serialize_mixin
+title: tethysext.atcore.mixins.serialize_mixin
+sidebar_label: serialize_mixin
+---
+
+# `tethysext.atcore.mixins.serialize_mixin`
+
+> _No description._
+
+## Classes
+
+
+### `SerializeMixin` \{#serializemixin\}
+
+> _No description._
+
+#### Methods
+
+
+##### `serialize_base_fields(self, d: dict) -> dict` \{#serializemixin-serialize-base-fields\}
+
+```text
+Hook for ATCore base classes to add their custom fields to serialization.
+
+Args:
+    d: Base serialized Resource dictionary.
+
+Returns:
+    Serialized Resource dictionary.
+```
+
+
+##### `serialize_custom_fields(self, d: dict)` \{#serializemixin-serialize-custom-fields\}
+
+```text
+Hook for app-specific subclasses to add additional fields to serialization.
+
+Args:
+    base: Base serialized Resource dictionary.
+
+Returns:
+    dict: Serialized Resource.
+```
+
+
+##### `serialize_resource_props(self) -> dict` \{#serializemixin-serialize-resource-props\}
+
+```text
+Serialize the normal Resource properties into a dictionary.
+
+Returns:
+    Serialized Resource dictionary.
+```
+
+
+##### `json_dumps(self, d: dict) -> str` \{#serializemixin-json-dumps\}
+
+```text
+Serialize this Resource to a json string.
+
+Returns:
+    str: JSON string.
+```
+
+
+##### `serialize(self, format: str='dict')` \{#serializemixin-serialize\}
+
+```text
+Serialize this Resource.
+
+Args:
+    format: Format to serialize to. One of 'dict' or 'json'.
+
+Returns:
+    dict: Serialized Resource.
+```

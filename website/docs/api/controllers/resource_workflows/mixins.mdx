@@ -1,0 +1,91 @@
+---
+id: controllers.resource_workflows.mixins
+title: tethysext.atcore.controllers.resource_workflows.mixins
+sidebar_label: mixins
+---
+
+# `tethysext.atcore.controllers.resource_workflows.mixins`
+
+> _No description._
+
+## Classes
+
+
+### `WorkflowViewMixin(ResourceViewMixin)` \{#workflowviewmixin\}
+
+```text
+Mixin for class-based views that adds convenience methods for working with resources and workflows.
+```
+#### Methods
+
+
+##### `get_resource_workflow_model(self)` \{#workflowviewmixin-get-resource-workflow-model\}
+
+> _No description._
+
+
+
+##### `get_resource_workflow_step_model(self)` \{#workflowviewmixin-get-resource-workflow-step-model\}
+
+> _No description._
+
+
+
+##### `get_workflow(self, request, workflow_id, session=None)` \{#workflowviewmixin-get-workflow\}
+
+```text
+Get the workflow and check permissions.
+
+Args:
+    request: Django HttpRequest.
+    workflow_id: ID of the workflow.
+    session: SQLAlchemy session. Optional
+
+Returns:
+    ResourceWorkflow: the resource.
+```
+
+
+##### `get_step(self, request, step_id, session=None)` \{#workflowviewmixin-get-step\}
+
+```text
+Get the step and check permissions.
+
+Args:
+    request: Django HttpRequest.
+    step_id: ID of the step to get.
+    session: SQLAlchemy session.
+
+Returns:
+    ResourceWorkflow: the resource.
+```
+
+
+
+### `ResultViewMixin(ResourceViewMixin)` \{#resultviewmixin\}
+
+```text
+Mixin for class-based views that adds convenience methods for working with resources, workflows, and results.
+```
+#### Methods
+
+
+##### `get_resource_workflow_result_model(self)` \{#resultviewmixin-get-resource-workflow-result-model\}
+
+> _No description._
+
+
+
+##### `get_result(self, request, result_id, session=None)` \{#resultviewmixin-get-result\}
+
+```text
+Get the workflow and check permissions.
+
+Args:
+    request: Django HttpRequest.
+    result_id: ID of the workflow.
+    session: SQLAlchemy session. Optional
+
+Returns:
+    ResourceWorkflow: the resource.
+```

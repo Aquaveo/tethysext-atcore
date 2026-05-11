@@ -92,3 +92,82 @@ class DatasetWorkflowResultViewTests(SqlAlchemyTestCase):
         )
 
         self.assertDictEqual(baseline, ret)
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.DataTableView')  # noqa: E501
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view.has_permission')  # noqa: E501
+    @mock.patch.object(DatasetWorkflowResultView, 'get_result')
+    @mock.patch.object(WorkflowResultsView, 'get_context')
+    def test_get_context_export_button_without_permission(self, mock_sup_get_context, mock_get_result, mock_permission,
+                                                          mock_datatable):
+        """Test that dom_attribute is set to 'frtip' when user lacks export permission."""
+        mock_resource = mock.MagicMock()
+        mock_request = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_context = mock.MagicMock()
+        mock_workflow_id = mock.MagicMock()
+        mock_step_id = mock.MagicMock()
+        mock_result_id = mock.MagicMock()
+        mock_result = mock.MagicMock()
+
+        mock_get_result.return_value = mock_result
+
+        mock_pandas_data = mock.MagicMock(spec=pd.DataFrame)
+        mock_pandas_data.columns = ['foo', 'bar', 'baz']
+        mock_result.name = 'bar'
+        mock_result.datasets = [{
+            'dataset': mock_pandas_data,
+            'show_export_button': True,
+        }]
+        # User does NOT have export permission
+        mock_permission.return_value = False
+        mock_options = mock.MagicMock()
+        mock_result.options = mock_options
+        data_table_options = {
+            'data_table_kwargs': {
+                'foo': True
+            }
+        }
+        baseline = {
+            'no_dataset_message': 'baz',
+            'page_title': 'bar',
+            'datasets': mock_result.datasets
+        }
+        mock_options.get.side_effect = ['bar', data_table_options, 'baz']
+        mock_sup_get_context.return_value = {}
+
+        ret = self.instance.get_context(
+            request=mock_request,
+            session=mock_session,
+            resource=mock_resource,
+            context=mock_context,
+            workflow_id=mock_workflow_id,
+            step_id=mock_step_id,
+            result_id=mock_result_id
+        )
+
+        # Verify the DataTableView was created with dom="frtip" (pagination/filtering without export)
+        # This tests the else branch at lines 79-80
+        mock_datatable.assert_called_once()
+        call_kwargs = mock_datatable.call_args[1]
+        self.assertEqual(call_kwargs['dom'], 'frtip')
+
+        # Test all things were called here
+        mock_sup_get_context.assert_called_with(
+            request=mock_request,
+            session=mock_session,
+            resource=mock_resource,
+            context=mock_context,
+            workflow_id=mock_workflow_id,
+            step_id=mock_step_id,
+            result_id=mock_result_id
+        )
+
+        mock_get_result.assert_called_with(
+            request=mock_request,
+            result_id=mock_result_id,
+            session=mock_session
+        )
+
+        mock_permission.assert_called_with(mock_request, 'can_export_datatable')
+
+        self.assertDictEqual(baseline, ret)
