@@ -1,0 +1,44 @@
+---
+id: controllers.resource_workflows.results_views.plot_workflow_results_view
+title: tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view
+sidebar_label: plot_workflow_results_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.results_views.plot_workflow_results_view`
+
+```text
+********************************************************************************
+* Name: plot_workflow_result_view.py
+* Author: nathan, htran, msouff
+* Created On: Oct 7, 2020
+* Copyright: (c) Aquaveo 2020
+********************************************************************************
+```
+## Classes
+
+
+### `PlotWorkflowResultView(WorkflowResultsView)` \{#plotworkflowresultview\}
+
+```text
+Plot Result View Controller
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args, **kwargs)` \{#plotworkflowresultview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+    workflow_id (str): The id of the workflow.
+    step_id (str): The id of the step.
+    result_id (str): The id of the result.
+
+Returns:
+    dict: modified context dictionary.
+```

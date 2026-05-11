@@ -1,0 +1,382 @@
+---
+id: controllers.resource_workflows.workflow_view
+title: tethysext.atcore.controllers.resource_workflows.workflow_view
+sidebar_label: workflow_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.workflow_view`
+
+```text
+********************************************************************************
+* Name: workflow_view.py
+* Author: nswain
+* Created On: November 21, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ResourceWorkflowView(ResourceView, WorkflowViewMixin)` \{#resourceworkflowview\}
+
+```text
+Base class for workflow views.
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, *args, **kwargs)` \{#resourceworkflowview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior. This method is called during initialization of the view.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+    workflow_id (str): The id of the workflow.
+    step_id (str): The id of the step.
+
+Returns:
+    dict: modified context dictionary.
+```
+
+*`@workflow_step_controller()`*
+
+##### `save_step_data(self, request, session, resource, workflow, step, back_url, *args, **kwargs)` \{#resourceworkflowview-save-step-data\}
+
+```text
+Handle POST requests with input named "method" with value "save-step-data". This is called at end-of-life for the view.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    workflow(ResourceWorkflow): the workflow.
+    step(ResourceWorkflowStep): the step.
+    args, kwargs: Additional arguments passed to the controller.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+
+##### `build_step_cards(self, request, workflow)` \{#resourceworkflowview-build-step-cards\}
+
+```text
+Build cards used by template to render the list of steps for the workflow.
+
+Args:
+    request (HttpRequest): The request.
+    workflow(ResourceWorkflow): the workflow with the steps to render.
+
+Returns:
+    list<dict>: one dictionary for each step in the workflow.
+```
+
+*`@staticmethod`*
+
+##### `get_step_url_name(request, workflow)` \{#resourceworkflowview-get-step-url-name\}
+
+```text
+Derive url map name for the given workflow step views.
+Args:
+    request(HttpRequest): The request.
+    workflow(ResourceWorkflow): The current workflow.
+
+Returns:
+    str: name of the url pattern for the given workflow step views.
+```
+
+*`@staticmethod`*
+
+##### `get_workflow_url_name(request, workflow)` \{#resourceworkflowview-get-workflow-url-name\}
+
+```text
+Derive url map name for the given workflow view.
+Args:
+    request(HttpRequest): The request.
+    workflow(ResourceWorkflow): The current workflow.
+
+Returns:
+    str: name of the url pattern for the given workflow views.
+```
+
+*`@staticmethod`*
+
+##### `build_lock_display_options(request, workflow)` \{#resourceworkflowview-build-lock-display-options\}
+
+```text
+Build an object with the workflow lock indicator display options.
+Args:
+    request(HttpRequest): The request.
+    workflow(ResourceWorkflow): the workflow.
+
+Returns:
+    dict<style,message,show>: Dictionary containing the display options for the workflow lock indicator.
+```
+
+*`@staticmethod`*
+
+##### `get_style_for_status(status)` \{#resourceworkflowview-get-style-for-status\}
+
+```text
+Return appropriate style for given status.
+
+Args:
+    status(str): One of StatusMixin statuses.
+
+Returns:
+    str: style for the given status.
+```
+
+
+##### `workflow_locked_for_request_user(self, request, workflow)` \{#resourceworkflowview-workflow-locked-for-request-user\}
+
+```text
+Checks if the workflow is locked for the request user--either directly or via the resource being locked.
+
+Args:
+    request(HttpRequest): The request.
+    workflow(ResourceWorkflow): the workflow.
+
+Returns:
+    bool: True if the workflow is locked.
+```
+
+
+##### `user_has_active_role(self, request, step)` \{#resourceworkflowview-user-has-active-role\}
+
+```text
+Checks if the request user has active role for step.
+
+Args:
+    request(HttpRequest): The request.
+    step(ResourceWorkflowStep): the step.
+
+Returns:
+    bool: True if user has active role.
+```
+
+
+##### `is_read_only(self, request, step)` \{#resourceworkflowview-is-read-only\}
+
+```text
+Determine if the view should be rendered in read-only mode.
+
+Args:
+    request(HttpRequest): The request.
+    step(ResourceWorkflowStep): The step.
+
+Returns:
+    bool: True if the view should be rendered in read-only mode.
+```
+
+
+##### `process_lock_options_on_init(self, request, session, resource, step)` \{#resourceworkflowview-process-lock-options-on-init\}
+
+```text
+Process lock options when the view initializes.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    step(ResourceWorkflowStep): the step.
+```
+
+
+##### `process_lock_options_after_submission(self, request, session, resource, step)` \{#resourceworkflowview-process-lock-options-after-submission\}
+
+```text
+Process lock options after the step has been submitted and processed.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    step(ResourceWorkflowStep): the step.
+```
+
+*`@staticmethod`*
+
+##### `acquire_lock_and_log(request, session, lockable, for_all_users=False)` \{#resourceworkflowview-acquire-lock-and-log\}
+
+```text
+Attempt to acquire the lock on the lockable object and log the outcome.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    lockable(UserLockMixin): Object on which to acquire a lock.
+    for_all_users(bool): Lock for all users when True.
+```
+
+*`@staticmethod`*
+
+##### `release_lock_and_log(request, session, lockable)` \{#resourceworkflowview-release-lock-and-log\}
+
+```text
+Attempt to release the lock on the lockable object and log the outcome.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    lockable(UserLockMixin): Object to on which to release a lock.
+```
+
+
+##### `validate_step(self, request, session, current_step, previous_step, next_step)` \{#resourceworkflowview-validate-step\}
+
+```text
+Validate the step being used for this view. Raises TypeError if current_step is invalid.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+
+Raises:
+    TypeError: if step is invalid.
+```
+
+
+##### `on_get(self, request, session, resource, workflow_id, step_id, *args, **kwargs)` \{#resourceworkflowview-on-get\}
+
+```text
+Override hook that is called at the beginning of the get request, before any other controller logic occurs.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+
+Returns:
+    None or HttpResponse: If an HttpResponse is returned, render that instead.
+```
+
+
+##### `on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step, *args, **kwargs)` \{#resourceworkflowview-on-get-step\}
+
+```text
+Hook that is called at the beginning of the get request for a workflow step, before any other controller logic occurs.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): the session.
+    resource(Resource): the resource for this request.
+    workflow(ResourceWorkflow): The current workflow.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+
+Returns:
+    None or HttpResponse: If an HttpResponse is returned, render that instead.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#resourceworkflowview-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs. Only called if the user has an active role.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): The resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+
+Raises:
+    ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
+    RuntimeError: exceptions that require developer attention.
+```
+
+
+##### `navigate_only(self, request, step, current_url, next_url, previous_url)` \{#resourceworkflowview-navigate-only\}
+
+```text
+Navigate to next or previous step without processing/saving data. Called instead of process_step_data when the user doesn't have an active role.
+
+Args:
+    request(HttpRequest): The request.
+    step(ResourceWorkflowStep): The step to be updated.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+
+##### `next_or_previous_redirect(self, request, next_url, previous_url)` \{#resourceworkflowview-next-or-previous-redirect\}
+
+```text
+Generate a redirect to either the next or previous step, depending on what button was pressed.
+
+Args:
+    request(HttpRequest): The request.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+```
+
+*`@abc.abstractmethod`*
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step, **kwargs)` \{#resourceworkflowview-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `extend_step_cards(self, workflow_step, step_status)` \{#resourceworkflowview-extend-step-cards\}
+
+```text
+Hook for extending step card attributes.
+
+Args:
+    workflow_step(ResourceWorkflowStep): The current step for which a card is being created.
+    step_status(str): Status of the workflow_step.
+
+Returns:
+    dict: dictionary containing key-value attributes to add to the step card.
+```
+
+
+##### `get_step_specific_context(self, request, session, context, current_step, previous_step, next_step)` \{#resourceworkflowview-get-step-specific-context\}
+
+```text
+Hook for extending the view context.
+
+Args:
+   request(HttpRequest): The request.
+   session(sqlalchemy.orm.Session): Session bound to the steps.
+   context(dict): Context object for the map view template.
+   current_step(ResourceWorkflowStep): The current step to be rendered.
+   previous_step(ResourceWorkflowStep): The previous step.
+   next_step(ResourceWorkflowStep): The next step.
+
+Returns:
+    dict: key-value pairs to add to context.
+```

@@ -1,0 +1,62 @@
+---
+id: models.resource_workflow_steps.spatial_attributes_rws
+title: tethysext.atcore.models.resource_workflow_steps.spatial_attributes_rws
+sidebar_label: spatial_attributes_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.spatial_attributes_rws`
+
+```text
+********************************************************************************
+* Name: spatial_attributes_rws.py
+* Author: nswain
+* Created On: December 17, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialAttributesRWS(SpatialResourceWorkflowStep)` \{#spatialattributesrws\}
+
+```text
+Workflow step used for setting simple valued attributes on features.
+
+Options:
+    geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
+    attributes(dict): Dictionary of param instances defining the attributes to be defined for each feature.
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#spatialattributesrws-default-options\}
+
+> _No description._
+
+
+
+##### `init_parameters(self, *args, **kwargs)` \{#spatialattributesrws-init-parameters\}
+
+```text
+Initialize the parameters for this step.
+
+Args:
+    step_options(dict): Options for this step.
+
+Returns:
+    dict<name:dict<help,value>>: Dictionary of all parameters with their initial value set.
+```
+
+
+##### `validate(self)` \{#spatialattributesrws-validate\}
+
+```text
+Validates parameter values of this this step.
+
+Returns:
+    bool: True if data is valid, else Raise exception.
+
+Raises:
+    ValueError
+```

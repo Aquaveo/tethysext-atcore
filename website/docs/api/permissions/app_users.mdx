@@ -1,0 +1,46 @@
+---
+id: permissions.app_users
+title: tethysext.atcore.permissions.app_users
+sidebar_label: app_users
+---
+
+# `tethysext.atcore.permissions.app_users`
+
+> _No description._
+
+## Classes
+
+
+### `PermissionsGenerator` \{#permissionsgenerator\}
+
+> _No description._
+
+#### Methods
+
+
+##### `__init__(self, permission_manager)` \{#permissionsgenerator-init\}
+
+```text
+Used to generate permissions groups associated with the app_users extension.
+Args:
+    permission_manager(AppPermissionManager): a permission manager instance bound to the app.
+```
+
+
+##### `add_permissions_for(self, permission_group, permissions)` \{#permissionsgenerator-add-permissions-for\}
+
+```text
+Add a list of permissions to the specified permission group.
+Args:
+    permission_group(str): name of a permission group.
+    permissions(list<Permission>): list of Permission instances.
+```
+
+
+##### `generate(self)` \{#permissionsgenerator-generate\}
+
+```text
+Generate list of permission groups.
+Returns:
+    list<PermissionGroups>: all permission groups with permissions.
+```

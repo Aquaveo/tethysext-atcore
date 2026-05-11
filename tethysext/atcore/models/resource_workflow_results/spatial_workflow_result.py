@@ -108,7 +108,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
         Args:
             geojson(dict): Python equivalent GeoJSON FeatureCollection.
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
@@ -154,7 +154,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
         Args:
             endpoint(str): URL to GeoServer WMS interface.
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
@@ -219,7 +219,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
         Args:
             cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'
             cesium_json(dict): Cesium object in json.
-            layer_name(str): Name of cesium layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of cesium layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.

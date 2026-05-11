@@ -1,0 +1,45 @@
+---
+id: models.resource_workflow_results.report_workflow_result
+title: tethysext.atcore.models.resource_workflow_results.report_workflow_result
+sidebar_label: report_workflow_result
+---
+
+# `tethysext.atcore.models.resource_workflow_results.report_workflow_result`
+
+```text
+********************************************************************************
+* Name: spatial_workflow_result
+* Author: nswain
+* Created On: April 30, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `ReportWorkflowResult(ResourceWorkflowResult)` \{#reportworkflowresult\}
+
+```text
+Data model for storing spatial information about resource workflow results.
+```
+#### Methods
+
+
+##### `__init__(self, geoserver_name, map_manager, spatial_manager, map_renderer='tethys_map_view', *args, **kwargs)` \{#reportworkflowresult-init\}
+
+```text
+Constructor.
+
+Args:
+    geoserver_name(str): Name of geoserver setting to use.
+    map_manager(MapManager): Instance of MapManager to use for the map view.
+    spatial_manager(SpatialManager): Instance of SpatialManager to use for the map view.
+```
+
+*`@property`*
+
+##### `default_options(self)` \{#reportworkflowresult-default-options\}
+
+```text
+Returns default options dictionary for the object.
+```

@@ -95,12 +95,28 @@ class MapManagerBase(object):
     @abstractmethod
     def compose_map(self, request, *args, **kwargs):
         """
-        Compose the MapView object.
+        Compose the MapView object, its default extent, and any layer groups.
+
+        The MapView controller calls this method and unpacks the result as
+        ``map_view, model_extent, layer_groups = map_manager.compose_map(...)``,
+        so subclass implementations must return all three values.
+
         Args:
             request(HttpRequest): A Django request object.
 
         Returns:
-            MapView, 4-list<float>: The MapView and extent objects.
+            tuple: A 3-tuple of ``(MapView, 4-list<float>, list<dict>)``:
+
+            - **MapView** — the configured Tethys ``MapView`` gizmo.
+            - **4-list<float>** — the default map extent ``[minx, miny, maxx, maxy]``.
+            - **list<dict>** — layer groups built via :meth:`build_layer_group`.
+              May be empty.
+
+        Notes:
+            The ``MapView`` controller overwrites ``controls``, ``legend``,
+            ``height``, ``width``, ``feature_selection``, and ``disable_basemap``
+            on the returned ``MapView`` after this method runs, so setting
+            those fields here has no effect.
         """
 
     def get_cesium_token(self):
@@ -139,7 +155,7 @@ class MapManagerBase(object):
         Build an MVLayer object with supplied arguments.
         Args:
             geojson(dict): Python equivalent GeoJSON FeatureCollection.
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
@@ -195,7 +211,7 @@ class MapManagerBase(object):
         Args:
             cesium_type(enum): 'CesiumModel' or 'CesiumPrimitive'.
             cesium_json(dict): Cesium dictionary to describe the layer.
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
@@ -248,7 +264,7 @@ class MapManagerBase(object):
         Build an WMS MVLayer object with supplied arguments.
         Args:
             endpoint(str): URL to GeoServer WMS interface.
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             style(str): Name of the Geoserver layer style
@@ -351,7 +367,7 @@ class MapManagerBase(object):
         Build an AcrGIS Map Server MVLayer object with supplied arguments.
         Args:
             endpoint(str): URL to GeoServer WMS interface.
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.
@@ -408,7 +424,7 @@ class MapManagerBase(object):
         Build an MVLayer object with supplied arguments.
         Args:
             layer_source(str): OpenLayers Source to use for the MVLayer (e.g.: "TileWMS", "ImageWMS", "GeoJSON").
-            layer_name(str): Name of GeoServer layer (e.g.: agwa:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
+            layer_name(str): Name of GeoServer layer (e.g.: my_workspace:3a84ff62-aaaa-bbbb-cccc-1a2b3c4d5a6b7c8d-model_boundaries).
             layer_title(str): Title of MVLayer (e.g.: Model Boundaries).
             layer_variable(str): Variable type of the layer (e.g.: model_boundaries).
             layer_id(UUID, int, str): layer_id for non geoserver layer where layer_name may not be unique.

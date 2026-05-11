@@ -1,0 +1,180 @@
+---
+id: controllers.resource_workflows.map_workflows.spatial_input_mwv
+title: tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv
+sidebar_label: spatial_input_mwv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_input_mwv`
+
+```text
+********************************************************************************
+* Name: spatial_input_mwv.py
+* Author: nswain
+* Created On: January 21, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialInputMWV(MapWorkflowView)` \{#spatialinputmwv\}
+
+```text
+Controller for a map workflow view requiring spatial input (drawing).
+```
+#### Methods
+
+
+##### `get_step_specific_context(self, request, session, context, current_step, previous_step, next_step)` \{#spatialinputmwv-get-step-specific-context\}
+
+```text
+Hook for extending the view context.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+
+Returns:
+    dict: key-value pairs to add to context.
+```
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#spatialinputmwv-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#spatialinputmwv-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): the resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+
+Raises:
+    ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
+    RuntimeError: exceptions that require developer attention.
+```
+
+
+##### `validate_feature_attributes(self, request, session, resource, step_id, *args, **kwargs)` \{#spatialinputmwv-validate-feature-attributes\}
+
+```text
+Handle feature attribute validation AJAX requests.
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    resource(Resource): the resource for this request.
+    step_id(str): ID of the step to render.
+
+Returns:
+    JsonResponse
+```
+
+
+##### `parse_shapefile(self, request, in_memory_file)` \{#spatialinputmwv-parse-shapefile\}
+
+```text
+Parse shapefile, serialize into GeoJSON, and validate.
+Args:
+    request(HttpRequest): The request.
+    in_memory_file (InMemoryUploadedFile): A zip archive containing the shapefile that has been uploaded.
+
+Returns:
+    dict: Dictionary equivalent of GeoJSON.
+```
+
+
+##### `validate_projection(self, proj_str)` \{#spatialinputmwv-validate-projection\}
+
+```text
+Validate the projection of uploaded shapefiles. Currently only support the WGS 1984 Geographic Projection (EPSG:4326).
+
+Args:
+    proj_str(str): Well-Known-Text projection string.
+
+Raises:
+    ValueError: unsupported projection systems.
+```
+
+*`@staticmethod`*
+
+##### `parse_drawn_geometry(geometry)` \{#spatialinputmwv-parse-drawn-geometry\}
+
+```text
+Parse the geometry into GeoJSON and validate.
+
+Args:
+    geometry (str): GeoJSON string containing at least one feature.
+
+Returns:
+    dict: Dictionary equivalent of GeoJSON.
+```
+
+*`@staticmethod`*
+
+##### `combine_geojson_objects(shapefile_geojson, geometry_geojson)` \{#spatialinputmwv-combine-geojson-objects\}
+
+```text
+Merge two geojson objects.
+Args:
+    shapefile_geojson: geojson object derived from shapefile.
+    geometry_geojson: geojson object derived from drawing.
+
+Returns:
+    object: geojson object.
+```
+
+*`@staticmethod`*
+
+##### `post_process_geojson(geojson)` \{#spatialinputmwv-post-process-geojson\}
+
+```text
+Standardize GeoJSON format and add IDs. Note: OpenLayers is pretty finicky about the format of the geojson for mapping properties to the ol.Feature objects.
+
+Args:
+    geojson: geojson object derived from input (drawing and/or shapefile.
+
+Returns:
+    object: geojson object.
+```
+
+
+##### `store_imagery(self, request, step, in_memory_file)` \{#spatialinputmwv-store-imagery\}
+
+```text
+Store imagery file on the geoserver.  Uses the step name and file name for the store id.
+
+Args:
+    request(HttpRequest): The request.
+    step(ResourceWorkflowStep): The workflow step.
+    in_memory_file(InMemoryUploadedFile): A GeoTiff image that has been uploaded.
+
+Returns:
+    str: The layer_id of the image stored.
+```

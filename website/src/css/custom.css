@@ -1,0 +1,27 @@
+/**
+ * Default Docusaurus Infima overrides for tethysext-atcore.
+ * Keep this minimal; later agents can customize as needed.
+ */
+
+:root {
+  --ifm-color-primary: #2e7da6;
+  --ifm-color-primary-dark: #296f95;
+  --ifm-color-primary-darker: #27698c;
+  --ifm-color-primary-darkest: #205774;
+  --ifm-color-primary-light: #338bb7;
+  --ifm-color-primary-lighter: #3a93bf;
+  --ifm-color-primary-lightest: #57a3c9;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #5fb4d6;
+  --ifm-color-primary-dark: #45a7cf;
+  --ifm-color-primary-darker: #38a0cb;
+  --ifm-color-primary-darkest: #2c84a8;
+  --ifm-color-primary-light: #79c1dd;
+  --ifm-color-primary-lighter: #86c8e0;
+  --ifm-color-primary-lightest: #aedaea;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}

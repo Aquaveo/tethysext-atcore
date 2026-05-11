@@ -1,0 +1,109 @@
+---
+id: controllers.app_users.modify_organization
+title: tethysext.atcore.controllers.app_users.modify_organization
+sidebar_label: modify_organization
+---
+
+# `tethysext.atcore.controllers.app_users.modify_organization`
+
+```text
+********************************************************************************
+* Name: modify_organization
+* Author: nswain
+* Created On: April 03, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModifyOrganization(MultipleResourcesViewMixin)` \{#modifyorganization\}
+
+```text
+Controller for modify_organization page.
+
+GET: Render form for adding/editing user.
+POST: Handle form submission to add/edit a new user.
+```
+#### Methods
+
+
+##### `get(self, request, *args, **kwargs)` \{#modifyorganization-get\}
+
+```text
+Route get requests.
+```
+
+
+##### `post(self, request, *args, **kwargs)` \{#modifyorganization-post\}
+
+```text
+Route post requests.
+```
+
+
+##### `get_license_to_consultant_map(self, request, license_options, consultant_organizations)` \{#modifyorganization-get-license-to-consultant-map\}
+
+```text
+Build map of organizations that can still add clients for each of the license options.
+Args:
+    request(django.request): Django request object
+    license_options(list): List of license tuples e.g.: [('Standard': 'standard'), ('Advanced', 'advanced')]
+    consultant_organizations(list<Organization>): list of consultant organitions.
+Returns:
+    dict: liceses as keys, and a list of organizations that can add clients of that license as values.
+```
+
+
+##### `get_hide_consultant_licenses(self, request)` \{#modifyorganization-get-hide-consultant-licenses\}
+
+```text
+Get a list of licenses that will cause the consultant field to be hidden/disabled.
+Args:
+    request(django.request): Django request object
+
+Returns:
+    list: List of licenses will cause the consultant field to be hidden/disabled.
+```
+
+
+##### `initialize_custom_fields(self, session, request, organization, editing)` \{#modifyorganization-initialize-custom-fields\}
+
+```text
+Hook to allow for initializing custom fields.
+
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    organization(Organization): The organization being created / edited.
+    editing(bool): True if rendering form for editing.
+
+Returns:
+    dict: Template context variables for defining custom fields (i.e. gizmos, initial values, etc.).
+```
+
+
+##### `validate_custom_fields(self, params)` \{#modifyorganization-validate-custom-fields\}
+
+```text
+Hook to allow for validating custom fields.
+
+Args:
+    params: The request.POST object with values submitted by user.
+
+Returns:
+    bool, dict: False if any custom fields invalid, Template context variables for validation feedback (i.e. error messages).
+```
+
+
+##### `handle_organization_finished_processing(self, session, request, request_app_user, organization, editing)` \{#modifyorganization-handle-organization-finished-processing\}
+
+```text
+Hook to allow for post processing after the resource has finished being created or updated.
+Args:
+    session(sqlalchemy.session): open sqlalchemy session.
+    request(django.request): the Django request.
+    request_app_user(AppUser): app user that is making the request.
+    organization(Organization): The organization being created / edited.
+    editing(bool): True if editing, False if creating a new resource.
+```

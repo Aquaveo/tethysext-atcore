@@ -1,0 +1,118 @@
+---
+id: services.app_users.roles
+title: tethysext.atcore.services.app_users.roles
+sidebar_label: roles
+---
+
+# `tethysext.atcore.services.app_users.roles`
+
+```text
+********************************************************************************
+* Name: user_roles.py
+* Author: nswain
+* Created On: April 2, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `Roles` \{#roles\}
+
+```text
+Container and methods for user roles.
+```
+#### Methods
+
+
+##### `__contains__(self, item)` \{#roles-contains\}
+
+> _No description._
+
+
+
+##### `list(self)` \{#roles-list\}
+
+```text
+Get a list of all roles.
+Returns:
+    tuple: All available roles.
+```
+
+
+##### `is_valid(self, role)` \{#roles-is-valid\}
+
+```text
+Validate the given role.
+Args:
+    role(str): valid role.
+Returns:
+    bool: True if valid, else False.
+```
+
+
+##### `get_rank_for(self, role)` \{#roles-get-rank-for\}
+
+```text
+Get the rank for the given role.
+Args:
+    role(str): valid role.
+
+Returns:
+    int: rank value.
+```
+
+
+##### `get_display_name_for(self, role)` \{#roles-get-display-name-for\}
+
+```text
+Get the display name for the given role.
+Args:
+    role(str): valid role.
+
+Returns:
+    str: display name for role.
+```
+
+
+##### `get_assign_permission_for(self, role)` \{#roles-get-assign-permission-for\}
+
+```text
+Get the name of the permission to check for assign rights of the given role.
+Args:
+    role(str): valid role.
+
+Returns:
+    str: name of create permission for the given role.
+```
+
+
+##### `compare(self, left_role, right_role)` \{#roles-compare\}
+
+```text
+Compare the rank of two roles.
+Args:
+    left_role(str): valid role.
+    right_role(str): valid role.
+
+Returns:
+    str: the winning role.
+```
+
+
+##### `get_organization_required_roles(self)` \{#roles-get-organization-required-roles\}
+
+```text
+Users with these roles must be assigned to an organization.
+Returns:
+    list: organization roles.
+```
+
+
+##### `get_no_organization_roles(self)` \{#roles-get-no-organization-roles\}
+
+```text
+Users with these roles cannot be assigned to an organization.
+Returns:
+    list: organization roles.
+```

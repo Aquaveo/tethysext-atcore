@@ -1,0 +1,44 @@
+---
+id: controllers.resource_workflows.results_views.dataset_workflow_results_view
+title: tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view
+sidebar_label: dataset_workflow_results_view
+---
+
+# `tethysext.atcore.controllers.resource_workflows.results_views.dataset_workflow_results_view`
+
+```text
+********************************************************************************
+* Name: dataset_workflow_result_view.py
+* Author: nswain
+* Created On: June 3, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `DatasetWorkflowResultView(WorkflowResultsView)` \{#datasetworkflowresultview\}
+
+```text
+Dataset Result View Controller
+```
+#### Methods
+
+
+##### `get_context(self, request, session, resource, context, workflow_id, step_id, result_id, *args, **kwargs)` \{#datasetworkflowresultview-get-context\}
+
+```text
+Hook to add additional content to context. Avoid removing or modifying items in context already to prevent unexpected behavior.
+
+Args:
+    request (HttpRequest): The request.
+    session (sqlalchemy.Session): the session.
+    resource (Resource): the resource for this request.
+    context (dict): The context dictionary.
+    workflow_id (str): The id of the workflow.
+    step_id (str): The id of the step.
+    result_id (str): The id of the result.
+
+Returns:
+    dict: modified context dictionary.
+```

@@ -1,0 +1,90 @@
+---
+id: models.resource_workflow_steps.spatial_dataset_rws
+title: tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws
+sidebar_label: spatial_dataset_rws
+---
+
+# `tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws`
+
+```text
+********************************************************************************
+* Name: spatial_dataset_rws.py
+* Author: nswain
+* Created On: March 5, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialDatasetRWS(SpatialResourceWorkflowStep)` \{#spatialdatasetrws\}
+
+```text
+Workflow step used for setting dataset attributes on features.
+
+Options:
+    geometry_source(varies): Geometry or parent to retrieve the geometry from. For passing geometry, use GeoJSON string.
+    dataset_title(str): Title of the dataset (e.g.: Hydrograph). Defaults to 'Dataset'.
+    template_dataset(pd.DataFrame): A Pandas dataset to use as a template for the dataset. Default is pd.DataFrame(columns=['X', 'Y'])
+    read_only_columns(tuple,list): Names of columns of the template dataset that are read only. All columns are editable by default.
+    plot_columns(Union[2-tuple, list of 2-tuple]): Two columns to plot. First column given will be plotted on the x axis, the second on the y axis. No plot if not given. Multiple series plotted if a list of 2-tuple given, ex: [(x1, y1), (x2, y2)].
+    max_rows(integer): Maximum number of rows allowed in the dataset. No maximum if not given.
+    empty_rows(integer): The number of empty rows to generate if an no/empty template dataset is given.
+    fixed_rows(bool): Indicates whether the number of rows in the table is fixed.
+    numeric_step(float): The step increment for numeric columns.
+    column_bounds(dict): A dictionary defining min and/or max bounds for numeric columns. For example: {'Column1': {'min': 0, 'max': 100}, 'Column2': {'min': -50}. Defaults to {}.
+```
+#### Methods
+
+*`@property`*
+
+##### `default_options(self)` \{#spatialdatasetrws-default-options\}
+
+> _No description._
+
+
+
+##### `init_parameters(self, *args, **kwargs)` \{#spatialdatasetrws-init-parameters\}
+
+```text
+Initialize the parameters for this step.
+
+Returns:
+    dict<name:dict<help,value,required>>: Dictionary of all parameters with their initial value set.
+```
+
+
+##### `validate(self)` \{#spatialdatasetrws-validate\}
+
+```text
+Validates parameter values of this this step.
+
+Returns:
+    bool: True if data is valid, else Raise exception.
+
+Raises:
+    ValueError
+```
+
+
+##### `to_dict(self)` \{#spatialdatasetrws-to-dict\}
+
+```text
+Serialize ResourceWorkflowStep into a dictionary.
+
+Returns:
+    dict: dictionary representation of ResourceWorkflowStep.
+```
+
+
+##### `to_geojson(self, as_str=False)` \{#spatialdatasetrws-to-geojson\}
+
+```text
+Serialize SpatialResourceWorkflowStep to GeoJSON.
+
+Args:
+    as_str(bool): Returns GeoJSON string if True, otherwise returns dict equivalent.
+
+Returns:
+    str or dict: GeoJSON string or dict equivalent representation of the spatial portions of a SpatialResourceWorkflowStep.
+```

@@ -1,0 +1,118 @@
+---
+id: services.base_spatial_manager
+title: tethysext.atcore.services.base_spatial_manager
+sidebar_label: base_spatial_manager
+---
+
+# `tethysext.atcore.services.base_spatial_manager`
+
+```text
+********************************************************************************
+* Name: spatial_manager
+* Author: nswain
+* Created On: July 06, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `BaseSpatialManager(object)` \{#basespatialmanager\}
+
+```text
+Base class for SpatialManagers.
+```
+#### Methods
+
+
+##### `__init__(self, geoserver_engine)` \{#basespatialmanager-init\}
+
+```text
+Constructor
+
+Args:
+    workspace(str): The workspace to use when creating layers and styles.
+    geoserver_engine(tethys_dataset_services.GeoServerEngine): Tethys geoserver engine.
+```
+
+*`@abstractmethod`*
+
+##### `get_extent_for_project(self, *args, **kwargs)` \{#basespatialmanager-get-extent-for-project\}
+
+```text
+Get extent of the project.
+```
+
+*`@abstractmethod`*
+
+##### `get_projection_units(self, *args, **kwargs)` \{#basespatialmanager-get-projection-units\}
+
+```text
+Get units of the given projection.
+```
+
+*`@abstractmethod`*
+
+##### `get_projection_string(self, *args, **kwargs)` \{#basespatialmanager-get-projection-string\}
+
+```text
+Get the projection string as either wkt or proj4 format.
+```
+
+
+##### `create_workspace(self)` \{#basespatialmanager-create-workspace\}
+
+```text
+Create workspace.
+```
+
+
+##### `get_db_specific_store_id(self, model_db)` \{#basespatialmanager-get-db-specific-store-id\}
+
+```text
+Construct the model database specific store id.
+
+Args:
+    model_db(ModelDatabase): the object representing the model database.
+```
+
+
+##### `get_ows_endpoint(self, public_endpoint=True)` \{#basespatialmanager-get-ows-endpoint\}
+
+```text
+Returns the GeoServer endpoint for OWS services (with trailing slash).
+
+Args:
+    public_endpoint(bool): return with the public endpoint if True.
+```
+
+
+##### `get_wms_endpoint(self, public=True)` \{#basespatialmanager-get-wms-endpoint\}
+
+```text
+Returns the GeoServer endpoint for WMS services (with trailing slash).
+
+Args:
+    public(bool): return with the public endpoint if True.
+```
+
+
+##### `reload(self, ports=None, public_endpoint=True)` \{#basespatialmanager-reload\}
+
+```text
+Reload the in memory catalog of each member of the geoserver cluster.
+```
+
+
+## Functions
+
+
+### `reload_config(public_endpoint=False, reload_config_default=True)` \{#reload-config\}
+
+```text
+Decorator that handles config reload for methods of the SpatialManager class.
+
+Args:
+    public_endpoint(bool): Use public GeoServer endpoint for the reload call.
+    reload_config_default(bool): Default to use if the "reload_config" parameter is not specified.
+```

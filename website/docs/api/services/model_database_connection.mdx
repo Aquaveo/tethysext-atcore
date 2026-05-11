@@ -1,0 +1,58 @@
+---
+id: services.model_database_connection
+title: tethysext.atcore.services.model_database_connection
+sidebar_label: model_database_connection
+---
+
+# `tethysext.atcore.services.model_database_connection`
+
+```text
+********************************************************************************
+* Name: model_database_connection.py
+* Author: nswain
+* Created On: June 05, 2018
+* Copyright: (c) Aquaveo 2018
+********************************************************************************
+```
+## Classes
+
+
+### `ModelDatabaseConnection(ModelDatabaseConnectionBase)` \{#modeldatabaseconnection\}
+
+```text
+Represents a Model Database.
+```
+#### Methods
+
+
+##### `__init__(self, db_url, db_app_namespace=None, db_engine_kwargs=None)` \{#modeldatabaseconnection-init\}
+
+```text
+Constructor
+
+Args:
+    db_url(str): SQLAlchemy url connection string.
+    db_app_namespace(str): namespace prepended by persistent store API if applicable.
+    db_engine_kwargs(dict): Optional arguments to pass to SQLAlchemy create_engine method.
+```
+
+
+##### `get_engine(self)` \{#modeldatabaseconnection-get-engine\}
+
+```text
+Returns an SQLAlchemy engine for the model database.
+```
+
+
+##### `get_session_maker(self)` \{#modeldatabaseconnection-get-session-maker\}
+
+```text
+Returns an SQLAlchemy session maker for the model database.
+```
+
+
+##### `get_session(self)` \{#modeldatabaseconnection-get-session\}
+
+```text
+Returns an SQLAlchemy session for the model database.
+```

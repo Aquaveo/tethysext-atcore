@@ -1,0 +1,169 @@
+---
+id: controllers.resource_workflows.map_workflows.spatial_condor_job_mwv
+title: tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv
+sidebar_label: spatial_condor_job_mwv
+---
+
+# `tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv`
+
+```text
+********************************************************************************
+* Name: spatial_input_mwv.py
+* Author: nswain
+* Created On: January 21, 2019
+* Copyright: (c) Aquaveo 2019
+********************************************************************************
+```
+## Classes
+
+
+### `SpatialCondorJobMWV(MapWorkflowView)` \{#spatialcondorjobmwv\}
+
+```text
+Controller for a map workflow view requiring spatial input (drawing).
+```
+#### Methods
+
+
+##### `process_step_options(self, request, session, context, resource, current_step, previous_step, next_step)` \{#spatialcondorjobmwv-process-step-options\}
+
+```text
+Hook for processing step options (i.e.: modify map or context based on step options).
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    context(dict): Context object for the map view template.
+    resource(Resource): the resource for this request.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+```
+
+
+##### `on_get_step(self, request, session, resource, workflow, current_step, previous_step, next_step, *args, **kwargs)` \{#spatialcondorjobmwv-on-get-step\}
+
+```text
+Hook that is called at the beginning of the get request for a workflow step, before any other controller logic occurs.
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): the session.
+    resource(Resource): the resource for this request.
+    workflow(ResourceWorkflow): The current workflow.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+    previous_step(ResourceWorkflowStep): The previous step.
+    next_step(ResourceWorkflowStep): The next step.
+Returns:
+    None or HttpResponse: If an HttpResponse is returned, render that instead.
+```
+
+
+##### `render_condor_jobs_table(self, request, session, resource, workflow, current_step, previous_step, next_step)` \{#spatialcondorjobmwv-render-condor-jobs-table\}
+
+```text
+Render a condor jobs table showing the status of the current job that is processing.
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): the session.
+    resource(Resource): the resource for this request.
+    workflow(ResourceWorkflow): The current workflow.
+    current_step(ResourceWorkflowStep): The current step to be rendered.
+Returns:
+    HttpResponse: The condor job table view.
+```
+
+
+##### `process_step_data(self, request, session, step, resource, current_url, previous_url, next_url)` \{#spatialcondorjobmwv-process-step-data\}
+
+```text
+Hook for processing user input data coming from the map view. Process form data found in request.POST and request.GET parameters and then return a redirect response to one of the given URLs.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.orm.Session): Session bound to the steps.
+    step(ResourceWorkflowStep): The step to be updated.
+    resource(Resource): The resource for this request.
+    current_url(str): URL to step.
+    previous_url(str): URL to the previous step.
+    next_url(str): URL to the next step.
+
+Returns:
+    HttpResponse: A Django response.
+
+Raises:
+    ValueError: exceptions that occur due to user error, provide helpful message to help user solve issue.
+    RuntimeError: exceptions that require developer attention.
+```
+
+
+##### `run_job(self, request, session, resource, workflow_id, step_id, *args, **kwargs)` \{#spatialcondorjobmwv-run-job\}
+
+```text
+Handle run-job-form requests: prepare and submit the condor job.
+```
+
+
+##### `handle_on_submit_locking(self, request, session, resource, step)` \{#spatialcondorjobmwv-handle-on-submit-locking\}
+
+```text
+Acquires or releases the workflow or resource lock based on the step options.
+
+Args:
+    request(HttpRequest): Django request instance.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    step(ResourceWorkflowStep): the step.
+```
+
+*`@staticmethod`*
+
+##### `get_working_directory(request, app)` \{#spatialcondorjobmwv-get-working-directory\}
+
+```text
+Derive the working directory for the workflow.
+
+Args:
+     request(HttpRequest): Django request instance.
+     app(TethysAppBase): App class or instance.
+
+Returns:
+    str: Path to working directory for the workflow.
+```
+
+*`@staticmethod`*
+
+##### `serialize_parameters(step)` \{#spatialcondorjobmwv-serialize-parameters\}
+
+```text
+Serialize parameters from previous steps into a file for sending with the workflow.
+
+Args:
+    step(ResourceWorkflowStep): The current step.
+
+Returns:
+    str: path to the file containing serialized parameters.
+```
+
+
+##### `process_lock_options_on_init(self, request, session, resource, step)` \{#spatialcondorjobmwv-process-lock-options-on-init\}
+
+```text
+Process lock options when the view initializes.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    step(ResourceWorkflowStep): the step.
+```
+
+
+##### `process_lock_options_after_submission(self, request, session, resource, step)` \{#spatialcondorjobmwv-process-lock-options-after-submission\}
+
+```text
+Process lock options after the step has been submitted and processed.
+
+Args:
+    request(HttpRequest): The request.
+    session(sqlalchemy.Session): Session bound to the resource, workflow, and step instances.
+    resource(Resource): the resource this workflow applies to.
+    step(ResourceWorkflowStep): the step.
+```
