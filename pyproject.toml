@@ -31,3 +31,6 @@ exclude = ["ez_setup", "examples", "docker", ".github", "docs", "helm", "tethyse
     "public/**/*",
     "resources/**/*",
 ]
+
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
