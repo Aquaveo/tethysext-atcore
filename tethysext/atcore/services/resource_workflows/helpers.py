@@ -1,19 +1,48 @@
 import argparse
 
+from sqlalchemy.exc import OperationalError, PendingRollbackError
+from sqlalchemy.orm import sessionmaker
+
 
 def set_step_status(resource_db_session, step, status):
     """
     Sets the status on the provided step to the provided status.
+
+    Recovers once from a dead connection (e.g., the server terminated the
+    backend, the network dropped) by invalidating the bad connection,
+    opening a fresh session from the same engine, and retrying the write.
+
     Args:
         resource_db_session(sqlalchemy.orm.Session): Session bound to the step.
         step(ResourceWorkflowStep): The step to modify
         status(str): The status to set.
     """
-    resource_db_session.refresh(step)
+    try:
+        _append_status(resource_db_session, step, status)
+        return
+    except (OperationalError, PendingRollbackError):
+        pass
+
+    # Invalidate the dead connection so the pool evicts it, then retry once
+    # on a brand-new session from the same engine.
+    resource_db_session.invalidate()
+    engine = resource_db_session.get_bind()
+    step_cls = type(step)
+    step_id = step.id
+    fresh_session = sessionmaker(bind=engine)()
+    try:
+        fresh_step = fresh_session.query(step_cls).get(step_id)
+        _append_status(fresh_session, fresh_step, status)
+    finally:
+        fresh_session.close()
+
+
+def _append_status(session, step, status):
+    session.refresh(step)
     step_statuses = step.get_attribute('condor_job_statuses')
     step_statuses.append(status)
     step.set_attribute('condor_job_statuses', step_statuses)
-    resource_db_session.commit()
+    session.commit()
 
 
 def parse_workflow_step_args():
