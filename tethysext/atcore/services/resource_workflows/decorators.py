@@ -187,7 +187,22 @@ def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
 
                 except Exception as e:
                     if step and resource_db_session:
-                        set_step_status(resource_db_session, step, step.STATUS_FAILED)
+                        try:
+                            set_step_status(resource_db_session, step, step.STATUS_FAILED)
+                        except Exception:
+                            # Status write through the helper still failed; try one
+                            # more time on a brand-new session from the engine.
+                            try:
+                                step_cls = type(step)
+                                step_id = step.id
+                                fallback_session = sessionmaker(bind=resource_db_engine)()
+                                try:
+                                    fallback_step = fallback_session.query(step_cls).get(step_id)
+                                    set_step_status(fallback_session, fallback_step, step.STATUS_FAILED)
+                                finally:
+                                    fallback_session.close()
+                            except Exception:
+                                traceback.print_exc(file=sys.stderr)
                     sys.stderr.write('Error processing {0}'.format(args.resource_workflow_step_id))
                     traceback.print_exc(file=sys.stderr)
                     sys.stderr.write(repr(e))
