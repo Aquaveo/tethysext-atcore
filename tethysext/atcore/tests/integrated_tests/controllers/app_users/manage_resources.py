@@ -499,3 +499,93 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
 
         ManageResources().perform_custom_delete_operations(session, mock_request, self.resource)
+
+    @mock.patch('tethys_apps.utilities.get_active_app')
+    @mock.patch.object(ManageResources, '_handle_archive')
+    def test_delete_archive(self, mock_archive, __):
+        mock_request = mock.MagicMock()
+        mock_request.GET.get.side_effect = ['archive', '001']
+
+        manage_resources = ManageResources()
+        manage_resources.delete(mock_request)
+
+        mock_archive.assert_called_with(mock_request, '001')
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_can_archive_resource(self, mock_has_permission):
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+        mock_resource = mock.MagicMock()
+        mock_resource.children = []
+
+        manage_resources = ManageResources()
+        result = manage_resources.can_archive_resource('session', mock_request, mock_resource)
+
+        mock_has_permission.assert_called_with(mock_request, 'delete_resource')
+        self.assertTrue(result)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_can_archive_resource_with_children(self, mock_has_permission):
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+        mock_has_permission.return_value = True
+        mock_resource = mock.MagicMock()
+        mock_resource.children = [mock.MagicMock()]
+
+        manage_resources = ManageResources()
+        result = manage_resources.can_archive_resource('session', mock_request, mock_resource)
+
+        self.assertFalse(result)
+
+    @mock.patch('tethys_apps.utilities.get_active_app')
+    @mock.patch.object(ManageResources, 'perform_custom_archive_operations')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
+    def test_handle_archive(self, _, mock_get_session, mock_custom_archive, __):
+        session = mock_get_session()()
+        mock_resource = mock.MagicMock()
+        mock_resource.children = []
+        session.query().get.return_value = mock_resource
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+
+        manage_resources = ManageResources()
+        ret = manage_resources._handle_archive(mock_request, '001')
+
+        mock_custom_archive.assert_called_with(session, mock_request, mock_resource)
+        mock_resource.set_status.assert_called_with(mock_resource.ROOT_STATUS_KEY, mock_resource.STATUS_ARCHIVED)
+        session.commit.assert_called()
+        session.close.assert_called()
+        self.assertIn('{"success": true}', ret.content.decode('utf-8'))
+
+    @mock.patch('tethys_apps.utilities.get_active_app')
+    @mock.patch.object(ManageResources, 'perform_custom_archive_operations')
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    @mock.patch.object(ResourceViewMixin, 'get_resource_model')
+    def test_handle_archive_with_children(self, _, mock_get_session, mock_custom_archive, __):
+        session = mock_get_session()()
+        mock_resource = mock.MagicMock()
+        mock_resource.children = [mock.MagicMock()]
+        session.query().get.return_value = mock_resource
+
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+
+        manage_resources = ManageResources()
+        ret = manage_resources._handle_archive(mock_request, '001')
+
+        mock_custom_archive.assert_not_called()
+        mock_resource.set_status.assert_not_called()
+        session.commit.assert_not_called()
+        session.close.assert_called()
+        response_dict = json.loads(ret.content.decode('utf-8'))
+        self.assertFalse(response_dict['success'])
+        self.assertIn('child resources', response_dict['error'])
+
+    @mock.patch.object(AppUsersViewMixin, 'get_sessionmaker')
+    def test_perform_custom_archive_operations(self, mock_get_session):
+        session = mock_get_session()()
+        mock_request = self.request_factory.get('/foo/bar/')
+
+        ManageResources().perform_custom_archive_operations(session, mock_request, self.resource)

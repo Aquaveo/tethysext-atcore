@@ -106,6 +106,18 @@ class ResourceWorkflowsTab(ResourceTab):
         """  # noqa: E501
         return None
 
+    def can_create_workflow(self, resource):
+        """
+        Hook to determine if new workflow creation is allowed for the given resource.
+
+        Args:
+            resource: The resource.
+
+        Returns:
+            bool: True if new workflows can be created, False otherwise.
+        """
+        return True
+
     @classmethod
     def get_tabbed_view_context(cls, request, context):
         """
@@ -197,7 +209,7 @@ class ResourceWorkflowsTab(ResourceTab):
                 'can_delete': has_permission(request, 'delete_any_workflow') or is_creator
             })
 
-        context.update({'workflow_cards': workflow_cards})
+        context.update({'workflow_cards': workflow_cards, 'can_create_workflows': self.can_create_workflow(resource)})
         return context
 
     def post(self, request, resource_id, *args, **kwargs):
@@ -227,6 +239,12 @@ class ResourceWorkflowsTab(ResourceTab):
             request_app_user = _AppUser.get_app_user_from_request(request, session)
 
             try:
+                _Resource = self.get_resource_model()
+                resource = session.query(_Resource).get(resource_id)
+                if not self.can_create_workflow(resource):
+                    messages.error(request, 'Unable to create new workflow: workflow creation is not allowed for this resource.')  # noqa: E501
+                    return redirect(request.path)
+
                 WorkflowModel = all_workflow_types[workflow_type]
                 workflow = WorkflowModel.new(
                     app=self._app,

@@ -146,6 +146,27 @@
       </div>
     </div>
   {% endif %}
+  {% if load_archive_modal %}
+    {% csrf_token %}
+    <!-- Archive Modal -->
+    <div class="modal fade" id="archive-modal" tabindex="-1" role="dialog" aria-labelledby="archive-modal-label">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="archive-modal-label">Archive {{ type_singular }}</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to archive this {{ type_singular|lower }}? It will no longer appear in this list.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a id="modal-archive-button" class="btn btn-warning btn-archive-modal" href="javascript:void(0);" data-archive-type="resources">Archive</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
   <!-- New Group Modal -->
   <div class="modal fade" id="new-group-modal" tabindex="-1" role="dialog" aria-labelledby="new-group-modal-label">
     <div class="modal-dialog" role="document">
@@ -197,6 +218,7 @@
   {{ block.super }}
   <script src="{% static 'atcore/js/csrf.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/delete_row.js' %}"></script>
+  <script src="{% static 'atcore/js/archive_row.js' %}"></script>
   <script src="{% static 'atcore/app_users/js/sort.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/resources/group_resources.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/table_row_collapse.js' %}" type="text/javascript"></script>

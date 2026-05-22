@@ -68,12 +68,19 @@
   {% block buttons_td %}
   <td class="btn-td">
     <div class="btn-toolbar float-end">
-      {% if resource.editable %}
-        <a class="btn btn-outline-secondary btn-edit btn-flat" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="bi bi-pencil-square"></i></a>
-      {% endif %}
-      {% if resource.deletable %}
-        <a class="btn btn-outline-secondary btn-delete-manage btn-delete btn-flat" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i class="bi bi-trash"></i></a>
-      {% endif %}
+      <div class="btn-group">
+        {% if resource.editable %}
+          <a class="btn btn-outline-secondary border-0 btn-edit" href="{% url base_resource_href|add:'_edit_resource' resource.id %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="bi bi-pencil-square"></i></a>
+        {% endif %}
+        {% if resource.deletable %}
+          <a class="btn btn-outline-secondary border-0 btn-delete-manage btn-delete" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i class="bi bi-trash"></i></a>
+        {% endif %}
+        {% if resource.archivable %}
+          <a class="btn btn-outline-secondary border-0 btn-archive-manage" href="javascript:void(0);" data-id="{{ resource.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Archive"><i class="bi bi-archive"></i></a>
+        {% elif load_archive_modal %}
+          <a class="btn btn-outline-secondary border-0 invisible" tabindex="-1" aria-hidden="true"><i class="bi bi-archive"></i></a>
+        {% endif %}
+      </div>
       {% if resource.action == 'processing' %}
         <a class="btn btn-s btn-warning btn-flat btn-action btn-resource-processing" href="{{ resource.action_href }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ resource.action_title }}"><i class="bi {{ resource.action_icon }}"></i></a>
       {% elif resource.action == 'error' %}
