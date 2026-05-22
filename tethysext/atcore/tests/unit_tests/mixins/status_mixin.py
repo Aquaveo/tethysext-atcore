@@ -22,7 +22,7 @@ class StatusMixinTests(unittest.TestCase):
             StatusMixin.STATUS_OK, StatusMixin.STATUS_WORKING, StatusMixin.STATUS_UNKNOWN,
             StatusMixin.STATUS_CONTINUE, StatusMixin.STATUS_UNDER_REVIEW, StatusMixin.STATUS_SUBMITTED,
             StatusMixin.STATUS_APPROVED, StatusMixin.STATUS_REJECTED, StatusMixin.STATUS_CHANGES_REQUESTED,
-            StatusMixin.STATUS_DIRTY, StatusMixin.STATUS_REVIEWED
+            StatusMixin.STATUS_DIRTY, StatusMixin.STATUS_REVIEWED, StatusMixin.STATUS_ARCHIVED
         ]
 
     def tearDown(self):
@@ -102,3 +102,13 @@ class StatusMixinTests(unittest.TestCase):
         ret = self.instance.get_status()
 
         self.assertEqual(StatusMixin.STATUS_OK, ret)
+
+    def test_status_archived_in_valid_statuses(self):
+        self.assertIn(StatusMixin.STATUS_ARCHIVED, ClassWithStatus.valid_statuses())
+
+    def test_status_archived_in_hidden_statuses(self):
+        self.assertIn(StatusMixin.STATUS_ARCHIVED, StatusMixin.HIDDEN_STATUSES)
+
+    def test_set_status_archived(self):
+        self.instance.set_status(StatusMixin.ROOT_STATUS_KEY, StatusMixin.STATUS_ARCHIVED)
+        self.assertEqual(StatusMixin.STATUS_ARCHIVED, self.instance.get_status(StatusMixin.ROOT_STATUS_KEY))

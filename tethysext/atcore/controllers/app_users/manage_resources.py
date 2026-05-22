@@ -42,6 +42,7 @@ class ManageResources(ResourceViewMixin):
     enable_groups = False
     collapse_groups = False
     highlight_groups = False
+    show_archive_button = False
 
     ACTION_LAUNCH = 'launch'
     ACTION_PROCESSING = 'processing'
@@ -73,6 +74,9 @@ class ManageResources(ResourceViewMixin):
 
         if action == 'delete':
             return self._handle_delete(request, user_id)
+
+        if action == 'archive':
+            return self._handle_archive(request, user_id)
 
         return JsonResponse({'success': False, 'error': 'Invalid action: {}'.format(action)})
 
@@ -165,6 +169,9 @@ class ManageResources(ResourceViewMixin):
                 resource_card['slug'] = resource.SLUG
                 resource_card['editable'] = self.can_edit_resource(session, request, resource)
                 resource_card['deletable'] = self.can_delete_resource(session, request, resource)
+                resource_card['archivable'] = self.show_archive_button and self.can_archive_resource(
+                    session, request, resource
+                )
                 resource_card['organizations'] = resource.organizations
                 resource_card['attributes'] = resource.attributes
                 resource_card['attributes']['id'] = str(resource.id)
@@ -233,6 +240,7 @@ class ManageResources(ResourceViewMixin):
             'show_new_button': has_permission(request, 'create_resource'),
             'show_attributes': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),
+            'load_archive_modal': self.show_archive_button and has_permission(request, 'delete_resource'),
             'show_links_to_organizations': has_permission(request, 'edit_organizations'),
             'show_users_link': has_permission(request, 'modify_users'),
             'show_resources_link': has_permission(request, 'view_resources'),
@@ -314,6 +322,36 @@ class ManageResources(ResourceViewMixin):
                 log.exception(f'Unable to perform custom delete operations on resource {resource}.')
             session.delete(resource)
             session.commit()
+        except Exception as e:
+            json_response = {'success': False,
+                             'error': repr(e)}
+
+        session.close()
+        return JsonResponse(json_response)
+
+    @permission_required('delete_resource')
+    def _handle_archive(self, request, resource_id):
+        """
+        Handle archive resource requests.
+        """
+        _Resource = self.get_resource_model()
+        make_session = self.get_sessionmaker()
+
+        json_response = {'success': True}
+        session = make_session()
+
+        try:
+            resource = session.query(_Resource).get(resource_id)
+            if len(resource.children) > 0:
+                json_response = {'success': False,
+                                 'error': 'Cannot archive a resource that has child resources.'}
+            else:
+                try:
+                    self.perform_custom_archive_operations(session, request, resource)
+                except Exception:  # noqa: E722
+                    log.exception(f'Unable to perform custom archive operations on resource {resource}.')
+                resource.set_status(resource.ROOT_STATUS_KEY, resource.STATUS_ARCHIVED)
+                session.commit()
         except Exception as e:
             json_response = {'success': False,
                              'error': repr(e)}
@@ -412,6 +450,19 @@ class ManageResources(ResourceViewMixin):
         """  # noqa: E501
         pass
 
+    def perform_custom_archive_operations(self, session, request, resource):
+        """
+        Hook to perform custom operations prior to the resource being archived.
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.Request): the DELETE request object.
+            resource(Resource): the sqlalchemy Resource instance to be archived.
+
+        Raises:
+            Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
+        """  # noqa: E501
+        pass
+
     def can_edit_resource(self, session, request, resource):
         """
         Hook into resource_card.editable attribute to allow for more than permissions-based check.
@@ -437,3 +488,17 @@ class ManageResources(ResourceViewMixin):
             bool: the delete button will be displayed for this resource if True.
         """
         return has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
+
+    def can_archive_resource(self, session, request, resource):
+        """
+        Hook into resource_card.archivable attribute to allow for more than permissions-based check.
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.Request): the request object.
+            resource(Resource): current resource.
+
+        Returns:
+            bool: the archive button will be displayed for this resource if True.
+        """
+        can_delete = has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
+        return can_delete and len(resource.children) == 0

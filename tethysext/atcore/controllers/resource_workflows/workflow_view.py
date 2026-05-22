@@ -389,6 +389,24 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
         """
         return get_style_for_status(status)
 
+    def is_workflow_read_only(self, resource, workflow, request):
+        """
+        Hook to determine if the workflow should be rendered read-only.
+
+        The default implementation returns True when the resource is archived,
+        enforcing read-only for all archived resources without requiring any
+        app-level override.
+
+        Args:
+            resource: The resource the workflow belongs to.
+            workflow (ResourceWorkflow): The workflow.
+            request (HttpRequest): The request.
+
+        Returns:
+            bool: True if the workflow should be read-only.
+        """
+        return resource.get_status(resource.ROOT_STATUS_KEY) == resource.STATUS_ARCHIVED
+
     def workflow_locked_for_request_user(self, request, workflow):
         """
         Checks if the workflow is locked for the request user--either directly or via the resource being locked.
@@ -401,7 +419,8 @@ class ResourceWorkflowView(ResourceView, WorkflowViewMixin):
             bool: True if the workflow is locked.
         """
         is_locked = workflow.is_locked_for_request_user(request) or \
-            workflow.resource.is_locked_for_request_user(request)
+            workflow.resource.is_locked_for_request_user(request) or \
+            self.is_workflow_read_only(workflow.resource, workflow, request)
         return is_locked
 
     def user_has_active_role(self, request, step):

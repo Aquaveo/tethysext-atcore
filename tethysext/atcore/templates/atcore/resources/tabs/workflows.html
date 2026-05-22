@@ -1,4 +1,5 @@
 {% load static %}
+{% if can_create_workflows %}
 <a class="btn btn-fab btn-primary"
    data-tooltip="tooltip"
    data-bs-placement="left"
@@ -7,6 +8,7 @@
    data-bs-target="#new-workflow-modal">
   <i class="bi bi-plus-lg"></i>
 </a>
+{% endif %}
 
 {% if workflow_cards %}
 <div class="row">
@@ -58,7 +60,7 @@
 </div>
 {% else %}
 <div class="w-center-parent">
-  <h2 class="w-centered">Press the "+" button to begin a new workflow.</h2>
+  <h2 class="w-centered">{% if can_create_workflows %}Press the "+" button to begin a new workflow.{% else %}No workflows have been created.{% endif %}</h2>
 </div>
 {% endif %}
 

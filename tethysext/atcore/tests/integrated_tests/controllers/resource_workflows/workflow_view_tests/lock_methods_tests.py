@@ -832,3 +832,32 @@ class WorkflowViewLockMethodsTests(SqlAlchemyTestCase):
 
         self.assertIsNone(self.workflow.user_lock)
         self.assert_log_successfully_released(mock_log)
+
+    def test_is_workflow_read_only_archived_resource(self):
+        """Test that is_workflow_read_only returns True when the resource is archived."""
+        self.resource.set_status(self.resource.ROOT_STATUS_KEY, self.resource.STATUS_ARCHIVED)
+        self.session.commit()
+
+        ret = ResourceWorkflowView().is_workflow_read_only(self.resource, self.workflow, self.request)
+
+        self.assertTrue(ret)
+
+    def test_is_workflow_read_only_active_resource(self):
+        """Test that is_workflow_read_only returns False when the resource is not archived."""
+        ret = ResourceWorkflowView().is_workflow_read_only(self.resource, self.workflow, self.request)
+
+        self.assertFalse(ret)
+
+    @mock.patch('tethys_sdk.permissions.has_permission', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.has_permission', return_value=False)
+    def test_workflow_locked_for_request_user_archived_resource(self, _, __):
+        """Test that workflow_locked_for_request_user returns True when the resource is archived."""
+        self.request.user = self.django_user
+        self.resource._user_lock = None
+        self.workflow._user_lock = None
+        self.resource.set_status(self.resource.ROOT_STATUS_KEY, self.resource.STATUS_ARCHIVED)
+        self.session.commit()
+
+        ret = ResourceWorkflowView().workflow_locked_for_request_user(self.request, self.workflow)
+
+        self.assertTrue(ret)
