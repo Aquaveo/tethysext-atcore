@@ -304,6 +304,13 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Add parameter file to workflow input files
         condor_job_manager.input_files.append(params_file_path)
 
+        # Delete the previous condor job before submitting a new one to avoid orphaned/stuck jobs
+        previous_condor_job_id = step.get_attribute('condor_job_id')
+        if previous_condor_job_id:
+            previous_job = app.get_job_manager().get_job(job_id=previous_condor_job_id)
+            if previous_job:
+                previous_job.delete()
+
         # Prepare the job
         job_id = condor_job_manager.prepare()
 
