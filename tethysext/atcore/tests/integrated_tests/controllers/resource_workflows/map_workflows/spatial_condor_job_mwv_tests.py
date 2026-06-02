@@ -385,7 +385,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
             spec=MapManagerBase,
             spatial_manager=mock.MagicMock(gs_engine=mock.MagicMock())
         )
-        mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
+        working_dir = os.path.join(self.working_dir_path, 'working_dir')
+        mock_get_working_dir.return_value = working_dir
         mock_prepare.return_value = self.workflow.id
 
         session = mock.MagicMock()
@@ -402,10 +403,12 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
             'attributes': {'executable': 'run.py', 'transfer_output_files': []}
         }]
 
-        ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
+        with mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.os.chdir') as mock_chdir:  # noqa: E501
+            ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
 
         mock_job_manager.get_job.assert_called_once_with(job_id=previous_job_id)
         mock_previous_job.delete.assert_called_once()
+        mock_chdir.assert_called_once_with(working_dir)
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
@@ -489,7 +492,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
             'attributes': {'executable': 'run.py', 'transfer_output_files': []}
         }]
 
-        ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
+        with mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.os.chdir'):  # noqa: E501
+            ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
 
         mock_job_manager.get_job.assert_called_once_with(job_id=previous_job_id)
         self.assertIsInstance(ret, HttpResponseRedirect)

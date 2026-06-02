@@ -293,6 +293,18 @@ class SpatialCondorJobMWV(MapWorkflowView):
             workflow_kwargs=workflow_kwargs,
         )
 
+        # Delete the previous condor job first so its pre_delete signal doesn't remove the new workspace
+        previous_condor_job_id = step.get_attribute('condor_job_id')
+        if previous_condor_job_id:
+            previous_job = app.get_job_manager().get_job(job_id=previous_condor_job_id)
+            if previous_job:
+                previous_job.delete()
+            # Restore CWD to working_directory in case condorpy's @set_cwd left it pointing
+            # to the now-deleted workspace (condor_workflow_pre_delete calls close_remote which
+            # uses @set_cwd; if that leaves CWD in the old workspace, os.getcwd() will fail
+            # when condorpy tries to submit the new job)
+            os.chdir(working_directory)
+
         # Serialize parameters from all previous steps into json
         serialized_params = self.serialize_parameters(step)
 
@@ -303,13 +315,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
 
         # Add parameter file to workflow input files
         condor_job_manager.input_files.append(params_file_path)
-
-        # Delete the previous condor job before submitting a new one to avoid orphaned/stuck jobs
-        previous_condor_job_id = step.get_attribute('condor_job_id')
-        if previous_condor_job_id:
-            previous_job = app.get_job_manager().get_job(job_id=previous_condor_job_id)
-            if previous_job:
-                previous_job.delete()
 
         # Prepare the job
         job_id = condor_job_manager.prepare()
