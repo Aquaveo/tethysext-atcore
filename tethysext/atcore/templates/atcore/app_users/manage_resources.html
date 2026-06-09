@@ -2,10 +2,40 @@
 
 {% load static tethys_gizmos %}
 
+{% block import_gizmos %}
+  {{ block.super }}
+  {% if use_datatable %}{% import_gizmo_dependency datatable_view %}{% endif %}
+{% endblock %}
+
 {% block app_content %}
   {% with tethys_app.namespace|add:':'|add:resource_slug as base_resource_href %}
     {% block buttons %}
     <div class="btn-toolbar top-action-btns float-end" role="toolbar" aria-label="Manage resources toolbar">
+      {% if enable_datatable %}
+        {% if use_datatable %}
+        {# Client-side: input wired to the DataTable in JS (no page reload). #}
+        <div class="me-2 d-flex align-items-center" role="search">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="resource-search-input" placeholder="Search…" aria-label="Search {{ type_plural|lower }}">
+            <a class="btn btn-outline-secondary d-none" id="resource-search-clear" href="javascript:void(0);" title="Clear search"><i class="bi bi-x-lg"></i></a>
+          </div>
+        </div>
+        {% else %}
+        {# Server-side (grouped): full-page-reload search form. #}
+        <form class="me-2 d-flex align-items-center" method="get" role="search">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Search… (press Enter)" aria-label="Search {{ type_plural|lower }}">
+            {% if search %}
+            <a class="btn btn-outline-secondary" href="?sort_by={{ pagination_info.sort_by|urlencode }}&show={{ pagination_info.show }}" title="Clear search"><i class="bi bi-x-lg"></i></a>
+            {% endif %}
+          </div>
+          <input type="hidden" name="sort_by" value="{{ pagination_info.sort_by }}">
+          <input type="hidden" name="show" value="{{ pagination_info.show }}">
+        </form>
+        {% endif %}
+      {% endif %}
       {% if show_group_buttons and resources %}
       <div class="btn-group me-1">
         <a class="btn btn-outline-secondary manage-action-btn" role="button" href="javascript:void(0);" id="btn-expand-all" data-ts-toggle="table-row-expand-all" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All"><i class="bi bi-chevron-expand"></i></a>
@@ -26,11 +56,30 @@
     <h1>{{ page_title }}</h1>
 
     {% if resources %}
+      {% if not use_datatable %}
       {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header"  %}
+      {% endif %}
       <div class="module-content">
-        <div id="resources-table" class="table-responsive table-sortable">
+        <div id="resources-table" class="table-responsive{% if not use_datatable %} table-sortable{% endif %}">
           <table class="table table-hover table-bottom-border" id="resource_table">
             <thead>
+              {% if use_datatable %}
+              {# SELECT #}
+              {% if show_select_column %}
+              <th class="no-sort"></th>
+              {% endif %}
+              <th>Name</th>
+              <th>Description</th>
+              {% if show_organizations_column %}
+              <th class="no-sort">Organizations</th>
+              {% endif %}
+              <th>Created By</th>
+              <th>Date Created</th>
+              {% if show_attributes %}
+              <th>Attributes</th>
+              {% endif %}
+              <th class="no-sort"></th>
+              {% else %}
               {# SELECT #}
               {% if show_select_column %}
               <th></th>
@@ -87,6 +136,7 @@
 
               {# BUTTONS HEADER #}
               <th></th>
+              {% endif %}
             </thead>
             <tbody>
               {# RESOURCE ROWS #}
@@ -104,9 +154,18 @@
           </table>
         </div>
       </div>
+      {% if not use_datatable %}
       {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
+      {% endif %}
     {% else %}
-      {% if show_new_button %}
+      {% if search and not use_datatable %}
+        <div class="new-resource center-parent">
+          <div class="centered">
+            <h4>No {{ type_plural }} match “{{ search }}”</h4>
+            <a class="btn btn-outline-secondary" href="?sort_by={{ pagination_info.sort_by|urlencode }}&show={{ pagination_info.show }}">Clear search</a>
+          </div>
+        </div>
+      {% elif show_new_button %}
         {% block add_new_resource%}
           <div class="new-resource center-parent">
             <div class="centered">
@@ -219,7 +278,11 @@
   <script src="{% static 'atcore/js/csrf.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/delete_row.js' %}"></script>
   <script src="{% static 'atcore/js/archive_row.js' %}"></script>
+  {% if use_datatable %}
+  <script src="{% static 'atcore/app_users/js/manage_resources_datatable.js' %}" type="text/javascript"></script>
+  {% else %}
   <script src="{% static 'atcore/app_users/js/sort.js' %}" type="text/javascript"></script>
+  {% endif %}
   <script src="{% static 'atcore/resources/group_resources.js' %}" type="text/javascript"></script>
   <script src="{% static 'atcore/js/table_row_collapse.js' %}" type="text/javascript"></script>
 {% endblock %}
