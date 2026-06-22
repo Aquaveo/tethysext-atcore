@@ -53,7 +53,7 @@
   {% endif %}
 
   {# DATE CREATED VALUE #}
-  <td class="date_created" data-id="{{ resource.date_created }}" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
+  <td class="date_created" data-id="{{ resource.date_created }}" data-order="{{ resource.date_created|date:'U' }}" onclick="window.document.location='{{ resource.info_href }}';" style="cursor: pointer;">
     {{ resource.date_created }} UTC
   </td>
 

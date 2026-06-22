@@ -27,6 +27,9 @@ class ManageOrganizations(MultipleResourcesViewMixin):
     template_name = 'atcore/app_users/manage_organizations.html'
     base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'delete']
+    # Show a client-side search box that instantly filters the organization cards by name.
+    # On by default; set False in a subclass to hide it.
+    enable_search = True
 
     def get(self, request, *args, **kwargs):
         """
@@ -137,7 +140,9 @@ class ManageOrganizations(MultipleResourcesViewMixin):
         context = self.get_base_context(request)
         context.update({
             'page_title': _Organization.DISPLAY_TYPE_PLURAL,
+            'type_singular': _Organization.DISPLAY_TYPE_SINGULAR,
             'base_template': self.base_template,
+            'enable_search': self.enable_search,
             'organization_cards': organization_cards,
             'show_new_button': can_create_organizations,
             'load_delete_modal': load_delete_modal,

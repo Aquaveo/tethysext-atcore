@@ -31,6 +31,10 @@ class ManageUsers(AppUsersViewMixin):
     template_name = 'atcore/app_users/manage_users.html'
     base_template = 'atcore/app_users/base.html'
     http_method_names = ['get', 'delete']
+    # Render the user list as a client-side jQuery DataTable (search box, sortable headers,
+    # page-size selector). On by default; set False in a subclass to fall back to the plain
+    # server-paginated table.
+    enable_datatable = True
 
     def get(self, request, *args, **kwargs):
         """
@@ -131,11 +135,19 @@ class ManageUsers(AppUsersViewMixin):
             result_name='users'
         )
 
+        # The DataTable paginates/searches in the browser, so render every row rather than a
+        # single server-side page.
+        use_datatable = self.enable_datatable
+        if use_datatable:
+            paginated_user_cards = user_cards
+
         context = self.get_base_context(request)
 
         context.update({
             'page_title': self.page_title,
             'base_template': self.base_template,
+            'enable_datatable': self.enable_datatable,
+            'use_datatable': use_datatable,
             'user_cards': paginated_user_cards,
             'show_new_button': has_permission(request, 'modify_users'),
             'show_action_buttons': has_permission(request, 'modify_users'),

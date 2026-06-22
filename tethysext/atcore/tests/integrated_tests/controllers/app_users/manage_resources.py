@@ -120,7 +120,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
 
         mock_request = mock.MagicMock(spec=WSGIRequest)
         mock_request.user = self.django_user
-        mock_request.GET.get.side_effect = [1, '15', 'date_created:']
+        mock_request.GET.get.side_effect = [1, '15', 'date_created:', '']
 
         mock_get_resources.return_value = [self.resource]
 
@@ -210,7 +210,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
 
         mock_request = mock.MagicMock(spec=WSGIRequest)
         mock_request.user = self.django_user
-        mock_request.GET.get.side_effect = [1, None, None]
+        mock_request.GET.get.side_effect = [1, None, None, '']
 
         mock_get_resources.return_value = [self.resource]
 
@@ -273,6 +273,67 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         self.assertEqual('atcore/app_users/base.html', render_args[0][0][2]['base_template'])
         self.assertTrue(render_args[0][0][2]['show_new_button'])
         self.assertTrue(render_args[0][0][2]['show_users_link'])
+
+    def test_resource_card_matches_search(self):
+        controller = MockManageResources()
+        card = {'name': 'Red Rock City', 'description': 'demo project', 'created_by': 'jjohnson'}
+        self.assertTrue(controller.resource_card_matches_search(card, 'red rock'))
+        self.assertTrue(controller.resource_card_matches_search(card, 'demo'))
+        self.assertTrue(controller.resource_card_matches_search(card, 'jjohnson'))
+        self.assertFalse(controller.resource_card_matches_search(card, 'nomatch'))
+
+    def test_resource_card_matches_search_handles_none_fields(self):
+        controller = MockManageResources()
+        card = {'name': None, 'description': None, 'created_by': None}
+        self.assertFalse(controller.resource_card_matches_search(card, 'anything'))
+
+    def test_filter_resource_cards_flat(self):
+        controller = MockManageResources()
+        cards = [
+            {'name': 'Alpha', 'description': '', 'created_by': '', 'children': []},
+            {'name': 'Beta', 'description': '', 'created_by': '', 'children': []},
+        ]
+        result = controller.filter_resource_cards(cards, 'alpha')
+        self.assertEqual(1, len(result))
+        self.assertEqual('Alpha', result[0]['name'])
+
+    def test_filter_resource_cards_keeps_parent_of_matching_child(self):
+        controller = MockManageResources()
+        cards = [{
+            'name': 'Parent', 'description': '', 'created_by': '',
+            'children': [
+                {'name': 'Matching Child', 'description': '', 'created_by': '', 'children': []},
+                {'name': 'Other Child', 'description': '', 'created_by': '', 'children': []},
+            ],
+        }]
+        result = controller.filter_resource_cards(cards, 'matching')
+        self.assertEqual(1, len(result))
+        self.assertEqual('Parent', result[0]['name'])
+        # The matching ancestor is kept, but its non-matching sibling subtree is pruned.
+        self.assertEqual(1, len(result[0]['children']))
+        self.assertEqual('Matching Child', result[0]['children'][0]['name'])
+
+    def test_filter_resource_cards_matching_parent_keeps_all_children(self):
+        controller = MockManageResources()
+        cards = [{
+            'name': 'Matching Parent', 'description': '', 'created_by': '',
+            'children': [
+                {'name': 'Child A', 'description': '', 'created_by': '', 'children': []},
+                {'name': 'Child B', 'description': '', 'created_by': '', 'children': []},
+            ],
+        }]
+        result = controller.filter_resource_cards(cards, 'matching')
+        self.assertEqual(1, len(result))
+        self.assertEqual(2, len(result[0]['children']))
+
+    def test_filter_resource_cards_prunes_non_matching_branch(self):
+        controller = MockManageResources()
+        cards = [{
+            'name': 'Parent', 'description': '', 'created_by': '',
+            'children': [{'name': 'Child', 'description': '', 'created_by': '', 'children': []}],
+        }]
+        result = controller.filter_resource_cards(cards, 'zzz')
+        self.assertEqual(0, len(result))
 
     @mock.patch('tethys_apps.utilities.get_active_app')
     @mock.patch.object(ManageResources, 'perform_custom_delete_operations')
