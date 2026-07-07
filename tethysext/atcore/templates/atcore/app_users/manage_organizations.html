@@ -8,7 +8,17 @@
 
 {% block app_content %}
   <div class="manage-container">
-    <div class="top-action-buttons float-end">
+    <div class="top-action-buttons float-end d-flex align-items-center">
+      {# SEARCH BOX #}
+      {% if enable_search %}
+      <div class="me-2 d-flex align-items-center" role="search">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" id="organization-search-input" placeholder="Search…" aria-label="Search organizations">
+          <a class="btn btn-outline-secondary d-none" id="organization-search-clear" href="javascript:void(0);" title="Clear search"><i class="bi bi-x-lg"></i></a>
+        </div>
+      </div>
+      {% endif %}
       {# NEW ORG BUTTON #}
       {% if show_new_button %}
       <a class="btn btn-outline-secondary manage-action-btn btn-new"
@@ -22,12 +32,16 @@
     </div>
     <h1>{% block organizations_title %}{{ page_title }}{% endblock %}</h1>
 
+    {% if enable_search %}
+    <div id="organization-info" class="text-muted small text-end mb-2" data-label="{{ page_title|lower }}" data-label-singular="{{ type_singular|lower }}"></div>
+    {% endif %}
+
     {% for organization_license, organization_cards in organization_cards.items %}
       <div class="organization-license-group mb-3">
         <h5>{{ organization_license }}</h5>
         <div id="{{ organization_license|slugify }}-cards" role="tablist" aria-multiselectable="true">
         {% for organization_card in organization_cards %}
-          <div class="card manage-card">
+          <div class="card manage-card" data-search="{{ organization_card.name }}">
 
             {# CARD HEADER #}
             <div class="card-header manage-card-header" role="tab" id="heading-{{ organization_card.id }}">
@@ -181,6 +195,11 @@
         </div>
       </div>
     {% endfor %}
+    {% if enable_search %}
+    <div id="organization-no-results" class="text-center mt-4 d-none">
+      <h4>No {{ page_title }} match your search.</h4>
+    </div>
+    {% endif %}
   </div>
 {% endblock %}
 
@@ -217,4 +236,7 @@
   {{ block.super }}
   <script src="{% static 'atcore/js/csrf.js' %}"></script>
   <script src="{% static 'atcore/js/delete_row.js' %}"></script>
+  {% if enable_search %}
+  <script src="{% static 'atcore/app_users/js/manage_organizations_filter.js' %}" type="text/javascript"></script>
+  {% endif %}
 {% endblock %}

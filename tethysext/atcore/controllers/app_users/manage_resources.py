@@ -42,6 +42,10 @@ class ManageResources(ResourceViewMixin):
     enable_groups = False
     collapse_groups = False
     highlight_groups = False
+    show_archive_button = False
+    # Opt-in: set True in a subclass to render the list as a client-side jQuery DataTable
+    # (search box, sortable headers, page-size selector). Ignored when enable_groups is True.
+    enable_datatable = False
 
     ACTION_LAUNCH = 'launch'
     ACTION_PROCESSING = 'processing'
@@ -74,6 +78,9 @@ class ManageResources(ResourceViewMixin):
         if action == 'delete':
             return self._handle_delete(request, user_id)
 
+        if action == 'archive':
+            return self._handle_archive(request, user_id)
+
         return JsonResponse({'success': False, 'error': 'Invalid action: {}'.format(action)})
 
     @active_user_required()
@@ -101,6 +108,9 @@ class ManageResources(ResourceViewMixin):
         page = int(params.get('page', 1))
         resources_per_page = params.get('show', None)
         sort_by_raw = params.get('sort_by', None)
+        # Transient (not persisted as a user setting) server-side search term. Only used on the
+        # non-DataTable path; the DataTable filters client-side and never sends this param.
+        search = (params.get('search', '') or '').strip()
 
         # Update setting if user made a change
         if resources_per_page:
@@ -165,6 +175,9 @@ class ManageResources(ResourceViewMixin):
                 resource_card['slug'] = resource.SLUG
                 resource_card['editable'] = self.can_edit_resource(session, request, resource)
                 resource_card['deletable'] = self.can_delete_resource(session, request, resource)
+                resource_card['archivable'] = self.show_archive_button and self.can_archive_resource(
+                    session, request, resource
+                )
                 resource_card['organizations'] = resource.organizations
                 resource_card['attributes'] = resource.attributes
                 resource_card['attributes']['id'] = str(resource.id)
@@ -205,6 +218,16 @@ class ManageResources(ResourceViewMixin):
 
         resource_cards = build_resource_cards(all_resources)
 
+        # DataTables handles search/sort/paging client-side, so it needs all rows rendered.
+        # Server-side pagination is only used for the grouped (hierarchical) view.
+        use_datatable = self.enable_datatable and not self.enable_groups
+
+        # Apply the server-side search filter when the search feature is enabled but the
+        # client-side DataTable is not in use (i.e. the grouped view). The filter is
+        # hierarchy-aware so parent/child relationships in the grouped view are preserved.
+        if search and self.enable_datatable and not use_datatable:
+            resource_cards = self.filter_resource_cards(resource_cards, search.lower())
+
         # Generate pagination
         paginated_resources, pagination_info = paginate(
             objects=resource_cards,
@@ -214,8 +237,21 @@ class ManageResources(ResourceViewMixin):
             sort_by_raw=sort_by_raw,
             sort_reversed=sort_reversed
         )
+
+        # The DataTable paginates in the browser, so render every card rather than a single
+        # server-side page. The user's settings still drive the initial state via pagination_info.
+        if use_datatable:
+            paginated_resources = resource_cards
+
+        # Make the active search term available to the pagination links and the search input.
+        # Empty on the DataTable path.
+        pagination_info['search'] = search
+
         context = self.get_base_context(request)
         context.update({
+            'enable_datatable': self.enable_datatable,
+            'use_datatable': use_datatable,
+            'search': search,
             'collapse_groups': self.collapse_groups,
             'highlight_groups': self.highlight_groups,
             'page_title': _Resource.DISPLAY_TYPE_PLURAL,
@@ -233,6 +269,7 @@ class ManageResources(ResourceViewMixin):
             'show_new_button': has_permission(request, 'create_resource'),
             'show_attributes': request_app_user.is_staff(),
             'load_delete_modal': has_permission(request, 'delete_resource'),
+            'load_archive_modal': self.show_archive_button and has_permission(request, 'delete_resource'),
             'show_links_to_organizations': has_permission(request, 'edit_organizations'),
             'show_users_link': has_permission(request, 'modify_users'),
             'show_resources_link': has_permission(request, 'view_resources'),
@@ -321,6 +358,36 @@ class ManageResources(ResourceViewMixin):
         session.close()
         return JsonResponse(json_response)
 
+    @permission_required('delete_resource')
+    def _handle_archive(self, request, resource_id):
+        """
+        Handle archive resource requests.
+        """
+        _Resource = self.get_resource_model()
+        make_session = self.get_sessionmaker()
+
+        json_response = {'success': True}
+        session = make_session()
+
+        try:
+            resource = session.query(_Resource).get(resource_id)
+            if len(resource.children) > 0:
+                json_response = {'success': False,
+                                 'error': 'Cannot archive a resource that has child resources.'}
+            else:
+                try:
+                    self.perform_custom_archive_operations(session, request, resource)
+                except Exception:  # noqa: E722
+                    log.exception(f'Unable to perform custom archive operations on resource {resource}.')
+                resource.set_status(resource.ROOT_STATUS_KEY, resource.STATUS_ARCHIVED)
+                session.commit()
+        except Exception as e:
+            json_response = {'success': False,
+                             'error': repr(e)}
+
+        session.close()
+        return JsonResponse(json_response)
+
     def get_working_url(self, request, resource):
         """
         Get the URL for the Resource Working button.
@@ -399,6 +466,52 @@ class ManageResources(ResourceViewMixin):
             session, request, of_type=_Resource, include_children=not self.enable_groups
         )
 
+    def filter_resource_cards(self, resource_cards, search_lower, ancestor_match=False):
+        """
+        Recursively filter resource cards by a (lower-cased) search term, preserving hierarchy.
+
+        A card is kept if it matches, if one of its ancestors matched (in which case the whole
+        subtree is kept), or if one of its descendants matched (so the ancestor chain leading to a
+        match is retained). Non-matching branches are pruned.
+
+        Args:
+            resource_cards(list<dict>): resource cards to filter (each may contain a 'children' list).
+            search_lower(str): the search term, already lower-cased.
+            ancestor_match(bool): True if an ancestor of these cards already matched the term.
+
+        Returns:
+            list<dict>: the filtered (and pruned) list of resource cards.
+        """
+        filtered = []
+        for resource_card in resource_cards:
+            self_match = ancestor_match or self.resource_card_matches_search(resource_card, search_lower)
+            children = self.filter_resource_cards(
+                resource_card.get('children') or [], search_lower, self_match
+            )
+            if self_match or children:
+                resource_card['children'] = children
+                filtered.append(resource_card)
+        return filtered
+
+    def resource_card_matches_search(self, resource_card, search_lower):
+        """
+        Hook to determine whether a single resource card matches the search term.
+
+        Override to change which fields are searched. The term is a case-insensitive substring.
+
+        Args:
+            resource_card(dict): the resource card to test.
+            search_lower(str): the search term, already lower-cased.
+
+        Returns:
+            bool: True if the card matches the search term.
+        """
+        return (
+            search_lower in (resource_card.get('name') or '').lower()
+            or search_lower in (resource_card.get('description') or '').lower()
+            or search_lower in (resource_card.get('created_by') or '').lower()
+        )
+
     def perform_custom_delete_operations(self, session, request, resource):
         """
         Hook to perform custom delete operations prior to the resource being deleted.
@@ -406,6 +519,19 @@ class ManageResources(ResourceViewMixin):
             session(sqlalchemy.session): open sqlalchemy session.
             request(django.Request): the DELETE request object.
             resource(Resource): the sqlalchemy Resource instance to be deleted.
+
+        Raises:
+            Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
+        """  # noqa: E501
+        pass
+
+    def perform_custom_archive_operations(self, session, request, resource):
+        """
+        Hook to perform custom operations prior to the resource being archived.
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.Request): the DELETE request object.
+            resource(Resource): the sqlalchemy Resource instance to be archived.
 
         Raises:
             Exception: raise an appropriate exception if an error occurs. The message will be sent as the 'error' field of the JsonResponse.
@@ -437,3 +563,17 @@ class ManageResources(ResourceViewMixin):
             bool: the delete button will be displayed for this resource if True.
         """
         return has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
+
+    def can_archive_resource(self, session, request, resource):
+        """
+        Hook into resource_card.archivable attribute to allow for more than permissions-based check.
+        Args:
+            session(sqlalchemy.session): open sqlalchemy session.
+            request(django.Request): the request object.
+            resource(Resource): current resource.
+
+        Returns:
+            bool: the archive button will be displayed for this resource if True.
+        """
+        can_delete = has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
+        return can_delete and len(resource.children) == 0

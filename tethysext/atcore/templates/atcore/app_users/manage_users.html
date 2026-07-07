@@ -1,8 +1,22 @@
 {% extends base_template %}
 {% load static tethys_gizmos %}
 
+{% block import_gizmos %}
+  {{ block.super }}
+  {% if use_datatable %}{% import_gizmo_dependency datatable_view %}{% endif %}
+{% endblock %}
+
 {% block app_content %}
-  <div class="top-action-buttons float-end">
+  <div class="top-action-buttons float-end d-flex align-items-center">
+    {% if use_datatable and user_cards %}
+    <div class="me-2 d-flex align-items-center" role="search">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" id="user-search-input" placeholder="Search…" aria-label="Search users">
+        <a class="btn btn-outline-secondary d-none" id="user-search-clear" href="javascript:void(0);" title="Clear search"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </div>
+    {% endif %}
     {% if show_new_button %}
     <a class="btn btn-outline-secondary manage-action-btn btn-new" href="{% url tethys_app.namespace|add:':app_users_add_user' %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="New"><i class="bi bi-plus-lg"></i></a>
     {% endif %}
@@ -11,18 +25,18 @@
     {% endif %}
   </div>
   <h1>{{ page_title|default:'User Accounts' }}</h1>
-  {% if user_cards %}
+  {% if user_cards and not use_datatable %}
   {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="header" %}
   {% endif %}
-  <table class="table table-hover table-bottom-border">
+  <table class="table table-hover table-bottom-border" id="user_table">
     <thead>
       <tr>
         <th>Full Name / Username</th>
         <th>Active</th>
         <th>Role</th>
-        <th>Organizations</th>
+        <th class="no-sort">Organizations</th>
         {% if show_action_buttons %}
-        <th></th>
+        <th class="no-sort"></th>
         {% endif %}
       </tr>
     </thead>
@@ -56,11 +70,13 @@
         {% endif %}
       </tr>
       {% empty %}
+      {% if not use_datatable %}
       <tr><td colspan="5"><b>There are no users.</b></td></tr>
+      {% endif %}
       {% endfor %}
     </tbody>
   </table>
-  {% if user_cards %}
+  {% if user_cards and not use_datatable %}
   {% include "atcore/pagination_template.html" with pagination_info=pagination_info where="footer" %}
   {% endif %}
 
@@ -118,4 +134,7 @@
   <script src="{% static 'atcore/js/csrf.js' %}"></script>
   <script src="{% static 'atcore/js/delete_row.js' %}"></script>
   <script src="{% static 'atcore/js/remove_row.js' %}"></script>
+  {% if use_datatable %}
+  <script src="{% static 'atcore/app_users/js/manage_users_datatable.js' %}" type="text/javascript"></script>
+  {% endif %}
 {% endblock %}

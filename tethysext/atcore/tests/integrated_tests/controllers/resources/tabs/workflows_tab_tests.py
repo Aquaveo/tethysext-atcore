@@ -639,3 +639,39 @@ class ResourceWorkflowsTabTests(SqlAlchemyTestCase):
         mock_session.close.assert_called()
         self.assertIsInstance(ret, JsonResponse)
         self.assertEqual(b'{"success": false, "error": "An unexpected error has occurred."}', ret.content)
+
+    def test_can_create_workflow_default(self):
+        """Verify the default implementation of can_create_workflow returns True."""
+        instance = ResourceWorkflowsTab()
+        mock_resource = mock.MagicMock()
+
+        ret = instance.can_create_workflow(mock_resource)
+
+        self.assertTrue(ret)
+
+    def test_post_can_create_workflow_blocked(self):
+        """Test that post() rejects workflow creation when can_create_workflow returns False."""
+        instance = WorkflowsTabWithTypes()
+        post_data = {
+            'new-workflow': '',
+            'workflow-name': 'New Workflow',
+            'workflow-type': 'basic_workflow',
+        }
+        request = self.request_factory.post('/foo/12345/bar/workflows/', post_data)
+
+        user = self.get_user(return_app_user=True)
+        request.user = user.django_user
+
+        mock_session = mock.MagicMock()
+        self.mock_make_session.return_value = mock_session
+
+        with mock.patch.object(instance, 'can_create_workflow', return_value=False):
+            ret = instance.post(request, str(self.resource.id))
+
+        self.mock_messages.error.assert_called_with(
+            request,
+            'Unable to create new workflow: workflow creation is not allowed for this resource.'
+        )
+        self.mock_redirect.assert_called_with(request.path)
+        mock_session.close.assert_called()
+        self.assertEqual(self.mock_redirect(), ret)
