@@ -10,7 +10,7 @@ import uuid
 import param
 import logging
 
-import datetime as dt
+from datetime import datetime, timezone
 from abc import abstractmethod
 
 from django.shortcuts import reverse
@@ -73,7 +73,7 @@ class ResourceWorkflow(AppUsersBase, AttributesMixin, ResultsMixin, UserLockMixi
     type = Column(String)
 
     name = Column(String)
-    date_created = Column(DateTime, default=dt.datetime.utcnow)
+    date_created = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     lock_when_finished = Column(Boolean, default=False)
     _attributes = Column(String)
     _user_lock = Column(String)

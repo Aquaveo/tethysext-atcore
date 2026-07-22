@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import uuid
 
 from django.utils.text import slugify
@@ -29,7 +29,7 @@ class Resource(StatusMixin, AttributesMixin, UserLockMixin, SerializeMixin, AppU
     name = Column(String)
     description = Column(String)
     type = Column(String)
-    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    date_created = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     created_by = Column(String)
     status = Column(String)
     public = Column(Boolean, default=False)
