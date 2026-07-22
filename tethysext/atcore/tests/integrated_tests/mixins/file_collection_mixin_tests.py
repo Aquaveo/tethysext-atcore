@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 import os
 import shutil
 import uuid
@@ -53,7 +53,7 @@ class FileCollectionMixinTests(SqlAlchemyTestCase):
         self.name = "test_resource"
         self.description = "Bad Description"
         self.status = "Processing"
-        self.creation_date = datetime.now(UTC).replace(tzinfo=None)
+        self.creation_date = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # Test specific directories
         self.test_dir_name = self._testMethodName

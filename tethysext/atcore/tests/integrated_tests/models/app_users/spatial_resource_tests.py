@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 import json
 import uuid
 
@@ -35,7 +35,7 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         self.name = "A Spatial Resource"
         self.description = "Bad Description"
         self.status = "Processing"
-        self.creation_date = datetime.now(UTC).replace(tzinfo=None)
+        self.creation_date = datetime.now(timezone.utc).replace(tzinfo=None)
         self.extent_dict = {
             'type': 'Polygon',
             'coordinates': [[
