@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, UTC
 import uuid
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
@@ -20,7 +20,7 @@ class ResourceTests(SqlAlchemyTestCase):
         self.name = "A Resource"
         self.description = "Bad Description"
         self.status = "Processing"
-        self.creation_date = datetime.datetime.utcnow()
+        self.creation_date = datetime.now(UTC).replace(tzinfo=None)
 
     def test_create_resource(self):
         resource = Resource(

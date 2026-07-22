@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, UTC
 import json
 import uuid
 
@@ -6,9 +6,9 @@ from sqlalchemy import func
 
 from tethysext.atcore.exceptions import InvalidSpatialResourceExtentTypeError
 from tethysext.atcore.models.app_users import SpatialResource
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import SqlAlchemyTestCase
-from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
-    tear_down_module_for_sqlalchemy_tests
+from tethysext.atcore.tests.utilities.sqlalchemy_helpers import (
+    SqlAlchemyTestCase, setup_module_for_sqlalchemy_tests, tear_down_module_for_sqlalchemy_tests
+)
 
 
 def setUpModule():
@@ -35,7 +35,7 @@ class SpatialResourceTests(SqlAlchemyTestCase):
         self.name = "A Spatial Resource"
         self.description = "Bad Description"
         self.status = "Processing"
-        self.creation_date = datetime.datetime.utcnow()
+        self.creation_date = datetime.now(UTC).replace(tzinfo=None)
         self.extent_dict = {
             'type': 'Polygon',
             'coordinates': [[

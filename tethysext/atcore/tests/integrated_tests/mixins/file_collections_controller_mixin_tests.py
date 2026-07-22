@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, UTC
 from unittest import mock
 import os
 from pathlib import Path
@@ -61,7 +61,7 @@ class FileCollectionsControllerMixinTests(SqlAlchemyTestCase):
             name='Foo Resource',
             description='Foo Bar',
             created_by='foo',
-            date_created=datetime.datetime.utcnow(),
+            date_created=datetime.now(UTC).replace(tzinfo=None),
         )
 
         resource.set_attribute('files', [os.path.join(self.test_folder_path, 'dataset_data.zip')])
