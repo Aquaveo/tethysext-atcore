@@ -66,9 +66,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
 
     @property
     def datasets(self):
-        if 'datasets' not in self.data:
-            self.data['datasets'] = []
-        return copy.deepcopy(self.data['datasets'])
+        return copy.deepcopy(self.data.get('datasets', []))
 
     @datasets.setter
     def datasets(self, value):
@@ -78,9 +76,7 @@ class PlotWorkflowResult(ResourceWorkflowResult):
 
     @property
     def plot(self):
-        if 'plot' not in self.data:
-            self.data['plot'] = ''
-        return copy.deepcopy(self.data['plot'])
+        return copy.deepcopy(self.data.get('plot', ''))
 
     @plot.setter
     def plot(self, value):

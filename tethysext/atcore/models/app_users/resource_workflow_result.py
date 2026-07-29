@@ -74,9 +74,7 @@ class ResourceWorkflowResult(AppUsersBase, StatusMixin, AttributesMixin, Options
 
     @property
     def data(self):
-        if not self._data:
-            self._data = dict()
-        return self._data
+        return self._data if self._data else {}
 
     @data.setter
     def data(self, value):

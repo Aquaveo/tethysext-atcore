@@ -52,9 +52,7 @@ class DatasetWorkflowResult(ResourceWorkflowResult):
 
     @property
     def datasets(self):
-        if 'datasets' not in self.data:
-            self.data['datasets'] = []
-        return copy.deepcopy(self.data['datasets'])
+        return copy.deepcopy(self.data.get('datasets', []))
 
     @datasets.setter
     def datasets(self, value):
