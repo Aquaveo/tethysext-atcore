@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2018
 ********************************************************************************
 """
-import datetime as dt
+from datetime import datetime, timezone
 from unittest import mock
 from tethys_sdk.base import TethysController
 from tethysext.atcore.services.app_users.roles import Roles
@@ -45,7 +45,7 @@ class AppUsersResourceWorkflowControllerTests(SqlAlchemyTestCase):
         )
         self.session.add(self.user)
 
-        self.pre_created_date = dt.datetime.utcnow()
+        self.pre_created_date = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # create resource
         self.resource = Resource(
@@ -136,7 +136,7 @@ class AppUsersResourceControllerTests(SqlAlchemyTestCase):
         )
         self.session.add(self.user)
 
-        self.pre_created_date = dt.datetime.utcnow()
+        self.pre_created_date = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # create resource
         self.resource = Resource(
