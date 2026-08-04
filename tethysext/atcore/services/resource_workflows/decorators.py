@@ -2,7 +2,6 @@ import sys
 import json
 import logging
 import traceback
-from importlib import import_module
 from pprint import pprint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
