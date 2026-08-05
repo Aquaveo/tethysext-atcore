@@ -332,8 +332,8 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Save the job id to the step for later reference
         step.set_attribute('condor_job_id', job_id)
 
-        # Allow the step to track statuses on each "sub-job"
-        step.set_attribute('condor_job_statuses', [])
+        # Allow the step to track statuses on each "sub-job", keyed by node name
+        step.set_attribute('condor_job_statuses', {})
 
         # Reset next steps
         step.workflow.reset_next_steps(step)
