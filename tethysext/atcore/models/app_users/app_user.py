@@ -259,7 +259,7 @@ class AppUser(AppUsersBase):
         if not include_children:
             q = q.filter(~_Resource.parents.any())
 
-        resources = set(q.all())
+        resources = sorted(set(q.all()), key=lambda r: str(r.id))
         return self.filter_resources(resources)
 
     def filter_resources(self, resources):

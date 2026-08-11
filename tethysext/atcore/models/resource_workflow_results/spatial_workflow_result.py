@@ -56,9 +56,7 @@ class SpatialWorkflowResult(ResourceWorkflowResult):
 
     @property
     def layers(self):
-        if 'layers' not in self.data:
-            self.data['layers'] = []
-        return copy.deepcopy(self.data['layers'])
+        return copy.deepcopy(self.data.get('layers', []))
 
     @layers.setter
     def layers(self, value):

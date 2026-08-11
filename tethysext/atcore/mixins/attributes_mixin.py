@@ -17,9 +17,7 @@ class AttributesMixin(object):
 
     @property
     def attributes(self):
-        if not self._attributes:
-            self._attributes = json.dumps({})
-        return json.loads(self._attributes)
+        return json.loads(self._attributes) if self._attributes else {}
 
     @attributes.setter
     def attributes(self, value):
