@@ -32,8 +32,14 @@ class AttributesMixinTests(SqlAlchemyTestCase):
 
     def test_attributes_getter_no_attributes(self):
         val = self.instance.attributes
-        self.assertEqual(json.dumps({}), self.instance._attributes)
         self.assertEqual({}, val)
+        self.assertIsNone(self.instance._attributes)
+
+    def test_attributes_getter_does_not_modify_instance(self):
+        for _ in range(3):
+            self.instance.attributes
+            self.instance.get_attribute('foo')
+        self.assertIsNone(self.instance._attributes)
 
     def test_attributes_getter_with_attributes(self):
         self.instance._attributes = self.attributes_json
