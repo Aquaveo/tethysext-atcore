@@ -21,9 +21,9 @@ CONDOR_JOB_STATUSES_BY_NODE_KEY = 'condor_job_statuses_by_node'
 # (append raises, and `in` tests keys, so a real failure reports success).
 # Read through get_step_statuses() rather than reading this key directly.
 #
-# COMPAT (added 1.16.3, 2026-08-13): this mirror exists only to keep a rollback to
-# 1.16.2 or earlier safe. Safe to stop writing it once rolling back that far is no
-# longer supported. Note that downstream pins this package by commit SHA rather
+# COMPAT (added by PR #183, 2026-08-13): this mirror exists only to keep a rollback to
+# any release before PR #183 safe. Safe to stop writing it once rolling back that far
+# is no longer supported. Note that downstream pins this package by commit SHA rather
 # than by tag, so "earlier" is not bounded by the tag history alone.
 CONDOR_JOB_STATUSES_KEY = 'condor_job_statuses'
 
@@ -32,6 +32,9 @@ CONDOR_JOB_STATUSES_KEY = 'condor_job_statuses'
 # blocks every sibling's write until the backend is reaped, which can be minutes.
 # Exceeding it raises OperationalError, which set_step_status already retries.
 STATUS_LOCK_TIMEOUT_MS = 5000
+
+# Postgres SQLSTATE for "could not obtain lock", which is what lock_timeout raises.
+LOCK_NOT_AVAILABLE = '55P03'
 
 
 @lru_cache(maxsize=1)
@@ -75,13 +78,30 @@ def dag_node_name():
     return 'unknown_{}_{}'.format(os.getpid(), int(time.time()))
 
 
+def _is_lock_timeout(error):
+    """
+    Whether an OperationalError is Postgres giving up on a row lock (55P03).
+
+    Contention is not a broken connection, and the two want opposite handling:
+    a lock timeout means some other node held the row too long, and the
+    connection is still perfectly good.
+    """
+    return getattr(getattr(error, 'orig', None), 'pgcode', None) == LOCK_NOT_AVAILABLE
+
+
 def set_step_status(resource_db_session, step, status, node_name=None):
     """
     Records the status of one DAG node on the provided step.
 
-    Recovers once from a dead connection (e.g., the server terminated the
-    backend, the network dropped) by invalidating the bad connection,
-    opening a fresh session from the same engine, and retrying the write.
+    Retries once. A lock timeout is retried on the same session, since the
+    connection is healthy and only the row was busy. Anything else is treated as a
+    dead connection (the server terminated the backend, the network dropped) and
+    recovers by invalidating that connection, opening a fresh session from the same
+    engine, and retrying there.
+
+    CAUTION: the dead-connection path calls ``Session.invalidate()``, which discards
+    everything uncommitted on that session, not just this write. Commit or flush any
+    other pending work before calling this.
 
     Args:
         resource_db_session(sqlalchemy.orm.Session): Session bound to the step.
@@ -91,12 +111,21 @@ def set_step_status(resource_db_session, step, status, node_name=None):
             DAG node name of the running job.
     """
     node_name = node_name or dag_node_name()
+    contended = False
 
     try:
         _record_status(resource_db_session, step, status, node_name)
         return
-    except (OperationalError, PendingRollbackError):
-        pass
+    except (OperationalError, PendingRollbackError) as e:
+        contended = _is_lock_timeout(e)
+
+    if contended:
+        # Healthy connection, busy row. Keep the session and try again rather than
+        # throwing away a good connection during exactly the contention the row
+        # lock is there to create.
+        resource_db_session.rollback()
+        _record_status(resource_db_session, step, status, node_name)
+        return
 
     # Invalidate the dead connection so the pool evicts it, then retry once
     # on a brand-new session from the same engine.
@@ -147,16 +176,16 @@ def _status_dict(step):
 
     legacy = step.get_attribute(CONDOR_JOB_STATUSES_KEY)
 
-    # COMPAT (added 1.16.3, 2026-08-13): a build of this change that shipped before
+    # COMPAT (added by PR #183, 2026-08-13): a build of this change that shipped before
     # the per-node key existed wrote the dict here instead. Safe to delete once no
     # deployment is running a commit between e37cc4e and this one -- that range was
     # never tagged, so only pinned-by-SHA consumers can be on it.
     if isinstance(legacy, dict):
         return dict(legacy)
 
-    # COMPAT (added 1.16.3, 2026-08-13): the flat list written before statuses were
-    # keyed by node. Safe to delete once no ResourceWorkflowStep submitted before
-    # 1.16.3 can still report -- i.e. once every DAG in flight at that upgrade has
+    # COMPAT (added by PR #183, 2026-08-13): the flat list written before statuses were
+    # keyed by node. Safe to delete once no ResourceWorkflowStep submitted before PR #183
+    # shipped can still report -- i.e. once every DAG in flight at that upgrade has
     # finished. Deleting it earlier silently drops those steps' statuses.
     if isinstance(legacy, list):
         if legacy:

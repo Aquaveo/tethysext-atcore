@@ -312,6 +312,51 @@ class HelpersTests(unittest.TestCase):
 
         self.assertEqual(first, second)
 
+    def test_set_step_status_retries_a_lock_timeout_without_discarding_the_connection(self):
+        """Contention is not a broken connection; invalidate() would throw away a good one."""
+        session = mock.MagicMock()
+        lock_timeout = OperationalError('SELECT 1', {}, Exception('canceled'))
+        lock_timeout.orig.pgcode = helpers.LOCK_NOT_AVAILABLE
+
+        self.step.attributes = {STATUSES: {}}
+        locking = bind_locking_query(session, self.step)
+        locking.one.side_effect = [lock_timeout, self.step]
+
+        helpers.set_step_status(session, self.step, self.step.STATUS_COMPLETE, node_name=NODE)
+
+        session.invalidate.assert_not_called()
+        session.rollback.assert_called_once()
+        self.assertEqual({NODE: self.step.STATUS_COMPLETE}, self.step.get_attribute(STATUSES))
+
+    @mock.patch('tethysext.atcore.services.resource_workflows.helpers.sessionmaker')
+    def test_set_step_status_still_invalidates_a_dead_connection(self, mock_sessionmaker):
+        """A non-lock-timeout OperationalError is a dead connection and must be evicted."""
+        session = mock.MagicMock()
+        dead = OperationalError('SELECT 1', {}, Exception('SSL closed'))
+        dead.orig.pgcode = '08006'
+        bind_locking_query(session, self.step).one.side_effect = dead
+
+        fresh_session = mock.MagicMock()
+        mock_sessionmaker.return_value.return_value = fresh_session
+        self.step.attributes = {STATUSES: {}}
+        fresh_session.query.return_value.get.return_value = self.step
+        bind_locking_query(fresh_session, self.step)
+
+        helpers.set_step_status(session, self.step, self.step.STATUS_COMPLETE, node_name=NODE)
+
+        session.invalidate.assert_called_once()
+        fresh_session.commit.assert_called_once()
+
+    def test_is_lock_timeout(self):
+        lock_timeout = OperationalError('q', {}, Exception('canceled'))
+        lock_timeout.orig.pgcode = helpers.LOCK_NOT_AVAILABLE
+        other = OperationalError('q', {}, Exception('boom'))
+        other.orig.pgcode = '08006'
+
+        self.assertTrue(helpers._is_lock_timeout(lock_timeout))
+        self.assertFalse(helpers._is_lock_timeout(other))
+        self.assertFalse(helpers._is_lock_timeout(PendingRollbackError('rollback required')))
+
     def test_initialize_step_statuses_clears_both_shapes(self):
         self.step.attributes = {STATUSES: {'a': 'Failed'}, MIRROR: ['Failed']}
 

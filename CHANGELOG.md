@@ -36,11 +36,23 @@ node to die with `ImportError` after its work had succeeded.
 - The step's status store is now cleared and committed *before* the DAG is submitted
   rather than after. Nodes begin reporting as soon as DAGMan schedules them, so
   clearing afterwards could discard statuses that had already been committed.
-- A failure to record `STATUS_COMPLETE` is no longer reported as a node failure. It is
-  retried once on a fresh session and then logged, since the job's own work has already
-  succeeded at that point.
+- A failure to record `STATUS_COMPLETE` is no longer reported as a node failure, since the
+  job's own work has already succeeded at that point. Both the complete and failed status
+  writes now go through one path that retries on a fresh session and, if the status still
+  cannot be recorded, reports it through the module logger as well as stderr — a status
+  that never lands is the silent failure this change exists to prevent, so it needs to be
+  visible to whatever watches logs.
+- A row lock that times out under contention is retried on the same session. Only a
+  genuinely dead connection is invalidated, since `Session.invalidate()` discards
+  everything uncommitted on that session, not just the status write.
+- Submitting a step's job now detects failure by checking the recorded job status, not only
+  by catching exceptions. `TethysJob.execute()` records a failed submission as `ERR` rather
+  than raising, so an unreachable scheduler returns normally. On failure the step's previous
+  status, status message and job id are restored, so it is not left waiting on a job that
+  was never submitted. Downstream steps are reset only once submission has succeeded.
 
 ### Added
+
 
 - `get_step_statuses(step)` — the sanctioned way to read a step's sub-job statuses.
   Returns a list of status values and understands every shape written to date. Prefer
