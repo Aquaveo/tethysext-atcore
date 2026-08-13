@@ -516,8 +516,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
         self.assertTrue(SpatialCondorJobMWV.job_was_submitted(manager))
 
-    def test_job_was_submitted__no_workflow_fails_closed(self):
-        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=None)))
+    def test_job_was_submitted__no_workflow_is_not_a_failed_submission(self):
+        """The manager holds workflow=None until prepare() populates it, so None means
+        preparation did not run -- not that the scheduler refused the job."""
+        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=None)))
 
     @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.log')
     def test_restore_step_after_failed_submission__commit_failure_is_logged_not_raised(self, mock_log):

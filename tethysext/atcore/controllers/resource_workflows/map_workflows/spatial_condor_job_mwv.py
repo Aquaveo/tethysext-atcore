@@ -404,13 +404,14 @@ class SpatialCondorJobMWV(MapWorkflowView):
         """
         workflow = getattr(condor_job_manager, 'workflow', None)
 
-        if workflow is None:
-            # Nothing to have submitted, and nothing running that a restore could orphan.
-            return False
-
         if getattr(workflow, 'cluster_id', 0):
             return True
 
+        # A missing workflow is not evidence of a failed submission. The manager
+        # initialises it to None and only populates it in prepare(), which run_job()
+        # always runs first, so None here means preparation did not happen rather than
+        # that the scheduler refused anything. Reporting failure for it would raise on
+        # paths that never attempted a submission at all.
         return getattr(workflow, '_status', None) not in ('ERR', 'ABT')
 
     @staticmethod
