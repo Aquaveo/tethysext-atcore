@@ -382,13 +382,34 @@ class SpatialCondorJobMWV(MapWorkflowView):
         ERR rather than re-raising, so the absence of an exception says nothing about
         whether submission happened.
 
+        A recorded ERR is not conclusive either. CondorBase._execute() submits and then
+        saves in two steps::
+
+            self.cluster_id = self.condor_object.submit(*args, **kwargs)
+            self.save()
+
+        and both are inside that same bare except, so a save that fails after a submit
+        that succeeded is recorded exactly like a scheduler that refused the job. Telling
+        the caller that a running DAG was never submitted is the more expensive mistake:
+        it would orphan the job and let the step's status document be rewritten without
+        the row lock every reporting node takes. The cluster id is assigned before the
+        save that can fail, so a non-zero value means the job is out there regardless of
+        what the status says.
+
         Args:
             condor_job_manager(ResourceWorkflowCondorJobManager): The manager used to submit.
 
         Returns:
-            bool: False only when the job is known to have failed to submit.
+            bool: False only when the job is known not to be running.
         """
         workflow = getattr(condor_job_manager, 'workflow', None)
+
+        if workflow is None:
+            # Nothing to have submitted, and nothing running that a restore could orphan.
+            return False
+
+        if getattr(workflow, 'cluster_id', 0):
+            return True
 
         return getattr(workflow, '_status', None) not in ('ERR', 'ABT')
 

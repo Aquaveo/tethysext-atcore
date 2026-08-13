@@ -20,7 +20,6 @@ from tethysext.atcore.controllers.resource_workflows.workflow_view import Resour
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
-from tethysext.atcore.services.resource_workflows.helpers import CONDOR_JOB_STATUSES_BY_NODE_KEY
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
@@ -364,6 +363,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
@@ -373,7 +373,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
     def test_run_job__submission_failure_does_not_strand_the_step(
             self, mock_model_db, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job,
-            mock_get_step, mock_is_read_only):
+            mock_get_step, mock_is_read_only, mock_get_app):
         """The step state is committed before submission, so a failed submit has to undo it.
 
         Otherwise the step sits in WORKING waiting on a job that was never submitted, and the
@@ -401,8 +401,6 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.step.set_status(self.step.ROOT_STATUS_KEY, self.step.STATUS_COMPLETE)
         self.step.set_attribute(self.step.ATTR_STATUS_MESSAGE, 'previous message')
         self.step.set_attribute('condor_job_id', 'previous-job-id')
-        # Non-empty, so the assertion that it was cleared cannot pass vacuously.
-        self.step.set_attribute(CONDOR_JOB_STATUSES_BY_NODE_KEY, {'stale_node': 'Failed'})
 
         session = mock.MagicMock()
         self.step.workflow = mock.MagicMock()
@@ -426,13 +424,17 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
                 self.request, session, self.resource, self.workflow.id, self.step.id,
             )
 
+        # Each of these is set by the pre-submission block to something different, so they
+        # all fail if the restore is removed. The status store is deliberately not asserted
+        # on: the pre-submission block clears it unconditionally, so its final value is the
+        # same whether the restore ran or not.
         self.assertEqual(self.step.STATUS_COMPLETE, self.step.get_status(self.step.ROOT_STATUS_KEY))
         self.assertEqual('previous message', self.step.get_attribute(self.step.ATTR_STATUS_MESSAGE))
         self.assertIsNone(self.step.get_attribute('condor_job_id'))
-        self.assertEqual({}, self.step.get_attribute(CONDOR_JOB_STATUSES_BY_NODE_KEY))
         # Downstream results must survive a run that never started.
         self.step.workflow.reset_next_steps.assert_not_called()
 
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
     @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
@@ -442,7 +444,7 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
     @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
     def test_run_job__submission_recorded_as_err_is_treated_as_failure(
             self, mock_model_db, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job,
-            mock_get_step, mock_is_read_only):
+            mock_get_step, mock_is_read_only, mock_get_app):
         """TethysJob.execute() swallows submission errors and records ERR without raising.
 
         Catching exceptions alone therefore misses the ordinary failure, which is what left
@@ -498,11 +500,27 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.step.workflow.reset_next_steps.assert_not_called()
 
     def test_job_was_submitted(self):
-        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=mock.MagicMock(_status='ERR'))))
-        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=mock.MagicMock(_status='ABT'))))
-        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=mock.MagicMock(_status='SUB'))))
+        def manager(**workflow_attrs):
+            workflow_attrs.setdefault('cluster_id', 0)
+            return mock.MagicMock(workflow=mock.MagicMock(**workflow_attrs))
 
-    def test_restore_step_after_failed_submission__commit_failure_is_logged_not_raised(self):
+        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(manager(_status='SUB')))
+        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(manager(_status='ERR')))
+        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(manager(_status='ABT')))
+
+    def test_job_was_submitted__cluster_id_wins_over_a_recorded_error(self):
+        """CondorBase._execute() submits and then saves; only the save has to fail for the
+        job to be recorded ERR while the DAG is genuinely running. Reporting that as
+        'not submitted' would orphan it."""
+        manager = mock.MagicMock(workflow=mock.MagicMock(_status='ERR', cluster_id=4211))
+
+        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(manager))
+
+    def test_job_was_submitted__no_workflow_fails_closed(self):
+        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=None)))
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.log')
+    def test_restore_step_after_failed_submission__commit_failure_is_logged_not_raised(self, mock_log):
         """The caller is about to raise the submission error; cleanup must not replace it."""
         session = mock.MagicMock()
         session.commit.side_effect = RuntimeError('database gone')
@@ -512,6 +530,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         )
 
         session.rollback.assert_called_once()
+        # A step that could not be restored is left mid-run; that has to be visible.
+        mock_log.exception.assert_called_once()
 
     @mock.patch.object(AppUsersViewMixin, 'get_app')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
