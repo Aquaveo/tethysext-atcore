@@ -400,7 +400,10 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         # assertion below cannot tell a real restore from the fallback firing.
         self.step.set_status(self.step.ROOT_STATUS_KEY, self.step.STATUS_COMPLETE)
         self.step.set_attribute(self.step.ATTR_STATUS_MESSAGE, 'previous message')
-        self.step.set_attribute('condor_job_id', 'previous-job-id')
+        # No condor_job_id: a previous id sends run_job() down the delete-previous-job
+        # branch, which chdirs into a workspace this test has no reason to create. The
+        # pre-submission block sets the id from the prepared job anyway, so asserting it
+        # is None below still proves the restore ran.
 
         session = mock.MagicMock()
         self.step.workflow = mock.MagicMock()
@@ -470,7 +473,8 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         mock_run_job.return_value = str(self.workflow.id)
 
         self.step.set_status(self.step.ROOT_STATUS_KEY, self.step.STATUS_COMPLETE)
-        self.step.set_attribute('condor_job_id', 'previous-job-id')
+        # See the note in test_run_job__submission_failure_does_not_strand_the_step: a
+        # previous condor_job_id would route through the delete-previous-job branch.
 
         session = mock.MagicMock()
         self.step.workflow = mock.MagicMock()
