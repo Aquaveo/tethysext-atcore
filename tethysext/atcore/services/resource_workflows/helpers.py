@@ -20,6 +20,11 @@ CONDOR_JOB_STATUSES_BY_NODE_KEY = 'condor_job_statuses_by_node'
 # and tests `STATUS_FAILED in statuses`, both of which misbehave against a dict
 # (append raises, and `in` tests keys, so a real failure reports success).
 # Read through get_step_statuses() rather than reading this key directly.
+#
+# COMPAT (added 1.16.3, 2026-08-13): this mirror exists only to keep a rollback to
+# 1.16.2 or earlier safe. Safe to stop writing it once rolling back that far is no
+# longer supported. Note that downstream pins this package by commit SHA rather
+# than by tag, so "earlier" is not bounded by the tag history alone.
 CONDOR_JOB_STATUSES_KEY = 'condor_job_statuses'
 
 # How long to wait for another node's status write before giving up. Without a
@@ -142,9 +147,17 @@ def _status_dict(step):
 
     legacy = step.get_attribute(CONDOR_JOB_STATUSES_KEY)
 
+    # COMPAT (added 1.16.3, 2026-08-13): a build of this change that shipped before
+    # the per-node key existed wrote the dict here instead. Safe to delete once no
+    # deployment is running a commit between e37cc4e and this one -- that range was
+    # never tagged, so only pinned-by-SHA consumers can be on it.
     if isinstance(legacy, dict):
         return dict(legacy)
 
+    # COMPAT (added 1.16.3, 2026-08-13): the flat list written before statuses were
+    # keyed by node. Safe to delete once no ResourceWorkflowStep submitted before
+    # 1.16.3 can still report -- i.e. once every DAG in flight at that upgrade has
+    # finished. Deleting it earlier silently drops those steps' statuses.
     if isinstance(legacy, list):
         if legacy:
             log.warning(
