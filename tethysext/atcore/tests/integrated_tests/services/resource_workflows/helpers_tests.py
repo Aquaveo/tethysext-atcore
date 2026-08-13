@@ -704,3 +704,99 @@ class ReleasedSessionsNilPathTests(unittest.TestCase):
             pass
 
         session.commit.assert_called_once()
+
+
+class ReleasedSessionsAfterTheBlockTests(unittest.TestCase):
+    """
+    What a job body may and may not trust once a release has happened.
+
+    Two AGWA scenario scripts reach a sibling step through the workflow after
+    running GSSHA and write to it. These pin the contract those scripts rely on.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.engine = create_engine(TEST_DB_URL, connect_args={'connect_timeout': 5})
+        try:
+            cls.engine.connect().close()
+        except OperationalError as e:
+            raise unittest.SkipTest('test database at {} is unreachable: {}'.format(TEST_DB_URL, e))
+        initialize_app_users_db(cls.engine)
+        cls.Session = sessionmaker(bind=cls.engine)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.engine.dispose()
+
+    def setUp(self):
+        helpers.dag_node_name.cache_clear()
+        self.session = self.Session()
+        self.workflow = ResourceWorkflow(name='after_block_test')
+        self.target = ResourceWorkflowStep(name='Define Upstream Cells', help='h', order=1)
+        self.runner = ResourceWorkflowStep(name='Run', help='h', order=2)
+        self.target.attributes = {'imagery': []}
+        self.workflow.steps = [self.target, self.runner]
+        self.session.add(self.workflow)
+        self.session.commit()
+        self.workflow_id = self.workflow.id
+        self.target_id = self.target.id
+
+    def tearDown(self):
+        self.session.rollback()
+        self.session.delete(self.session.query(ResourceWorkflow).get(self.workflow_id))
+        self.session.commit()
+        self.session.close()
+
+    def test_sibling_step_reached_after_a_release_can_be_written(self):
+        """The shape both scripts use: traverse to another step, set an attribute, commit."""
+        session = self.Session()
+        try:
+            workflow = session.query(ResourceWorkflow).get(self.workflow_id)
+
+            with helpers.released_sessions(session):
+                pass
+
+            step = workflow.get_step_by_name('Define Upstream Cells')
+            step.set_attribute('imagery', [{'layer_name': 'agwa:flow_accumulation'}])
+            session.commit()
+        finally:
+            session.close()
+
+        self.session.expire_all()
+        written = self.session.query(ResourceWorkflowStep).get(self.target_id)
+        self.assertEqual([{'layer_name': 'agwa:flow_accumulation'}], written.get_attribute('imagery'))
+
+    def test_a_read_after_a_release_can_be_stale_unless_refreshed(self):
+        """
+        Why anything modified after a release must be re-read.
+
+        The object was loaded before the release, so it is still in the identity
+        map afterwards. A sibling DAG node committing in between is invisible
+        until the row is read again, and a read-modify-write on the stale value
+        would drop the sibling's entry.
+        """
+        reader = self.Session()
+        writer = self.Session()
+        try:
+            step = reader.query(ResourceWorkflowStep).get(self.target_id)
+            self.assertEqual([], step.get_attribute('imagery'))
+
+            with helpers.released_sessions(reader):
+                pass
+
+            sibling = writer.query(ResourceWorkflowStep).get(self.target_id)
+            sibling.set_attribute('imagery', [{'layer_name': 'from_sibling'}])
+            writer.commit()
+
+            self.assertEqual([], step.get_attribute('imagery'))
+
+            refreshed = (
+                reader.query(ResourceWorkflowStep)
+                .populate_existing()
+                .filter_by(id=self.target_id)
+                .one()
+            )
+            self.assertEqual([{'layer_name': 'from_sibling'}], refreshed.get_attribute('imagery'))
+        finally:
+            reader.close()
+            writer.close()
