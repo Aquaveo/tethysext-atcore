@@ -323,6 +323,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Deal with locking
         self.handle_on_submit_locking(request, session, resource, step)
 
+        # Kept so the step can be put back if the submission below never happens.
+        previous_status = step.get_status(step.ROOT_STATUS_KEY)
+
         # Update status of the resource workflow step
         step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
         step.set_attribute(step.ATTR_STATUS_MESSAGE, None)
@@ -343,7 +346,18 @@ class SpatialCondorJobMWV(MapWorkflowView):
         session.commit()
 
         # Submit job
-        condor_job_manager.run_job()
+        try:
+            condor_job_manager.run_job()
+        except Exception:
+            # The state above is already committed, but nothing will ever report
+            # against it now. Leaving it would strand the step in WORKING, where
+            # the view tells the user to wait for a job that was never submitted
+            # and refuses to let them advance. Put it back so they can retry.
+            step.set_status(step.ROOT_STATUS_KEY, previous_status or step.STATUS_PENDING)
+            step.set_attribute('condor_job_id', None)
+            initialize_step_statuses(step)
+            session.commit()
+            raise
 
         return redirect(request.path)
 

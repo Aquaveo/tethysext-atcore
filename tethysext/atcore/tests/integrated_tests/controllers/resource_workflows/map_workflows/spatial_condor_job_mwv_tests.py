@@ -20,6 +20,7 @@ from tethysext.atcore.controllers.resource_workflows.workflow_view import Resour
 from tethysext.atcore.models.resource_workflow_steps.spatial_dataset_rws import SpatialDatasetRWS
 from tethysext.atcore.models.app_users import Resource
 from tethysext.atcore.services.map_manager import MapManagerBase
+from tethysext.atcore.services.resource_workflows.helpers import CONDOR_JOB_STATUSES_BY_NODE_KEY
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 from tethysext.atcore.tests.factories.django_user import UserFactory
 from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.workflow_view_test_case import \
@@ -362,6 +363,67 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
+
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
+    @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
+    def test_run_job__submission_failure_does_not_strand_the_step(
+            self, mock_model_db, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job,
+            mock_get_step, mock_is_read_only):
+        """The step state is committed before submission, so a failed submit has to undo it.
+
+        Otherwise the step sits in WORKING waiting on a job that was never submitted, and the
+        view refuses to let the user advance.
+        """
+        map_manager = mock.MagicMock(
+            spec=MapManagerBase,
+            spatial_manager=mock.MagicMock(
+                gs_engine=mock.MagicMock(
+                    username='Faxy', password='Bear',
+                    endpoint='http://localhost:8181/geoserver/rest',
+                    public_endpoint='http://localhost:8181/geoserver/rest',
+                )
+            )
+        )
+        mock_model_db.return_value = mock.MagicMock(db_url='fake_db_url')
+        mock_get_map_manager.return_value = map_manager
+        mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
+        mock_prepare.return_value = self.workflow.id
+        mock_run_job.side_effect = RuntimeError('scheduler unreachable')
+        mock_get_step.return_value = self.step
+
+        self.step.set_status(self.step.ROOT_STATUS_KEY, self.step.STATUS_PENDING)
+        self.step.set_attribute('condor_job_id', None)
+
+        session = mock.MagicMock()
+        self.step.workflow = mock.MagicMock()
+        self.step.workflow.resource = self.resource
+        self.request.user = UserFactory()
+        self.request.POST['run-submit'] = True
+        self.request.POST['rerun-submit'] = True
+        self.step.options['scheduler'] = 'my_schedule'
+        self.step.options['jobs'] = [{
+            'name': 'base_scenario',
+            'condorpy_template_name': 'vanilla_transfer_files',
+            'remote_input_files': [None],
+            'attributes': {
+                'executable': 'run_base_scenario.py',
+                'transfer_output_files': ['gssha_files', 'base_ohl_series.json'],
+            },
+        }]
+
+        with self.assertRaises(RuntimeError):
+            SpatialCondorJobMWV().run_job(
+                self.request, session, self.resource, self.workflow.id, self.step.id,
+            )
+
+        self.assertEqual(self.step.STATUS_PENDING, self.step.get_status(self.step.ROOT_STATUS_KEY))
+        self.assertIsNone(self.step.get_attribute('condor_job_id'))
+        self.assertEqual({}, self.step.get_attribute(CONDOR_JOB_STATUSES_BY_NODE_KEY))
 
     @mock.patch.object(AppUsersViewMixin, 'get_app')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
