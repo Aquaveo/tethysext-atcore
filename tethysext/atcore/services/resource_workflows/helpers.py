@@ -1,13 +1,35 @@
 import argparse
+import logging
 import os
 import time
 
+from functools import lru_cache
+
+from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, PendingRollbackError
 from sqlalchemy.orm import sessionmaker
 
+log = logging.getLogger(f'tethys.{__name__}')
+
+# Authoritative store for sub-job statuses: {node_name: status}.
+CONDOR_JOB_STATUSES_BY_NODE_KEY = 'condor_job_statuses_by_node'
+
+# A plain list of the same values, written alongside the authoritative store so
+# that code predating the per-node store still reads the shape it expects. That
+# matters for a rollback: the previous implementation does `statuses.append(...)`
+# and tests `STATUS_FAILED in statuses`, both of which misbehave against a dict
+# (append raises, and `in` tests keys, so a real failure reports success).
+# Read through get_step_statuses() rather than reading this key directly.
 CONDOR_JOB_STATUSES_KEY = 'condor_job_statuses'
 
+# How long to wait for another node's status write before giving up. Without a
+# bound, a node killed by HTCondor between taking the row lock and committing
+# blocks every sibling's write until the backend is reaped, which can be minutes.
+# Exceeding it raises OperationalError, which set_step_status already retries.
+STATUS_LOCK_TIMEOUT_MS = 5000
 
+
+@lru_cache(maxsize=1)
 def dag_node_name():
     """
     Name of the DAG node this process is running as.
@@ -16,6 +38,11 @@ def dag_node_name():
     HTCondor makes the job ad available to the running job in the file named by
     the ``_CONDOR_JOB_AD`` environment variable. Reading it there means a job
     can identify itself without any extra arguments being threaded through.
+
+    The result is cached for the life of the process. A job reports its status
+    more than once (see decorators.workflow_step_job), and the fallback below
+    embeds the current time, so recomputing it would hand the same node two
+    different keys and defeat the point of keying by node.
 
     Returns:
         str: the node name, or a process-unique placeholder if it cannot be
@@ -33,9 +60,13 @@ def dag_node_name():
                         name = value.strip().strip('"')
                         if name:
                             return name
+            log.warning('No DAGNodeName in job ad %s; falling back to a generated node name.', job_ad_path)
         except OSError:
-            pass
+            log.warning('Could not read job ad %s; falling back to a generated node name.', job_ad_path, exc_info=True)
 
+    # Unique per process, so two nodes never collide, but NOT stable across
+    # processes: a node retried on another host cannot overwrite its earlier
+    # entry and will leave both behind.
     return 'unknown_{}_{}'.format(os.getpid(), int(time.time()))
 
 
@@ -76,6 +107,73 @@ def set_step_status(resource_db_session, step, status, node_name=None):
         fresh_session.close()
 
 
+def _set_lock_timeout(session):
+    """
+    Bounds how long the row lock in _record_status will be waited for.
+
+    Postgres only; other backends are left at their defaults rather than being
+    given a statement they would reject. SET LOCAL applies to the surrounding
+    transaction only, so it does not leak to other users of the connection.
+    """
+    bind = session.get_bind()
+
+    if bind is None or bind.dialect.name != 'postgresql':
+        return
+
+    session.execute(text("SET LOCAL lock_timeout = '{}ms'".format(STATUS_LOCK_TIMEOUT_MS)))
+
+
+def _status_dict(step):
+    """
+    A step's node statuses as a dict, whatever shape they are stored in.
+
+    Reads the authoritative per-node store when present. Otherwise falls back to
+    the shapes written by earlier releases: the original flat list, and the dict
+    that a pre-release build of this change wrote under the old key. Entries from
+    the flat list carry no node identity, so they are given positional keys.
+
+    Anything else (a string, a number, nothing at all) yields an empty dict
+    rather than being coerced, so a corrupt value cannot masquerade as statuses.
+    """
+    statuses = step.get_attribute(CONDOR_JOB_STATUSES_BY_NODE_KEY)
+
+    if isinstance(statuses, dict):
+        return dict(statuses)
+
+    legacy = step.get_attribute(CONDOR_JOB_STATUSES_KEY)
+
+    if isinstance(legacy, dict):
+        return dict(legacy)
+
+    if isinstance(legacy, list):
+        if legacy:
+            log.warning(
+                'Step %s still holds %d status(es) in the pre-node-name format. They cannot be '
+                'attributed to a node, so a node that reported before the upgrade and then retries '
+                'will leave its earlier status behind.',
+                step.id, len(legacy),
+            )
+        return {'_legacy_{}'.format(i): s for i, s in enumerate(legacy)}
+
+    return {}
+
+
+def initialize_step_statuses(step):
+    """
+    Clears a step's node statuses ahead of a new job submission.
+
+    Call this BEFORE the DAG is submitted. Nodes begin reporting as soon as
+    DAGMan schedules them, and this write is an unlocked overwrite of the whole
+    attributes document, so clearing after submission can discard statuses that
+    have already been committed.
+
+    Args:
+        step(ResourceWorkflowStep): The step to reset.
+    """
+    step.set_attribute(CONDOR_JOB_STATUSES_BY_NODE_KEY, {})
+    step.set_attribute(CONDOR_JOB_STATUSES_KEY, [])
+
+
 def _record_status(session, step, status, node_name):
     """
     Writes one node's status into the step, keyed by node name.
@@ -90,7 +188,12 @@ def _record_status(session, step, status, node_name):
     Keying by node name also makes a retried node overwrite its own earlier
     status instead of leaving both, so a node that fails and then succeeds does
     not leave a failure behind.
+
+    Both the per-node store and the legacy list mirror are written, so a release
+    rolled back to code that predates the per-node store still finds a list.
     """
+    _set_lock_timeout(session)
+
     locked_step = (
         session.query(type(step))
         .populate_existing()
@@ -99,15 +202,11 @@ def _record_status(session, step, status, node_name):
         .one()
     )
 
-    statuses = locked_step.get_attribute(CONDOR_JOB_STATUSES_KEY) or {}
-
-    if isinstance(statuses, list):
-        # A step that was already running when this was deployed still holds the
-        # previous list form.
-        statuses = {'_legacy_{}'.format(i): s for i, s in enumerate(statuses)}
-
+    statuses = _status_dict(locked_step)
     statuses[node_name] = status
-    locked_step.set_attribute(CONDOR_JOB_STATUSES_KEY, statuses)
+
+    locked_step.set_attribute(CONDOR_JOB_STATUSES_BY_NODE_KEY, statuses)
+    locked_step.set_attribute(CONDOR_JOB_STATUSES_KEY, list(statuses.values()))
     session.commit()
 
 
@@ -119,14 +218,9 @@ def get_step_statuses(step):
         step(ResourceWorkflowStep): The step to read.
 
     Returns:
-        list: the reported statuses, from either the current or previous form.
+        list: the reported statuses, in whatever shape they are stored.
     """
-    statuses = step.get_attribute(CONDOR_JOB_STATUSES_KEY) or {}
-
-    if isinstance(statuses, dict):
-        return list(statuses.values())
-
-    return list(statuses)
+    return list(_status_dict(step).values())
 
 
 def parse_workflow_step_args():

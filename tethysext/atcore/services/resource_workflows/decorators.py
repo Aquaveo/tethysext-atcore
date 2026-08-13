@@ -181,8 +181,33 @@ def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
                     )
 
                     # Update step status
+                    #
+                    # Deliberately guarded separately from the work above. The work
+                    # has already succeeded at this point, so a failure to record
+                    # that must not fall through to the handler below and be written
+                    # down as a node failure -- with the row lock the status write
+                    # now takes, contention is a real way for this to fail. Retry
+                    # once on a fresh session, then give up loudly rather than
+                    # reporting a success as a failure.
                     print('Updating status...')
-                    set_step_status(resource_db_session, step, step.STATUS_COMPLETE)
+                    try:
+                        set_step_status(resource_db_session, step, step.STATUS_COMPLETE)
+                    except Exception:
+                        try:
+                            step_cls = type(step)
+                            step_id = step.id
+                            complete_session = sessionmaker(bind=resource_db_engine)()
+                            try:
+                                complete_step = complete_session.query(step_cls).get(step_id)
+                                set_step_status(complete_session, complete_step, step.STATUS_COMPLETE)
+                            finally:
+                                complete_session.close()
+                        except Exception:
+                            sys.stderr.write(
+                                'Could not record STATUS_COMPLETE for {0}; the job itself '
+                                'succeeded.\n'.format(args.resource_workflow_step_id)
+                            )
+                            traceback.print_exc(file=sys.stderr)
 
                 except Exception as e:
                     if step and resource_db_session:

@@ -14,6 +14,7 @@ from django.shortcuts import render, redirect
 from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
+from tethysext.atcore.services.resource_workflows.helpers import initialize_step_statuses
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
@@ -322,9 +323,6 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Deal with locking
         self.handle_on_submit_locking(request, session, resource, step)
 
-        # Submit job
-        condor_job_manager.run_job()
-
         # Update status of the resource workflow step
         step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
         step.set_attribute(step.ATTR_STATUS_MESSAGE, None)
@@ -332,13 +330,20 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Save the job id to the step for later reference
         step.set_attribute('condor_job_id', job_id)
 
-        # Allow the step to track statuses on each "sub-job", keyed by node name
-        step.set_attribute('condor_job_statuses', {})
+        # Allow the step to track statuses on each "sub-job", keyed by node name.
+        # This has to be committed BEFORE the job is submitted: nodes start
+        # reporting as soon as DAGMan schedules them, and this write is an
+        # unlocked overwrite of the whole attributes document, so clearing it
+        # afterwards would discard statuses that had already been committed.
+        initialize_step_statuses(step)
 
         # Reset next steps
         step.workflow.reset_next_steps(step)
 
         session.commit()
+
+        # Submit job
+        condor_job_manager.run_job()
 
         return redirect(request.path)
 
