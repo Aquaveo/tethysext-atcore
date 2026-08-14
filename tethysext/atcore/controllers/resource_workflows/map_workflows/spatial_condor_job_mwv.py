@@ -10,6 +10,7 @@ import os
 import json
 import logging
 from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
@@ -145,8 +146,17 @@ class SpatialCondorJobMWV(MapWorkflowView):
             self._AppUser.ROLES.ORG_ADMIN
         ]
 
+        # The step keeps its condor_job_id forever, but the job row it points at does not:
+        # retention cleanup or an administrator can remove it. get_job returns None then, and
+        # JobsTable cannot render a None, so show an empty table instead of raising.
+        if job_id is not None and step_job is None:
+            log.warning(
+                'Step %s references condor job %s, which no longer exists. '
+                'Rendering an empty job table.', current_step.id, job_id
+            )
+
         jobs_table = JobsTable(
-            jobs=[step_job],
+            jobs=[step_job] if step_job else [],
             column_fields=('description', 'creation_time', ),
             hover=True,
             striped=True,
@@ -299,7 +309,16 @@ class SpatialCondorJobMWV(MapWorkflowView):
         if previous_condor_job_id:
             previous_job = app.get_job_manager().get_job(job_id=previous_condor_job_id)
             if previous_job:
-                previous_job.delete()
+                try:
+                    previous_job.delete()
+                except ObjectDoesNotExist:
+                    # Something else deleted the row between the lookup and here -- two
+                    # submissions of the same step racing, for instance. The row being gone
+                    # is the outcome this wanted, so carry on and submit the new job.
+                    log.warning(
+                        'Condor job %s was already deleted while resubmitting step %s.',
+                        previous_condor_job_id, step.id
+                    )
             # Restore CWD to working_directory in case condorpy's @set_cwd left it pointing
             # to the now-deleted workspace (condor_workflow_pre_delete calls close_remote which
             # uses @set_cwd; if that leaves CWD in the old workspace, os.getcwd() will fail
