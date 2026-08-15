@@ -9,6 +9,7 @@
 import os
 import shutil
 from unittest import mock
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, HttpResponseRedirect
 from tethys_sdk.base import TethysAppBase
 from tethys_apps.base.workspace import TethysWorkspace
@@ -220,6 +221,33 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
         self.assertEqual(1, len(arg_call_list['jobs_table']['jobs']))
         self.assertFalse(arg_call_list['can_run_workflows'])
 
+    @mock.patch.object(ResourceWorkflowView, 'workflow_locked_for_request_user', return_value=False)
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.render')
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.workflow_view.get_active_app')
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    def test_render_condor_jobs_table__job_row_missing(self, mock_get_app, mock_get_active_app, mock_render, _, __):
+        app = mock.MagicMock()
+        job_manager = mock.MagicMock()
+        job_manager.get_job.return_value = None
+        app.get_job_manager.return_value = job_manager
+        mock_get_app.return_value = app
+
+        active_app = mock.MagicMock()
+        active_app.url_namespace = 'app_namespace'
+        mock_get_active_app.return_value = active_app
+
+        self.request.user.is_anonymous = False
+        self.step.set_attribute('condor_job_id', 'deleted-job-123')
+        self.step.set_status(SpatialDatasetRWS.ROOT_STATUS_KEY, SpatialDatasetRWS.STATUS_COMPLETE)
+
+        SpatialCondorJobMWV().render_condor_jobs_table(self.request, self.session, self.resource, self.workflow,
+                                                       self.step, None, None)
+
+        arg_call_list = mock_render.call_args_list[0][0][2]
+        self.assertIn('jobs_table', arg_call_list)
+        self.assertEqual(0, len(arg_call_list['jobs_table']['jobs']))
+
     def test_process_step_data_not_next(self):
         self.request.POST = {}
 
@@ -365,6 +393,182 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
 
     @mock.patch.object(AppUsersViewMixin, 'get_app')
     @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
+    @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
+    def test_run_job__submission_failure_does_not_strand_the_step(
+            self, mock_model_db, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job,
+            mock_get_step, mock_is_read_only, mock_get_app):
+        """The step state is committed before submission, so a failed submit has to undo it.
+
+        Otherwise the step sits in WORKING waiting on a job that was never submitted, and the
+        view refuses to let the user advance.
+        """
+        map_manager = mock.MagicMock(
+            spec=MapManagerBase,
+            spatial_manager=mock.MagicMock(
+                gs_engine=mock.MagicMock(
+                    username='Faxy', password='Bear',
+                    endpoint='http://localhost:8181/geoserver/rest',
+                    public_endpoint='http://localhost:8181/geoserver/rest',
+                )
+            )
+        )
+        mock_model_db.return_value = mock.MagicMock(db_url='fake_db_url')
+        mock_get_map_manager.return_value = map_manager
+        mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
+        mock_prepare.return_value = self.workflow.id
+        mock_run_job.side_effect = RuntimeError('scheduler unreachable')
+        mock_get_step.return_value = self.step
+
+        # Distinct from STATUS_PENDING, which is the restore's fallback -- otherwise the
+        # assertion below cannot tell a real restore from the fallback firing.
+        self.step.set_status(self.step.ROOT_STATUS_KEY, self.step.STATUS_COMPLETE)
+        self.step.set_attribute(self.step.ATTR_STATUS_MESSAGE, 'previous message')
+        # No condor_job_id: a previous id sends run_job() down the delete-previous-job
+        # branch, which chdirs into a workspace this test has no reason to create. The
+        # pre-submission block sets the id from the prepared job anyway, so asserting it
+        # is None below still proves the restore ran.
+
+        session = mock.MagicMock()
+        self.step.workflow = mock.MagicMock()
+        self.step.workflow.resource = self.resource
+        self.request.user = UserFactory()
+        self.request.POST['run-submit'] = True
+        self.request.POST['rerun-submit'] = True
+        self.step.options['scheduler'] = 'my_schedule'
+        self.step.options['jobs'] = [{
+            'name': 'base_scenario',
+            'condorpy_template_name': 'vanilla_transfer_files',
+            'remote_input_files': [None],
+            'attributes': {
+                'executable': 'run_base_scenario.py',
+                'transfer_output_files': ['gssha_files', 'base_ohl_series.json'],
+            },
+        }]
+
+        with self.assertRaises(RuntimeError):
+            SpatialCondorJobMWV().run_job(
+                self.request, session, self.resource, self.workflow.id, self.step.id,
+            )
+
+        # Each of these is set by the pre-submission block to something different, so they
+        # all fail if the restore is removed. The status store is deliberately not asserted
+        # on: the pre-submission block clears it unconditionally, so its final value is the
+        # same whether the restore ran or not.
+        self.assertEqual(self.step.STATUS_COMPLETE, self.step.get_status(self.step.ROOT_STATUS_KEY))
+        self.assertEqual('previous message', self.step.get_attribute(self.step.ATTR_STATUS_MESSAGE))
+        self.assertIsNone(self.step.get_attribute('condor_job_id'))
+        # Downstream results must survive a run that never started.
+        self.step.workflow.reset_next_steps.assert_not_called()
+
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.mixins.WorkflowViewMixin.get_step')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
+    @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
+    def test_run_job__submission_recorded_as_err_is_treated_as_failure(
+            self, mock_model_db, mock_get_map_manager, mock_get_working_dir, mock_prepare, mock_run_job,
+            mock_get_step, mock_is_read_only, mock_get_app):
+        """TethysJob.execute() swallows submission errors and records ERR without raising.
+
+        Catching exceptions alone therefore misses the ordinary failure, which is what left
+        the step stranded in WORKING.
+        """
+        map_manager = mock.MagicMock(
+            spec=MapManagerBase,
+            spatial_manager=mock.MagicMock(
+                gs_engine=mock.MagicMock(
+                    username='Faxy', password='Bear',
+                    endpoint='http://localhost:8181/geoserver/rest',
+                    public_endpoint='http://localhost:8181/geoserver/rest',
+                )
+            )
+        )
+        mock_model_db.return_value = mock.MagicMock(db_url='fake_db_url')
+        mock_get_map_manager.return_value = map_manager
+        mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
+        mock_prepare.return_value = self.workflow.id
+        mock_get_step.return_value = self.step
+
+        # run_job returns normally, exactly as it does when execute() absorbed the error.
+        mock_run_job.return_value = str(self.workflow.id)
+
+        self.step.set_status(self.step.ROOT_STATUS_KEY, self.step.STATUS_COMPLETE)
+        # See the note in test_run_job__submission_failure_does_not_strand_the_step: a
+        # previous condor_job_id would route through the delete-previous-job branch.
+
+        session = mock.MagicMock()
+        self.step.workflow = mock.MagicMock()
+        self.step.workflow.resource = self.resource
+        self.request.user = UserFactory()
+        self.request.POST['run-submit'] = True
+        self.request.POST['rerun-submit'] = True
+        self.step.options['scheduler'] = 'my_schedule'
+        self.step.options['jobs'] = [{
+            'name': 'base_scenario',
+            'condorpy_template_name': 'vanilla_transfer_files',
+            'remote_input_files': [None],
+            'attributes': {
+                'executable': 'run_base_scenario.py',
+                'transfer_output_files': ['gssha_files', 'base_ohl_series.json'],
+            },
+        }]
+
+        with mock.patch.object(SpatialCondorJobMWV, 'job_was_submitted', return_value=False):
+            with self.assertRaises(RuntimeError):
+                SpatialCondorJobMWV().run_job(
+                    self.request, session, self.resource, self.workflow.id, self.step.id,
+                )
+
+        self.assertEqual(self.step.STATUS_COMPLETE, self.step.get_status(self.step.ROOT_STATUS_KEY))
+        self.assertIsNone(self.step.get_attribute('condor_job_id'))
+        self.step.workflow.reset_next_steps.assert_not_called()
+
+    def test_job_was_submitted(self):
+        def manager(**workflow_attrs):
+            workflow_attrs.setdefault('cluster_id', 0)
+            return mock.MagicMock(workflow=mock.MagicMock(**workflow_attrs))
+
+        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(manager(_status='SUB')))
+        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(manager(_status='ERR')))
+        self.assertFalse(SpatialCondorJobMWV.job_was_submitted(manager(_status='ABT')))
+
+    def test_job_was_submitted__cluster_id_wins_over_a_recorded_error(self):
+        """CondorBase._execute() submits and then saves; only the save has to fail for the
+        job to be recorded ERR while the DAG is genuinely running. Reporting that as
+        'not submitted' would orphan it."""
+        manager = mock.MagicMock(workflow=mock.MagicMock(_status='ERR', cluster_id=4211))
+
+        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(manager))
+
+    def test_job_was_submitted__no_workflow_is_not_a_failed_submission(self):
+        """The manager holds workflow=None until prepare() populates it, so None means
+        preparation did not run -- not that the scheduler refused the job."""
+        self.assertTrue(SpatialCondorJobMWV.job_was_submitted(mock.MagicMock(workflow=None)))
+
+    @mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.log')
+    def test_restore_step_after_failed_submission__commit_failure_is_logged_not_raised(self, mock_log):
+        """The caller is about to raise the submission error; cleanup must not replace it."""
+        session = mock.MagicMock()
+        session.commit.side_effect = RuntimeError('database gone')
+
+        SpatialCondorJobMWV.restore_step_after_failed_submission(
+            session, self.step, self.step.STATUS_COMPLETE, 'previous message',
+        )
+
+        session.rollback.assert_called_once()
+        # A step that could not be restored is left mid-run; that has to be visible.
+        mock_log.exception.assert_called_once()
+
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
     @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
     @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
@@ -496,6 +700,55 @@ class SpatialCondorJobMwvTests(WorkflowViewTestCase):
             ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
 
         mock_job_manager.get_job.assert_called_once_with(job_id=previous_job_id)
+        self.assertIsInstance(ret, HttpResponseRedirect)
+        self.assertEqual(self.request.path, ret.url)
+
+    @mock.patch.object(AppUsersViewMixin, 'get_app')
+    @mock.patch.object(ResourceWorkflowView, 'is_read_only', return_value=False)
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'run_job')
+    @mock.patch.object(ResourceWorkflowCondorJobManager, 'prepare')
+    @mock.patch.object(SpatialCondorJobMWV, 'get_working_directory')
+    @mock.patch.object(MapView, 'get_map_manager')
+    @mock.patch('tethysext.atcore.services.workflow_manager.condor_workflow_manager.ModelDatabase')
+    def test_run_job__previous_job_deleted_concurrently(self, mock_model_db, mock_get_map_manager,
+                                                        mock_get_working_dir, mock_prepare, mock_run_job,
+                                                        mock_is_read_only, mock_get_app):
+        previous_job_id = 'racing-job-abc-456'
+        mock_previous_job = mock.MagicMock()
+        mock_previous_job.delete.side_effect = ObjectDoesNotExist('TethysJob matching query does not exist.')
+        mock_job_manager = mock.MagicMock()
+        mock_job_manager.get_job.return_value = mock_previous_job
+        mock_app = mock.MagicMock()
+        mock_app.get_job_manager.return_value = mock_job_manager
+        mock_get_app.return_value = mock_app
+
+        mock_model_db.return_value = mock.MagicMock(db_url='fake_db_url')
+        mock_get_map_manager.return_value = mock.MagicMock(
+            spec=MapManagerBase,
+            spatial_manager=mock.MagicMock(gs_engine=mock.MagicMock())
+        )
+        mock_get_working_dir.return_value = os.path.join(self.working_dir_path, 'working_dir')
+        mock_prepare.return_value = self.workflow.id
+
+        session = mock.MagicMock()
+        self.step.workflow = mock.MagicMock()
+        self.step.workflow.resource = self.resource
+        self.step.set_attribute('condor_job_id', previous_job_id)
+        self.request.user = UserFactory()
+        self.request.POST['rerun-submit'] = True
+        self.step.options['scheduler'] = 'my_schedule'
+        self.step.options['jobs'] = [{
+            'name': 'base_scenario',
+            'condorpy_template_name': 'vanilla_transfer_files',
+            'remote_input_files': [None],
+            'attributes': {'executable': 'run.py', 'transfer_output_files': []}
+        }]
+
+        with mock.patch('tethysext.atcore.controllers.resource_workflows.map_workflows.spatial_condor_job_mwv.os.chdir'):  # noqa: E501
+            ret = SpatialCondorJobMWV().run_job(self.request, session, self.resource, self.workflow.id, self.step.id)
+
+        mock_previous_job.delete.assert_called_once()
+        mock_run_job.assert_called_once()
         self.assertIsInstance(ret, HttpResponseRedirect)
         self.assertEqual(self.request.path, ret.url)
 

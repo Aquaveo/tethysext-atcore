@@ -10,10 +10,12 @@ import os
 import json
 import logging
 from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from tethys_sdk.gizmos import JobsTable
 from tethysext.atcore.controllers.resource_workflows.map_workflows import MapWorkflowView
 from tethysext.atcore.models.resource_workflow_steps import SpatialCondorJobRWS
+from tethysext.atcore.services.resource_workflows.helpers import initialize_step_statuses
 from tethysext.atcore.services.workflow_manager.condor_workflow_manager import ResourceWorkflowCondorJobManager
 
 
@@ -144,8 +146,17 @@ class SpatialCondorJobMWV(MapWorkflowView):
             self._AppUser.ROLES.ORG_ADMIN
         ]
 
+        # The step keeps its condor_job_id forever, but the job row it points at does not:
+        # retention cleanup or an administrator can remove it. get_job returns None then, and
+        # JobsTable cannot render a None, so show an empty table instead of raising.
+        if job_id is not None and step_job is None:
+            log.warning(
+                'Step %s references condor job %s, which no longer exists. '
+                'Rendering an empty job table.', current_step.id, job_id
+            )
+
         jobs_table = JobsTable(
-            jobs=[step_job],
+            jobs=[step_job] if step_job else [],
             column_fields=('description', 'creation_time', ),
             hover=True,
             striped=True,
@@ -298,7 +309,16 @@ class SpatialCondorJobMWV(MapWorkflowView):
         if previous_condor_job_id:
             previous_job = app.get_job_manager().get_job(job_id=previous_condor_job_id)
             if previous_job:
-                previous_job.delete()
+                try:
+                    previous_job.delete()
+                except ObjectDoesNotExist:
+                    # Something else deleted the row between the lookup and here -- two
+                    # submissions of the same step racing, for instance. The row being gone
+                    # is the outcome this wanted, so carry on and submit the new job.
+                    log.warning(
+                        'Condor job %s was already deleted while resubmitting step %s.',
+                        previous_condor_job_id, step.id
+                    )
             # Restore CWD to working_directory in case condorpy's @set_cwd left it pointing
             # to the now-deleted workspace (condor_workflow_pre_delete calls close_remote which
             # uses @set_cwd; if that leaves CWD in the old workspace, os.getcwd() will fail
@@ -322,8 +342,9 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Deal with locking
         self.handle_on_submit_locking(request, session, resource, step)
 
-        # Submit job
-        condor_job_manager.run_job()
+        # Kept so the step can be put back if the submission below never happens.
+        previous_status = step.get_status(step.ROOT_STATUS_KEY)
+        previous_status_message = step.get_attribute(step.ATTR_STATUS_MESSAGE)
 
         # Update status of the resource workflow step
         step.set_status(step.ROOT_STATUS_KEY, step.STATUS_WORKING)
@@ -332,15 +353,109 @@ class SpatialCondorJobMWV(MapWorkflowView):
         # Save the job id to the step for later reference
         step.set_attribute('condor_job_id', job_id)
 
-        # Allow the step to track statuses on each "sub-job"
-        step.set_attribute('condor_job_statuses', [])
-
-        # Reset next steps
-        step.workflow.reset_next_steps(step)
+        # Allow the step to track statuses on each "sub-job", keyed by node name.
+        # This has to be committed BEFORE the job is submitted: nodes start
+        # reporting as soon as DAGMan schedules them, and this write is an
+        # unlocked overwrite of the whole attributes document, so clearing it
+        # afterwards would discard statuses that had already been committed.
+        initialize_step_statuses(step)
 
         session.commit()
 
+        # Submit job
+        submission_error = None
+
+        try:
+            condor_job_manager.run_job()
+        except Exception as e:
+            submission_error = e
+
+        # A raised exception is not the only way submission fails, and is not even the
+        # usual one: TethysJob.execute() catches everything the submit raises and records
+        # the job as ERR instead, so run_job() returns normally after a scheduler that
+        # could not be reached. The recorded status has to be checked as well.
+        if submission_error is None and not self.job_was_submitted(condor_job_manager):
+            submission_error = RuntimeError(
+                'The job for step {} was not accepted by the scheduler.'.format(step.id)
+            )
+
+        if submission_error is not None:
+            self.restore_step_after_failed_submission(
+                session, step, previous_status, previous_status_message,
+            )
+            raise submission_error
+
+        # Reset next steps only now that the job is really running. Doing it before
+        # submission would discard downstream results for a run that never started.
+        step.workflow.reset_next_steps(step)
+        session.commit()
+
         return redirect(request.path)
+
+    @staticmethod
+    def job_was_submitted(condor_job_manager):
+        """
+        Whether the scheduler actually accepted the job.
+
+        TethysJob.execute() wraps the submit in a bare except that records the job as
+        ERR rather than re-raising, so the absence of an exception says nothing about
+        whether submission happened.
+
+        A recorded ERR is not conclusive either. CondorBase._execute() submits and then
+        saves in two steps::
+
+            self.cluster_id = self.condor_object.submit(*args, **kwargs)
+            self.save()
+
+        and both are inside that same bare except, so a save that fails after a submit
+        that succeeded is recorded exactly like a scheduler that refused the job. Telling
+        the caller that a running DAG was never submitted is the more expensive mistake:
+        it would orphan the job and let the step's status document be rewritten without
+        the row lock every reporting node takes. The cluster id is assigned before the
+        save that can fail, so a non-zero value means the job is out there regardless of
+        what the status says.
+
+        Args:
+            condor_job_manager(ResourceWorkflowCondorJobManager): The manager used to submit.
+
+        Returns:
+            bool: False only when the job is known not to be running.
+        """
+        workflow = getattr(condor_job_manager, 'workflow', None)
+
+        if getattr(workflow, 'cluster_id', 0):
+            return True
+
+        # A missing workflow is not evidence of a failed submission. The manager
+        # initialises it to None and only populates it in prepare(), which run_job()
+        # always runs first, so None here means preparation did not happen rather than
+        # that the scheduler refused anything. Reporting failure for it would raise on
+        # paths that never attempted a submission at all.
+        return getattr(workflow, '_status', None) not in ('ERR', 'ABT')
+
+    @staticmethod
+    def restore_step_after_failed_submission(session, step, previous_status, previous_status_message):
+        """
+        Undoes the pre-submission state when no job will ever report against it.
+
+        Without this the step sits in WORKING waiting on a job that was never submitted,
+        and the view refuses to let the user advance.
+
+        Failure to restore is logged rather than raised: the caller is about to raise the
+        submission error, and replacing it with a cleanup error would hide the real cause.
+        """
+        try:
+            step.set_status(step.ROOT_STATUS_KEY, previous_status or step.STATUS_PENDING)
+            step.set_attribute(step.ATTR_STATUS_MESSAGE, previous_status_message)
+            step.set_attribute('condor_job_id', None)
+            initialize_step_statuses(step)
+            session.commit()
+        except Exception:
+            session.rollback()
+            log.exception(
+                'Could not restore step %s after a failed job submission; it may be left in %s.',
+                step.id, step.STATUS_WORKING,
+            )
 
     def handle_on_submit_locking(self, request, session, resource, step):
         """

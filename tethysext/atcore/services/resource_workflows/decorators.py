@@ -127,6 +127,42 @@ def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
                 resource_db_session = None
                 ret_val = None
 
+                def record_status(status):
+                    """
+                    Records this node's status, never raising.
+
+                    set_step_status already retries a busy row and a dead connection.
+                    This adds the last resort: if the caller's session cannot be used at
+                    all, try once on a brand-new session from the same engine, and if
+                    even that fails, say so through the logger rather than only on
+                    stderr -- a status that never lands is the silent failure this whole
+                    mechanism exists to prevent, so it needs somewhere an operator can
+                    actually see it.
+                    """
+                    try:
+                        set_step_status(resource_db_session, step, status)
+                        return
+                    except Exception:
+                        log.warning(
+                            'Could not record %s for step %s on the job session; retrying on a fresh one.',
+                            status, args.resource_workflow_step_id, exc_info=True,
+                        )
+
+                    try:
+                        retry_session = sessionmaker(bind=resource_db_engine)()
+                        try:
+                            retry_step = retry_session.query(type(step)).get(step.id)
+                            set_step_status(retry_session, retry_step, status)
+                        finally:
+                            retry_session.close()
+                    except Exception:
+                        log.error(
+                            'Could not record %s for step %s. The status is lost; the workflow will '
+                            'not reflect what this node did.',
+                            status, args.resource_workflow_step_id, exc_info=True,
+                        )
+                        traceback.print_exc(file=sys.stderr)
+
                 try:
                     # Get the resource database session
                     engine_kwargs = db_engine_kwargs if db_engine_kwargs else {}
@@ -181,27 +217,18 @@ def workflow_step_job(job_func=None, *, db_engine_kwargs=None):
                     )
 
                     # Update step status
+                    #
+                    # Deliberately guarded separately from the work above. The work has
+                    # already succeeded at this point, so a failure to record that must
+                    # not fall through to the handler below and be written down as a node
+                    # failure -- with the row lock the status write now takes, contention
+                    # is a real way for this to fail.
                     print('Updating status...')
-                    set_step_status(resource_db_session, step, step.STATUS_COMPLETE)
+                    record_status(step.STATUS_COMPLETE)
 
                 except Exception as e:
                     if step and resource_db_session:
-                        try:
-                            set_step_status(resource_db_session, step, step.STATUS_FAILED)
-                        except Exception:
-                            # Status write through the helper still failed; try one
-                            # more time on a brand-new session from the engine.
-                            try:
-                                step_cls = type(step)
-                                step_id = step.id
-                                fallback_session = sessionmaker(bind=resource_db_engine)()
-                                try:
-                                    fallback_step = fallback_session.query(step_cls).get(step_id)
-                                    set_step_status(fallback_session, fallback_step, step.STATUS_FAILED)
-                                finally:
-                                    fallback_session.close()
-                            except Exception:
-                                traceback.print_exc(file=sys.stderr)
+                        record_status(step.STATUS_FAILED)
                     sys.stderr.write('Error processing {0}'.format(args.resource_workflow_step_id))
                     traceback.print_exc(file=sys.stderr)
                     sys.stderr.write(repr(e))

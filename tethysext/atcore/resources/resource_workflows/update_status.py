@@ -10,6 +10,7 @@
 import sys
 import traceback
 from tethysext.atcore.services.resource_workflows.decorators import workflow_step_job
+from tethysext.atcore.services.resource_workflows.helpers import get_step_statuses
 
 
 @workflow_step_job
@@ -21,7 +22,7 @@ def main(resource_db_session, model_db_session, resource, workflow, step, gs_pri
     # Write out needed files
     try:
         print('Updating status...')
-        job_statuses = step.get_attribute('condor_job_statuses')
+        job_statuses = get_step_statuses(step)
         print(job_statuses)
         if step.STATUS_FAILED in job_statuses:
             step.set_status(step.ROOT_STATUS_KEY, step.STATUS_FAILED)
