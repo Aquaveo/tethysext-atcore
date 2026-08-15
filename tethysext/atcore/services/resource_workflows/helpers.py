@@ -3,6 +3,7 @@ import logging
 import os
 import time
 
+from contextlib import contextmanager
 from functools import lru_cache
 
 from sqlalchemy import text
@@ -87,6 +88,72 @@ def _is_lock_timeout(error):
     connection is still perfectly good.
     """
     return getattr(getattr(error, 'orig', None), 'pgcode', None) == LOCK_NOT_AVAILABLE
+
+
+@contextmanager
+def released_sessions(*sessions):
+    """
+    Holds no database transaction for the duration of the block.
+
+    A workflow_step_job body opens a transaction as soon as it queries anything,
+    and that transaction stays open until the job ends. When the body then does
+    something long that needs no database at all -- running GSSHA, publishing
+    layers to GeoServer -- the transaction sits idle for the whole of it. Under
+    a transaction-mode connection pooler an open transaction pins a server
+    connection, so an idle worker occupies a slot that the web application is
+    also drawing from.
+
+    Wrap the long stretch in this to commit first and hold nothing while it
+    runs::
+
+        with released_sessions(resource_db_session, model_db_session):
+            run_gssha(project_dir, project_file)
+
+    Committing rather than rolling back is deliberate: both end the transaction,
+    but rolling back would silently discard whatever the body had staged.
+
+    ``expire_on_commit`` is switched off for the sessions given here and
+    restored on the way out. Without that, the commit on entry would expire
+    every loaded object and the first attribute read after the block would open
+    a new transaction, which is most of what the block was avoiding. It is
+    applied per-session rather than on the sessionmaker so that callers which
+    never use this function keep the default refresh-after-commit behaviour.
+
+    Objects loaded before the block stay readable inside and after it. Anything
+    modified after the block should be re-read (``populate_existing()`` or
+    ``Session.refresh()``) rather than trusted from the identity map, since it
+    may have been changed by another DAG node in the meantime.
+
+    Doing database work inside the block re-opens a transaction and defeats the
+    purpose; keep the block to work that needs no session.
+
+    Args:
+        *sessions(sqlalchemy.orm.Session): Sessions to release. ``None`` is
+            accepted and skipped, because workflow_step_job passes a null model
+            database session when the model database URL is not usable.
+    """
+    unique_sessions = []
+    seen = set()
+
+    for session in sessions:
+        if session is None or id(session) in seen:
+            continue
+        seen.add(id(session))
+        unique_sessions.append(session)
+
+    expire_on_commit = [(s, s.expire_on_commit) for s in unique_sessions]
+
+    try:
+        for session in unique_sessions:
+            # Order matters: switching this off after the commit would be too
+            # late to stop that commit expiring everything.
+            session.expire_on_commit = False
+            session.commit()
+
+        yield
+    finally:
+        for session, previous in expire_on_commit:
+            session.expire_on_commit = previous
 
 
 def set_step_status(resource_db_session, step, status, node_name=None):

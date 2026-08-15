@@ -10,7 +10,7 @@ from unittest import mock
 import os
 import tempfile
 import unittest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import OperationalError, PendingRollbackError
 from sqlalchemy.orm import sessionmaker
 from tethysext.atcore.services.resource_workflows import helpers
@@ -510,3 +510,293 @@ class HelpersArgParseTests(unittest.TestCase):
         ret, extra_args = helpers.parse_workflow_step_args()
         self.assertIsInstance(ret, Namespace)
         self.assertListEqual(extra_args, ['extra_argument_1', 'extra_argument_2', 'extra_argument_3'])
+
+
+class ReleasedSessionsTests(unittest.TestCase):
+    """
+    Exercises released_sessions against a real database.
+
+    Whether a transaction is actually open, and whether a commit expires loaded
+    objects, are properties of the session and the server rather than of the
+    call sequence, so mocks cannot show either.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.engine = create_engine(TEST_DB_URL, connect_args={'connect_timeout': 5})
+        try:
+            cls.engine.connect().close()
+        except OperationalError as e:
+            raise unittest.SkipTest('test database at {} is unreachable: {}'.format(TEST_DB_URL, e))
+        initialize_app_users_db(cls.engine)
+        cls.Session = sessionmaker(bind=cls.engine)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.engine.dispose()
+
+    def setUp(self):
+        helpers.dag_node_name.cache_clear()
+        self.session = self.Session()
+        self.workflow = ResourceWorkflow(name='release_test')
+        self.step = ResourceWorkflowStep(name='release_step', help='h', order=1)
+        self.step.attributes = {STATUSES: {}}
+        self.workflow.steps = [self.step]
+        self.session.add(self.workflow)
+        self.session.commit()
+        self.step_id = self.step.id
+        self.workflow_id = self.workflow.id
+
+    def tearDown(self):
+        self.session.rollback()
+        self.session.delete(self.session.query(ResourceWorkflow).get(self.workflow_id))
+        self.session.commit()
+        self.session.close()
+
+    def _load_step(self, session):
+        return session.query(ResourceWorkflowStep).get(self.step_id)
+
+    def test_no_transaction_is_held_inside_the_region(self):
+        """The whole point: a long region must not pin a server connection."""
+        session = self.Session()
+        try:
+            self._load_step(session)
+            self.assertTrue(session.in_transaction())
+
+            with helpers.released_sessions(session):
+                self.assertFalse(session.in_transaction())
+        finally:
+            session.close()
+
+    def test_loaded_attributes_survive_the_release(self):
+        session = self.Session()
+        try:
+            step = self._load_step(session)
+            self.assertEqual('release_step', step.name)
+
+            with helpers.released_sessions(session):
+                self.assertFalse(inspect(step).expired)
+                self.assertEqual('release_step', step.name)
+                self.assertFalse(session.in_transaction())
+        finally:
+            session.close()
+
+    def test_relationship_traversal_survives_the_release(self):
+        """The decorator traverses step.workflow before the body and uses step after it."""
+        session = self.Session()
+        try:
+            step = self._load_step(session)
+            self.assertIsNotNone(step.workflow)
+
+            with helpers.released_sessions(session):
+                pass
+
+            self.assertEqual(self.workflow_id, step.workflow.id)
+        finally:
+            session.close()
+
+    def test_expire_on_commit_is_restored_on_exit(self):
+        session = self.Session()
+        try:
+            self.assertTrue(session.expire_on_commit)
+            with helpers.released_sessions(session):
+                self.assertFalse(session.expire_on_commit)
+            self.assertTrue(session.expire_on_commit)
+        finally:
+            session.close()
+
+    def test_expire_on_commit_is_restored_when_the_body_raises(self):
+        session = self.Session()
+        try:
+            with self.assertRaises(RuntimeError):
+                with helpers.released_sessions(session):
+                    raise RuntimeError('gssha failed')
+            self.assertTrue(session.expire_on_commit)
+        finally:
+            session.close()
+
+    def test_non_adopting_sessions_keep_expire_on_commit(self):
+        """R7: a session never handed to the seam must keep default refresh-after-commit."""
+        adopting = self.Session()
+        untouched = self.Session()
+        try:
+            step = self._load_step(untouched)
+            self.assertEqual('release_step', step.name)
+
+            with helpers.released_sessions(adopting):
+                pass
+
+            self.assertTrue(untouched.expire_on_commit)
+            untouched.commit()
+            self.assertTrue(inspect(step).expired)
+        finally:
+            adopting.close()
+            untouched.close()
+
+    def test_status_write_after_a_release_still_commits(self):
+        session = self.Session()
+        try:
+            step = self._load_step(session)
+
+            with helpers.released_sessions(session):
+                pass
+
+            helpers.set_step_status(session, step, 'Complete', node_name=NODE)
+        finally:
+            session.close()
+
+        self.session.expire_all()
+        self.assertEqual(['Complete'], helpers.get_step_statuses(self._load_step(self.session)))
+
+    def test_pending_write_is_committed_not_discarded(self):
+        """commit() rather than rollback(): staged work must survive the release."""
+        session = self.Session()
+        try:
+            step = self._load_step(session)
+            step.set_attribute('released_marker', 'kept')
+
+            with helpers.released_sessions(session):
+                pass
+        finally:
+            session.close()
+
+        self.session.expire_all()
+        self.assertEqual('kept', self._load_step(self.session).get_attribute('released_marker'))
+
+    def test_release_is_idempotent(self):
+        session = self.Session()
+        try:
+            self._load_step(session)
+            with helpers.released_sessions(session):
+                with helpers.released_sessions(session):
+                    self.assertFalse(session.in_transaction())
+                self.assertFalse(session.expire_on_commit)
+            self.assertTrue(session.expire_on_commit)
+        finally:
+            session.close()
+
+    def test_the_same_session_passed_twice_is_restored(self):
+        session = self.Session()
+        try:
+            with helpers.released_sessions(session, session):
+                self.assertFalse(session.expire_on_commit)
+            self.assertTrue(session.expire_on_commit)
+        finally:
+            session.close()
+
+
+class ReleasedSessionsNilPathTests(unittest.TestCase):
+    """The decorator passes model_db_session=None when model_db_url is invalid."""
+
+    def test_none_session_is_skipped(self):
+        with helpers.released_sessions(None):
+            pass
+
+    def test_no_sessions_is_a_no_op(self):
+        with helpers.released_sessions():
+            pass
+
+    def test_none_alongside_a_real_session(self):
+        session = mock.MagicMock()
+        session.expire_on_commit = True
+
+        with helpers.released_sessions(None, session):
+            pass
+
+        session.commit.assert_called_once()
+
+
+class ReleasedSessionsAfterTheBlockTests(unittest.TestCase):
+    """
+    What a job body may and may not trust once a release has happened.
+
+    Two AGWA scenario scripts reach a sibling step through the workflow after
+    running GSSHA and write to it. These pin the contract those scripts rely on.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.engine = create_engine(TEST_DB_URL, connect_args={'connect_timeout': 5})
+        try:
+            cls.engine.connect().close()
+        except OperationalError as e:
+            raise unittest.SkipTest('test database at {} is unreachable: {}'.format(TEST_DB_URL, e))
+        initialize_app_users_db(cls.engine)
+        cls.Session = sessionmaker(bind=cls.engine)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.engine.dispose()
+
+    def setUp(self):
+        helpers.dag_node_name.cache_clear()
+        self.session = self.Session()
+        self.workflow = ResourceWorkflow(name='after_block_test')
+        self.target = ResourceWorkflowStep(name='Define Upstream Cells', help='h', order=1)
+        self.runner = ResourceWorkflowStep(name='Run', help='h', order=2)
+        self.target.attributes = {'imagery': []}
+        self.workflow.steps = [self.target, self.runner]
+        self.session.add(self.workflow)
+        self.session.commit()
+        self.workflow_id = self.workflow.id
+        self.target_id = self.target.id
+
+    def tearDown(self):
+        self.session.rollback()
+        self.session.delete(self.session.query(ResourceWorkflow).get(self.workflow_id))
+        self.session.commit()
+        self.session.close()
+
+    def test_sibling_step_reached_after_a_release_can_be_written(self):
+        """The shape both scripts use: traverse to another step, set an attribute, commit."""
+        session = self.Session()
+        try:
+            workflow = session.query(ResourceWorkflow).get(self.workflow_id)
+
+            with helpers.released_sessions(session):
+                pass
+
+            step = workflow.get_step_by_name('Define Upstream Cells')
+            step.set_attribute('imagery', [{'layer_name': 'agwa:flow_accumulation'}])
+            session.commit()
+        finally:
+            session.close()
+
+        self.session.expire_all()
+        written = self.session.query(ResourceWorkflowStep).get(self.target_id)
+        self.assertEqual([{'layer_name': 'agwa:flow_accumulation'}], written.get_attribute('imagery'))
+
+    def test_a_read_after_a_release_can_be_stale_unless_refreshed(self):
+        """
+        Why anything modified after a release must be re-read.
+
+        The object was loaded before the release, so it is still in the identity
+        map afterwards. A sibling DAG node committing in between is invisible
+        until the row is read again, and a read-modify-write on the stale value
+        would drop the sibling's entry.
+        """
+        reader = self.Session()
+        writer = self.Session()
+        try:
+            step = reader.query(ResourceWorkflowStep).get(self.target_id)
+            self.assertEqual([], step.get_attribute('imagery'))
+
+            with helpers.released_sessions(reader):
+                pass
+
+            sibling = writer.query(ResourceWorkflowStep).get(self.target_id)
+            sibling.set_attribute('imagery', [{'layer_name': 'from_sibling'}])
+            writer.commit()
+
+            self.assertEqual([], step.get_attribute('imagery'))
+
+            refreshed = (
+                reader.query(ResourceWorkflowStep)
+                .populate_existing()
+                .filter_by(id=self.target_id)
+                .one()
+            )
+            self.assertEqual([{'layer_name': 'from_sibling'}], refreshed.get_attribute('imagery'))
+        finally:
+            reader.close()
+            writer.close()
