@@ -1,7 +1,9 @@
 from unittest import mock
 
 import param
+from django import forms
 from django.http import HttpRequest
+from django.test import SimpleTestCase
 
 from tethysext.atcore.controllers.resource_workflows.workflow_view import ResourceWorkflowView
 from tethysext.atcore.models.app_users.resource_workflow import ResourceWorkflow
@@ -16,6 +18,7 @@ from tethysext.atcore.tests.integrated_tests.controllers.resource_workflows.work
 from tethysext.atcore.tests.utilities.sqlalchemy_helpers import setup_module_for_sqlalchemy_tests, \
     tear_down_module_for_sqlalchemy_tests
 from tethysext.atcore.controllers.resource_workflows.workflow_views import generate_django_form_xmstool, XMSToolWV
+from tethysext.atcore.controllers.resource_workflows.workflow_views.xms_tool_wv import _build_selector_field
 
 
 class TestResource:
@@ -64,6 +67,41 @@ class TestTool(param.Parameterized):
         arguments.append(argument3)
 
         return arguments
+
+
+class BuildSelectorFieldTests(SimpleTestCase):
+    def test_flat_string_choices_normalized_to_tuples(self):
+        field = _build_selector_field({
+            'value': 'Whitebox rho8',
+            'choices': ['Whitebox rho8', 'Whitebox full workflow'],
+        })
+
+        self.assertEqual(
+            [('Whitebox rho8', 'Whitebox rho8'), ('Whitebox full workflow', 'Whitebox full workflow')],
+            field.choices
+        )
+        self.assertEqual('Whitebox rho8', field.initial)
+
+    def test_tuple_choices_passed_through(self):
+        choices = [('12345678', 'Raster 1'), ('87654321', 'Raster 2')]
+
+        field = _build_selector_field({'value': '12345678', 'choices': choices})
+
+        self.assertEqual(choices, field.choices)
+
+    def test_flat_string_choices_render(self):
+        # Rendering a field with flat string choices used to raise
+        # "ValueError: too many values to unpack (expected 2)"
+        field = _build_selector_field({
+            'value': 'Whitebox rho8',
+            'choices': ['Whitebox rho8', 'Whitebox full workflow'],
+        })
+        form_class = type('TestForm', (forms.Form,), {'preprocessing_engine': field})
+
+        rendered = str(form_class()['preprocessing_engine'])
+
+        self.assertIn('Whitebox rho8', rendered)
+        self.assertIn('Whitebox full workflow', rendered)
 
 
 def setUpModule():

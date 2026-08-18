@@ -21,10 +21,11 @@ log = logging.getLogger(f'tethys.{__name__}')
 
 
 def _build_selector_field(info):
+    choices = [(c, c) if not isinstance(c, (list, tuple)) else c for c in info['choices']]
     return forms.ChoiceField(
         initial=info['value'],
         widget=Select2Widget,
-        choices=info['choices'],
+        choices=choices,
     )
 
 
@@ -95,7 +96,6 @@ def generate_django_form_xmstool(xms_tool_class, form_values, resource=None, for
     tool_arguments = xms_tool_class.initial_arguments()
     input_arg_names = {a.name for a in tool_arguments if a.io_direction == 1}
     argument_params = (setup_func or _default_setup_args)(tool_arguments)
-
     # Create Django Form class dynamically
     class_name = '{}Form'.format(xms_tool_class.name.title()).replace(' ', '')
     form_class = type(class_name, (forms.Form,), {})
