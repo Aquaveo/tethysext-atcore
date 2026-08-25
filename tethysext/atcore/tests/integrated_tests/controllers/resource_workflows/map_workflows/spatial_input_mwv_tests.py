@@ -128,6 +128,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             'allow_shapefile': False,
             'allow_edit_attributes': True,
             'allow_image': False,
+            'max_features': None,
         }
         self.assertEqual(expected, ret)
 
@@ -148,6 +149,7 @@ class SpatialInputMwvTests(WorkflowViewTestCase):
             'allow_shapefile': False,
             'allow_edit_attributes': False,
             'allow_image': False,
+            'max_features': None,
         }
         self.assertEqual(expected, ret)
 
