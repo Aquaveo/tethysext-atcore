@@ -40,7 +40,8 @@ var SPATIAL_INPUT_MWV = (function() {
  	var reset;
 
  	var generate_attributes_form, initialize_attributes_form, bind_attributes_ok,
- 	    bind_popup_shown_event, bind_popup_closed_event, parse_allow_edit_attributes;
+ 	    bind_popup_shown_event, bind_popup_closed_event, parse_allow_edit_attributes,
+ 	    parse_max_features, enforce_max_features;
 
  	var process_attributes_form;
 
@@ -139,6 +140,41 @@ var SPATIAL_INPUT_MWV = (function() {
         return $map_attributes.data('allow-edit-attributes');
     };
 
+    parse_max_features = function() {
+        var $map_attributes = $('#atcore-spatial-input-attributes');
+        return $map_attributes.data('max-features');
+    };
+
+    enforce_max_features = function() {
+        let max_features = parse_max_features();
+
+        if (!max_features || max_features < 1) {
+            return;
+        }
+
+        // Find the drawing layer by the layer_id assigned to it via the MVDraw data option
+        let drawing_layer = null;
+        TETHYS_MAP_VIEW.getMap().getLayers().forEach(function(layer) {
+            if (layer.tethys_data && layer.tethys_data.layer_id === 'drawing_layer') {
+                drawing_layer = layer;
+            }
+        });
+
+        if (!drawing_layer) {
+            return;
+        }
+
+        // Drawing a new feature removes the oldest one(s) beyond the limit
+        let source = drawing_layer.getSource();
+        source.on('addfeature', function() {
+            let features = source.getFeatures();
+            while (features.length > max_features) {
+                source.removeFeature(features[0]);
+                features = source.getFeatures();
+            }
+        });
+    };
+
 	/************************************************************************
  	*                        DEFINE PUBLIC INTERFACE
  	*************************************************************************/
@@ -175,6 +211,9 @@ var SPATIAL_INPUT_MWV = (function() {
         // Bind to various popup events
         bind_popup_shown_event();
         bind_popup_closed_event();
+
+        // Limit the number of features on the drawing layer, if configured
+        enforce_max_features();
 
         let m_map = TETHYS_MAP_VIEW.getMap();
         let m_scale = new ol.control.ScaleLine({

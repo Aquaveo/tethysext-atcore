@@ -50,6 +50,8 @@ def _default_setup_args(arguments):
     """
     arguments_dict = {}
     for argument in arguments:
+        if argument.hide:
+            continue
         interface_info = argument.get_interface_info()
         if interface_info['value'] is not None:
             interface_info['value'] = argument.value
