@@ -12,6 +12,8 @@ import os
 import re
 import time
 import uuid
+from zipfile import ZipFile
+from io import BytesIO
 
 from django.http import HttpResponse, Http404
 import tethys_gizmos.gizmo_options.datatable_view as gizmo_datatable_view
@@ -160,3 +162,24 @@ class ResourceFilesTab(ResourceTab):
                         response['Content-Disposition'] = 'filename=' + os.path.basename(file_path)
                         return response
         raise Http404('Unable to download file.')
+
+    def download_all(self, request, resource, session, *args, **kwargs):
+        """
+        Download all files form all collections of this resource as a zip.
+        """
+        collections = self.get_file_collections(request, resource, session)
+        in_memory = BytesIO()
+        with ZipFile(in_memory, 'w') as zf:
+            for collection in collections:
+                for root, _dirs, files in os.walk(collection.path):
+                    for filename in files:
+                        if any(re.search(p, filename) for p in self.file_hide_patterns):
+                            continue
+                        abs_path = os.path.join(root, filename)
+                        arcname = os.path.relpath(abs_path, collection.path)
+                        zf.write(abs_path, arcname=arcname)
+        response = HttpResponse(content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{resource.name}.zip"'
+        in_memory.seek(0)
+        response.write(in_memory.read())
+        return response
