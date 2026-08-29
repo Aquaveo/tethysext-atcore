@@ -165,19 +165,37 @@ class ResourceFilesTab(ResourceTab):
 
     def download_all(self, request, resource, session, *args, **kwargs):
         """
-        Download all files form all collections of this resource as a zip.
+        Download all files from all collections of this resource as a zip,
+        or directly if there is only one file.
         """
         collections = self.get_file_collections(request, resource, session)
+
+        all_files = []  # list of (abs_path, arcname)
+        for collection in collections:
+            for root, _dirs, files in os.walk(collection.path):
+                for filename in files:
+                    if any(re.search(p, filename) for p in self.file_hide_patterns):
+                        continue
+                    abs_path = os.path.join(root, filename)
+                    all_files.append((abs_path, os.path.relpath(abs_path, collection.path)))
+
+        if not all_files:
+            raise Http404('No files to download.')
+
+        # Single file: send it as-is instead of zipping.
+        if len(all_files) == 1:
+            abs_path, arcname = all_files[0]
+            file_ext = os.path.splitext(abs_path)[1]
+            mimetype = mimetypes.types_map.get(file_ext, 'application/octet-stream')
+            with open(abs_path, 'rb') as fh:
+                response = HttpResponse(fh.read(), content_type=mimetype)
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(arcname)}"'
+            return response
+
         in_memory = BytesIO()
         with ZipFile(in_memory, 'w') as zf:
-            for collection in collections:
-                for root, _dirs, files in os.walk(collection.path):
-                    for filename in files:
-                        if any(re.search(p, filename) for p in self.file_hide_patterns):
-                            continue
-                        abs_path = os.path.join(root, filename)
-                        arcname = os.path.relpath(abs_path, collection.path)
-                        zf.write(abs_path, arcname=arcname)
+            for abs_path, arcname in all_files:
+                zf.write(abs_path, arcname=arcname)
         response = HttpResponse(content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename="{resource.name}.zip"'
         in_memory.seek(0)
