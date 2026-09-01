@@ -63,7 +63,8 @@ class SpatialInputMWV(MapWorkflowView):
 
         return {'allow_shapefile': allow_shapefile_uploads,
                 'allow_edit_attributes': allow_edit_attributes,
-                'allow_image': allow_image_uploads}
+                'allow_image': allow_image_uploads,
+                'max_features': current_step.options.get('max_features', None)}
 
     def process_step_options(self, request, session, context, resource, current_step, previous_step, next_step):
         """
@@ -245,6 +246,10 @@ class SpatialInputMWV(MapWorkflowView):
 
         # Post process geojson
         post_processed_geojson = self.post_process_geojson(combined_geojson)
+
+        max_features = step.options.get('max_features', None)
+        if max_features and len(post_processed_geojson.get('features', [])) > max_features:
+            raise ValueError(f'You have exceeded the maximum number of features allowed ({max_features}).')
 
         # Update the geometry parameter
         step.set_parameter('geometry', post_processed_geojson)
