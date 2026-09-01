@@ -153,7 +153,7 @@ class FilesTabTests(SqlAlchemyTestCase):
             ret = instance.download_file(request, self.resource, self.session)
             self.assertTrue(isinstance(ret, HttpResponse))
             self.assertEqual(ret.content, b'Text for test to check.')
-            self.assertEqual(ret['Content-Disposition'], 'filename=file1.txt')
+            self.assertEqual(ret['Content-Disposition'], 'attachment; filename="file1.txt"')
 
     def test_download_file_fail(self):
         """Test default implementation of get_summary_tab_info."""
