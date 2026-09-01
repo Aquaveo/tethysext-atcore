@@ -7,8 +7,10 @@
 ********************************************************************************
 """
 import os
+from io import BytesIO
 from unittest import mock
 import uuid
+from zipfile import ZipFile
 
 from django.http import HttpResponse, Http404
 from django.test import RequestFactory
@@ -170,6 +172,121 @@ class FilesTabTests(SqlAlchemyTestCase):
                 _ = instance.download_file(request, self.resource, self.session)
 
             self.assertTrue('Unable to download file.' in str(exc.exception))
+
+    def test_download_all_zip(self):
+        """Test download_all zips all files from the collection."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_all')
+
+            ret = instance.download_all(request, self.resource, self.session)
+            self.assertTrue(isinstance(ret, HttpResponse))
+            self.assertEqual(ret['Content-Type'], 'application/zip')
+            self.assertEqual(ret['Content-Disposition'], 'attachment; filename="Test Resource.zip"')
+
+            with ZipFile(BytesIO(ret.content)) as zf:
+                self.assertEqual(
+                    sorted(zf.namelist()),
+                    [os.path.join('dir1', 'file1.txt'), os.path.join('dir1', 'file2.txt'), 'file5.txt']
+                )
+
+    def test_download_all_single_file(self):
+        """Test download_all sends a single file directly instead of zipping."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+            instance.file_hide_patterns = [r'file2\.txt', r'file5\.txt']
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_all')
+
+            ret = instance.download_all(request, self.resource, self.session)
+            self.assertTrue(isinstance(ret, HttpResponse))
+            self.assertEqual(ret.content, b'Text for test to check.')
+            self.assertEqual(ret['Content-Disposition'], 'attachment; filename="file1.txt"')
+
+    def test_download_all_no_files(self):
+        """Test download_all raises Http404 when there are no files to download."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+            instance.file_hide_patterns = [r'.*\.txt']
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_all')
+
+            with self.assertRaises(Http404) as exc:
+                _ = instance.download_all(request, self.resource, self.session)
+
+            self.assertTrue('No files to download.' in str(exc.exception))
+
+    def test_download_layer_single_file(self):
+        """Test download_layer sends the single file matching the layer variable."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_layer'
+                                               '&layer=abcd-1234_file1')
+
+            ret = instance.download_layer(request, self.resource, self.session)
+            self.assertTrue(isinstance(ret, HttpResponse))
+            self.assertEqual(ret.content, b'Text for test to check.')
+            self.assertEqual(ret['Content-Disposition'], 'attachment; filename="file1.txt"')
+
+    def test_download_layer_multiple_files(self):
+        """Test download_layer zips all files matching the layer variable."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_layer'
+                                               '&layer=abcd-1234_file')
+
+            ret = instance.download_layer(request, self.resource, self.session)
+            self.assertTrue(isinstance(ret, HttpResponse))
+            self.assertEqual(ret['Content-Type'], 'application/zip')
+            self.assertEqual(ret['Content-Disposition'], 'attachment; filename="Test Resource_file.zip"')
+
+            with ZipFile(BytesIO(ret.content)) as zf:
+                self.assertEqual(
+                    sorted(zf.namelist()),
+                    [os.path.join('dir1', 'file1.txt'), os.path.join('dir1', 'file2.txt'), 'file5.txt']
+                )
+
+    def test_download_layer_no_layer(self):
+        """Test download_layer raises Http404 when no layer is specified."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_layer')
+
+            with self.assertRaises(Http404) as exc:
+                _ = instance.download_layer(request, self.resource, self.session)
+
+            self.assertTrue('No layer specified.' in str(exc.exception))
+
+    def test_download_layer_no_match(self):
+        """Test download_layer raises Http404 when no file matches the layer variable."""
+        with mock.patch.object(ResourceFilesTab, 'get_file_collections') as mock_get_file_collection:
+            instance = ResourceFilesTab()
+
+            mock_get_file_collection.return_value = [self.file_collection_client]
+
+            request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_layer'
+                                               '&layer=abcd-1234_nomatch')
+
+            with self.assertRaises(Http404) as exc:
+                _ = instance.download_layer(request, self.resource, self.session)
+
+            self.assertTrue('Unable to download file for the layer.' in str(exc.exception))
 
     def test_path_hierarchy(self):
         test_path = os.path.join(self.test_files_base, 'test_path_hierarchy')
