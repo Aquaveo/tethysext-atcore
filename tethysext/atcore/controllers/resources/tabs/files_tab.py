@@ -12,6 +12,8 @@ import os
 import re
 import time
 import uuid
+from zipfile import ZipFile
+from io import BytesIO
 
 from django.http import HttpResponse, Http404
 import tethys_gizmos.gizmo_options.datatable_view as gizmo_datatable_view
@@ -141,6 +143,36 @@ class ResourceFilesTab(ResourceTab):
 
         return hierarchy
 
+    def _single_file_response(self, abs_path, filename):
+        """
+        Build a download response for a single file on disk.
+        """
+        file_ext = os.path.splitext(abs_path)[1].lower()
+        mimetype = mimetypes.types_map.get(file_ext, 'application/octet-stream')
+        with open(abs_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type=mimetype)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    def _zip_response(self, files, zip_name):
+        """
+        Build a download response with the given files zipped in memory.
+
+        Args:
+            files: list of (abs_path, arcname) tuples.
+            zip_name: name of the zip file offered to the browser.
+        """
+        in_memory = BytesIO()
+        # strict_timestamps=False clamps pre-1980 file mtimes, which the ZIP format cannot store
+        with ZipFile(in_memory, 'w', strict_timestamps=False) as zf:
+            for abs_path, arcname in files:
+                zf.write(abs_path, arcname=arcname)
+        response = HttpResponse(content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
+        in_memory.seek(0)
+        response.write(in_memory.read())
+        return response
+
     def download_file(self, request, resource, session, *args, **kwargs):
         """
         A function to download a file from a request.
@@ -152,11 +184,62 @@ class ResourceFilesTab(ResourceTab):
             if uuid.UUID('{' + collection_id + '}') == collection.instance.id:
                 base_file_path = collection.path.replace(collection_id, '')
                 full_file_path = base_file_path + file_path
-                file_ext = os.path.splitext(full_file_path)[1]
-                mimetype = mimetypes.types_map[file_ext] if file_ext in mimetypes.types_map.keys() else 'text/plain'
                 if os.path.exists(full_file_path):
-                    with open(full_file_path, 'rb') as fh:
-                        response = HttpResponse(fh.read(), content_type=mimetype)
-                        response['Content-Disposition'] = 'filename=' + os.path.basename(file_path)
-                        return response
+                    return self._single_file_response(full_file_path, os.path.basename(file_path))
         raise Http404('Unable to download file.')
+
+    def download_all(self, request, resource, session, *args, **kwargs):
+        """
+        Download all files from all collections of this resource as a zip,
+        or directly if there is only one file.
+        """
+        collections = self.get_file_collections(request, resource, session)
+
+        all_files = []  # list of (abs_path, arcname)
+        for collection in collections:
+            for root, _dirs, files in os.walk(collection.path):
+                for filename in files:
+                    if any(re.search(p, filename) for p in self.file_hide_patterns):
+                        continue
+                    abs_path = os.path.join(root, filename)
+                    all_files.append((abs_path, os.path.relpath(abs_path, collection.path)))
+
+        if not all_files:
+            raise Http404('No files to download.')
+
+        # Single file: send it as-is instead of zipping.
+        if len(all_files) == 1:
+            abs_path, arcname = all_files[0]
+            return self._single_file_response(abs_path, os.path.basename(arcname))
+
+        return self._zip_response(all_files, f'{resource.name}.zip')
+
+    def download_layer(self, request, resource, session, *args, **kwargs):
+        """
+        Download the file(s) associated with a WMS layer of this resource,
+        zipped if the layer matches more than one file.
+        """
+        layer = request.GET.get('layer', None)
+        if not layer:
+            raise Http404('No layer specified.')
+
+        # Layer format: <dataset-id>_<layer-variable>
+        variable = layer.split('_', 1)[-1]
+        matches = []  # list of (abs_path, arcname)
+        for collection in self.get_file_collections(request, resource, session):
+            for root, _dirs, files in os.walk(collection.path):
+                for filename in files:
+                    if any(re.search(p, filename) for p in self.file_hide_patterns):
+                        continue
+                    if variable in filename:
+                        abs_path = os.path.join(root, filename)
+                        matches.append((abs_path, os.path.relpath(abs_path, collection.path)))
+
+        if not matches:
+            raise Http404('Unable to download file for the layer.')
+
+        if len(matches) == 1:
+            abs_path, _ = matches[0]
+            return self._single_file_response(abs_path, os.path.basename(abs_path))
+
+        return self._zip_response(matches, f'{resource.name}_{variable}.zip')
