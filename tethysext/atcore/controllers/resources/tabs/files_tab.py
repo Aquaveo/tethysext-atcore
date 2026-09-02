@@ -163,7 +163,8 @@ class ResourceFilesTab(ResourceTab):
             zip_name: name of the zip file offered to the browser.
         """
         in_memory = BytesIO()
-        with ZipFile(in_memory, 'w') as zf:
+        # strict_timestamps=False clamps pre-1980 file mtimes, which the ZIP format cannot store
+        with ZipFile(in_memory, 'w', strict_timestamps=False) as zf:
             for abs_path, arcname in files:
                 zf.write(abs_path, arcname=arcname)
         response = HttpResponse(content_type='application/zip')

@@ -182,7 +182,16 @@ class FilesTabTests(SqlAlchemyTestCase):
 
             request = self.request_factory.get('/foo/12345/bar/files/?tab_action=download_all')
 
-            ret = instance.download_all(request, self.resource, self.session)
+            # Give one file a pre-1980 mtime, which the ZIP format cannot store,
+            # to verify that zipping clamps it instead of raising ValueError.
+            old_file = os.path.join(self.file_collection_client.path, 'file5.txt')
+            old_file_stat = os.stat(old_file)
+            os.utime(old_file, (0, 0))
+            try:
+                ret = instance.download_all(request, self.resource, self.session)
+            finally:
+                os.utime(old_file, (old_file_stat.st_atime, old_file_stat.st_mtime))
+
             self.assertTrue(isinstance(ret, HttpResponse))
             self.assertEqual(ret['Content-Type'], 'application/zip')
             self.assertEqual(ret['Content-Disposition'], 'attachment; filename="Test Resource.zip"')
