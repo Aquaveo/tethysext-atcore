@@ -123,6 +123,10 @@ function files_tab_loaded() {
                 collapse_tree_elements(folder);
         });
     });
+    // Download all files as a zip.
+    document.getElementById('download-all').addEventListener("click", function() {
+        window.location.href = window.location.pathname + '?tab_action=download_all';
+    });
 
     document.querySelectorAll('.viewport_file').forEach(function(row) {
         $(row).bind("dblclick", function(){
