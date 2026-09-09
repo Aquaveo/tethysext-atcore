@@ -7,15 +7,12 @@
 ********************************************************************************
 """
 import json
-import mimetypes
 import os
 import re
 import time
 import uuid
-from zipfile import ZipFile
-from io import BytesIO
 
-from django.http import HttpResponse, Http404
+from django.http import Http404
 import tethys_gizmos.gizmo_options.datatable_view as gizmo_datatable_view
 from .resource_tab import ResourceTab
 
@@ -142,36 +139,6 @@ class ResourceFilesTab(ResourceTab):
             hierarchy['size'] = f'{size_str} {power_labels[n]}'
 
         return hierarchy
-
-    def _single_file_response(self, abs_path, filename):
-        """
-        Build a download response for a single file on disk.
-        """
-        file_ext = os.path.splitext(abs_path)[1].lower()
-        mimetype = mimetypes.types_map.get(file_ext, 'application/octet-stream')
-        with open(abs_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type=mimetype)
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-
-    def _zip_response(self, files, zip_name):
-        """
-        Build a download response with the given files zipped in memory.
-
-        Args:
-            files: list of (abs_path, arcname) tuples.
-            zip_name: name of the zip file offered to the browser.
-        """
-        in_memory = BytesIO()
-        # strict_timestamps=False clamps pre-1980 file mtimes, which the ZIP format cannot store
-        with ZipFile(in_memory, 'w', strict_timestamps=False) as zf:
-            for abs_path, arcname in files:
-                zf.write(abs_path, arcname=arcname)
-        response = HttpResponse(content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
-        in_memory.seek(0)
-        response.write(in_memory.read())
-        return response
 
     def download_file(self, request, resource, session, *args, **kwargs):
         """
