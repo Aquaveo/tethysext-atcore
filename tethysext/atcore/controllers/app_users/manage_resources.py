@@ -247,6 +247,9 @@ class ManageResources(ResourceViewMixin):
         # Empty on the DataTable path.
         pagination_info['search'] = search
 
+        can_create_resource = self.request_has_permission(request, 'create_resource')
+        can_delete_resource = self.request_has_permission(request, 'delete_resource')
+
         context = self.get_base_context(request)
         context.update({
             'enable_datatable': self.enable_datatable,
@@ -262,18 +265,18 @@ class ManageResources(ResourceViewMixin):
             'row_template': self.row_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
-            'show_select_column': self.enable_groups and has_permission(request, 'create_resource'),
+            'show_select_column': self.enable_groups and can_create_resource,
             'show_group_buttons': self.enable_groups,
             'enable_groups': self.enable_groups,
-            'show_new_group_button': self.enable_groups and has_permission(request, 'create_resource'),
-            'show_new_button': has_permission(request, 'create_resource'),
+            'show_new_group_button': self.enable_groups and can_create_resource,
+            'show_new_button': can_create_resource,
             'show_attributes': request_app_user.is_staff(),
-            'load_delete_modal': has_permission(request, 'delete_resource'),
-            'load_archive_modal': self.show_archive_button and has_permission(request, 'delete_resource'),
-            'show_links_to_organizations': has_permission(request, 'edit_organizations'),
-            'show_users_link': has_permission(request, 'modify_users'),
-            'show_resources_link': has_permission(request, 'view_resources'),
-            'show_organizations_link': has_permission(request, 'view_organizations'),
+            'load_delete_modal': can_delete_resource,
+            'load_archive_modal': self.show_archive_button and can_delete_resource,
+            'show_links_to_organizations': self.request_has_permission(request, 'edit_organizations'),
+            'show_users_link': self.request_has_permission(request, 'modify_users'),
+            'show_resources_link': self.request_has_permission(request, 'view_resources'),
+            'show_organizations_link': self.request_has_permission(request, 'view_organizations'),
             'show_organizations_column': len(request_app_user.get_organizations(session, request)) > 1,
         })
 
@@ -463,7 +466,7 @@ class ManageResources(ResourceViewMixin):
         """
         _Resource = self.get_resource_model()
         return request_app_user.get_resources(
-            session, request, of_type=_Resource, include_children=not self.enable_groups
+            session, request, of_type=_Resource, include_children=not self.enable_groups, eager_load=True
         )
 
     def filter_resource_cards(self, resource_cards, search_lower, ancestor_match=False):
@@ -538,6 +541,29 @@ class ManageResources(ResourceViewMixin):
         """  # noqa: E501
         pass
 
+    @staticmethod
+    def request_has_permission(request, perm):
+        """
+        Return has_permission(request, perm), memoized for the lifetime of the request.
+
+        Args:
+            request(django.Request): the request object.
+            perm(str): name of the permission to check.
+
+        Returns:
+            bool: True if the request user has the permission.
+        """
+        cache = getattr(request, '_atcore_permission_cache', None)
+
+        if not isinstance(cache, dict):
+            cache = {}
+            request._atcore_permission_cache = cache
+
+        if perm not in cache:
+            cache[perm] = has_permission(request, perm)
+
+        return cache[perm]
+
     def can_edit_resource(self, session, request, resource):
         """
         Hook into resource_card.editable attribute to allow for more than permissions-based check.
@@ -549,7 +575,7 @@ class ManageResources(ResourceViewMixin):
         Returns:
             bool: the edit button will be displayed for this resource if True.
         """
-        return has_permission(request, 'edit_resource')
+        return self.request_has_permission(request, 'edit_resource')
 
     def can_delete_resource(self, session, request, resource):
         """
@@ -562,7 +588,8 @@ class ManageResources(ResourceViewMixin):
         Returns:
             bool: the delete button will be displayed for this resource if True.
         """
-        return has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
+        return self.request_has_permission(request, 'delete_resource') \
+            or self.request_has_permission(request, 'always_delete_resource')
 
     def can_archive_resource(self, session, request, resource):
         """
@@ -575,5 +602,4 @@ class ManageResources(ResourceViewMixin):
         Returns:
             bool: the archive button will be displayed for this resource if True.
         """
-        can_delete = has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
-        return can_delete and len(resource.children) == 0
+        return self.can_delete_resource(session, request, resource) and len(resource.children) == 0
