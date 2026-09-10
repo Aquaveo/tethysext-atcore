@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy import Column, Boolean, String
-from sqlalchemy.orm import relationship, validates, reconstructor
+from sqlalchemy.orm import relationship, selectinload, validates, reconstructor
 from tethysext.atcore.models.types.guid import GUID
 from tethysext.atcore.services.app_users.func import get_display_name_for_django_user
 from tethysext.atcore.services.app_users.roles import Roles
@@ -258,6 +258,12 @@ class AppUser(AppUsersBase):
 
         if not include_children:
             q = q.filter(~_Resource.parents.any())
+
+        q = q.options(
+            selectinload(_Resource.organizations),
+            selectinload(_Resource.parents),
+            selectinload(_Resource.children),
+        )
 
         resources = sorted(set(q.all()), key=lambda r: str(r.id))
         return self.filter_resources(resources)

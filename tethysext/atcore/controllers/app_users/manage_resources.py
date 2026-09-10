@@ -538,6 +538,29 @@ class ManageResources(ResourceViewMixin):
         """  # noqa: E501
         pass
 
+    @staticmethod
+    def request_has_permission(request, perm):
+        """
+        Return has_permission(request, perm), memoized for the lifetime of the request.
+
+        Args:
+            request(django.Request): the request object.
+            perm(str): name of the permission to check.
+
+        Returns:
+            bool: True if the request user has the permission.
+        """
+        cache = getattr(request, '_atcore_permission_cache', None)
+
+        if not isinstance(cache, dict):
+            cache = {}
+            request._atcore_permission_cache = cache
+
+        if perm not in cache:
+            cache[perm] = has_permission(request, perm)
+
+        return cache[perm]
+
     def can_edit_resource(self, session, request, resource):
         """
         Hook into resource_card.editable attribute to allow for more than permissions-based check.
@@ -549,7 +572,7 @@ class ManageResources(ResourceViewMixin):
         Returns:
             bool: the edit button will be displayed for this resource if True.
         """
-        return has_permission(request, 'edit_resource')
+        return self.request_has_permission(request, 'edit_resource')
 
     def can_delete_resource(self, session, request, resource):
         """
@@ -562,7 +585,8 @@ class ManageResources(ResourceViewMixin):
         Returns:
             bool: the delete button will be displayed for this resource if True.
         """
-        return has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
+        return self.request_has_permission(request, 'delete_resource') \
+            or self.request_has_permission(request, 'always_delete_resource')
 
     def can_archive_resource(self, session, request, resource):
         """
@@ -575,5 +599,4 @@ class ManageResources(ResourceViewMixin):
         Returns:
             bool: the archive button will be displayed for this resource if True.
         """
-        can_delete = has_permission(request, 'delete_resource') or has_permission(request, 'always_delete_resource')
-        return can_delete and len(resource.children) == 0
+        return self.can_delete_resource(session, request, resource) and len(resource.children) == 0
