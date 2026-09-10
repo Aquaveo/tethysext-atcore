@@ -247,6 +247,9 @@ class ManageResources(ResourceViewMixin):
         # Empty on the DataTable path.
         pagination_info['search'] = search
 
+        can_create_resource = self.request_has_permission(request, 'create_resource')
+        can_delete_resource = self.request_has_permission(request, 'delete_resource')
+
         context = self.get_base_context(request)
         context.update({
             'enable_datatable': self.enable_datatable,
@@ -262,14 +265,14 @@ class ManageResources(ResourceViewMixin):
             'row_template': self.row_template,
             'resources': paginated_resources,
             'pagination_info': pagination_info,
-            'show_select_column': self.enable_groups and self.request_has_permission(request, 'create_resource'),
+            'show_select_column': self.enable_groups and can_create_resource,
             'show_group_buttons': self.enable_groups,
             'enable_groups': self.enable_groups,
-            'show_new_group_button': self.enable_groups and self.request_has_permission(request, 'create_resource'),
-            'show_new_button': self.request_has_permission(request, 'create_resource'),
+            'show_new_group_button': self.enable_groups and can_create_resource,
+            'show_new_button': can_create_resource,
             'show_attributes': request_app_user.is_staff(),
-            'load_delete_modal': self.request_has_permission(request, 'delete_resource'),
-            'load_archive_modal': self.show_archive_button and self.request_has_permission(request, 'delete_resource'),
+            'load_delete_modal': can_delete_resource,
+            'load_archive_modal': self.show_archive_button and can_delete_resource,
             'show_links_to_organizations': self.request_has_permission(request, 'edit_organizations'),
             'show_users_link': self.request_has_permission(request, 'modify_users'),
             'show_resources_link': self.request_has_permission(request, 'view_resources'),
