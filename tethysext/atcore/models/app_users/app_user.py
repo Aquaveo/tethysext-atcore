@@ -222,7 +222,8 @@ class AppUser(AppUsersBase):
 
         return return_value
 
-    def get_resources(self, session, request, of_type=None, cascade=True, for_assigning=False, include_children=True):
+    def get_resources(self, session, request, of_type=None, cascade=True, for_assigning=False,
+                      include_children=True, eager_load=False):
         """
         Get the resources that the request user is able to assign to clients and consultants.
         Args:
@@ -232,6 +233,8 @@ class AppUser(AppUsersBase):
             cascade(bool): Also retrieve resources of child organizations.
             for_assigning(bool): check assign permission versus view permission.
             include_children(bool): include the resources that are children to other resources.
+            eager_load(bool): also load each resource's organizations, parents and children. Callers that
+                read those relationships per resource should set this; the rest pay three extra queries.
         Returns:
         """
         from tethys_sdk.permissions import has_permission
@@ -256,15 +259,18 @@ class AppUser(AppUsersBase):
             q = session.query(_Resource) \
                 .filter(_Resource.organizations.any(_Organization.id.in_(organization_ids)))
 
-        q = q.options(
-            selectinload(_Resource.organizations),
-            selectinload(_Resource.parents),
-            selectinload(_Resource.children),
-        )
+        if eager_load:
+            q = q.options(
+                selectinload(_Resource.organizations),
+                selectinload(_Resource.parents),
+                selectinload(_Resource.children),
+            )
+        elif not include_children:
+            q = q.filter(~_Resource.parents.any())
 
         resources = sorted(set(q.all()), key=lambda r: str(r.id))
 
-        if not include_children:
+        if eager_load and not include_children:
             resources = [r for r in resources if not r.parents]
 
         return self.filter_resources(resources)

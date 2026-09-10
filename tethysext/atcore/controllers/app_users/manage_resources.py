@@ -466,7 +466,7 @@ class ManageResources(ResourceViewMixin):
         """
         _Resource = self.get_resource_model()
         return request_app_user.get_resources(
-            session, request, of_type=_Resource, include_children=not self.enable_groups
+            session, request, of_type=_Resource, include_children=not self.enable_groups, eager_load=True
         )
 
     def filter_resource_cards(self, resource_cards, search_lower, ancestor_match=False):

@@ -493,7 +493,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
 
         # Test the results
         mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type',
-                                                               include_children=True)
+                                                               include_children=True, eager_load=True)
 
     def test_get_resources_groups_enabled(self):
         mock_request = self.request_factory.get('/foo/bar/')
@@ -508,7 +508,7 @@ class ManageResourcesTests(SqlAlchemyTestCase):
 
         # Test the results
         mock_request_app_user.get_resources.assert_called_with(mock_session, mock_request, of_type='resource_type',
-                                                               include_children=False)
+                                                               include_children=False, eager_load=True)
 
     @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
     def test_can_edit_resource(self, mock_has_permission):
