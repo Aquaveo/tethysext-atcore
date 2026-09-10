@@ -256,9 +256,6 @@ class AppUser(AppUsersBase):
             q = session.query(_Resource) \
                 .filter(_Resource.organizations.any(_Organization.id.in_(organization_ids)))
 
-        if not include_children:
-            q = q.filter(~_Resource.parents.any())
-
         q = q.options(
             selectinload(_Resource.organizations),
             selectinload(_Resource.parents),
@@ -266,6 +263,10 @@ class AppUser(AppUsersBase):
         )
 
         resources = sorted(set(q.all()), key=lambda r: str(r.id))
+
+        if not include_children:
+            resources = [r for r in resources if not r.parents]
+
         return self.filter_resources(resources)
 
     def filter_resources(self, resources):

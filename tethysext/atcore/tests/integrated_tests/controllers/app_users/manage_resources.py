@@ -650,3 +650,80 @@ class ManageResourcesTests(SqlAlchemyTestCase):
         mock_request = self.request_factory.get('/foo/bar/')
 
         ManageResources().perform_custom_archive_operations(session, mock_request, self.resource)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_request_has_permission_memoizes_within_request(self, mock_has_permission):
+        mock_has_permission.return_value = True
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+
+        manage_resources = ManageResources()
+        first = manage_resources.request_has_permission(mock_request, 'edit_resource')
+        second = manage_resources.request_has_permission(mock_request, 'edit_resource')
+
+        self.assertTrue(first)
+        self.assertTrue(second)
+        mock_has_permission.assert_called_once_with(mock_request, 'edit_resource')
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_request_has_permission_caches_per_request(self, mock_has_permission):
+        mock_has_permission.side_effect = [True, False]
+        first_request = self.request_factory.get('/foo/bar/')
+        first_request.user = self.django_user
+        second_request = self.request_factory.get('/foo/bar/')
+        second_request.user = self.django_user
+
+        manage_resources = ManageResources()
+        first = manage_resources.request_has_permission(first_request, 'edit_resource')
+        second = manage_resources.request_has_permission(second_request, 'edit_resource')
+
+        self.assertTrue(first)
+        self.assertFalse(second)
+        self.assertEqual(2, mock_has_permission.call_count)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_request_has_permission_tolerates_mock_request(self, mock_has_permission):
+        mock_has_permission.return_value = True
+
+        result = ManageResources().request_has_permission(mock.MagicMock(), 'edit_resource')
+
+        self.assertIs(True, result)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_can_edit_resource_shares_one_lookup_across_resources(self, mock_has_permission):
+        mock_has_permission.return_value = True
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+
+        manage_resources = ManageResources()
+        manage_resources.can_edit_resource('session', mock_request, 'resource_a')
+        manage_resources.can_edit_resource('session', mock_request, 'resource_b')
+
+        mock_has_permission.assert_called_once_with(mock_request, 'edit_resource')
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_can_delete_resource_does_not_rescale_with_resources(self, mock_has_permission):
+        mock_has_permission.side_effect = [False, True]
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+
+        manage_resources = ManageResources()
+        manage_resources.can_delete_resource('session', mock_request, 'resource_a')
+        manage_resources.can_delete_resource('session', mock_request, 'resource_b')
+
+        self.assertEqual(2, mock_has_permission.call_count)
+
+    @mock.patch('tethysext.atcore.controllers.app_users.manage_resources.has_permission')
+    def test_can_archive_resource_follows_can_delete_resource_override(self, mock_has_permission):
+        mock_has_permission.return_value = True
+        mock_request = self.request_factory.get('/foo/bar/')
+        mock_request.user = self.django_user
+        mock_resource = mock.MagicMock()
+        mock_resource.children = []
+
+        class DenyingManageResources(ManageResources):
+            def can_delete_resource(self, session, request, resource):
+                return False
+
+        self.assertFalse(DenyingManageResources().can_archive_resource('session', mock_request, mock_resource))
+        self.assertTrue(ManageResources().can_archive_resource('session', mock_request, mock_resource))

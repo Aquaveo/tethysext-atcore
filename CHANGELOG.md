@@ -50,6 +50,13 @@ node to die with `ImportError` after its work had succeeded.
   than raising, so an unreachable scheduler returns normally. On failure the step's previous
   status, status message and job id are restored, so it is not left waiting on a job that
   was never submitted. Downstream steps are reset only once submission has succeeded.
+- `AppUser.get_resources` now eager-loads each resource's `organizations` and `children`,
+  and `parents` as well when `include_children` is True. The manage-resources page read
+  those three relationships on every row, which cost three lazy loads per resource.
+- `ManageResources.can_archive_resource` now delegates its permission check to
+  `can_delete_resource` instead of repeating it. A subclass that overrides
+  `can_delete_resource` therefore changes archive-button visibility as well; override
+  `can_archive_resource` too if the two should differ.
 
 ### Added
 
@@ -60,6 +67,9 @@ node to die with `ImportError` after its work had succeeded.
 - `initialize_step_statuses(step)` — clears the store ahead of a submission.
 - `dag_node_name()` — resolves the running job's DAG node name from the job ad named by
   `_CONDOR_JOB_AD`, with a process-unique fallback. Cached for the process.
+- `ManageResources.request_has_permission(request, perm)` memoizes `has_permission` for
+  the lifetime of one request. Each underlying call resolves the active app from the
+  database, so the manage-resources page repeated that lookup for every row.
 
 ## 1.16.2
 
