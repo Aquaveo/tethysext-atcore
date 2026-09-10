@@ -50,9 +50,10 @@ node to die with `ImportError` after its work had succeeded.
   than raising, so an unreachable scheduler returns normally. On failure the step's previous
   status, status message and job id are restored, so it is not left waiting on a job that
   was never submitted. Downstream steps are reset only once submission has succeeded.
-- `AppUser.get_resources` now eager-loads each resource's `organizations` and `children`,
-  and `parents` as well when `include_children` is True. The manage-resources page read
-  those three relationships on every row, which cost three lazy loads per resource.
+- `AppUser.get_resources` takes an `eager_load` argument. When set it loads each resource's
+  `organizations`, `parents` and `children` up front, which the manage-resources page needs
+  because it reads all three on every row. It defaults to off, so callers that only read a
+  resource's own columns keep the cheaper query.
 - `ManageResources.can_archive_resource` now delegates its permission check to
   `can_delete_resource` instead of repeating it. A subclass that overrides
   `can_delete_resource` therefore changes archive-button visibility as well; override
