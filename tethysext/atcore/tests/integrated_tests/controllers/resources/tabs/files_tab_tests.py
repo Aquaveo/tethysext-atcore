@@ -10,7 +10,7 @@ import os
 from io import BytesIO
 from unittest import mock
 import uuid
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from django.http import HttpResponse, Http404
 from django.test import RequestFactory
@@ -201,6 +201,8 @@ class FilesTabTests(SqlAlchemyTestCase):
                     sorted(zf.namelist()),
                     [os.path.join('dir1', 'file1.txt'), os.path.join('dir1', 'file2.txt'), 'file5.txt']
                 )
+                # Entries must be compressed, not merely stored
+                self.assertTrue(all(info.compress_type == ZIP_DEFLATED for info in zf.infolist()))
 
     def test_download_all_single_file(self):
         """Test download_all sends a single file directly instead of zipping."""
@@ -267,6 +269,8 @@ class FilesTabTests(SqlAlchemyTestCase):
                     sorted(zf.namelist()),
                     [os.path.join('dir1', 'file1.txt'), os.path.join('dir1', 'file2.txt'), 'file5.txt']
                 )
+                # Entries must be compressed, not merely stored
+                self.assertTrue(all(info.compress_type == ZIP_DEFLATED for info in zf.infolist()))
 
     def test_download_layer_no_layer(self):
         """Test download_layer raises Http404 when no layer is specified."""
