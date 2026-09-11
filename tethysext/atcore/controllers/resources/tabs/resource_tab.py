@@ -6,7 +6,7 @@
 * Copyright: (c) Aquaveo 2020
 ********************************************************************************
 """
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile
 from io import BytesIO
 import mimetypes
 import os
@@ -64,7 +64,7 @@ class ResourceTab(ResourceView):
         """
         in_memory = BytesIO()
         # strict_timestamps=False clamps pre-1980 file mtimes, which the ZIP format cannot store
-        with ZipFile(in_memory, 'w', strict_timestamps=False) as zf:
+        with ZipFile(in_memory, 'w', compression=ZIP_DEFLATED, strict_timestamps=False) as zf:
             for abs_path, arcname in files:
                 zf.write(abs_path, arcname=arcname)
         response = HttpResponse(content_type='application/zip')
