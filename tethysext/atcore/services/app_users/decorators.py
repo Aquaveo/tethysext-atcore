@@ -23,6 +23,21 @@ from tethysext.atcore.exceptions import ATCoreException
 log = logging.getLogger(f'tethys.{__name__}')
 
 
+def _access_denied_redirect_url() -> str:
+    """Get the URL to send a user who is not allowed to use the app.
+
+    The ``app_library`` URL is only registered when ``MULTIPLE_APP_MODE`` is on. In single app mode the
+    app is mounted at the portal root, so redirecting back into it would loop; send the user to their
+    profile instead, as Tethys does in ``tethys_apps.decorators.permission_required``.
+
+    Returns:
+        str: The URL to redirect to.
+    """
+    if getattr(settings, 'MULTIPLE_APP_MODE', True):
+        return reverse('app_library')
+    return reverse('user:profile')
+
+
 def active_user_required():
     def decorator(controller_func):
         def _wrapped_controller(self, request, *args, **kwargs):
@@ -48,13 +63,13 @@ def active_user_required():
 
                 if app_user is None:
                     messages.warning(request, "We're sorry, but you are not allowed access to this app.")
-                    return redirect(reverse('app_library'))
+                    return redirect(_access_denied_redirect_url())
 
                 if not app_user.is_active:
                     messages.warning(request, "We're sorry, but your account has been disabled for this app. "
                                               "Please contact your organization's admin for further "
                                               "questions and assistance.")
-                    return redirect(reverse('app_library'))
+                    return redirect(_access_denied_redirect_url())
 
             return controller_func(self, request, *args, **kwargs)
 
