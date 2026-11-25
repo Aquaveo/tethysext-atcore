@@ -185,6 +185,31 @@ class ActiveUserRequiredDecoratorTests(SqlAlchemyTestCase):
         response = self.mock_controller(self.request)
         self.assertIsRedirect(response)
 
+    @override_settings(ENABLE_OPEN_PORTAL=False, MULTIPLE_APP_MODE=False)
+    def test_app_user_is_none_single_app_mode(self):
+        # app_library is not registered in single app mode; redirect to the user's profile instead.
+        self.request.user = self.user
+        response = self.mock_controller(self.request)
+        self.assertIsRedirect(response, to='/user/')
+        self.mock_messages.warning.assert_called_once_with(
+            self.request, "We're sorry, but you are not allowed access to this app."
+        )
+
+    @override_settings(ENABLE_OPEN_PORTAL=False, MULTIPLE_APP_MODE=False)
+    def test_app_user_not_active_single_app_mode(self):
+        app_user = AppUser(
+            username=self.user.username,
+            role=AppUser.ROLES.ORG_USER,
+            is_active=False
+        )
+        self.session.add(app_user)
+        self.session.commit()
+        self.request.user = self.user
+        response = self.mock_controller(self.request)
+        self.assertIsRedirect(response, to='/user/')
+        self.mock_messages.warning.assert_called_once()
+        self.assertIn('has been disabled', self.mock_messages.warning.call_args[0][1])
+
     @mock.patch('django.contrib.messages.warning')
     def test_valid_app_user(self, _):
         app_user = AppUser(

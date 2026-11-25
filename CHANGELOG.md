@@ -72,6 +72,14 @@ node to die with `ImportError` after its work had succeeded.
   the lifetime of one request. Each underlying call resolves the active app from the
   database, so the manage-resources page repeated that lookup for every row.
 
+### Fixed
+
+- `active_user_required` no longer raises `NoReverseMatch` (a 500) in single app mode
+  (`MULTIPLE_APP_MODE = False`). A user with no app user record, or a disabled one, was
+  redirected to `app_library`, which Tethys only registers in multiple app mode. In single
+  app mode they now go to their profile (`user:profile`), as Tethys's own
+  `permission_required` does. Multiple app mode behaviour is unchanged.
+
 ## 1.16.2
 
 - Fixed a 40P01 deadlock on `app_users_resources` caused by write-on-read attribute
